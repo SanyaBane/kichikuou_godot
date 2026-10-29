@@ -832,20 +832,24 @@ picture, the slot panels) is not shown. How it is built:
   battlefield the curtain runs through the defender's ranks and the wall stands at their front, faint under screen
   blending but for the wall's peak (frames 9-11).
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
-  (commander 1) army once a game has booted) or black: the effect and its user, Play, Loop, the enemy acting, the
+  (commander 1) army, CG 1131) or black: the effect and its user, Play, Loop, the enemy acting, the
   blend, the speed, the seed, a frame slider and an offset (owner, 2026-10-15): X and Y move the effect from its own
   place, in the design space (800 × 314, +x toward the target, +y down; `EffectPlayer.Offset`), to try another place
   before it is built in — Reset puts it back; the effect stands at the scene's foot (y 8). On the player's side
-  stands Rance's (unit 1) army for melee and magic and Isoroku's (unit 27) archers for the bow (owner, 2026-10-15;
-  once a game has booted) and for a special the sprite its user
+  stands Rance's (unit 1) army with Leazas Knights (CG 1100, as the rebellion makes it, `Iﾊﾝﾗﾝ.ADV:27`) for melee and
+  Guard and Isoroku's (unit 27) archers for the bow, each magic element a caster of it with the others to pick from —
+  fire Sill (unit 2), ice Melfeis (unit 13), lightning Somita (unit 46), dark Satella (unit 29), light the Seizel
+  Sisters (unit 42); the poison, which only the enemy casts, by Papaya (commander 104) on the right, the enemy acting
+  (the owner's table of 2026-10-29, docs/ui/gallery.md, §11; until then Rance's army as the save had it, the thieves at
+  week 18) — and for a special the sprite its user
   shows while using it (owner, 2026-10-15; `FIGT.ADV:1660-1713`, docs/battle/02-resolution.md §4): the user list holds
   the special's users — Rance Attack Rance (unit 1, CG 1520), Kentarou-kun Slash Kentarou (unit 31, 1222), the white beams one each, Shizuka's
   (unit 17, 1522), Magic's (unit 39, 1523) and Gandhi's EPO Light (unit 37, 1524), the dark ones Chizuko's
   (unit 38, 1526) and Nagi's (unit 40, 1525), Whirlwind Shot Isoroku (unit 27, 1528), High Speed Meglass (unit 30, 1527), By la Way Rick (unit 7,
   1521), the ninjas' follow-ups each with its ninja (Kanami 1164, Freya 1176, Kaoru 1182, Wichita 1185; the unused Ninja troop's over Rance's army), Vanish Bomb
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
-  no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252);
-  Guard has Rance's army, as melee.
+  no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252).
+  The table is `EffectCatalog`, shared with the screen gallery's Combat VFX tab; the stage `EffectStage`.
   `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
   (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `ice-magic-NN.png`, `lightning-magic-NN.png`, `light-magic-NN.png`,
   `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `kanami-NN.png`, `freya-NN.png`, `kaoru-NN.png`, `wichita-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,

@@ -762,7 +762,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
   battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`), the
   title run from the player's files after a fresh boot and held the same way (`GalleryTitle`), the import screen held in each phase —
-  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-PhoneLand] [-Phone] [-Only id,…]` builds, dumps every
+  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Steel] [-Touch] [-PhoneLand] [-Phone] [-Vfx | -VfxOnly] [-Only id,…]`
+  (`-Vfx`: the Combat VFX tab, each exchange effect as six frames, `--combat-vfx`; **only when the owner asks for it or the
+  tab itself changes**, owner 2026-10-29; docs/ui/gallery.md, §11) builds, dumps every
   entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
   pass, nothing moves the pointer, and writes its `index.html`, every screen in its place, a changed one badged with a link to its former picture (two dumps of
   the same build are identical: our views animate by `Strategy/UiClock`, which the dump steps a frame at a time); the game alone:

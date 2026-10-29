@@ -20,6 +20,9 @@ pass.
 -Phone adds two tabs of mock-ups, not dumps: the phone held upright and held landscape as docs/ui/phone.md's chosen
 base versions, drawn by tools/ui/mock_phone.py from the touch and lacquer passes' pictures, compared with their former
 drawings the same way; -PhoneOnly draws those tabs and the index alone, with no build and no game pass.
+-Vfx adds the Combat VFX tab's pass (--combat-vfx: each exchange effect as a grid of its frames, docs/ui/gallery.md, §11),
+-VfxOnly dumps it alone. Only when asked for (owner, 2026-10-29: the effects hardly ever change): a run without it leaves
+the tab as it was, unmarked.
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1
@@ -44,6 +47,10 @@ param(
     [switch]$Phone,
     # Only the phone's mock-ups and the index: no build, no game pass.
     [switch]$PhoneOnly,
+    # Also dump the Combat VFX tab (--combat-vfx), only when asked for.
+    [switch]$Vfx,
+    # Only the Combat VFX tab and the index.
+    [switch]$VfxOnly,
     # Only these entries (their ids, comma-separated).
     [string[]]$Only = @(),
     # Skip the build.
@@ -73,6 +80,7 @@ function Get-LocalPath([string]$Key) {
 }
 
 if ($PhoneOnly) { $Phone = $true; $NoBuild = $true }
+if ($VfxOnly) { $Vfx = $true }
 $exe = Get-LocalPath 'KICHIKUOU_GODOT_EXE'
 if (-not $PhoneOnly -and (-not $exe -or -not (Test-Path $exe))) {
     throw "Godot not found: set KICHIKUOU_GODOT_EXE in local.env (see local.env.example)."
@@ -103,8 +111,10 @@ $allPasses = @(
        Held = 'landscape'; Switch = 'PhoneLand' },
     @{ Name = 'phone'; Title = 'Smartphone, upright (mock-ups)'; Mockup = $true; Held = 'upright'; Size = '1220&times;2712' },
     @{ Name = 'phone-land'; Title = 'Smartphone, landscape (mock-ups)'; Mockup = $true; Held = 'landscape';
-       Size = '2712&times;1220' })
-$passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or (-not $PhoneOnly -and
+       Size = '2712&times;1220' },
+    @{ Name = 'combat-vfx'; Title = 'Combat VFX'; Args = @('--combat-vfx'); Switch = 'Vfx'; OnRequest = $true })
+$passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or ($_.Name -eq 'combat-vfx' -and $Vfx) -or
+    (-not $PhoneOnly -and -not $VfxOnly -and
     ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch) -or
      ($_.Name -eq 'phone-landscape' -and $PhoneLand))) })
 
@@ -183,8 +193,8 @@ foreach ($pass in $allPasses) {
     $manifest = Get-Content -Raw -Encoding UTF8 $manifestPath | ConvertFrom-Json
     $entries = @($manifest.entries)
     $changed = @($entries | Where-Object { $_.since -eq 'changed' -or $_.since -eq 'new' })
-    # A run of the mock-ups alone dumps no game pass, so it leaves them unmarked.
-    $isStale = $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup)
+    # A run of the mock-ups alone dumps no game pass, so it leaves them unmarked; nor is a pass dumped only on request.
+    $isStale = $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup) -and -not $pass.OnRequest
     $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }
     [void]$tabs.Append("<a class=tab href=`"#$($pass.Name)`" data-pass=`"$($pass.Name)`">$(Html $pass.Title)$mark</a>")
     $class = if ($pass.Mockup) { "pass mockup $($pass.Held)" } else { "pass $($pass.Held)" }
@@ -194,6 +204,10 @@ foreach ($pass in $allPasses) {
         [void]$body.Append("<p class=mockup><b>Not built yet.</b> Mock-ups of the phone held $($pass.Held) (Xiaomi Poco X6 Pro, " +
             "$($pass.Size)): the owner&rsquo;s chosen base versions of <code>docs/ui/phone.md</code>, drawn by " +
             '<code>tools/ui/mock_phone.py</code> over this gallery&rsquo;s dumps.</p>')
+    }
+    if ($pass.OnRequest) {
+        [void]$body.Append("<p>Dumped only when asked for (<code>gallery.ps1 -$($pass.Switch)</code>): each exchange effect as six " +
+            'of its frames over the battlefield, the armies of <code>docs/ui/gallery.md</code>, &sect;11.</p>')
     }
     if ($isStale) {
         [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +

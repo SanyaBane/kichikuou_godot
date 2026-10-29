@@ -37,6 +37,12 @@ public partial class GalleryScreen : Control
     public Vector2I WindowSize { get; init; } = new(1280, 800);
 
     /// <summary>
+    /// The Combat VFX tab's entries alone (<c>--combat-vfx</c>, <see cref="GalleryEntries.CombatVfx"/>): a dump of its own,
+    /// only when asked for (owner, 2026-10-29). Otherwise a dump takes the screens and the gallery looked at lists both.
+    /// </summary>
+    public bool CombatVfx { get; init; }
+
+    /// <summary>
     /// A picture counts as changed when more pixels than this differ from the former one by more than
     /// <see cref="Tolerance"/> in a channel: the click's triangle bobs, so a few hundred pixels move between two dumps.
     /// </summary>
@@ -47,7 +53,7 @@ public partial class GalleryScreen : Control
     /// <summary>Where the views' clock stands as each entry is dumped (<see cref="UiClock.Frames"/>): an hour in.</summary>
     private const ulong ClockStart = 3_600_000;
 
-    private readonly IReadOnlyList<GalleryEntry> _entries = GalleryEntries.All();
+    private IReadOnlyList<GalleryEntry> _entries = [];
     private Control _side = null!;
     private ItemList _list = null!;
     private Label _note = null!;
@@ -63,6 +69,9 @@ public partial class GalleryScreen : Control
 
     public override void _Ready()
     {
+        _entries = CombatVfx ? GalleryEntries.CombatVfx()
+            : ScreenshotDirectory is null ? [.. GalleryEntries.All(), .. GalleryEntries.CombatVfx()]
+            : GalleryEntries.All();
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         var background = new ColorRect { Color = Colors.Black, MouseFilter = MouseFilterEnum.Ignore };
         background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);

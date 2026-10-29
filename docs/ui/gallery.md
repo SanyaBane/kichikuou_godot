@@ -133,8 +133,8 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   rises into place waits `Settle` seconds of frames first (the exchange's counters). While it dumps, the window takes
   no input (`GuiDisableInput`; the entries' clicks go to the views directly): the real pointer over it dropped the
   hover of `treasure-hover` and `treasure-items` once (2026-10-25).
-- `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
-  (Lacquer; `-Steel`, `-Touch` add theirs) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
+- `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild]` builds the game; for each pass
+  (Lacquer; `-Steel`, `-Touch` add theirs; `-Vfx` the Combat VFX tab, only when asked for, §11) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: a tab for each pass dumped so far, one shown at a time (the owner,
   2026-10-25; `#steel` or an entry's `#steel-treasure` opens its pass), a pass not dumped this time marked old on its
   tab and above its pictures; in a pass the sections, each entry in its own place at full size whatever changed (the
@@ -478,3 +478,34 @@ its size, so the grid keeps their places), and nothing of the former pictures �
 and new badges, the tabs' counts and the passes' "old" marks are left out; a link to a picture the script did not copy
 fails the run. The manifests and `phone-look` are not copied either. The pictures hold the original's CGs as the
 gallery's do (no event CG, §3).
+
+## 11. Combat VFX (owner, 2026-10-29)
+
+A tab of its own, **Combat VFX**: each exchange effect play shows, as six of its frames in a 2×3 grid (640×256 a frame,
+half our scene's 1024×410) under a strip naming the effect and its armies, the frame's number in each corner — the
+owner's B of the sheets drawn that day (one middle frame, A, shows little of most: melee's slashes are gone by frame 15,
+the Black D. Beam's orb is not there yet). The frames are 2, 6 … 22 of 30, the part before the tail that the message skip
+shows too (docs/ui/battle-screen.md, "Under the message skip"); 1, 3 … 11 for the short Guard (14) and T2 Goliath (15).
+Seed 1, the player's side; the unused Ninja troop left out: 28 entries, by group (Attacks, Magic, Specials, Ninjas,
+Defence). `GalleryEntries.CombatVfx`, each frame an `EffectStage` (the viewer's), no kept save needed.
+
+**Only when asked for** (owner, 2026-10-29: the effects hardly ever change): `gallery.ps1 -Vfx` adds the pass, `-VfxOnly`
+dumps it alone (`--screen-gallery --combat-vfx` in the game); a run without it leaves the tab as it was, never marked
+old. In a session with the agent that means only when the owner asks for it or the tab itself changes. The gallery
+looked at (Debug → Screen Gallery…) lists both. Two dumps of the same build are the same (0 pixels, 2026-10-29).
+
+The armies, the owner's table of 2026-10-29 (`EffectCatalog`, shared with Debug → Effects, which offers the others):
+the enemy's is Ex's (commander 1) Leazas Knights (CG 1131) throughout but the poison's.
+
+| Effect | Left (the player's side) | CG |
+|---|---|---|
+| Melee, Guard | Rance (unit 1), Leazas Knights, as the rebellion makes them (`Iﾊﾝﾗﾝ.ADV:27`) | 1100 |
+| Bow | Isoroku (unit 27), JAPAN Archers | 1209 |
+| Magic (fire) | Sill (unit 2), Leazas Mages | 1125 |
+| Ice Magic | Melfeis (unit 13), Leazas Mages | 1125 |
+| Lightning Magic | Somita (unit 46), Kalars (the viewer: Eleanor (unit 23), Hanty (unit 19)) | 1450 |
+| Dark Magic | Satella (unit 29), Guardians (the viewer: Chizuko (unit 38), Miki (unit 32)) | 1316 |
+| Light Magic | Seizel Sisters (unit 42), False Angels (the viewer: Hanny King (unit 48)) | 1514 |
+| Poison Magic | Rance (unit 1), Leazas Knights; cast by Papaya (commander 104), Zeth Mages, CG 1343, mirrored — no unit of ours casts poison | 1100 |
+| The specials | the sprite the user shows while using it (`FIGT.ADV:1660-1713`): Rance Attack Rance (unit 1), Kentarou-kun Slash Kentarou (unit 31), the White D. Beams Shizuka (unit 17) and Magic (unit 39), EPO Light Gandhi (unit 37), the Black D. Beams Chizuko (unit 38) and Nagi (unit 40), Whirlwind Shot Isoroku (unit 27), High Speed Meglass (unit 30), By la Way Rick (unit 7), Vanish Bomb Miki (unit 32), C. War Dance Patton (unit 18), Chuhai Asuka (unit 11), T2 Soaring Wave Rolex (unit 47); T2 Goliath none (no sprite, as in play) | 1520 … 1530, 1222, 1121, 1252 |
+| The ninjas' follow-ups | Kanami, Freya, Kaoru, Wichita, each her own | 1164, 1176, 1182, 1185 |

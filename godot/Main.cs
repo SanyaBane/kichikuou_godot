@@ -146,7 +146,7 @@ public partial class Main : Control
     /// only the effects with those prefixes). <c>--options</c> opens the options window over the title (with <c>--shots DIR</c>
     /// in a window it saves each tab there; <c>--quit</c> then ends). <c>--screen-gallery [id,…]</c> opens the screen gallery
     /// (docs/ui/gallery.md; with <c>--shots DIR</c> in a window it dumps the entries there, compared with <c>--previous DIR</c>'s,
-    /// the window at <c>--window WxH</c>, else 1280×800). With any of them <c>--phone landscape</c> plays a phone held
+    /// the window at <c>--window WxH</c>, else 1280×800; <c>--combat-vfx</c>: the Combat VFX tab's entries alone). With any of them <c>--phone landscape</c> plays a phone held
     /// landscape (docs/ui/phone-build.md, §3: the touch mode, the window at the reference phone's shape, <see cref="Device"/>).
     /// Null without a switch: the title.
     /// </summary>
@@ -201,6 +201,7 @@ public partial class Main : Control
             return new ScreenGallery.GalleryScreen
             {
                 Only = only, ScreenshotDirectory = shots, PreviousDirectory = Value("--previous"), QuitWhenDone = quit,
+                CombatVfx = args.Contains("--combat-vfx"),
                 WindowSize = Value("--window")?.Split('x') is [var w, var h] ? new Vector2I(int.Parse(w), int.Parse(h)) : new Vector2I(1280, 800),
             };
         }

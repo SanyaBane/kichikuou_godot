@@ -286,7 +286,7 @@ public partial class GameScreen
             return;
         _modal = true;
         _input.Clear();
-        var viewer = new EffectViewer(GameData.Cgs(), _presenter.State);
+        var viewer = new EffectViewer(GameData.Cgs());
         viewer.TreeExiting += () => _modal = false;
         AddChild(viewer);
         viewer.PopupCentered();
