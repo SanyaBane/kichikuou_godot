@@ -395,6 +395,13 @@ our balloon beside it, a defence's ribbon and caption at held landscape's millim
 the scout report and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesUpright`;
 the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Upright.cs`,
 `ScoutReportView.Upright.cs`, `StrategyCutInView.Upright.cs`).
+Step P5 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P5, where it stands"): the deployment table
+and Subordinates upright — the title band, the party on top as our army in the battle, the ledger at the thumb in two-line
+rows (the seal, № and the name over the type fixed at the left, the tab's other columns scrolled sideways under them, each
+tab its own scroll), Stop | the sends in the bar; Subordinates' orders under the ledger, Replenish and Talk on one row, the
+budget at the bar's left and End at the right thumb, a question under its button; a unit's picture on a long press as a
+sheet over the foot (`Original.Content/Devices/PhoneLedgerUpright`; `DeploymentTableView.Upright.cs`,
+`DeploymentPanels.Upright.cs`, `SubordinatesView.Upright.cs`, `UnitPictureView`, `OrderResultPlate`).
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

@@ -7,13 +7,17 @@ namespace Kichikuou.Game.Strategy;
 /// A unit's picture panel raised over the phone's screen by a long press on its ledger row (docs/ui/phone.md, PD2d;
 /// docs/ui/phone-build.md, step L5) — the original's picture and its words about the unit, which the PC shows while the
 /// row is hovered: the screen dimmed, the panel in the frame's middle as high as the frame allows
-/// (<see cref="PhoneLedger.Picture"/>); a tap anywhere puts it away. Over the deployment table and the Subordinates screen.
+/// (<see cref="PhoneLedger.Picture"/>); held upright (step P5) a sheet over the screen's foot with the unit's name, type and
+/// troops over the panel at the screen's width (<see cref="PhoneLedgerUpright.PictureSheet"/>). A tap anywhere puts it away.
+/// Over the deployment table and the Subordinates screen.
 /// </summary>
 internal sealed partial class UnitPictureView : Control
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
     private ImageTexture? _picture;
+    private (string Name, string Detail)? _caption;
+    private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
 
     public UnitPictureView()
     {
@@ -25,12 +29,16 @@ internal sealed partial class UnitPictureView : Control
     /// <summary>Whether a picture is up.</summary>
     public bool Showing => Visible;
 
-    /// <summary>Raises <paramref name="picture"/> (nothing without one); it takes every press till a tap puts it away.</summary>
-    public void Show(ImageTexture? picture)
+    /// <summary>
+    /// Raises <paramref name="picture"/> (nothing without one), the unit's <paramref name="caption"/> over it held upright; it
+    /// takes every press till a tap puts it away.
+    /// </summary>
+    public void Show(ImageTexture? picture, (string Name, string Detail)? caption = null)
     {
         if (picture is null)
             return;
         _picture = picture;
+        _caption = caption;
         Visible = true;
         MouseFilter = MouseFilterEnum.Stop;
         QueueRedraw();
@@ -52,14 +60,45 @@ internal sealed partial class UnitPictureView : Control
 
     public override void _Draw()
     {
-        if (_picture is null || Device.Landscape(this) is not { } f)
+        if (_picture is null || Device.Held(this) is not { } f)
             return;
         DrawRect(new Rect2(Vector2.Zero, Size), new Color(0, 0, 0, 0.6f));
+        if (f.IsUpright)
+        {
+            DrawUpright(f);
+            return;
+        }
         var b = PhoneLedger.Picture(f);
         var area = new Rect2(b.X, b.Y, b.W, b.H);
         for (int i = 12; i >= 1; i--)
             DrawRect(area.Grow(i * f.Px(2)), new Color(0, 0, 0, 0.06f));
         DrawTextureRect(_picture, area, false);
         DrawRect(area, Ui.DimGold, false, Math.Max(1, f.Px(3)));
+    }
+
+    /// <summary>PD2d: the sheet over the screen's foot, the name in the brush and the type with the troops after it, the panel under them.</summary>
+    private void DrawUpright(PhoneFrame f)
+    {
+        float k = f.Scale;
+        var sheet = PhoneLedgerUpright.PictureSheet(f);
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));
+        Ui.DrawPanel(this, new Rect2(sheet.X / k, sheet.Y / k, sheet.W / k, sheet.H / k), k);
+        DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+        if (_caption is { } caption)
+        {
+            var brush = SideCells.Brush;
+            int name = (int)Math.Round(f.Px(PhoneLedgerUpright.SheetNameText)), detail = (int)Math.Round(f.Px(PhoneLedgerUpright.SheetDetailText));
+            float x = sheet.X + f.Px(PhoneLedgerUpright.SheetNameX), mid = sheet.Y + f.Px(PhoneLedgerUpright.SheetNameMiddle);
+            DrawString(brush, new Vector2(x, mid + (brush.GetAscent(name) - brush.GetDescent(name)) / 2), caption.Name, fontSize: name, modulate: Ui.Name);
+            float dx = x + brush.GetStringSize(caption.Name, fontSize: name).X + f.Px(PhoneLedgerUpright.SheetDetailGap);
+            float dmid = sheet.Y + f.Px(PhoneLedgerUpright.SheetDetailMiddle);
+            int fitted = SideCells.Fit(_cinzel, caption.Detail, detail, sheet.Right - f.Px(PhoneLedgerUpright.SheetNameX) - dx);
+            DrawString(_cinzel, new Vector2(dx, dmid + (_cinzel.GetAscent(fitted) - _cinzel.GetDescent(fitted)) / 2), caption.Detail,
+                fontSize: fitted, modulate: Ui.Subtitle);
+        }
+        var b = PhoneLedgerUpright.Picture(f);
+        var area = new Rect2(b.X, b.Y, b.W, b.H);
+        DrawTextureRect(_picture!, area, false);
+        DrawRect(area, Ui.Gold, false, Math.Max(1, f.Px(3)));
     }
 }

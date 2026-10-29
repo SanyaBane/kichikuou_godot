@@ -503,6 +503,15 @@ screen's width, `info-panel` our panel where the plate stands, `info-defence` th
 landscape's millimetres, `battle-speech…` the portrait at the scene's top corner and our balloon beside it, and `menu`,
 `menu-orders` the cards' menu at a finger's rows. PB4o3, PB4s, PB4c, PB4r and PB4b left `GALLERY_ENTRIES`.
 
+Step P5 (2026-10-29) built the deployment table and Subordinates: on this pass `deployment…` show the title band, the
+party on top (the back row, then the front row), the tabs and the ledger at the thumb in two-line rows (the seal, № and
+the name over the type fixed at the left, the tab's other columns beside them), Stop | the sends in the bar (`-defence`
+Back | Plains | City, `-search` one place), `-refill-question` the Refill question at the phone's sizes, `-refill-done` the
+plate at the screen's width, `deployment-commander` the order's seal on the subtitle's line; `subordinates…` the ledger
+over the orders (Replenish and Talk on one row, Add New Troops three a row), the budget at the bar's left and End at the
+right thumb, `-question` Replenish's question under its button, `-result` the plate at the screen's width. PD2, PD2d, PU1
+and PU1q left `GALLERY_ENTRIES`; the long press's picture (PD2d) has no entry, as held landscape's has none.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

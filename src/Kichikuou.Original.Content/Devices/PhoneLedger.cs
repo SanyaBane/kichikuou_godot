@@ -125,8 +125,27 @@ public static class PhoneLedger
         CostText = 32, CostLabel = 22, EmptyText = 44, EmptyLabel = 24;
 
     /// <summary>A card's ✕ (the remove button): 84 square, 10 in from the card's top right.</summary>
-    public static PhoneFrame.Box RemoveBox(PhoneFrame f, PhoneFrame.Box card) =>
-        new(card.Right - f.Px(Remove + RemoveIn), card.Y + f.Px(RemoveIn), f.Px(Remove), f.Px(Remove));
+    public static PhoneFrame.Box RemoveBox(PhoneFrame f, PhoneFrame.Box card) => Insides.RemoveBox(f, card);
+
+    /// <summary>
+    /// A party card's insides in reference pixels from its corner, as the constants above: the face and its inset, the
+    /// badge, the name, ✕, the troops and their bar (its right <see cref="BarRight"/> short of the card's), the cost
+    /// (<see cref="CostRight"/> short of the card's right, on its foot), an empty place's words; their types. Held upright
+    /// the card is lower (<see cref="PhoneLedgerUpright.Insides"/>).
+    /// </summary>
+    public sealed record CardInsides(float Face, float In, float BadgeX, float BadgeY, float Badge, float NameX, float NameText,
+        float Remove, float RemoveIn, float TroopsX, float TroopsTop, float TroopsText, float StrengthTop, float StrengthHeight,
+        float BarRight, float CostRight, float CostFoot, float CostText, float CostLabel, float EmptyText, float EmptyLabel)
+    {
+        /// <summary>The card's ✕: <see cref="Remove"/> square, <see cref="RemoveIn"/> in from the card's top right.</summary>
+        public PhoneFrame.Box RemoveBox(PhoneFrame f, PhoneFrame.Box card) =>
+            new(card.Right - f.Px(Remove + RemoveIn), card.Y + f.Px(RemoveIn), f.Px(Remove), f.Px(Remove));
+    }
+
+    /// <summary>The card's insides held landscape (the constants above; the bar across the text column).</summary>
+    public static CardInsides Insides { get; } = new(CardFace, CardIn, BadgeX, BadgeY, Badge, NameX, NameText, Remove, RemoveIn,
+        TroopsX, TroopsTop, TroopsText, StrengthTop, StrengthHeight, CardRight, CardRight, CostFoot, CostText, CostLabel, EmptyText,
+        EmptyLabel);
 
     // ------------------------------------------------------------------ Subordinates (LU1, LU1q)
 

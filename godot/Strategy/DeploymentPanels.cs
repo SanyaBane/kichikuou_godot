@@ -144,7 +144,7 @@ internal sealed partial class DeploymentPanels : Control
     {
         Position = Vector2.Zero;
         Size = GetParentAreaSize();
-        var phone = Device.Landscape(this);
+        var phone = Device.Held(this);
         float k = phone?.Scale ?? pixelsPerScript / 2;          // the phone's: its frame's layout pixels over the whole screen
         if (phone is not null)
             origin = Vector2.Zero;
@@ -233,7 +233,7 @@ internal sealed partial class DeploymentPanels : Control
         int[] sends = [.. new[] { 1, 2 }.Where(HasButton)];
         if (_phone is { } phone)
         {
-            var boxes = PhoneLedger.Bar(phone, sends.Length);       // Stop first, at the left; the sends right of it
+            var boxes = phone.IsUpright ? PhoneLedgerUpright.Bar(phone, sends.Length) : PhoneLedger.Bar(phone, sends.Length);   // Stop first, at the left
             for (int i = 0; i < sends.Length; i++)
                 yield return (sends[i], Box(boxes[i + 1]));
             if (HasButton(3))
@@ -255,7 +255,7 @@ internal sealed partial class DeploymentPanels : Control
     private Rect2 CardRect(int place)
     {
         if (_phone is { } phone)
-            return Box(PhoneLedger.Card(phone, place));
+            return Box(phone.IsUpright ? PhoneLedgerUpright.Card(phone, place) : PhoneLedger.Card(phone, place));
         float x0 = PartyPanel.Position.X + 14, x1 = PartyPanel.End.X - 14 - FacingStrip - FacingGap, mid = (x0 + x1) / 2;
         float w = mid - 3 - x0;
         float x = place is 3 or 4 ? x0 : mid + 3;
@@ -266,7 +266,7 @@ internal sealed partial class DeploymentPanels : Control
     private Rect2 RemoveRect(int place)
     {
         if (_phone is { } phone)
-            return Box(PhoneLedger.RemoveBox(phone, PhoneLedger.Card(phone, place)));
+            return Box(Insides(phone).RemoveBox(phone, phone.IsUpright ? PhoneLedgerUpright.Card(phone, place) : PhoneLedger.Card(phone, place)));
         var card = CardRect(place);
         return new Rect2(card.End.X - 26, card.Position.Y + 6, 20, 20);
     }
@@ -656,7 +656,7 @@ internal sealed partial class DeploymentPanels : Control
     private void DrawGhost(Control c, DeploymentMember member)
     {
         var at = ScreenPoint(TouchMode.LocalPointer(this));
-        float size = _phone is { } phone ? phone.Px(PhoneLedger.CardFace) / _k : GhostSize;
+        float size = _phone is { } phone ? phone.Px(Insides(phone).Face) / _k : GhostSize;
         var rect = new Rect2(at - new Vector2(size, size) / 2, new Vector2(size, size));
         for (int i = 8; i >= 1; i--)
             c.DrawRect(new Rect2(rect.Position.X - i + 3, rect.Position.Y - i + 6, rect.Size.X + 2 * i, rect.Size.Y + 2 * i), new Color(0, 0, 0, 0.07f));

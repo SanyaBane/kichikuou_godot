@@ -18,10 +18,16 @@ internal sealed partial class DeploymentPanels
 
     /// <summary>
     /// Places <paramref name="table"/> under the tabs: in <see cref="TableArea"/> of the screen whose script pixel (0, 0) is
-    /// at <paramref name="origin"/>, or on the phone held landscape wholly at the left (LD2).
+    /// at <paramref name="origin"/>, on the phone held landscape wholly at the left (LD2), held upright at the thumb (PD2).
     /// </summary>
     public static void PlaceTable(DeploymentTableView table, Vector2 origin, float pixelsPerScript)
     {
+        if (Device.Upright(table) is { } upright)
+        {
+            var paper = PhoneLedgerUpright.Ledger(upright, deployment: true);
+            table.PlaceUpright(new Rect2(paper.X, paper.Y, paper.W, paper.H), upright);
+            return;
+        }
         if (Device.Landscape(table) is { } phone)
         {
             var ledger = PhoneLedger.Ledger(phone, deployment: true);
@@ -39,12 +45,24 @@ internal sealed partial class DeploymentPanels
     internal static LedgerTabsBar.PhoneTabs PhoneTabs(PhoneFrame phone, bool deployment = true)
     {
         var u = new PhoneUnits(phone);
+        if (phone.IsUpright)
+            return new LedgerTabsBar.PhoneTabs(u.Rect(PhoneLedgerUpright.Tabs(phone, deployment)), u.Px(PhoneLedgerUpright.TabWidth),
+                u.Px(PhoneLedgerUpright.TabGap), u.Px(PhoneLedgerUpright.TabDrop), u.Size(PhoneLedgerUpright.TabText),
+                u.Size(PhoneLedgerUpright.OrderText), u.Rect(PhoneLedgerUpright.OrderNote(phone)));
         return new LedgerTabsBar.PhoneTabs(u.Rect(PhoneLedger.Tabs(phone, deployment)), u.Px(PhoneLedger.TabWidth), u.Px(PhoneLedger.TabGap),
             u.Px(PhoneLedger.TabDrop), u.Size(PhoneLedger.TabText), u.Size(PhoneLedger.OrderText));
     }
 
+    /// <summary>A party card's insides on the phone as it is held.</summary>
+    private static PhoneLedger.CardInsides Insides(PhoneFrame f) => f.IsUpright ? PhoneLedgerUpright.Insides : PhoneLedger.Insides;
+
     private void DrawPhone(Control c, PhoneFrame f)
     {
+        if (f.IsUpright)
+        {
+            DrawUpright(c, f);
+            return;
+        }
         var u = new PhoneUnits(f);
         if (Table is not null)
             _tabs.Draw(c, _k, Table);
@@ -110,7 +128,8 @@ internal sealed partial class DeploymentPanels
                 if (_mode == 2)
                     label = "Back";                             // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
                 Ui.DrawRowBox(c, rect, hover, _k);
-                int stop = SideCells.Fit(_brush, label, u.Size(PhoneLedger.StopText), rect.Size.X - u.Px(30));
+                float stopText = u.Frame.IsUpright ? PhoneLedgerUpright.StopText : PhoneLedger.StopText;
+                int stop = SideCells.Fit(_brush, label, u.Size(stopText), rect.Size.X - u.Px(30));
                 CentredString(c, _brush, label, stop, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _brush, stop));
                 continue;
             }
@@ -144,11 +163,12 @@ internal sealed partial class DeploymentPanels
     private void DrawPhoneCard(Control c, PhoneUnits u, int place, DeploymentMember? member)
     {
         var rect = CardRect(place);
+        var ins = Insides(u.Frame);
         if (member is null)
         {
             c.DrawRect(rect, Ui.Row with { A = 0.6f });
             DrawDashed(c, rect, Ui.DimGold);
-            int big = u.Size(PhoneLedger.EmptyText), small = u.Size(PhoneLedger.EmptyLabel);
+            int big = u.Size(ins.EmptyText), small = u.Size(ins.EmptyLabel);
             CentredString(c, _cinzel, place.ToString(CultureInfo.InvariantCulture), big, Ui.DimGold, rect.GetCenter().X, rect.GetCenter().Y);
             CentredString(c, _cinzelLight, "empty", small, Ui.DimGold, rect.GetCenter().X, rect.GetCenter().Y + u.Px(50));
             return;
@@ -158,7 +178,7 @@ internal sealed partial class DeploymentPanels
         c.DrawRect(rect, Ui.Row with { A = a });
         c.DrawRect(rect, Ui.DimGold with { A = a }, false, Line(1));
 
-        float size = u.Px(PhoneLedger.CardFace), inset = u.Px(PhoneLedger.CardIn);
+        float size = u.Px(ins.Face), inset = u.Px(ins.In);
         var face = new Rect2(rect.Position + new Vector2(inset, inset), new Vector2(size, size));
         c.DrawRect(face, Ui.FaceBack with { A = a });
         if (FaceTexture(member.FaceCg, size) is { } texture)
@@ -166,31 +186,31 @@ internal sealed partial class DeploymentPanels
         c.DrawRect(face, Ui.DimGold with { A = a }, false, Line(1));
 
         float x0 = rect.Position.X, y0 = rect.Position.Y;
-        var badge = new Vector2(x0 + u.Px(PhoneLedger.BadgeX), y0 + u.Px(PhoneLedger.BadgeY));
-        Ui.DrawBadge(c, _cinzel, badge, u.Px(PhoneLedger.Badge), place);
+        var badge = new Vector2(x0 + u.Px(ins.BadgeX), y0 + u.Px(ins.BadgeY));
+        Ui.DrawBadge(c, _cinzel, badge, u.Px(ins.Badge), place);
         var remove = RemoveRect(place);
-        float nameX = x0 + u.Px(PhoneLedger.NameX), nameRoom = remove.Position.X - u.Px(10) - nameX;
-        int name = SideCells.Fit(_gothic, member.Name, u.Size(PhoneLedger.NameText), nameRoom);
+        float nameX = x0 + u.Px(ins.NameX), nameRoom = remove.Position.X - u.Px(10) - nameX;
+        int name = SideCells.Fit(_gothic, member.Name, u.Size(ins.NameText), nameRoom);
         LeftAt(c, _gothic, member.Name, name, Ui.Name with { A = a }, nameX, badge.Y);
 
-        float tx = x0 + u.Px(PhoneLedger.TroopsX);
-        int troops = u.Size(PhoneLedger.TroopsText);
-        float troopsBase = y0 + u.Px(PhoneLedger.TroopsTop) + _gothic.GetAscent(troops);
+        float tx = x0 + u.Px(ins.TroopsX);
+        int troops = u.Size(ins.TroopsText);
+        float troopsBase = y0 + u.Px(ins.TroopsTop) + _gothic.GetAscent(troops);
         string now = Figures.Number(member.Troops);
         c.DrawString(_gothic, new Vector2(tx, troopsBase), now, fontSize: troops, modulate: Ui.Text with { A = a });
         c.DrawString(_gothic, new Vector2(tx + _gothic.GetStringSize(now, fontSize: troops).X, troopsBase), "/" + Figures.Number(member.MaxTroops),
             fontSize: troops, modulate: Ui.Quiet with { A = a });
-        float barRight = rect.End.X - u.Px(PhoneLedger.CardRight);
-        DrawStrength(c, new Rect2(tx, y0 + u.Px(PhoneLedger.StrengthTop), barRight - tx, u.Px(PhoneLedger.StrengthHeight)), member.Troops,
+        float barRight = rect.End.X - u.Px(ins.BarRight), costRight = rect.End.X - u.Px(ins.CostRight);
+        DrawStrength(c, new Rect2(tx, y0 + u.Px(ins.StrengthTop), barRight - tx, u.Px(ins.StrengthHeight)), member.Troops,
             member.MaxTroops, a);
 
-        int cost = u.Size(PhoneLedger.CostText), costLabel = u.Size(PhoneLedger.CostLabel);
-        float costBase = rect.End.Y - u.Px(PhoneLedger.CostFoot) - _gothic.GetDescent(cost);
+        int cost = u.Size(ins.CostText), costLabel = u.Size(ins.CostLabel);
+        float costBase = rect.End.Y - u.Px(ins.CostFoot) - _gothic.GetDescent(cost);
         string price = Figures.GoldShort(member.Cost * 100);
         float pw = _gothic.GetStringSize(price, fontSize: cost).X;
-        c.DrawString(_gothic, new Vector2(barRight - pw, costBase), price, fontSize: cost, modulate: Ui.Text with { A = a });
+        c.DrawString(_gothic, new Vector2(costRight - pw, costBase), price, fontSize: cost, modulate: Ui.Text with { A = a });
         float lw = _cinzel.GetStringSize("Cost", fontSize: costLabel).X;
-        c.DrawString(_cinzel, new Vector2(barRight - pw - u.Px(14) - lw, costBase - u.Px(4)), "Cost", fontSize: costLabel,
+        c.DrawString(_cinzel, new Vector2(costRight - pw - u.Px(14) - lw, costBase - u.Px(4)), "Cost", fontSize: costLabel,
             modulate: Ui.Subtitle with { A = a });
 
         bool lit = !_dragging && _hovered == RemoveButton + place;

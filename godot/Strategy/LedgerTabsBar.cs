@@ -38,10 +38,11 @@ internal sealed class LedgerTabsBar
 
     /// <summary>
     /// The phone's tabs (LD2, LU1), in the screen's drawing units: their row, each tab's width, the room between them, how
-    /// much lower an unchosen one starts, the tabs' type and the order seal's; the first tab at the row's left. Null: the
-    /// PC's and the tablet's.
+    /// much lower an unchosen one starts, the tabs' type and the order seal's; the first tab at the row's left; where the
+    /// order's seal stands, at its right and in its middle (null: at the row's right; held upright the subtitle's line, the
+    /// tabs leaving no room beside them). Null: the PC's and the tablet's.
     /// </summary>
-    public readonly record struct PhoneTabs(Rect2 Row, float Width, float Gap, float Drop, int Text, int OrderText);
+    public readonly record struct PhoneTabs(Rect2 Row, float Width, float Gap, float Drop, int Text, int OrderText, Rect2? OrderRow = null);
 
     /// <summary>The phone's layout while the screen lays itself out for one, else null.</summary>
     public PhoneTabs? Phone { get; set; }
@@ -157,7 +158,9 @@ internal sealed class LedgerTabsBar
         float ww = _cinzelBold.GetStringSize(words, fontSize: OrderText).X;
         float mw = table.TextFont.GetStringSize(mark, fontSize: OrderText + 1).X;
         float w = ww + 6 * m + mw + 28 * m, h = Math.Min(28 * m, Row.Size.Y - 6 * m);
-        var rect = new Rect2(Row.End.X - 2 - w, Row.Position.Y + (Row.Size.Y - 6 - h) / 2 + 1, w, h);
+        var rect = Phone?.OrderRow is { } place
+            ? new Rect2(place.End.X - w, place.Position.Y + (place.Size.Y - h) / 2, w, h)
+            : new Rect2(Row.End.X - 2 - w, Row.Position.Y + (Row.Size.Y - 6 - h) / 2 + 1, w, h);
         c.DrawStyleBox(new StyleBoxFlat
         {
             BgColor = Ui.Gold,

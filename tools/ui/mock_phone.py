@@ -283,16 +283,10 @@ def phone():
 SHEETS = {}
 # The gallery's phone tab: the owner's chosen base versions (docs/ui/phone.md), by mock-up name, those not built yet; a
 # built one leaves for the real pass "Smartphone, upright" (docs/ui/phone-build.md: P1 took PS2, PS2l, PS2b, PS2m, PW1,
-# PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b).
+# PEd, PEr, PN1, PN1q and PR2; P2 PM1a, PM1b and PM1c; P3 PB3, PB3r and PB3x; P4 PB4o3, PB4s, PB4c, PB4r and PB4b; P5
+# PD2, PD2d, PU1 and PU1q).
 GALLERY_ENTRIES = {
-    # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5), PD2's and PU1's ledger and PU1's End as round P16
-    # changed them (2026-10-28, §20).
-    'PD2': ('pd2-deployment', 'Deployment — PD2', 'The deployment table', 'the party on top, the ledger at the thumb '
-                                                                           'in two-line rows, scrolled sideways'),
-    'PD2d': ('pd2-picture', 'Deployment — PD2', 'A unit\'s picture', 'a long press on a row'),
-    'PU1': ('pu1-subordinates', 'Subordinates — PU1', 'The orders', 'Replenish and Talk on one row; End at the thumb, '
-                                                                    'the budget beside it'),
-    'PU1q': ('pu1-question', 'Subordinates — PU1', 'Replenish asks first', 'a callout under its button (Haurein)'),
+    # Round P3-P7's choices (owner, 2026-10-27; docs/ui/phone.md, §5).
     'PA1': ('pa1-attack', 'Enemy attack — PA1', 'The attack on Ys', 'a screen of its own; Abandon City narrower'),
     'PA1n': ('pa1-ninjas', 'Enemy attack — PA1', 'Ninja Scout\'s list', 'above its button'),
     'PH2': ('ph2-harem', 'Harem — PH2', 'The harem', 'the picture on top, the grid scrolled'),

@@ -8,8 +8,8 @@ namespace Kichikuou.Game.Strategy;
 // long press on a header shows its full name (HeaderTip) and a tap sorts as a click does (owner, 2026-10-24); its scroll
 // bars are too thin for a finger, so a finger dragged over the table scrolls it both ways, a flick going on after the
 // release (owner, 2026-10-26; FingerScroll). A row's or a Refill button's press is therefore a tap: it acts at the release.
-// On the phone held landscape a row held as long raises the unit's picture (RowHeld; docs/ui/phone.md, PD2d), the PC's
-// hover, and is no tap.
+// On the phone (held either way) a row held as long raises the unit's picture (RowHeld; docs/ui/phone.md, PD2d), the PC's
+// hover, and is no tap. Upright the fixed part's headings (№, the name, the type) sort and show their tips as the columns'.
 internal sealed partial class DeploymentTableView
 {
     /// <summary>A row held as a long press on the phone (the unit's number): the screen raises its picture (PD2d).</summary>
@@ -102,7 +102,7 @@ internal sealed partial class DeploymentTableView
                     ShowHeaderTip(column, _touchFrom.X);            // no vibration (owner, 2026-10-24)
                 };
             }
-            else if (_touchUnit > 0 && _touchRefill == 0 && Device.Layout == DeviceLayout.PhoneLandscape)
+            else if (_touchUnit > 0 && _touchRefill == 0 && Device.Layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright)
             {
                 int unit = _touchUnit;
                 GetTree().CreateTimer(LongPressSeconds).Timeout += () =>
@@ -125,6 +125,8 @@ internal sealed partial class DeploymentTableView
         {
             if (!_headerLong && _headerColumn > 0 && _headerColumn <= _columns.Count)     // not the filler's
                 SortBy(_columns[_headerColumn - 1]);
+            else if (!_headerLong && FixedInfo(_headerColumn) is { } info)
+                SortBy(info);
         }
         else if (_touchRefill > 0)
             RefillPressed?.Invoke(_touchRefill);
@@ -144,6 +146,7 @@ internal sealed partial class DeploymentTableView
     /// <summary>A flick going on: the table scrolls on at its speed as it slows, an axis stopping at the bar's end.</summary>
     public override void _Process(double delta)
     {
+        TakePendingScroll();
         if (!_finger.Flinging)
             return;
         var at = _flingAt - _finger.Step(delta);
@@ -197,7 +200,8 @@ internal sealed partial class DeploymentTableView
     /// <summary><paramref name="column"/>'s full name over its header, centred on <paramref name="x"/> (this control's pixels).</summary>
     private void ShowHeaderTip(int column, float x)
     {
-        string text = column == 0 ? _chooser ? "" : "Place in the party" : column <= _columns.Count ? _columns[column - 1].FullName : "";
+        string text = FixedInfo(column) is { } info ? info.FullName
+            : column == 0 ? _chooser ? "" : "Place in the party" : column <= _columns.Count ? _columns[column - 1].FullName : "";
         if (text.Length == 0)
             return;
         var header = new Rect2(GlobalPosition, new Vector2(Size.X, HeaderBottom));
@@ -221,6 +225,8 @@ internal sealed partial class DeploymentTableView
     {
         if (local.Y < 0 || local.Y >= HeaderBottom)
             return -1;
+        if (FixedHeaderAt(local.X) is var heading and >= 0)
+            return heading;
         float x = local.X - 1 + (float)(HScroll?.Value ?? 0), right = 0;
         for (int c = 0; c < Columns; c++)
         {
@@ -234,6 +240,8 @@ internal sealed partial class DeploymentTableView
     /// <summary><paramref name="column"/>'s header's centre in global coordinates, or null when it is scrolled out of sight (unattended play).</summary>
     public Vector2? HeaderCentre(DeploymentColumn column)
     {
+        if (FixedHeaderCentre(column) is { } fixedCentre)
+            return GlobalPosition + new Vector2(fixedCentre, HeaderBottom / 2);
         int index = _columns.ToList().FindIndex(c => c.Column == column) + 1;
         if (index <= 0)
             return null;

@@ -938,6 +938,51 @@ and System's rotation lock).
   draws none of our overlays, so the report and the cut-in have run in the gallery alone; the owner's look on the Poco is
   their first run in play.
 
+**Step P5, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
+
+- **The model** (`Original.Content/Devices/PhoneLedgerUpright`, tested in `PhoneLedgerUprightTests`): the places at the
+  mock-ups' figures (`title_band`, `pd2_base`, `pd2d`, `pu1_base`, `sideways_ledger`, `party_card`, `bar_budget`) — the
+  title band under the hole (156 high: the title, the date at the right, the subtitle, a divider); the deployment's party
+  panel under it (600 high: "Party" and the budget, the back row's cards on top and the front row's under them, 587 × 170,
+  14 apart, the troops and the war expenses under them), its tabs (340 wide, 14 apart, 116 high, an unchosen one 14 lower)
+  and the ledger at the thumb down to 20 over the bar, Stop (404) | the sends in the bar; Subordinates' tabs under the
+  band, its ledger down to 14 over the orders' panel (620 high, 16 over the bar: "Orders · the unit", Replenish and Talk on
+  one row 136 high, Add New Troops three a row 128 high), the budget at the bar's left as text and End (420) at its right;
+  the ledger's rows (150 high: № 2.6 mm, the name 2.8 mm, the type 1.9 mm, the figures 2.6 mm, the headings 1.6 mm), the
+  fixed part (404 from the paper's left: the seal, № ending at 142, the name and the type from 166), the columns each tab
+  scrolls (`Scrolled`: its own but №, the name and the type, the groups indexed again); a party card's insides
+  (`PhoneLedger.CardInsides`, held landscape's the former constants); a unit's picture sheet over the screen's foot (PD2d);
+  the order note's place.
+- **The views**, keyed by the live device (`Device.Held` or `Device.Upright`; the PC's, the tablet's and the landscape
+  phone's paths unchanged): `DeploymentTableView.Upright.cs` lays the ledger in two-line rows (`PlaceUpright`) — the tree
+  keeps its rows, its sort and its gestures; its first column is the fixed part's room, which two overlays cover (the
+  header's and the rows', clipped under the header), so the columns scrolled sideways pass under it; a shadow at its edge
+  while columns have passed under it, a shadow and ▶ at the view's right while some lie beyond it; each tab keeps its own
+  sideways scroll; the fixed headings (№, Name, Type) sort and show their tips as the columns' do; a long press raises the
+  unit's picture as held landscape. `DeploymentPanels.Upright.cs` draws the band, the party and the totals (the cards by the
+  shared `DrawPhoneCard` at the upright insides) and the bar (`PhoneLedgerUpright.Bar`); `SubordinatesView.Upright.cs` the
+  band, the orders, the steps, Talk with "With …", the budget in the bar and End; `UnitPictureView` the sheet (the name, the
+  type and the troops over the panel at the screen's width); `TreasureCallout.PlaceOnDevice` lays the deployment's Refill
+  question at the phone's sizes either way; `OrderResultPlate` upright over the whole screen dimmed, the plate at the room's
+  width in its middle; `LedgerTabsBar.PhoneTabs.OrderRow` puts the order's seal on the subtitle's line.
+- **The agent's choices**, for the owner to confirm: the order's seal ("Sorted by T.Atk ↓", while the tab shown has not
+  the sorted column) on the band's subtitle line under the date — no room is left beside the three tabs; a step's question,
+  like Replenish's, in a callout under its button (over it near the foot), Yes at the right as in every phone callout
+  (PU1q drew Yes at the left); the result plate after an order (R4/R5) at the room's width in its middle, the screen dimmed
+  (the millimetres held landscape gives it); the picture's foot at the bar's (PD2d's 34 higher); the back row's caption
+  left out when a search offers one place; the fixed headings in the columns' own words ("№", "Name · Type"), a tap on
+  each sorting by it, the type too; a talk's bubble (Subordinates) at the name's right in the fixed part.
+- **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's 12 entries P5
+  lays out changed (`deployment…`, `subordinates…`, the Refill question and plate among them). PD2, PD2d, PU1 and PU1q left
+  `GALLERY_ENTRIES`; the phone tab keeps 20 mock-ups (P6-P8's). The long press's picture has no entry (held landscape's has
+  none either); a probe of the sideways scroll (the Troops tab scrolled 120 px) showed the columns passing under the fixed
+  part with its shadow.
+- **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker (the replenish on
+  our Subordinates screen, the attack on Oaks (6), the party built in the ledger), and with `--refill` (Haurein (unit 12)
+  replenished through the deployment table's Refill: 209 → 1,400), exit 0 both. Headless play answers through the
+  script's gestures, so the fixed part's taps and the sideways scroll have run in the gallery alone; the owner's look on
+  the Poco is their first run by a finger.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

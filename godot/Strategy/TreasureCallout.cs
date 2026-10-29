@@ -139,10 +139,10 @@ internal sealed partial class TreasureCallout : Control
         Lay(area, area.Size.X / 1280f, phone: false);
     }
 
-    /// <summary>Lays the layer over <paramref name="area"/> (the picture), or on the phone held landscape over its whole screen.</summary>
+    /// <summary>Lays the layer over <paramref name="area"/> (the picture), or on the phone, held either way, over its whole screen.</summary>
     public void PlaceOnDevice(Rect2 area)
     {
-        if (Device.Landscape(this) is { } phone)
+        if (Device.Held(this) is { } phone)
             PlacePhone(phone);
         else
             Place(area);

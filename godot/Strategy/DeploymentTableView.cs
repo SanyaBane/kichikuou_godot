@@ -118,7 +118,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private float BubbleRoom => _chooser ? _fontSize * 1.45f : 0;
 
     /// <summary>The headers' size: smaller than the text's (Cinzel's capitals are wide).</summary>
-    private int TitleSize => Math.Max(8, (int)Math.Round(_fontSize * (Tab is null ? 0.82f : 0.72f)));
+    private int TitleSize => _upright is { } upright ? Math.Max(8, (int)Math.Round(upright.Px(PhoneLedgerUpright.HeadText)))
+        : Math.Max(8, (int)Math.Round(_fontSize * (Tab is null ? 0.82f : 0.72f)));
 
     /// <summary>The chosen unit's row, marked and highlighted when the table is a chooser (our Subordinates screen).</summary>
     public int Chosen
@@ -148,6 +149,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     {
         _overlay = new Overlay(DrawOverlay) { MouseFilter = MouseFilterEnum.Ignore };   // first: Fill sizes it
         AddChild(_overlay);
+        _fixedRows = new Overlay(DrawFixedRows) { MouseFilter = MouseFilterEnum.Ignore, ClipContents = true, Visible = false };
+        AddChild(_fixedRows);
         _all = _columns = columns;
         _chooser = chooser;
         _textSize = textSize;
@@ -172,6 +175,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         AddChild(_tip);
         foreach (var bar in GetChildren(includeInternal: true).OfType<HScrollBar>())
             bar.ValueChanged += _ => _overlay.QueueRedraw();       // a tab's titles and groups scroll with the columns
+        foreach (var bar in GetChildren(includeInternal: true).OfType<ScrollBar>())
+            bar.ValueChanged += _ => _fixedRows.QueueRedraw();     // upright the fixed part follows the rows, its shadows the columns
     }
 
     /// <summary>
@@ -215,16 +220,28 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         {
             if (field == value && value is not null)
                 return;
+            KeepTabScroll(field, value);
             field = value;
-            var shown = value is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
-            (_columns, _groups) = (shown.Columns, shown.Groups);
-            _refillHovered = 0;
-            if (_fontSize > 0)
-                AddThemeFontSizeOverride("title_button_font_size", TitleSize);  // a tab's headers are smaller
-            SetUpColumns();
-            ApplyLedger();
-            Fill();
+            ShowColumns();
         }
+    }
+
+    /// <summary>
+    /// The columns of the <see cref="Tab"/> (or every column), held upright but the fixed part's
+    /// (<see cref="PhoneLedgerUpright.Scrolled"/>); the headers, the look and the rows again.
+    /// </summary>
+    private void ShowColumns()
+    {
+        var shown = Tab is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
+        if (_upright is not null)
+            shown = PhoneLedgerUpright.Scrolled(shown);
+        (_columns, _groups) = (shown.Columns, shown.Groups);
+        _refillHovered = 0;
+        if (_fontSize > 0)
+            AddThemeFontSizeOverride("title_button_font_size", TitleSize);  // a tab's headers are smaller
+        SetUpColumns();
+        ApplyLedger();
+        Fill();
     }
 
     /// <summary>The header of the column the rows are sorted by (the screen's own, Off.A rather than a group's Atk).</summary>
@@ -234,7 +251,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     public string SortMark => _descending ? _down : _up;
 
     /// <summary>Whether the sorted column is shown: else the screen says the order beside the tabs.</summary>
-    public bool SortShown => _columns.Any(c => c.Column == _sort);
+    public bool SortShown => _columns.Any(c => c.Column == _sort) || _upright is not null && PhoneLedgerUpright.FixedColumns.Contains(_sort);
 
     /// <summary>The text's font (the tabs' note writes the sort's mark with it).</summary>
     public Font TextFont => _font;
@@ -287,8 +304,14 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             c.DrawRect(new Rect2(open.From, 0, open.To - open.From, 2), Ui.PaperHead);
         if (Tab is not null)
             DrawTitles(c);
-        if (_groups.Count == 0 || GetRoot()?.GetFirstChild() is not { } first)
-            return;
+        if (_groups.Count > 0 && GetRoot()?.GetFirstChild() is { } first)
+            DrawGroups(c, first);
+        DrawFixedHeader(c);                                         // upright: the fixed part's header over the first columns
+    }
+
+    /// <summary>Each group's name over its columns in the header's top strip, a rule under it (<paramref name="first"/>: the first row).</summary>
+    private void DrawGroups(Control c, TreeItem first)
+    {
         int size = Math.Max(7, (int)Math.Round(TitleSize * 0.82f));
         float mid = 1 + GroupStrip * 0.6f;
         float baseline = mid + (_groupFont.GetAscent(size) - _groupFont.GetDescent(size)) / 2;
@@ -406,6 +429,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     public void Place(Rect2 rect, float pixelsPerScript)
     {
+        LeaveUpright();
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
         int row = LedgerRowsChoice.Chosen;                                     // read each frame: Option's change shows at once
@@ -421,6 +445,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     public void PlacePhone(Rect2 rect, PhoneFrame phone)
     {
+        LeaveUpright();
         int separation = (int)Math.Round(phone.Px(6));
         int size = (int)Math.Round(phone.Px(PhoneLedger.Text));
         Lay(rect, size, separation, (int)Math.Round(phone.Px(PhoneLedger.Row)) - 2 * separation, (int)Math.Round(phone.Px(PhoneLedger.ColumnGap)));
@@ -576,7 +601,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// <summary>The unit whose Refill button is at <paramref name="local"/>, or 0.</summary>
     private int RefillAt(Vector2 local)
     {
-        if (RefillColumn < 0 || GetColumnAtPosition(local) != RefillColumn || UnitAt(local) is not (var unit and > 0))
+        if (RefillColumn < 0 || local.X < _fixedWidth || GetColumnAtPosition(local) != RefillColumn || UnitAt(local) is not (var unit and > 0))
             return 0;
         return _rows.FirstOrDefault(r => r.Unit == unit) is { CanRefill: true } ? unit : 0;
     }
@@ -655,12 +680,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         }
         int separation = GetThemeConstant("h_separation");
         widths[0] = Math.Max(widths[0], _fontSize * 1.3f) + BubbleRoom;     // the chosen row's bar and diamond, a place's seal; the talk's bubble
+        if (_upright is not null)
+            widths[0] = _fixedWidth - separation - 3;                       // upright: the room the fixed part covers (DrawFixedRows)
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
         for (int c = 0; c < Columns; c++)
             SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + (Tab is null ? 6 : 3));
         _overlay.Size = new Vector2(Size.X, OverlayHeight);
         _overlay.QueueRedraw();
+        _fixedRows.QueueRedraw();
     }
 
     /// <summary>
@@ -702,6 +730,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawTroops(rect, text, troops, max, grey)));
             }
         }
+        if (_upright is not null)                                   // upright the fixed part draws the first column's marks (DrawFixedRows)
+        {
+            if (place > 0 || chosen)
+                for (int c = 0; c < Columns; c++)
+                    item.SetCustomBgColor(c, chosen ? Ui.ChosenRow : Ui.PartyRow);
+            return;
+        }
         if (place > 0)
         {
             for (int c = 0; c < Columns; c++)
@@ -735,7 +770,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 Lacquer.DrawDiamond(this, mark.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Ui.Vermilion);
             }
             if (talk is { } shown)
-                DrawBubble(new Vector2(mark.End.X + BubbleRoom / 2, rect.GetCenter().Y), rect.Size.Y, shown);
+                DrawBubble(this, new Vector2(mark.End.X + BubbleRoom / 2, rect.GetCenter().Y), rect.Size.Y, shown);
         }));
     }
 
@@ -743,7 +778,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// A talk's speech bubble centred at <paramref name="at"/> in a row <paramref name="h"/> tall (mock-up S): a rounded
     /// box with its tail at the bottom left, filled green with "!" (new), vermilion with "?" (???), an empty outline (read).
     /// </summary>
-    private void DrawBubble(Vector2 at, float h, SceneMark mark)
+    private void DrawBubble(CanvasItem c, Vector2 at, float h, SceneMark mark)
     {
         var box = new Rect2(at.X - h * 0.46f, at.Y - h * 0.3f, h * 0.92f, h * 0.54f);
         int r = Math.Max(2, (int)Math.Round(h * 0.21f));
@@ -752,8 +787,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         Vector2[] tail = [new(at.X - h * 0.25f, box.End.Y - 1), new(at.X - h * 0.04f, box.End.Y - 1), new(at.X - h * 0.33f, at.Y + h * 0.42f)];
         if (read)
         {
-            DrawPolyline([tail[0], tail[2], tail[1]], colour, 1, true);
-            DrawStyleBox(new StyleBoxFlat
+            c.DrawPolyline([tail[0], tail[2], tail[1]], colour, 1, true);
+            c.DrawStyleBox(new StyleBoxFlat
             {
                 BgColor = Ui.Paper, BorderColor = colour,
                 BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
@@ -762,8 +797,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             }, box);
             return;
         }
-        DrawColoredPolygon(tail, colour);
-        DrawStyleBox(new StyleBoxFlat
+        c.DrawColoredPolygon(tail, colour);
+        c.DrawStyleBox(new StyleBoxFlat
         {
             BgColor = colour,
             CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
@@ -772,7 +807,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         string label = mark == SceneMark.New ? "!" : "?";
         int size = Math.Max(6, (int)Math.Round(h * 0.42f));
         float baseline = box.GetCenter().Y + (_bubbleFont.GetAscent(size) - _bubbleFont.GetDescent(size)) / 2;
-        DrawString(_bubbleFont, new Vector2(box.Position.X, baseline), label, HorizontalAlignment.Center, box.Size.X, size, Ui.Paper);
+        c.DrawString(_bubbleFont, new Vector2(box.Position.X, baseline), label, HorizontalAlignment.Center, box.Size.X, size, Ui.Paper);
     }
 
     /// <summary>
@@ -782,7 +817,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private void DrawRefill(Rect2 cell, string text, int unit)
     {
         bool lit = unit == _refillHovered || unit == AskedRefill;
-        float inset = _rowMinimum > 0 ? cell.Size.Y / 12 : 2;             // a taller row's chip grows with it: a finger's button
+        float inset = _upright is { } upright ? (cell.Size.Y - upright.Px(PhoneLedgerUpright.RefillChip)) / 2   // upright: PD2s2's chip
+            : _rowMinimum > 0 ? cell.Size.Y / 12 : 2;                       // a taller row's chip grows with it: a finger's button
         var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
         var box = new StyleBoxFlat

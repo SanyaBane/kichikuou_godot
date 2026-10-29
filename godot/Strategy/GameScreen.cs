@@ -366,7 +366,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _table.RowHeld += unit =>
         {
             if (_presenter.State is { } state)
-                _tablePicture.Show(_panels.Picture(state.Units[unit].PortraitCg.Value));
+                _tablePicture.Show(_panels.Picture(state.Units[unit].PortraitCg.Value), _table.Caption(unit));
         };
         _content.AddChild(_tablePicture);
         ReadyDeploymentReplenish(faces);                        // over the table: its question and its plate
