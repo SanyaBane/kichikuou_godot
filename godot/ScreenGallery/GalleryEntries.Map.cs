@@ -314,14 +314,15 @@ internal static partial class GalleryEntries
         GalleryStates.DungeonFloor(s, GalleryStates.Cave, 1);
         var backdrop = g.Backdrop(s, new WindowEvent(331, s.CallArg));
         var window = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
-        window.Show(MessageWindow.SampleOf(MessageKind.Narration, [$"[{name}]", "", state]), false, null, null);
+        var sample = MessageWindow.SampleOf(MessageKind.Narration, [$"[{name}]", "", state]);
+        window.Show(sample, false, null, null);
         window.Complete();
         var p = g.Bound(s);
         var items = lines.Select(Item).ToList();
         if (TouchMode.On)
         {
             var entry = Opened(p, items, q => q.DungeonEntry, "the menu before a search");
-            var rail = g.Add(new FloorLadderView(g.Font));
+            var rail = g.Add(new FloorLadderView(g.Font) { Screen = backdrop.Texture, Window = sample });   // held upright it draws them (PF1e)
             rail.OpenEntry(entry);
             return area =>
             {
@@ -369,12 +370,12 @@ internal static partial class GalleryEntries
         GalleryStates.DungeonFloor(s, GalleryStates.Cave, floor);
         var backdrop = g.Backdrop(s, new EngineEvent("EC", [0]), new WindowEvent(331, s.CallArg));
         var header = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
-        header.Show(MessageWindow.SampleOf(MessageKind.Narration,
-            ["Monsters' Cave", $"  {(int)s.DgnRun_Floor}F", "Rance Unit", $" ({(int)s.Units[1].Troops})"]),
-            false, null, null);
+        var lines = MessageWindow.SampleOf(MessageKind.Narration,
+            ["Monsters' Cave", $"  {(int)s.DgnRun_Floor}F", "Rance Unit", $" ({(int)s.Units[1].Troops})"]);
+        header.Show(lines, false, null, null);
         header.Complete();
         var ladder = Opened(g.Bound(s), DungeonCommand.FloorMenuItems(s), q => q.FloorLadder, "the floor menu");
-        var view = g.Add(new FloorLadderView(g.Font));
+        var view = g.Add(new FloorLadderView(g.Font) { Screen = backdrop.Texture, Window = lines });   // held upright it draws them (PF1)
         view.Open(ladder);
         return area =>
         {

@@ -537,6 +537,11 @@ in the bar; `-display` the screen's orientation on top as PO1o's rows, then the 
 another and the unit tables' row heights two a row, cut at the sheet's foot with the thin scroll bar at its right (the
 column scrolls by a finger). PO1 and PO1o left `GALLERY_ENTRIES`.
 
+Step P8b (2026-10-30) built the dungeon's menus: on this pass `floor-ladder…` show the screen black, the floor's picture
+at the room's width in a gold frame, window 113's lines left of the rail and the rail at the right thumb on the bar's foot
+(Retreat, Ascend, the floor, Descend); `dungeon-entry…` the same before a search, Return over Start Search (`-more` with
+Bring Merim and God's Door between them, the picture higher). PF1 and PF1e left `GALLERY_ENTRIES`.
+
 ## 10. The copy for a website (owner, 2026-10-29)
 
 The owner's request: the gallery on the owner's website, its pictures in a light format and the current ones alone, the

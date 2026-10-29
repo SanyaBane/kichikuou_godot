@@ -423,8 +423,11 @@ Step P8 is split as L9 was (phone-build.md, "Step P8, where it stands"): P8a is 
 Poco — the options window upright as PO1 with PO1o: the title under the hole, the five paper tabs across the room, the
 sheet down to the bar with each tab's settings in one column at PO1's type (Display's orientation on top as PO1o's
 rows), scrolled by a finger with a thin bar, cut at the sheet's margins (the canvas item's clip, the frame drawn with it
-ignored), Defaults | Close in the bar (`Original.Content/Devices/PhoneOptionsUpright`; `OptionsView.Upright.cs`). P8b
-(the dungeon's ladder) is next.
+ignored), Defaults | Close in the bar (`Original.Content/Devices/PhoneOptionsUpright`; `OptionsView.Upright.cs`). P8b is
+built, awaiting the owner's look on the Poco — the dungeon's menus upright as PF1 and PF1e: the screen black, the floor's
+picture cut from the engine's texture at the room's width, window 113's lines left of the rail (the view takes the window,
+`FloorLadderView.TakeWindow`), the rail at the right thumb on the bar's foot (`Original.Content/Devices/PhoneLadderUpright`;
+`FloorLadderView.Upright.cs`). P8c (All Data) is next.
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;

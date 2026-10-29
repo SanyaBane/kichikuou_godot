@@ -462,7 +462,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_sceneMenuView.Visible)
             _sceneMenuView.Place(PictureArea());
         if (_ladderView.Visible)
+        {
+            _ladderView.Screen = _texture;                          // held upright it shows the floor's picture from it (PF1)
             _ladderView.Place(PictureArea());
+        }
         UpdateDataView();
         _optionsView?.Place(PictureArea());                         // a phone turned lays it out again
         if (_provinceView.Visible)
@@ -1454,6 +1457,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var window = InterfaceChoice.New && !SkippingScene ? _presenter.MessageWindow : null;
         if (UpdateTreasureCallout(window))
             window = null;                              // at the clicked cell over our Treasure screen instead
+        if (_ladderView.TakeWindow(window))
+            window = null;                              // held upright left of the dungeon's rail instead (PF1)
         if (_presenter.State is { } s)
             _messageView.Portraits = (s.Ui_PortraitL != 0, s.Ui_PortraitR != 0);   // held upright, over or under the picture (PS2)
         _messageView.Show(window, _keyWaiting, _texture, window is null ? null : _presenter.MenuArea);

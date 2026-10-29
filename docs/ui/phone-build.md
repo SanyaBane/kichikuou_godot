@@ -1092,7 +1092,7 @@ P7b:
 
 **Step P8, where it stands (2026-10-30):** split as L9 was — P8a the options window (PO1 with PO1o), P8b the dungeon's
 ladder (PF1, PF1e), P8c All Data (PG2m, PG2), P8d the title, the import screen and the original's own screens (PE2, PI,
-PIp, PIr, PXf, PXc, PXm, PXr). **P8a is built, awaiting the owner's look on the Poco.**
+PIp, PIr, PXf, PXc, PXm, PXr). **P8a and P8b are built, awaiting the owner's look on the Poco.** P8a:
 
 - **The model** (`Original.Content/Devices/PhoneOptionsUpright`, tested in `PhoneOptionsUprightTests`): the places at the
   mock-ups' figures (`po1`, `po1o`, `defaults_close`) from the room's top and the bar — the title (the brush face, 62) 30
@@ -1131,6 +1131,41 @@ PIp, PIr, PXf, PXc, PXm, PXr). **P8a is built, awaiting the owner's look on the 
   at the view's top with Display scrolled.
 - **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker, exit 0 (the bot
   never opens Options).
+
+P8b:
+
+- **The survey** (how the dungeon's menus showed upright before): the engine's picture stands at its default place in
+  the room's middle for every screen (`GameScreen.UpdateDevice`, `ScreenFrame.In`; no screen moves or crops it), window
+  113 is our narration window under it (`MessageWindowView`'s upright layout, `PhoneScenes.Window`), and the ladder fell
+  to the tablet's rail over the picture (`Place` keyed by `Device.Landscape`). On a floor the game itself clears the
+  screen to black before the picture (`DungeonCommand.ArriveAsync`, `EC 0`), on the PC too; before a search (no `EC`)
+  the map stays round the picture. The only precedent for drawing part of the engine's picture elsewhere was
+  `MessageWindowView` (the menu box from the engine's texture).
+- **The model** (`Original.Content/Devices/PhoneLadderUpright`, tested in `PhoneLadderUprightTests`): the places at the
+  mock-ups' figures (`pf1`, `pf1e`, `pf_frame`, `floor_rail`, `info_window`) — the rail 440 wide 16 in from the room's
+  right standing on the bar's foot: Descend (150) in the corner, the floor's block (110), Ascend, Retreat, 14 apart;
+  before a search Start Search in Descend's place, the other items over it, Return on top (`Top` the rail's top); window
+  113 from 16 in to 16 left of the rail, from the rail's top to the bar's foot, its lines 34 in and 30 down at 58 (3.3 mm),
+  1.2 apart; the floor's picture (`Source`, 552 × 328 at (364, 204) of the layout) at the room's width less 16 a side in
+  its shape, its foot 40 over the rail's top (the mock's 38 and 46). The rungs' insides are held landscape's.
+- **The view** (`FloorLadderView.Upright.cs`; `FloorLadderView` is keyed by `Device.Held`, the places dispatched by the
+  orientation, held landscape's drawing untouched): over the whole screen the black, the floor's picture cut from the
+  engine's texture (`Screen`, which `GameScreen` hands it each frame) in a gold frame, window 113's lines in a lacquer
+  panel left of the rail (`TakeWindow`: held upright and open the view takes the window from the message windows, as our
+  Treasure callout does; an empty line of the script keeps its place by its cells' row), the rungs as held landscape's on
+  the black with no panel. The gallery's `floor-ladder…` and `dungeon-entry…` entries hand it the backdrop's texture and
+  their sample window.
+- **The agent's choices**, for the owner to confirm: the screen black round the picture both on a floor (the game's own
+  `EC 0`) and before a search, where the map is left out (PF1 and PF1e drew the map dimmed behind; the game shows black on
+  every floor); the rail on the black with no panel (PF1), the floor's block bare between the ways; the picture's foot 40
+  over the rail whatever the items (the rail growing upwards pushes it up); the window's lines at 3.3 mm, shrunk only when
+  a line does not fit; the way back's arrow quiet and the way deeper's gold, Start Search framed in gold, the other items
+  centred as held landscape's.
+- **The gallery**: the PC, touch and landscape passes same; the upright pass's three `floor-ladder…` and two
+  `dungeon-entry…` entries changed. PF1 and PF1e left `GALLERY_ENTRIES`; the phone tab keeps 10 mock-ups.
+- **Unattended play**: headless with `--phone upright` from the week-18 save with `--dungeon` (the Monsters' Cave
+  (dungeon 2) searched by Rance (unit 1), the battle with Sergeant Hanny on its first floor), and to its deployment
+  picker, exit 0 both.
 
 ## 6. The agent's own choices, for the owner to confirm
 
