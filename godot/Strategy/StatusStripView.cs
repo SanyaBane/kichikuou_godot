@@ -292,15 +292,6 @@ internal sealed partial class StatusStripView : Control
             SetTip(false);
     }
 
-    /// <summary>A command's tag colour (ours; the same as the command panel's and the province menu's tags).</summary>
-    private static Color ColourOf(WeekAction action) => action switch
-    {
-        WeekAction.Build => Color.Color8(46, 62, 104),
-        WeekAction.Harem => Color.Color8(128, 44, 70),
-        WeekAction.Trade => Color.Color8(36, 92, 96),
-        WeekAction.City => Color.Color8(150, 52, 36),
-        WeekAction.Attack => Color.Color8(128, 30, 30),
-        WeekAction.Dungeon => Color.Color8(36, 92, 96),
-        _ => Color.Color8(70, 96, 52),                                  // Subordinates, Troops, Talk
-    };
+    /// <summary>A week's use's tag colour, which the commands that spend it wear too (<see cref="TagColours"/>).</summary>
+    private static Color ColourOf(WeekAction action) => TagColours.Of(action);
 }

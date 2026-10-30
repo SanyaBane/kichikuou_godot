@@ -534,7 +534,16 @@ in its brick, Dungeon and Search in a brown of their own (Plot's, freed), Mercha
 clearer orange (172, 84, 30) away from Attack's crimson, and all that spends it; Merchant and the panel's Trade gold,
 Treasure's Items brown, Dungeon and Search teal. The two choices mix (the own city brick or orange; Dungeon brown or
 Merchant gold). **TR1** the Refill chips in Troops' green instead of vermilion (the seals stay vermilion). The words
-stay; spent tags stay grey. Awaiting the owner's choice.
+stay; spent tags stay grey.
+
+- **The owner chose TC2** (2026-10-31); TR1 is left open (the answer named TC2 alone), the Refill chips vermilion meanwhile.
+- **Built (2026-10-31):** which use a command spends is the model's, `ProvinceMenu.UseOf` and `CommandMenu.UseOf`
+  (`ProvinceMenuUseTests`, `CommandMenuUseTests`); the colours are one table, `godot/Strategy/TagColours` — a use's
+  colour, Treasure's and Ninja Maneuver's own —, which the strip (`StatusStripView`), the command panel
+  (`CommandMenuView`) and the province menu (`ProvinceMenuView`) read on the PC, the rails and the phone's sheets, so a
+  command's tag cannot part from its use's again. Own city (172, 84, 30) on Levy, Build, Plot, Visit, Cell and Look;
+  Merchant and Trade (138, 104, 34); Items (104, 70, 34); the rest as before. The screen gallery's `province-menu*`,
+  `command-menu*` and `map-north` in every pass.
 
 ## Questions for the owner
 

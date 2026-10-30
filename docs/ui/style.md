@@ -59,7 +59,8 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   Steel, one choice in Option → Display for every part (`Battle`, `Map`, `Messages`, `Screens`, `Settings`); a part's
   own palette is read but not offered. A change repaints open screens at once (`UiPalettes.Repaint`; a view that
   keeps colours outside `_Draw` is an `IUiPaletteUser`). docs/ui/options.md, "The palette".
-- **Left in their own colours on purpose:** the command and province tags, the auto-saves' Turn Start (green) and Turn
+- **Left in their own colours on purpose:** the command and province tags (each in the colour of the week's use it
+  spends, the strip's tag of that use, `TagColours`; docs/ui/command-screen.md, "The tags' colours"), the auto-saves' Turn Start (green) and Turn
   End (Turn END's red) tags, the red buttons, the battle's banners (the player's blue, the hovered one pale sky blue —
   the owner's C1, 2026-10-26, for the damage forecast's figures in the bars' red and green; docs/ui/damage-forecast.md,
   §11), the touch rail's gold attack buttons (the forecast on a dark strip, the owner's D2), the defence ribbon's blues,

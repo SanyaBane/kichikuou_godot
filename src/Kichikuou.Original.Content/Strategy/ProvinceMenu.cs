@@ -158,6 +158,23 @@ public sealed record ProvinceMenu(
     private static string Unmarked(string shown) => shown.TrimStart('○', '×', '△', '◎', ' ', '　').Replace('’', '\'');
 
     /// <summary>
+    /// The week's use a command of <paramref name="action"/> spends, whose colour its tag wears (owner, 2026-10-31;
+    /// docs/ui/command-screen.md, "The tags' colours"): the own city's — the levy, Bolster Defense, the schemes, the
+    /// places, the cells and Look Around (<c>OwnCityCommand</c>), the AL Church at Temple AL HQ (77) (<c>Cﾃｷﾄｼ.ADV:94-98</c>);
+    /// the dungeon's, the Ruins Search (<c>Cﾒｲｷｭｳ.ADV:25</c>, CMD-09); the attack's, Attack and Pillage; none, Ninja
+    /// Maneuver (each ninja's own week). Interface only.
+    /// </summary>
+    public static WeekAction? UseOf(ProvinceAction action) => action switch
+    {
+        ProvinceAction.Levy or ProvinceAction.Build or ProvinceAction.Plot or ProvinceAction.Visit or ProvinceAction.Cell
+            or ProvinceAction.Look => WeekAction.City,
+        ProvinceAction.Search => WeekAction.Dungeon,
+        ProvinceAction.Battle => WeekAction.Attack,
+        ProvinceAction.Ninja => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(action)),
+    };
+
+    /// <summary>
     /// How many of <paramref name="count"/> commands the first column holds when one column holds at most
     /// <paramref name="most"/> (docs/ui/command-screen.md, "Fifteen commands"; the owner's E, TE and PE): all of them
     /// while they fit, else the first half, the odd one there; the rest go to the second column. Interface only.

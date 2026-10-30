@@ -359,13 +359,13 @@ internal sealed partial class CommandMenuView : Control
             modulate: Color.Color8(250, 226, 160));
     }
 
-    /// <summary>A command's tag and its lacquer colour (ours: the original's menus have none).</summary>
-    private static (string Tag, Color Colour) TagOf(CommandAction action) => action switch
+    /// <summary>A command's tag and its colour, the week's use it spends (ours: the original's menus have none; <see cref="TagColours"/>).</summary>
+    private static (string Tag, Color Colour) TagOf(CommandAction action) => (action switch
     {
-        CommandAction.Build => ("Build", Color.Color8(46, 62, 104)),
-        CommandAction.Harem => ("Harem", Color.Color8(128, 44, 70)),
-        CommandAction.Items => ("Items", Color.Color8(138, 104, 34)),
-        CommandAction.Trade => ("Trade", Color.Color8(36, 92, 96)),
-        _ => ("Units", Color.Color8(70, 96, 52)),
-    };
+        CommandAction.Build => "Build",
+        CommandAction.Harem => "Harem",
+        CommandAction.Items => "Items",
+        CommandAction.Trade => "Trade",
+        _ => "Units",
+    }, TagColours.Of(action));
 }

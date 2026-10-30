@@ -110,6 +110,21 @@ public sealed record CommandMenu(
         _ => null,
     };
 
+    /// <summary>
+    /// The week's use a command of <paramref name="action"/> spends, whose colour its tag wears (owner, 2026-10-31;
+    /// docs/ui/command-screen.md, "The tags' colours"): Subordinates' orders their own two, which the strip shows in one
+    /// colour; Treasure none. Interface only.
+    /// </summary>
+    public static WeekAction? UseOf(CommandAction action) => action switch
+    {
+        CommandAction.Build => WeekAction.Build,
+        CommandAction.Harem => WeekAction.Harem,
+        CommandAction.Trade => WeekAction.Trade,
+        CommandAction.Units => WeekAction.Units,
+        CommandAction.Items => null,
+        _ => throw new ArgumentOutOfRangeException(nameof(action)),
+    };
+
     /// <summary>An item's text without the mark the file puts first.</summary>
     private static string Unmarked(string shown) => shown.TrimStart('○', '×', '△', '◎', ' ', '　').Replace('’', '\'');
 }

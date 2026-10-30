@@ -464,17 +464,17 @@ internal sealed partial class ProvinceMenuView : Control
         }
     }
 
-    /// <summary>A command's tag and its lacquer colour (ours: the original's menus have none).</summary>
-    private static (string Tag, Color Colour) TagOf(ProvinceAction action) => action switch
+    /// <summary>A command's tag and its colour, the week's use it spends (ours: the original's menus have none; <see cref="TagColours"/>).</summary>
+    private static (string Tag, Color Colour) TagOf(ProvinceAction action) => (action switch
     {
-        ProvinceAction.Levy => ("Levy", Color.Color8(150, 52, 36)),
-        ProvinceAction.Build => ("Build", Color.Color8(46, 62, 104)),
-        ProvinceAction.Plot => ("Plot", Color.Color8(104, 70, 34)),
-        ProvinceAction.Visit => ("Visit", Color.Color8(70, 96, 52)),
-        ProvinceAction.Search => ("Search", Color.Color8(36, 92, 96)),
-        ProvinceAction.Battle => ("Battle", Color.Color8(128, 30, 30)),
-        ProvinceAction.Cell => ("Cell", Color.Color8(96, 40, 58)),
-        ProvinceAction.Look => ("Look", Color.Color8(70, 96, 52)),
-        _ => ("Ninja", Color.Color8(74, 50, 96)),
-    };
+        ProvinceAction.Levy => "Levy",
+        ProvinceAction.Build => "Build",
+        ProvinceAction.Plot => "Plot",
+        ProvinceAction.Visit => "Visit",
+        ProvinceAction.Search => "Search",
+        ProvinceAction.Battle => "Battle",
+        ProvinceAction.Cell => "Cell",
+        ProvinceAction.Look => "Look",
+        _ => "Ninja",
+    }, TagColours.Of(action));
 }

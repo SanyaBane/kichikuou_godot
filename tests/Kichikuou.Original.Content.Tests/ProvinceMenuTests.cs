@@ -139,3 +139,24 @@ public class ProvinceMenuColumnsTests
     public void The_first_column_holds_all_while_they_fit_else_the_first_half(int count, int most, int first) =>
         Assert.Equal(first, ProvinceMenu.FirstColumn(count, most));
 }
+
+/// <summary><see cref="ProvinceMenu.UseOf"/>: a tag wears the colour of the week's use its command spends (docs/ui/command-screen.md, "The tags' colours").</summary>
+public class ProvinceMenuUseTests
+{
+    [Theory]
+    [InlineData(ProvinceAction.Levy, WeekAction.City)]
+    [InlineData(ProvinceAction.Build, WeekAction.City)]      // Bolster Defense, not Construction
+    [InlineData(ProvinceAction.Plot, WeekAction.City)]
+    [InlineData(ProvinceAction.Visit, WeekAction.City)]      // the places, and the AL Church at Temple AL HQ (77)
+    [InlineData(ProvinceAction.Cell, WeekAction.City)]
+    [InlineData(ProvinceAction.Look, WeekAction.City)]
+    [InlineData(ProvinceAction.Search, WeekAction.Dungeon)]  // the Ruins Search, CMD-09
+    [InlineData(ProvinceAction.Battle, WeekAction.Attack)]
+    [InlineData(ProvinceAction.Ninja, null)]
+    public void Each_command_spends_its_weeks_use(ProvinceAction action, WeekAction? use) =>
+        Assert.Equal(use, ProvinceMenu.UseOf(action));
+
+    [Fact]
+    public void Every_command_is_known() =>
+        Assert.All(Enum.GetValues<ProvinceAction>(), action => ProvinceMenu.UseOf(action));
+}

@@ -64,3 +64,20 @@ public class CommandMenuTests
         Assert.Null(CommandMenu.For(Items(229, 999, 310), ["○Construction", "?", "Turn END"]));     // an unknown item
     }
 }
+
+/// <summary><see cref="CommandMenu.UseOf"/>: a tag wears the colour of the week's use its command spends (docs/ui/command-screen.md, "The tags' colours").</summary>
+public class CommandMenuUseTests
+{
+    [Theory]
+    [InlineData(CommandAction.Build, WeekAction.Build)]
+    [InlineData(CommandAction.Harem, WeekAction.Harem)]
+    [InlineData(CommandAction.Trade, WeekAction.Trade)]
+    [InlineData(CommandAction.Units, WeekAction.Units)]
+    [InlineData(CommandAction.Items, null)]
+    public void Each_command_spends_its_weeks_use(CommandAction action, WeekAction? use) =>
+        Assert.Equal(use, CommandMenu.UseOf(action));
+
+    [Fact]
+    public void Every_command_is_known() =>
+        Assert.All(Enum.GetValues<CommandAction>(), action => CommandMenu.UseOf(action));
+}
