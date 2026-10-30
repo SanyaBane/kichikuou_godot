@@ -63,7 +63,10 @@ public static class MapMarkers
     /// (null without the player's files: the dungeon is then left out). In the prologue (stage 0) the
     /// Thieves' Hideout (dungeon 1) is the only dungeon shown: the others the map shows then — the
     /// Monsters' Cave (2), the Thieves' Cave (3), Isolated Shrine Island (15) — still take the original's
-    /// click, but it only pans the camera (DGN-20).
+    /// click, but it only pans the camera (DGN-20). Nor does a dungeon whose point the script reads as another
+    /// marker's get a plate, which would cover that one's and open nothing: the Ancient Ruins (dungeon 30), which
+    /// the Ruins Search puts on Ancient Ruins (35)'s point (<c>Cｼﾊｲﾄｼ.ADV:538-541</c>), where the provinces, tested
+    /// first, take the click (<c>COMMAND.ADV:100-158</c>); the province's menu offers the search.
     /// </summary>
     public static IReadOnlyList<MapMarker> All(GameState state, Func<ScriptRef, string?> literal)
     {
@@ -83,6 +86,8 @@ public static class MapMarkers
             if ((dgn.MapX == 0 && dgn.MapY == 0) || DungeonCommand.NameAt(state, d) is not { } at || literal(at) is not { } name)
                 continue;
             if (state.StoryStage == 0 && d != 1)                                // QUIRK: DGN-20 — clickable, but no search before stage 1
+                continue;
+            if (GesturePoints.MapAt(state, (0, 0), dgn.MapX.Value, dgn.MapY.Value) is { } hit && hit != new MapHit(MapHitKind.Dungeon, d))
                 continue;
             var search = DungeonCommand.SearchOf(d);
             var kind = search is null ? DungeonKind.Event : search.Value.Mode == 2 ? DungeonKind.Tower : DungeonKind.Pit;

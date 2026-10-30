@@ -12,8 +12,8 @@ public class MapMarkersTests
     /// <summary>
     /// Leazas Castle (1, ours, a big click square) at (100, 100), North (2, next to it) at (200, 100),
     /// Far (3, next to North only) at (300, 100), Out (4, ours) at (700, 100) out of the view; the
-    /// Monsters' Cave (dungeon 2) in Leazas Castle searched to B5, the Thieves' Cave (dungeon 3) inside
-    /// the castle's square, Rising Dragon Mountain (dungeon 11) in Far searched whole. The camera is
+    /// Monsters' Cave (dungeon 2) in Leazas Castle searched to B5, the Thieves' Cave (dungeon 3) under
+    /// the castle, Rising Dragon Mountain (dungeon 11) in Far searched whole. The camera is
     /// the view's corner at (0, 0); story stage 1.
     /// </summary>
     private static GameState World()
@@ -43,7 +43,7 @@ public class MapMarkersTests
             r.SavedFloor = (Sys3Int)floor;
         }
         Dgn(2, 1, 150, 200, 1, 5);
-        Dgn(3, 1, 105, 105, 0, 0);
+        Dgn(3, 1, 105, 300, 0, 0);
         Dgn(11, 3, 300, 200, 2, 0);
         s.MapCamX = 0;
         s.MapCamY = 0;
@@ -163,7 +163,6 @@ public class MapMarkersTests
         var s = World();
         var markers = MapMarkers.All(s, Literal);
         Assert.Null(MapMarkers.ClickPoint(s, markers.Single(m => m.Kind == MapHitKind.Province && m.Id == 4)));  // out of view
-        Assert.Null(MapMarkers.ClickPoint(s, markers.Single(m => m.Kind == MapHitKind.Dungeon && m.Id == 3)));   // in the castle's square
         Assert.Equal((300, 200), MapMarkers.ClickPoint(s, markers.Single(m => m.Kind == MapHitKind.Dungeon && m.Id == 11)));  // not ours: opens nothing
         Assert.Empty(Gestures(p => Assert.False(MapMarkers.Press(s, markers.Single(m => m.Kind == MapHitKind.Province && m.Id == 4), p))));
     }
@@ -194,8 +193,26 @@ public class MapMarkersTests
         s.MapCamX = 600;
         Assert.Equal([(16, 0, 0), (16, 600, 0), (16, 600, 0), (0, 600, 0), (16, 200, 100), (0, 200, 100)], Gestures(p =>
             Assert.True(MapMarkers.PressAnywhere(s, north, p, out _))));
-        // The Thieves' Cave (dungeon 3) inside the castle's square: the script would open the castle, so nothing at all.
-        Assert.Empty(Gestures(p => Assert.False(MapMarkers.PressAnywhere(s, markers.Single(m => m.Kind == MapHitKind.Dungeon && m.Id == 3), p, out _))));
+    }
+
+    [Fact]
+    public void A_dungeon_whose_point_the_script_reads_as_another_marker_has_no_plate()
+    {
+        // The Ruins Search puts the Ancient Ruins (dungeon 30) on its province's point (Cｼﾊｲﾄｼ.ADV:538-541): a click
+        // there opens the province, tested first, so the dungeon's plate would cover the province's and do nothing.
+        var s = World();
+        var ruins = s.Dgns[30];
+        ruins.Prov = 1;
+        ruins.MapX = 100;
+        ruins.MapY = 100;
+        s.Dgns[3].MapY = 105;                                                       // the Thieves' Cave inside the castle's square
+        string? Named(ScriptRef at) => at.Line == 149 ? "Ancient Ruins" : Literal(at);
+        Assert.Equal([2, 11], MapMarkers.All(s, Named).Where(m => m.Kind == MapHitKind.Dungeon).Select(m => m.Id));
+        Assert.Equal(new MapHit(MapHitKind.Province, 1), GesturePoints.MapAt(s, (0, 0), 100, 100));
+
+        ruins.MapX = 600;                                                           // apart from every province: its own plate
+        ruins.MapY = 300;
+        Assert.Contains(MapMarkers.All(s, Named), m => m is { Kind: MapHitKind.Dungeon, Id: 30, Name: "Ancient Ruins", Open: true });
     }
 
     /// <summary>

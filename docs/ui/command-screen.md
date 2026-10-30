@@ -182,7 +182,10 @@ five shapes (a ring, a pin, a name plate, corner brackets, a shield) and then th
   a muted hover and the "not allowed" cursor. **In the prologue** only the Thieves' Hideout (dungeon 1) has a
   plate (owner's request 2026-10-18): the Monsters' Cave (2), the Thieves' Cave (3) and Isolated Shrine
   Island (15) take the original's click, which only pans the camera before stage 1 (DGN-20), so they get
-  none; a click at their place still goes to the script.
+  none; a click at their place still goes to the script. Nor does a dungeon whose point the script reads as
+  another marker's (owner, 2026-10-30): the Ruins Search puts the Ancient Ruins (dungeon 30) on Ancient Ruins
+  (35)'s point (`Cｼﾊｲﾄｼ.ADV:538-541`), where the province, tested first, takes the click — its plate would cover
+  the province's and open nothing; the province's menu offers the search.
 - **Debug → Hide Dimmed Map Names** (owner's request 2026-10-16, saved; since 2026-10-21 in Debug and on by default): the dimmed
   plates — the provinces neither ours nor next to ours, the dungeons not ours — are not shown
   (`godot/Strategy/MapNamesChoice`; docs/window-menu.md).
