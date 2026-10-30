@@ -509,6 +509,33 @@ counts it down before the strip is drawn, so the week it is done the tag is plai
   panel's row anyway. The screen gallery's `command-menu-building` and `command-menu-building-tip`. Awaiting the
   owner's look in a window.
 
+### The tags' colours (owner, 2026-10-31)
+
+The owner asked that every command spending a week's use wear the colour of that use's tag on the strip ("Own city" is
+orange: so must be all that spend it). The strip colours its tags by the flag (`StatusStripView.ColourOf`), the command
+panel and the province menu by the kind of command (`CommandMenuView.TagOf`, `ProvinceMenuView.TagOf`; the touch rails
+and the phone's sheets read the same tables), so they part:
+
+- **Own city** (`Ui_CmdOwnCityAvail`, brick) is spent by Temporary Levy (Levy, brick), Bolster Defense (Build, the
+  Construction's blue), Dig Giant Hole and Set Poison Food (Plot, brown), every place of a city but the Ruins Search
+  (Visit, Subordinates' green), the cells and Look Around of Leazas Castle (1)'s Dungeon (Cell, near Harem's plum; Look,
+  green; the place itself spends nothing) and Go to AL Church at Temple AL HQ (77) (`Cﾃｷﾄｼ.ADV:94-98`, Visit, green).
+- **Merchant** and **Dungeon** share one teal on the strip; the Ruins Search at Ancient Ruins (35) (Search, teal)
+  spends the dungeon's use (CMD-09). Construction, Harem, Troops/Talk (the panel's Units) and Attack (Battle: Attack,
+  Pillage, the independent cities' talks behind it) match. Treasure (Items) and Ninja Maneuver spend no use of the strip.
+- Own city's brick (150, 52, 36) and Attack's crimson (128, 30, 30) sit side by side in the strip's Map group and are
+  close; the deployment screen's Refill, which spends Troops, is the ledger's vermilion, its ink (150, 52, 30) the own
+  city's brick.
+
+**Mock-ups, round 1** (`tools/ui/mock_tag_colours.py`, over the gallery's `province-menu-own-all`,
+`province-menu-cells-full`, `command-menu` and `deployment-refill-question`, the tags drawn again in place; a key of
+every use, what spends it and its tags now and in each variant): **TC1** every command that spends the own city's use
+in its brick, Dungeon and Search in a brown of their own (Plot's, freed), Merchant teal; **TC2** the own city's use a
+clearer orange (172, 84, 30) away from Attack's crimson, and all that spends it; Merchant and the panel's Trade gold,
+Treasure's Items brown, Dungeon and Search teal. The two choices mix (the own city brick or orange; Dungeon brown or
+Merchant gold). **TR1** the Refill chips in Troops' green instead of vermilion (the seals stay vermilion). The words
+stay; spent tags stay grey. Awaiting the owner's choice.
+
 ## Questions for the owner
 
 1. **Layout**: A, B or C (or a mix: e.g. A's map with C's zoom-out).
