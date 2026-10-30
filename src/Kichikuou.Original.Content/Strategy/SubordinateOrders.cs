@@ -66,6 +66,12 @@ public sealed record SubordinateResult(
     /// <summary>"114,100K".</summary>
     public string BudgetLine => Figures.GoldShort(Gold * 100);
 
+    /// <summary>The troops and maximum after the order, under the bar held upright: "1,400 / 1,400".</summary>
+    public string TroopsNow => $"{Figures.Number(Troops)} / {Figures.Number(MaxTroops)}";
+
+    /// <summary>The bar of troops on the plate held upright (docs/ui/phone.md, §30, PU1r1).</summary>
+    public TroopsBar Bar => TroopsBar.Of(TroopsBefore, Troops, MaxBefore, MaxTroops);
+
     /// <summary>
     /// The plate Replenish would show for <paramref name="unit"/> now — the troops set to their maximum (above it too,
     /// CMD-20) at Replenish's price (<see cref="SubordinatesCommand.Refill"/>) — without the order run: the screen
@@ -78,6 +84,41 @@ public sealed record SubordinateResult(
         return new SubordinateResult(SubordinateOrderKind.Replenish, DeploymentTable.UnitName(state, unit),
             DeploymentTable.TroopType(state, unit), u.FaceCg.Value, u.Troops.Value, u.MaxTroops.Value,
             u.MaxTroops.Value, u.MaxTroops.Value, price.Value, state.Gold.Value - price.Value);
+    }
+
+    /// <summary>
+    /// The plate Add New Troops' <paramref name="step"/> (0 = the offer, n = Add More n times) would show for
+    /// <paramref name="unit"/> now — the troops and their maximum raised by the step's men at its price
+    /// (<c>Cﾌﾞｶ.ADV</c>'s Do It) — without the order run: the screen gallery's sample.
+    /// </summary>
+    public static SubordinateResult AddPreview(GameState state, int unit, int step)
+    {
+        var u = state.Units[unit];
+        var (price, men) = SubordinatesCommand.Offer(state, (Sys3Int)unit);
+        for (int i = 0; i < step; i++)
+            (price, men) = SubordinatesCommand.AddMore(price, men);
+        return new SubordinateResult(SubordinateOrderKind.AddTroops, DeploymentTable.UnitName(state, unit),
+            DeploymentTable.TroopType(state, unit), u.FaceCg.Value, u.Troops.Value, (u.Troops + men).Value,
+            u.MaxTroops.Value, (u.MaxTroops + men).Value, price.Value, (state.Gold - price).Value);
+    }
+}
+
+/// <summary>
+/// The bar of troops on the result plate held upright (docs/ui/phone.md, §30, PU1r1), as shares of its width — the most
+/// it holds: the maximum after the order, or the troops before it where a unit above its maximum lost some (CMD-20): the
+/// troops kept, then the men gained or the men lost; the maximum before the order ticked where Add New Troops raised it
+/// (null for Replenish); and the troops' share of that maximum before the order, which colours the kept part as the
+/// ledger's bar.
+/// </summary>
+public sealed record TroopsBar(float Kept, float Gained, float Lost, float? OldMax, float Before)
+{
+    /// <summary>The bar of an order that took the troops from <paramref name="before"/> to <paramref name="after"/> and the maximum from <paramref name="maxBefore"/> to <paramref name="maxAfter"/>.</summary>
+    public static TroopsBar Of(int before, int after, int maxBefore, int maxAfter)
+    {
+        float full = Math.Max(1, Math.Max(maxAfter, Math.Max(before, after)));
+        return new TroopsBar(Math.Max(0, Math.Min(before, after)) / full, Math.Max(0, after - before) / full,
+            Math.Max(0, before - after) / full, maxBefore != maxAfter ? Math.Clamp(maxBefore / full, 0, 1) : null,
+            maxBefore > 0 ? before / (float)maxBefore : 0);
     }
 }
 

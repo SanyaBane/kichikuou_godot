@@ -136,4 +136,12 @@ public class PhoneLedgerUprightTests
         Assert.Equal([("Offense", 4, 5), ("Defense", 6, 7), ("Dungeon", 8, 9)], troops.Groups.Select(g => (g.Name, g.First, g.Last)));
         Assert.Equal(DeploymentColumn.OffAtkMod, troops.Columns[troops.Groups[0].First].Column);
     }
+
+    [Fact]
+    public void The_result_plate_stands_in_the_middle_over_the_bar()
+    {
+        // pu1r1: x 16 to PW - 16, 800 high from ROOM_MID - 400, ROOM_MID = (TOP + BAR[0]) // 2 = 1307.
+        Equal(new(16, 907, 1188, 800), PhoneLedgerUpright.ResultPlate(Reference));
+        Assert.Equal(0.65f, PhoneLedgerUpright.ResultDim);
+    }
 }

@@ -1355,6 +1355,23 @@ figures kept (`PhoneScenes.SceneMenu`):
 - **Both**: a menu too long for that room has its rows lower, down to 0.6 of their height; below that they keep it and
   run down over the window (upright to the bar's foot), as upright's did before.
 
+### After the build: the result plate upright (owner, 2026-10-31)
+
+The owner, looking at the gallery's `subordinates-result` upright: the plate after a troop order (R4/R5), the PC's
+780×150 scaled to the width, too low, its lines 1.1-2.4 mm. Rounds P22-P23 (phone.md, §30): the owner chose PU1r1 with
+the rest of the screen dimmed 65% (PU1r1d2). Built:
+
+- **The model**: `PhoneLedgerUpright.ResultPlate` — the room's width less 16 a side, 800 high, in the middle between the
+  room's top and the bar — and its lines (`Result…`, the mock-up's figures), `ResultDim` 0.65;
+  `SubordinateResult.Bar` (`TroopsBar`: the troops kept, the men gained or lost to CMD-20, a raised maximum ticked, the
+  kept part's share for the ledger's colour) and `TroopsNow`; `SubordinateResult.AddPreview` for the gallery's R5.
+- **The view**: `OrderResultPlate.Upright.cs` draws the card in the frame's layout pixels over the whole screen — the
+  title (fitted), the face (230), the name and troop type, the troops before → after with the gain (under them where a
+  long R5 line leaves no room), the bar with the troops after under it, Cost | Budget in Cinzel 700, the click's triangle
+  at the mock-up's size. The PC's, the tablet's and the landscape phone's plates unchanged; the deployment screen's
+  Replenish shows the same card upright.
+- **The gallery**: `subordinates-new-troops` is the R5 plate (Add New Troops' third step, `AddPreview`) in every pass.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

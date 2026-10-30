@@ -402,7 +402,9 @@ rows (the seal, № and the name over the type fixed at the left, the tab's othe
 tab its own scroll), the sends | Stop in the bar; Subordinates' orders under the ledger, Replenish and Talk on one row, the
 budget at the bar's left and End at the right thumb, a question under its button; a unit's picture on a long press as a
 sheet over the foot (`Original.Content/Devices/PhoneLedgerUpright`; `DeploymentTableView.Upright.cs`,
-`DeploymentPanels.Upright.cs`, `SubordinatesView.Upright.cs`, `UnitPictureView`, `OrderResultPlate`).
+`DeploymentPanels.Upright.cs`, `SubordinatesView.Upright.cs`, `UnitPictureView`, `OrderResultPlate`); since 2026-10-31 the
+plate after a troop order a card of its own in the middle over the screen dimmed 65% (the owner's PU1r1d2, phone.md §30;
+`OrderResultPlate.Upright.cs`, `SubordinateResult.Bar`).
 Step P6 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P6, where it stands"): the enemy attack
 upright — the PC's screen stacked, the head with the news, the province's picture with its figures beside it, "VS", the
 army's cards two a row with the front row on top facing up at the province, Maris's question, Abandon City | Ninja Scout

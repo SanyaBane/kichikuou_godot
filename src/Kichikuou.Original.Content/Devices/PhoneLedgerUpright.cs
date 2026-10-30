@@ -278,6 +278,36 @@ public static class PhoneLedgerUpright
     public const float BudgetX = 24, BudgetLabelMiddle = 42, BudgetFigureMiddle = 102, BudgetFigureText = 56, BudgetUnitMiddle = 108,
         BudgetUnitGap = 14, BudgetLabelText = 26;
 
+    // ------------------------------------------------------------------ the result plate after a troop order (PU1r1d2)
+
+    /// <summary>The plate's height, its margin at the sides; the screen dimmed under it (the owner's 65%, docs/ui/phone.md, §30).</summary>
+    private const float ResultHeight = 800, ResultIn = 16;
+
+    /// <summary>How dark the screen under the plate is made.</summary>
+    public const float ResultDim = 0.65f;
+
+    /// <summary>
+    /// The plate's lines from its top and its left (<c>tools/ui/mock_result_plate.py</c>, <c>pu1r1</c>): the title (its
+    /// middle, type, the room it keeps at the sides), the dividers (their heights and their ends' distance from the
+    /// sides), the face (its top, left and size), the unit's name and troop type right of it (their left, middles and
+    /// types), the troops before → after (their middle, type, the gain's type), the bar (its top, height, the sides'
+    /// margin), the troops after under it (their middle, the label's type and the figures'), Cost | Budget (the labels'
+    /// top, type, the room under them, the figures' type), the click's triangle (from the right and the foot).
+    /// </summary>
+    public const float ResultTitleMiddle = 92, ResultTitleText = 72, ResultTitleIn = 60, ResultDivider = 166, ResultDivider2 = 590,
+        ResultDividerIn = 40, ResultFaceTop = 202, ResultFaceX = 48, ResultFace = 230, ResultNameX = 318, ResultNameMiddle = 250,
+        ResultNameText = 60, ResultTypeMiddle = 316, ResultTypeText = 34, ResultTroopsMiddle = 396, ResultTroopsText = 60,
+        ResultGainText = 44, ResultBarTop = 476, ResultBarHeight = 22, ResultBarIn = 48, ResultNowMiddle = 534,
+        ResultNowLabel = 28, ResultNowText = 30, ResultColumnsTop = 626, ResultColumnsIn = 40, ResultLabelText = 32,
+        ResultLabelGap = 24, ResultFigureText = 56, ResultTriangleRight = 46, ResultTriangleFoot = 40;
+
+    /// <summary>The result plate (PU1r1): the room's width less 16 a side, 800 high, in the middle between the room's top and the bar.</summary>
+    public static PhoneFrame.Box ResultPlate(PhoneFrame f)
+    {
+        float h = f.Px(ResultHeight);
+        return new PhoneFrame.Box(f.Room.X + f.Px(ResultIn), f.Room.Y + (f.Bar.Y - f.Room.Y - h) / 2, f.Room.W - 2 * f.Px(ResultIn), h);
+    }
+
     // ------------------------------------------------------------------ a unit's picture on a long press (PD2d)
 
     /// <summary>The picture's sheet: the room over the picture for the name, the picture's margin at the sides; the PC's panel's shape.</summary>

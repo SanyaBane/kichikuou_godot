@@ -10,7 +10,8 @@ namespace Kichikuou.Game.Strategy;
 /// and after with the men gained; right of a rule the cost and the budget left, the click's triangle. It waits for a click,
 /// which closes it and which it takes (owner, 2026-10-24: gone by itself after a few seconds, it could be missed). Our
 /// Subordinates screen and our deployment screen's Replenish (owner's decision 27) show it. Laid out in the 1280×800
-/// screen's pixels, scaled with the picture.
+/// screen's pixels, scaled with the picture; held upright a card of its own over the screen dimmed further (PU1r1,
+/// <c>OrderResultPlate.Upright.cs</c>).
 /// </summary>
 internal sealed partial class OrderResultPlate : Control
 {
@@ -56,32 +57,23 @@ internal sealed partial class OrderResultPlate : Control
         _faceCg = -1;
     }
 
-    /// <summary>The plate's margin at the sides held upright, in the reference phone's pixels.</summary>
-    private const float UprightIn = 16;
-
-    private Vector2 _origin;                            // where the layout's (0, 0) is drawn: upright the plate's place
-
     /// <summary>
     /// Lays the plate's layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone
-    /// held upright (step P5) over the whole screen, dimmed, the plate at the room's width less 16 a side in its middle — the
-    /// millimetres held landscape gives it.
+    /// held upright over the whole screen, drawn in the frame's layout pixels (PU1r1, <c>OrderResultPlate.Upright.cs</c>).
     /// </summary>
     public void Place(Rect2 area)
     {
         float k = area.Size.X / 1280f;
-        var origin = Vector2.Zero;
         if (Device.Upright(this) is { } f)
         {
-            k = (f.Room.W - 2 * f.Px(UprightIn)) / PlateArea.Size.X;
-            origin = new Vector2(f.Room.X + f.Px(UprightIn), f.Room.Y + (f.Room.H - PlateArea.Size.Y * k) / 2) - PlateArea.Position * k;
+            k = f.Scale;
             area = new Rect2(0, 0, f.Screen.W, f.Screen.H);
         }
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && origin == _origin)
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
-        _origin = origin;
         QueueRedraw();
     }
 
@@ -114,8 +106,13 @@ internal sealed partial class OrderResultPlate : Control
     {
         if (_result is not { } r)
             return;
-        DrawSetTransform(_origin, 0, new Vector2(_k, _k));
-        DrawRect(new Rect2(-_origin / _k, Size / _k), PlateDim);
+        if (Device.Upright(this) is { } f)
+        {
+            DrawUpright(r, f);
+            return;
+        }
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
+        DrawRect(new Rect2(Vector2.Zero, Size / _k), PlateDim);
         var box = PlateArea;
         Ui.DrawPanel(this, box, _k, PlateFill);
         float size = box.Size.Y - 52;

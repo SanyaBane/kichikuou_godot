@@ -1191,3 +1191,32 @@ at the screen's foot never answers a menu by chance. The rows keep their size an
 the frame's middle, upright across the picture's middle, both kept over the question's window under them; upright the
 bar shows Menu under them, as the left side does held landscape (docs/ui/phone-build.md, §5, "After the build: a
 scene's menu in the picture's middle"). The drawings here stay as they were drawn.
+
+## 30. Round P22: the result plate upright (2026-10-31)
+
+Looking at the gallery's `subordinates-result` upright, the owner found the plate after a troop order (R4/R5,
+docs/ui/subordinates.md, §6; `OrderResultPlate`) too low and asked for a new design. As built it is the PC's 780×150
+scaled to the room's width: 232 reference pixels (13.2 mm) high, its lines 20-43 px (1.1-2.4 mm), below the phone's
+type (§6 of docs/ui/style.md: text 2.3-2.7 mm). The round (`tools/ui/mock_result_plate.py`, over the upright pass's
+dumps) draws each variant after Replenish (R4: Haurein (unit 12), 209 → 1,400 for 2,300K, the dump's figures) and
+after Add New Troops (R5: its +100 step for 48,600K; the troops and maximum after it made up):
+
+- **PU1r1 — a card in the middle** (800 px, 45.6 mm): the PC's plate stacked. The title on top over a divider; the
+  face (230 px) with the unit's name and troop type beside it and the troops before → after with the men gained in
+  green; a bar of the troops as wide as the new maximum (the troops before in the ledger's low red, the gain in green,
+  R5's old maximum ticked) with the troops under it; Cost | Budget in two columns under a divider; the click's
+  triangle. In the room's middle, the room less 16 a side, the screen dimmed as now.
+- **PU1r2 — at the thumb** (640 px, 36.4 mm): the same, laid out lower, as a sheet over the orders' panel where the
+  finger pressed; the ledger above dimmed less, the chosen unit's row in view.
+- **PU1r3 — the week report's account** (1010 px, 57.5 mm): the face on top (300 px), the title and the unit under
+  it, then a row a figure — Troops, Gained, Cost, Budget — a label left and its figure right.
+
+The figures are in Cinzel 700, never Shojumaru (docs/ui/style.md, §3), the arrow in the game's font. The agent
+recommends PU1r1: the plate stays in the middle as the owner chose R4/R5 on the PC, at the phone's type, and the bar
+shows at a glance how much of the unit the order filled.
+
+**The owner chose PU1r1 (2026-10-31), the rest of the screen darker than now.** Round P23 (the same script) draws it
+with the screen under the plate dimmed 50% (PU1r1d1), 65% (PU1r1d2) and 80% (PU1r1d3), beside the 27% it has now
+(`OrderResultPlate.PlateDim`). The agent recommends PU1r1d2: the paper ledger goes back behind the plate, and the
+screen under it is still there to see. **The owner chose PU1r1d2 (65%)**, built (docs/ui/phone-build.md, §5, "After
+the build: the result plate upright").

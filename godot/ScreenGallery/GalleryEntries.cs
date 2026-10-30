@@ -183,6 +183,15 @@ internal static partial class GalleryEntries
                 view.Table.Chosen = unit;                       // the order's unit, chosen as its click chose it
                 view.ShowResult(SubordinateResult.ReplenishPreview(s, unit));
             }));
+        yield return new("subordinates-new-troops", "Screens", "Subordinates: Add New Troops' plate", Week18,
+            "The plate's figures are Add New Troops' third step (+100 on the week-18 save) for the unit as it is now; the order is " +
+            "not run (SubordinateResult.AddPreview).",
+            g => SubordinatesScreen(g, (s, view) =>
+            {
+                int unit = Neediest(s);
+                view.Table.Chosen = unit;
+                view.ShowResult(SubordinateResult.AddPreview(s, unit, 2));
+            }));
     }
 
     private static int Neediest(GameState s) =>

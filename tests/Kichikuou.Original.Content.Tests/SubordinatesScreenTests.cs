@@ -140,6 +140,28 @@ public class SubordinatesScreenTests
         Assert.Equal(new SubordinateResult(SubordinateOrderKind.AddTroops, "Haurein", "", 12, 50, 150, 1400, 1500, 486, 655), result);
         Assert.Equal(("New Troops", "50/1,400 → 150/1,500", "+100", "−48,600K", "65,500K"),
             (result.Title, result.TroopsLine, result.Gain, result.CostLine, result.BudgetLine));
+        Assert.Equal(result, SubordinateResult.AddPreview(World(), 12, 2));                  // the gallery's sample: the same plate
+    }
+
+    [Fact]
+    public void The_upright_bar_shows_the_troops_kept_and_gained_and_ticks_a_raised_maximum()
+    {
+        var replenish = new SubordinateResult(SubordinateOrderKind.Replenish, "Haurein", "", 12, 50, 1400, 1400, 1400, 27, 1114);
+        Assert.Equal(new TroopsBar(50 / 1400f, 1350 / 1400f, 0, null, 50 / 1400f), replenish.Bar);
+        Assert.Equal("1,400 / 1,400", replenish.TroopsNow);
+
+        var add = new SubordinateResult(SubordinateOrderKind.AddTroops, "Haurein", "", 12, 50, 150, 1400, 1500, 486, 655);
+        Assert.Equal(new TroopsBar(50 / 1500f, 100 / 1500f, 0, 1400 / 1500f, 50 / 1400f), add.Bar);
+        Assert.Equal("150 / 1,500", add.TroopsNow);
+    }
+
+    [Fact]
+    public void A_unit_above_its_maximum_shows_the_men_it_lost()
+    {
+        // QUIRK: CMD-20 — Replenish sets the troops to the maximum, above it too.
+        var r = new SubordinateResult(SubordinateOrderKind.Replenish, "Haurein", "", 12, 1100, 1000, 1000, 1000, 1, 1140);
+        Assert.Equal(new TroopsBar(1000 / 1100f, 0, 100 / 1100f, null, 1.1f), r.Bar);
+        Assert.Equal("−100", r.Gain);
     }
 
     [Fact]
