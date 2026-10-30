@@ -1340,6 +1340,21 @@ and Close where they stand. On the tablet too (docs/ui/touch.md, "The sides swap
   up; Turn END on the right column's top, "This week" in a band 56 high between it and the commands, so the sheet is 56
   taller (the top-left beside Turn END left empty).
 
+### After the build: a scene's menu in the picture's middle (owner, 2026-10-31)
+
+The owner, looking at the gallery's `scene-menu`: a `]` menu's rows in the screen's middle over the CG, not at the
+thumb, so that a finger tapping the scenes on at the foot never answers a menu by chance (phone.md, §29). The rows'
+figures kept (`PhoneScenes.SceneMenu`):
+
+- **Held landscape**: centred on the frame, as wide as before; kept 32 over the window the menu asks under (its panel's
+  top, passed by `SceneMenuView.Open` from `GamePresenter.MessageWindow`, when it stands in the frame's lower half: 113,
+  121, 123, 131), so a short menu over 121 ends just over it.
+- **Upright**: across the screen centred on the picture's middle, the panel 24 round the rows (the windows' sides);
+  kept 32 over the lower window's place. The bar is free, so the Menu cell shows there under a menu, as held landscape
+  (`GameScreen.UpdatePhone`; the gallery's entry too); Skip and Log still hide under it.
+- **Both**: a menu too long for that room has its rows lower, down to 0.6 of their height; below that they keep it and
+  run down over the window (upright to the bar's foot), as upright's did before.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

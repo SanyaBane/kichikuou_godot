@@ -1779,7 +1779,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             }
             else
             {
-                _sceneMenuView.Open(_presenter.Menu!, _presenter.MenuBoxArea!.Value);
+                _sceneMenuView.Open(_presenter.Menu!, _presenter.MenuBoxArea!.Value, _presenter.MessageWindow?.Panel);
                 _sceneMenuView.Place(PictureArea());
             }
         }

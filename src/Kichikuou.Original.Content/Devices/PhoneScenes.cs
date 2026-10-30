@@ -6,11 +6,12 @@ namespace Kichikuou.Original.Content.Devices;
 /// The scenes on the phone held landscape (docs/ui/phone-build.md, step L1; docs/ui/phone.md, §19 LS1 and LS1m, §14 LW1,
 /// §26 LR2): the picture and the script's windows stay in the frame as on the PC, and our controls go to the black sides.
 /// The left side holds the Menu cell on top and the drawer's Skip and Log at the left thumb, Log at the foot; a <c>]</c>
-/// menu's rows stand at the frame's right foot, at the right thumb; the message log is a paper across the width, from the
+/// menu's rows stand in the frame's middle over the window that asks (owner, 2026-10-31; LS1m had them at the frame's right
+/// foot, where the finger taps the scenes on); the message log is a paper across the width, from the
 /// left side's cells to the right side's room; the week report's card is drawn larger in the frame's middle. Held upright
 /// (step P1; phone.md, §18 PS2, PS2l, PS2b, PS2m, §21 PK1, §8 PW1, §25 PR2) the picture stands between the hole and the
 /// bar (<see cref="PhoneFrame.Frame"/>), the message windows over or under it (<see cref="Window"/>), Menu, Log and Skip
-/// in the bar's left, a <c>]</c> menu's rows at the thumb in the bar's place, the log's paper over the screen, the week
+/// in the bar's left, a <c>]</c> menu's rows across the picture's middle, the log's paper over the screen, the week
 /// report's card at the width. The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>) in the reference phone's
 /// pixels (<see cref="PhoneFrame.Px"/>), the boxes in the canvas's units. Interface only. Engine-independent.
 /// </summary>
@@ -29,12 +30,14 @@ public static class PhoneScenes
     private const float PaperLeft = 2, PaperTop = 14, PaperRight = 6, PaperFoot = 6;
 
     /// <summary>
-    /// A <c>]</c> menu's rows: their height (7.0 mm), the room between them, their right edge's and foot's distance from
-    /// the frame's and the gesture zone's, the narrowest row, the room round the rows in their panel and within a row
-    /// before its text, and the items' type (2.7 mm). The panel keeps <see cref="RowsTop"/> under the screen's top.
+    /// A <c>]</c> menu's rows: their height (7.0 mm), the room between them, their foot's distance from the gesture zone,
+    /// the narrowest row, the room round the rows in their panel and within a row before its text, and the items' type
+    /// (2.7 mm). The panel keeps <see cref="RowsTop"/> under the screen's top and <see cref="WindowClear"/> over the window
+    /// the menu asks under; a long menu's rows get lower down to <see cref="RowsLeast"/> of their height before they rise
+    /// over that window.
     /// </summary>
-    private const float RowHeight = 123, RowGap = 12, RowsRight = 30, RowsFoot = 10, RowsWidth = 500, PanelPad = 16, RowPad = 24,
-        ItemSize = 48, RowsTop = 16;
+    private const float RowHeight = 123, RowGap = 12, RowsFoot = 10, RowsWidth = 500, PanelPad = 16, RowPad = 24,
+        ItemSize = 48, RowsTop = 16, WindowClear = 32, RowsLeast = 0.6f;
 
     /// <summary>The week report's card: as wide as the mock-up's (75.2 mm), unless its height would leave less than this over and under it.</summary>
     private const float ReportWidth = 1320, ReportMargin = 60;
@@ -56,11 +59,9 @@ public static class PhoneScenes
 
     /// <summary>
     /// Upright: a <c>]</c> menu's rows (PS2m): their height (7.4 mm) and the room between them, their sides' distance from
-    /// the screen's, the panel's room over them, the room kept under the lower window; a long menu's rows get lower down
-    /// to this part of their height before they rise over the window's foot.
+    /// the screen's (the panel's sides the windows').
     /// </summary>
-    private const float UpRowHeight = 130, UpRowGap = 14, UpRowSide = 40, UpPanelTop = 30, UpPanelFoot = 8, UpRowsOver = 16,
-        UpRowsLeast = 0.6f;
+    private const float UpRowHeight = 130, UpRowGap = 14, UpRowSide = 40;
 
     /// <summary>Upright: the log's paper's room from the bar and the screen's top (PR2).</summary>
     private const float UpPaperTop = 10, UpPaperFoot = 20;
@@ -103,26 +104,44 @@ public static class PhoneScenes
     public sealed record MenuRows(PhoneFrame.Box Panel, IReadOnlyList<PhoneFrame.Box> Rows, float TextSize, float Pad);
 
     /// <summary>
-    /// A <c>]</c> menu of <paramref name="count"/> items at the frame's right foot (LS1m), the widest item's text
-    /// <paramref name="widest"/> wide at <see cref="ItemTextSize"/>: rows of a finger's height, at least the mock-up's
-    /// width, wider for a long item up to half the frame; a menu too long for the screen's height has its rows (and their
-    /// type) lower, as many as fit.
+    /// A <c>]</c> menu of <paramref name="count"/> items in the picture's middle (owner, 2026-10-31: off the foot, where the
+    /// finger taps the scenes on; LS1m had them at the frame's right foot), the widest item's text <paramref name="widest"/>
+    /// wide at <see cref="ItemTextSize"/>: rows of a finger's height, at least the mock-up's width, wider for a long item up
+    /// to half the frame, kept over the window the menu asks under (its top <paramref name="under"/>, the canvas's units;
+    /// null: none); a menu too long for that room has its rows (and their type) lower, as many as fit.
     /// </summary>
-    public static MenuRows SceneMenu(PhoneFrame f, int count, float widest)
+    public static MenuRows SceneMenu(PhoneFrame f, int count, float widest, float? under = null)
     {
         count = Math.Max(1, count);
         if (f.IsUpright)
             return UprightMenu(f, count, widest);
-        float foot = f.LeftRoom.Bottom - f.Px(RowsFoot), right = f.Frame.Right - f.Px(RowsRight);
-        float room = foot - (f.LeftRoom.Y + f.Px(RowsTop + PanelPad));
-        float scale = Math.Min(1, room / (count * f.Px(RowHeight) + (count - 1) * f.Px(RowGap)));
+        float p = f.Px(PanelPad), floor = f.LeftRoom.Bottom - f.Px(RowsFoot);
+        float foot = under is { } window ? Math.Min(floor, window - f.Px(WindowClear) - p) : floor;
+        var (top, scale) = Centre(count * f.Px(RowHeight) + (count - 1) * f.Px(RowGap), f.Frame.Y + f.Frame.H / 2,
+            f.LeftRoom.Y + f.Px(RowsTop) + p, foot, floor);
         float h = f.Px(RowHeight) * scale, gap = f.Px(RowGap) * scale, pad = f.Px(RowPad) * scale;
         float width = Math.Clamp(widest * scale + 2 * pad, f.Px(RowsWidth), f.Frame.W / 2);
-        float top = foot - count * h - (count - 1) * gap;
-        var rows = Enumerable.Range(0, count).Select(i => new PhoneFrame.Box(right - width, top + i * (h + gap), width, h)).ToList();
-        float p = f.Px(PanelPad);
-        return new MenuRows(new PhoneFrame.Box(right - width - p, top - p, width + 2 * p, foot - top + 2 * p), rows,
+        float x = f.Frame.X + (f.Frame.W - width) / 2;
+        var rows = Enumerable.Range(0, count).Select(i => new PhoneFrame.Box(x, top + i * (h + gap), width, h)).ToList();
+        return new MenuRows(new PhoneFrame.Box(x - p, top - p, width + 2 * p, rows[^1].Bottom - top + 2 * p), rows,
             ItemTextSize(f) * scale, pad);
+    }
+
+    /// <summary>
+    /// The rows' top and scale: rows <paramref name="full"/> high at full height centred on <paramref name="middle"/>,
+    /// within <paramref name="top"/> and <paramref name="foot"/> — lower to fit there, down to <see cref="RowsLeast"/>;
+    /// below that they keep it and run down to <paramref name="floor"/>, over the window.
+    /// </summary>
+    private static (float Top, float Scale) Centre(float full, float middle, float top, float foot, float floor)
+    {
+        float scale = Math.Min(1, (foot - top) / full);
+        if (scale < RowsLeast)
+        {
+            scale = Math.Min(RowsLeast, (floor - top) / full);
+            foot = floor;
+        }
+        float height = full * scale;
+        return (Math.Clamp(middle - height / 2, top, Math.Max(top, foot - height)), scale);
     }
 
     /// <summary>A <c>]</c> menu's items' type at its full height (2.7 mm), at which <see cref="SceneMenu"/>'s widest is measured.</summary>
@@ -230,24 +249,23 @@ public static class PhoneScenes
     private static bool NameOver(LogLine line) => line.Label.Length > 0 && line.Kind != LogKind.Place;
 
     /// <summary>
-    /// A <c>]</c> menu held upright (PS2m): rows across the screen from the bar's foot up, in the script's order, the panel
-    /// round them; under the lower window's foot, the rows lower for a long menu, down to <see cref="UpRowsLeast"/> of their
-    /// height — below that they keep it and rise over the window. The type smaller for an item too wide for its row.
+    /// A <c>]</c> menu held upright (PS2m, moved by the owner, 2026-10-31): rows across the screen centred on the picture's
+    /// middle, in the script's order, the panel round them, kept over the lower window's place (no menu follows a window
+    /// above the picture, docs/ui/gallery.md, §8); the rows lower for a long menu, down to <see cref="RowsLeast"/> of their
+    /// height — below that they keep it and run down over the window to the bar's foot. The type smaller for an item too
+    /// wide for its row.
     /// </summary>
     private static MenuRows UprightMenu(PhoneFrame f, int count, float widest)
     {
-        float foot = f.Bar.Bottom, x = f.Room.X + f.Px(UpRowSide), width = f.Room.W - 2 * f.Px(UpRowSide);
-        float full = count * f.Px(UpRowHeight) + (count - 1) * f.Px(UpRowGap);
-        float under = Window(f, MessageKind.Narration, default, default).Panel.Bottom + f.Px(UpRowsOver + UpPanelTop);
-        float scale = Math.Min(1, (foot - under) / full);
-        if (scale < UpRowsLeast)
-            scale = Math.Min(UpRowsLeast, (foot - (f.Room.Y + f.Px(RowsTop + UpPanelTop))) / full);
+        float x = f.Room.X + f.Px(UpRowSide), width = f.Room.W - 2 * f.Px(UpRowSide);
+        float side = f.Px(UpRowSide) - f.Px(WindowSide);
+        float window = Window(f, MessageKind.Narration, default, default).Panel.Y;
+        var (top, scale) = Centre(count * f.Px(UpRowHeight) + (count - 1) * f.Px(UpRowGap), f.Frame.Y + f.Frame.H / 2,
+            f.Room.Y + f.Px(RowsTop) + side, window - f.Px(WindowClear) - side, f.Bar.Bottom - side);
         float h = f.Px(UpRowHeight) * scale, gap = f.Px(UpRowGap) * scale, pad = f.Px(RowPad);
-        float top = foot - count * h - (count - 1) * gap;
         var rows = Enumerable.Range(0, count).Select(i => new PhoneFrame.Box(x, top + i * (h + gap), width, h)).ToList();
         float type = Math.Min(scale, widest > 0 ? (width - 2 * pad) / widest : 1);
-        float side = f.Px(UpRowSide) - f.Px(WindowSide);
-        return new MenuRows(new PhoneFrame.Box(x - side, top - f.Px(UpPanelTop), width + 2 * side, foot + f.Px(UpPanelFoot) - (top - f.Px(UpPanelTop))),
+        return new MenuRows(new PhoneFrame.Box(x - side, top - side, width + 2 * side, rows[^1].Bottom - top + 2 * side),
             rows, ItemTextSize(f) * type, pad);
     }
 

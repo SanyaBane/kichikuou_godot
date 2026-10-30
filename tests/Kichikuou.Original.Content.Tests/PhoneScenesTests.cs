@@ -49,15 +49,32 @@ public class PhoneScenesTests
     }
 
     [Fact]
-    public void A_short_menus_rows_stand_at_the_frames_right_foot()
+    public void A_short_menus_rows_stand_in_the_frames_middle()
     {
         var rows = PhoneScenes.SceneMenu(Reference, 3, 300);
         Assert.Equal(3, rows.Rows.Count);
-        // LS1m: x1 = FX1 - 30, 500 wide, 123 high, 12 apart, the last one's foot at FOOT - 10.
-        Equal(new(2302 - 500, 1160 - 3 * 123 - 2 * 12, 500, 123), rows.Rows[0]);
-        Equal(new(2302 - 500, 1160 - 123, 500, 123), rows.Rows[2]);
-        Equal(new(2302 - 500 - 16, 1160 - 393 - 16, 532, 393 + 32), rows.Panel);
+        // LS1m's rows (500 wide, 123 high, 12 apart: 393) centred on the frame (380 + 1952 / 2, 1220 / 2; owner, 2026-10-31).
+        Equal(new(1356 - 250, 610 - 196.5f, 500, 123), rows.Rows[0]);
+        Equal(new(1356 - 250, 610 + 196.5f - 123, 500, 123), rows.Rows[2]);
+        Equal(new(1356 - 250 - 16, 610 - 196.5f - 16, 532, 393 + 32), rows.Panel);
         Assert.Equal(48, rows.TextSize, Close);
+    }
+
+    [Fact]
+    public void A_menus_rows_keep_over_the_window_that_asks()
+    {
+        // 121's top at 512 of the 800 screen pixels: the panel's foot 32 over it.
+        var rows = PhoneScenes.SceneMenu(Reference, 3, 300, 781);
+        Assert.Equal(781 - 32, rows.Panel.Bottom, Close);
+        Assert.Equal(123, rows.Rows[0].H, Close);
+
+        var eight = PhoneScenes.SceneMenu(Reference, 8, 300, 781);                      // lower, still over the window
+        Assert.Equal(781 - 32 - 16, eight.Rows[7].Bottom, Close);
+        Assert.True(eight.Rows[0].H < 123 && eight.Rows[0].Y >= 32 - Close);
+
+        var ten = PhoneScenes.SceneMenu(Reference, 10, 300, 781);                       // at 0.6, over the window's top
+        Assert.Equal(123 * 0.6f, ten.Rows[0].H, Close);
+        Assert.True(ten.Rows[9].Bottom > 781);
     }
 
     [Fact]

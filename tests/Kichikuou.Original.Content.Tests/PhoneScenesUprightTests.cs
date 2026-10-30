@@ -81,23 +81,30 @@ public class PhoneScenesUprightTests
     }
 
     [Fact]
-    public void A_scene_menus_rows_stand_at_the_thumb_under_the_lower_window()
+    public void A_scene_menus_rows_stand_over_the_pictures_middle()
     {
+        // PS2m's rows (130 high, 14 apart: 418) centred on the picture (owner, 2026-10-31), the panel 24 round them.
+        float middle = (SceneTop + SceneFoot) / 2;
         var menu = PhoneScenes.SceneMenu(Reference, 3, 300);
         Assert.Equal(3, menu.Rows.Count);
-        Equal(new(40, 2652 - 3 * 130 - 2 * 14, 1140, 130), menu.Rows[0]);
-        Equal(new(40, 2652 - 130, 1140, 130), menu.Rows[2]);
-        Equal(new(16, 2234 - 30, 1188, 2660 - 2204), menu.Panel);
+        Equal(new(40, middle - 209, 1140, 130), menu.Rows[0]);
+        Equal(new(40, middle + 209 - 130, 1140, 130), menu.Rows[2]);
+        Equal(new(16, middle - 209 - 24, 1188, 418 + 48), menu.Panel);
         Assert.Equal(PhoneScenes.ItemTextSize(Reference), menu.TextSize, Close);
 
-        float under = SceneFoot + 64 + 420 + 16 + 30;
-        var five = PhoneScenes.SceneMenu(Reference, 5, 300);                            // lower, still under the window
-        Assert.Equal(under, five.Rows[0].Y, Close);
-        Assert.Equal(2652, five.Rows[4].Bottom, Close);
+        float over = SceneFoot + 64 - 32 - 24;                                          // the lower window's top, less the room and the panel's
+        var ten = PhoneScenes.SceneMenu(Reference, 10, 300);                            // higher, still over the window
+        Assert.Equal(130, ten.Rows[0].H, Close);
+        Assert.Equal(over, ten.Rows[9].Bottom, Close);
 
-        var seven = PhoneScenes.SceneMenu(Reference, 7, 300);                           // at 0.6, over the window's foot
-        Assert.Equal(130 * 0.6f, seven.Rows[0].H, Close);
-        Assert.True(seven.Rows[0].Y < under);
+        var twelve = PhoneScenes.SceneMenu(Reference, 12, 300);                         // lower, still over the window
+        Assert.True(twelve.Rows[0].H < 130);
+        Assert.Equal(110 + 16 + 24, twelve.Rows[0].Y, Close);
+        Assert.Equal(over, twelve.Rows[11].Bottom, Close);
+
+        var twenty = PhoneScenes.SceneMenu(Reference, 20, 300);                         // at 0.6, over the window's top
+        Assert.Equal(130 * 0.6f, twenty.Rows[0].H, Close);
+        Assert.True(twenty.Rows[19].Bottom > SceneFoot + 64);
 
         var wide = PhoneScenes.SceneMenu(Reference, 2, 2000);                           // an item too wide: smaller type
         Assert.Equal(PhoneScenes.ItemTextSize(Reference) * (1140 - 48) / 2000, wide.TextSize, Close);

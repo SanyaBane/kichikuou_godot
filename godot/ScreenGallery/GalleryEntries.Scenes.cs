@@ -95,11 +95,12 @@ internal static partial class GalleryEntries
             p.CloseMenu();
         }
         var window = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
-        window.Show(MessageWindow.SampleOf(asking, ["The rebels gather near Oaks.", "What shall we do, King Rance?"]), false, null, null);
+        var question = MessageWindow.SampleOf(asking, ["The rebels gather near Oaks.", "What shall we do, King Rance?"]);
+        window.Show(question, false, null, null);
         window.Complete();
         var view = g.Add(new SceneMenuView(g.Font));
-        view.Open(menu, box);
-        var cell = Device.Layout == DeviceLayout.PhoneUpright ? null : MenuCell(g);   // the drawer hides under a menu, Menu stays (LS1m); upright the rows take the bar (PS2m)
+        view.Open(menu, box, question.Panel);
+        var cell = MenuCell(g);             // the drawer hides under a menu, Menu stays (LS1m; upright in the bar, PS2m)
         return area =>
         {
             window.Place(area);

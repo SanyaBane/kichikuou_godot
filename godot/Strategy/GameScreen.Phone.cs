@@ -42,13 +42,13 @@ public partial class GameScreen
     /// <summary>
     /// The Menu cell on the phone, each frame: on top of the left side held landscape, in the bar's left upright, wherever
     /// a game is shown and no screen of ours takes the side or waits on its own (a box, the log, the options, our battle
-    /// and full screens, the command panel; upright a scene's menu too, whose rows take the bar's place); the sheet, once
-    /// open, until it closes.
+    /// and full screens, the command panel; upright a province's sheet too, whose bar holds Return alone); the sheet,
+    /// once open, until it closes.
     /// </summary>
     private void UpdatePhone()
     {
         _menuSheet.Visible = (PhoneLandscape || PhoneUpright) && (_menuSheet.IsOpen
-            || MenuCellShown && !(PhoneUpright && (_sceneMenuView.Visible || _provinceView.Visible)));  // PM1c: the sheet's bar holds Return alone
+            || MenuCellShown && !(PhoneUpright && _provinceView.Visible));     // PM1c: the sheet's bar holds Return alone
         if (_menuSheet.Visible)
             _menuSheet.Place();
     }

@@ -314,7 +314,8 @@ on the Poco since 2026-10-28 (phone-build.md, step F, "The battle's speed"; the 
 optimized, `Directory.Build.props`). Step L1 is built, awaiting the owner's look on the phone (phone-build.md, "Step L1,
 where it stands"): the left side's Menu cell and the Menu sheet LN3 (`godot/Strategy/MenuSheetView`,
 `GameScreen.Phone.cs`, on `Original.Content/Devices/PhoneMenu`), Skip and Log in the side, a `]` menu's rows at the
-frame's right foot, the log LR2 and the week report LW1 (on `Original.Content/Devices/PhoneScenes`), each view's phone
+frame's right foot (since 2026-10-31 in the picture's middle over the asking window, both ways held — owner, so a tap at
+the foot never answers one; phone-build.md, §5), the log LR2 and the week report LW1 (on `Original.Content/Devices/PhoneScenes`), each view's phone
 branch keyed by `Device.Landscape(view)`. Step L2 is built, awaiting the owner's look on the phone (phone-build.md,
 "Step L2, where it stands"): the map's status and week's tags in the sides, Commands at the right thumb, the command panel
 and a province's commands as the sides' rails, its card beside it, 2 mm plates, no room under a strip
@@ -374,7 +375,7 @@ shows the tablet's at the width between the hole and the bar. Step P1 is built, 
 (phone-build.md, "Step P1, where it stands"): the scenes upright — `PhoneFrame.Bar` at the foot with Menu, Log and Skip at
 its left (PK1), the picture between the hole and it, the left portrait's window above the picture while it shows and every
 other under it, the script's breaks at the phone's type (`PhoneScenes.Window`, `MessageWindow.TextRect`), a `]` menu's
-rows in the bar's place, the Menu sheet in rows from the thumb up (PN1, PN1q), the log with the names over the lines
+rows in the bar's place (since 2026-10-31 across the picture's middle, Menu in the bar), the Menu sheet in rows from the thumb up (PN1, PN1q), the log with the names over the lines
 (PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Upright(view)`.
 Step P2 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P2, where it stands"): the map upright —
 the status a band on top, the map's whole height at the width under it (`godot/Strategy/UprightMapView`, drawn from the

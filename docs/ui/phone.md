@@ -1182,3 +1182,12 @@ gallery's `command-menu`, the owner swapped them: the game's commands at the rig
 caption, "This week"), Think, All Data, Save, Load and → Leazas Castle at the left; Turn END and Close stay where they
 stand (docs/ui/phone-build.md, §5, "After the build: the week's commands at the right thumb"). The drawings here stay as
 they were drawn.
+
+## 29. After the build: a scene's menu in the picture's middle (owner, 2026-10-31)
+
+LS1m and PS2m put a `]` menu's rows at the thumb: at the frame's right foot, and in the bar's place. Looking at the
+gallery's `scene-menu`, the owner moved them to the screen's middle, over the CG, so that a finger tapping the scenes on
+at the screen's foot never answers a menu by chance. The rows keep their size and order; held landscape they stand in
+the frame's middle, upright across the picture's middle, both kept over the question's window under them; upright the
+bar shows Menu under them, as the left side does held landscape (docs/ui/phone-build.md, §5, "After the build: a
+scene's menu in the picture's middle"). The drawings here stay as they were drawn.

@@ -9,9 +9,10 @@ namespace Kichikuou.Game.Strategy;
 /// Our <c>]</c> menu (docs/ui/messages.md, §5 step 3; the owner's mock-up M1, 2026-10-18): a scene's menu as a lacquer
 /// panel of rows where the original's selection box opens — the rows as the command panel's, the hovered one lit; the
 /// marks ○ a gold ring, × a dim cross, △ a gold triangle, the text in the game's font. A row's click answers the
-/// script's menu with its item (1-based); a right click cancels (0), as the original's box. On the phone held landscape
-/// the rows stand at the frame's right foot, at the right thumb, in finger rows (docs/ui/phone.md, §19, LS1m). Laid out
-/// in the 1280×800 screen's pixels, scaled with the picture.
+/// script's menu with its item (1-based); a right click cancels (0), as the original's box. On the phone the rows stand
+/// in finger rows in the picture's middle, over the window that asks (owner, 2026-10-31: off the foot, where the finger
+/// taps the scenes on; docs/ui/phone.md, §19 LS1m, §18 PS2m). Laid out in the 1280×800 screen's pixels, scaled with the
+/// picture.
 /// </summary>
 internal sealed partial class SceneMenuView : Control
 {
@@ -35,6 +36,7 @@ internal sealed partial class SceneMenuView : Control
     private FontFile _gothic;
     private MenuView? _menu;
     private Rect2 _box;                             // the original's box (screen pixels): our panel starts at its corner
+    private Rect2? _asking;                         // the message window the menu asks under (screen pixels), if any
     private float _width;
     private float _k = 1;                           // window pixels to a screen pixel
     private PhoneFrame? _phone;                     // the phone held landscape: the rows at the frame's right foot
@@ -71,8 +73,8 @@ internal sealed partial class SceneMenuView : Control
     }
 
     /// <summary>
-    /// On the phone held landscape (docs/ui/phone.md, §19, LS1m) the rows at the frame's right foot, at the right thumb, in
-    /// finger rows (<see cref="PhoneScenes.SceneMenu"/>), in the screen's pixels; elsewhere none (the original box's place).
+    /// On the phone the rows in the picture's middle in finger rows, over the window that asks
+    /// (<see cref="PhoneScenes.SceneMenu"/>), in the screen's pixels; elsewhere none (the original box's place).
     /// </summary>
     private void PhoneLayout()
     {
@@ -82,7 +84,9 @@ internal sealed partial class SceneMenuView : Control
         float k = f.Scale;                                              // the canvas's units a screen pixel
         int size = (int)Math.Round(PhoneScenes.ItemTextSize(f) / k);
         float widest = menu.Items.Max(i => _gothic.GetStringSize(i.Text, fontSize: size).X + (i.Mark is null ? 0 : 34 * size / 30f)) * k;
-        var rows = PhoneScenes.SceneMenu(f, menu.Items.Count, widest);
+        // Held landscape the script's window stays in the frame: the rows keep over one in its lower half (113, 121, 123, 131).
+        float? under = _asking is { } w && w.GetCenter().Y > 400 ? f.Frame.Y + w.Position.Y * k : null;
+        var rows = PhoneScenes.SceneMenu(f, menu.Items.Count, widest, under);
         var (x0, y0) = f.IsUpright ? (0f, 0f) : (f.Frame.X, f.Frame.Y);  // upright the layer covers the screen
         Rect2 Screen(PhoneFrame.Box b) => new((b.X - x0) / k, (b.Y - y0) / k, b.W / k, b.H / k);
         _phoneRows = [.. rows.Rows.Select(Screen)];
@@ -90,11 +94,15 @@ internal sealed partial class SceneMenuView : Control
         _phoneText = Math.Max(8, (int)Math.Round(rows.TextSize / k));
     }
 
-    /// <summary>Shows <paramref name="menu"/> at the original box's place (<paramref name="box"/>, screen pixels).</summary>
-    public void Open(MenuView menu, (int X, int Y, int W, int H) box)
+    /// <summary>
+    /// Shows <paramref name="menu"/> at the original box's place (<paramref name="box"/>, screen pixels), on the phone over
+    /// the message window <paramref name="asking"/> under it (its panel, screen pixels; null: none).
+    /// </summary>
+    public void Open(MenuView menu, (int X, int Y, int W, int H) box, (int X, int Y, int W, int H)? asking = null)
     {
         _menu = menu;
         _box = new Rect2(box.X, box.Y, box.W, box.H);
+        _asking = asking is var (ax, ay, aw, ah) ? new Rect2(ax, ay, aw, ah) : null;
         _width = PanelWidth(menu);
         _hovered = _pressed = -1;
         Visible = true;
@@ -122,7 +130,7 @@ internal sealed partial class SceneMenuView : Control
     {
         var phone = Device.Held(this);
         if (phone is { IsUpright: true })
-            area = new Rect2(Vector2.Zero, GetParentAreaSize());        // the rows under the picture, in the bar's place (PS2m)
+            area = new Rect2(Vector2.Zero, GetParentAreaSize());        // the rows over the picture, the windows round it (PS2m)
         float k = phone is { IsUpright: true } up ? up.Scale : area.Size.X / 1280f;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
