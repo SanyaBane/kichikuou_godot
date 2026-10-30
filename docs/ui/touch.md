@@ -549,6 +549,14 @@ stays P1 for now):
   `-building-tip`) and in the unattended `--touch` look from the week-18 save (`--until deployment`): its taps on Close
   and off the rails cancel the panel. Not yet on the tablet.
 
+**The sides swapped (owner, 2026-10-30).** Looking at the gallery's `command-menu`, the owner asked for the game's
+commands on the right and Think, All Data, Save, Load and → Leazas Castle on the left, Turn END and Close where they
+stand; on the phone held either way too (docs/ui/phone-build.md, §5). The rails now: left, the other items from the foot
+up (the lowest's top at 732), the rail as high as they need, no caption; right, Turn END 62 high at the top, THIS WEEK 8
+under it over a divider (34 under it), the week's commands from the foot up (the first row 46 under Turn END, the lowest's
+top at 656), Close at the foot as before. Five commands make the right rail 320-796 (it was 340); looked at by the agent
+in the gallery's touch pass (`command-menu`, `-spent`, `-building`).
+
 ## The province menu within the thumbs' reach (owner, 2026-10-25)
 
 After the command panel's rails, the owner asked for the province menu's mock-ups too, doubting it: the tap on a province

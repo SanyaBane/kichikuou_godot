@@ -4,13 +4,14 @@ using Kichikuou.Original.Content.Devices;
 namespace Kichikuou.Game.Strategy;
 
 // The command panel on the phone held landscape (docs/ui/phone-build.md, step L2; docs/ui/phone.md, §12, LM1b): the rails
-// are the black sides — the week's commands in the left under their caption (the status's figures over it are the
-// strip's), Turn END on the right's top and the other items from the foot up over Close (the map's button, CommandsButton)
-// — the rows two lines, the tag over the name, 14.5 × 7.0 mm; the map dimmed, a tap anywhere but a row closes the panel.
-// Over the whole screen in the frame's layout pixels (PhoneUnits); the rows' places are PhoneMap's. Held upright (step P2;
-// phone.md, §3, PM1b) the panel is a sheet over the map's foot — the week's commands in the left column and the other items
-// in the right, both from the foot up, "This week" and Turn END over them, a row on one line, 7.1 mm — Close at the bar's
-// right where Commands stood, the map above the sheet dimmed (PhoneMapUpright.Commands).
+// are the black sides — the other items from the foot up in the left (the status's figures over them are the strip's),
+// Turn END on the right's top and the week's commands under their caption from the foot up over Close (the map's button,
+// CommandsButton; owner, 2026-10-30: the week's commands at the right thumb) — the rows two lines, the tag over the name,
+// 14.5 × 7.0 mm; the map dimmed, a tap anywhere but a row closes the panel. Over the whole screen in the frame's layout
+// pixels (PhoneUnits); the rows' places are PhoneMap's. Held upright (step P2; phone.md, §3, PM1b) the panel is a sheet
+// over the map's foot — the other items in the left column and the week's commands in the right, both from the foot up,
+// Turn END and "This week" over the commands, a row on one line, 7.1 mm — Close at the bar's right where Commands stood,
+// the map above the sheet dimmed (PhoneMapUpright.Commands).
 internal sealed partial class CommandMenuView
 {
     private PhoneFrame? _phone;                         // the phone: the rails in the sides, or the sheet upright
@@ -108,7 +109,7 @@ internal sealed partial class CommandMenuView
             modulate: Color.Color8(250, 226, 160));
     }
 
-    /// <summary>The sheet held upright (PM1b): the map over it dimmed, "This week" and Turn END on top, the two columns from the foot up.</summary>
+    /// <summary>The sheet held upright (PM1b): the map over it dimmed, Turn END and "This week" over the commands, the two columns from the foot up.</summary>
     private void DrawUpright(PhoneFrame f, PhoneUnits u)
     {
         var sheet = Sheet(f);

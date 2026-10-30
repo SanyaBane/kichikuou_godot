@@ -61,24 +61,27 @@ public class PhoneMapUprightTests
     [Fact]
     public void The_command_panel_is_a_sheet_over_the_maps_foot_two_columns_from_the_foot_up()
     {
-        // command_panel(d, 1634, BAR[0] - 40) in a sheet from 1610: columns 586 wide at 16 and 618, rows 124 high 14 apart.
+        // command_panel(d, 1634, BAR[0] - 40), the columns swapped (owner, 2026-10-30): columns 586 wide at 16 and 618, rows
+        // 124 high 14 apart; Turn END top right, "This week" 56 high between it and the commands, the sheet from 1554.
         var sheet = PhoneMapUpright.Commands(Reference, Band, 5, 5);
-        Equal(new(0, 1610, 1220, 882), sheet.Sheet);
-        Equal(new(16, 1634, 586, 124), sheet.Caption);
-        Equal(new(618, 1634, 586, 124), sheet.TurnEnd);
-        Equal(new(16, 2340, 586, 124), sheet.Commands[0]);
-        Equal(new(16, 1788, 586, 124), sheet.Commands[4]);
-        Equal(new(618, 2340, 586, 124), sheet.Links[0]);
+        Equal(new(0, 1554, 1220, 938), sheet.Sheet);
+        Equal(new(618, 1578, 586, 124), sheet.TurnEnd);
+        Equal(new(618, 1732, 586, 56), sheet.Caption);
+        Equal(new(618, 2340, 586, 124), sheet.Commands[0]);
+        Equal(new(618, 1788, 586, 124), sheet.Commands[4]);
+        Equal(new(16, 2340, 586, 124), sheet.Links[0]);
+        Equal(new(16, 1788, 586, 124), sheet.Links[4]);
         // A shorter column is as low; the sheet is as tall as the longer one.
         var four = PhoneMapUpright.Commands(Reference, Band, 4, 6);
         Assert.Equal(4, four.Commands.Count);
         Assert.Equal(1788 - 138, four.Links[5].Y, Close);
-        Assert.Equal(1610 - 138, four.Sheet.Y, Close);
+        Assert.Equal(1554 - 138, four.Sheet.Y, Close);
         // Too many rows for the room: lower, the sheet kept 240 under the band.
         var many = PhoneMapUpright.Commands(Reference, Band, 14, 5);
         Assert.Equal(390 + 240, many.Sheet.Y, Close);
         Assert.True(many.Commands[0].H < 124);
-        Assert.True(many.Commands[13].Y >= many.TurnEnd.Bottom);
+        Assert.Equal(many.Caption.Bottom, many.Commands[13].Y, Close);
+        Assert.True(many.Caption.Y >= many.TurnEnd.Bottom);
     }
 
     [Fact]

@@ -12,9 +12,10 @@ namespace Kichikuou.Game.Strategy;
 /// (0, back to the map), as the original's menu. Load/Save is two rows, Load and Save, the list each opens answered
 /// with the choice (<see cref="LoadSaveShortcut"/>). Laid out in the 1280×800 screen's pixels, scaled with the picture.
 /// In the touch mode (the owner's A, 2026-10-25, docs/ui/touch.md, "The command panel within the thumbs' reach") the rows
-/// are a finger's height on two rails in the sides' lower halves, as the battle's: the week's commands left, the other items
-/// right, each from the foot up, Turn END on the right rail's top; the map's button, reading Close, stands at the right
-/// rail's foot. A tap off the rails cancels, as the button does (owner, 2026-10-24: a touch screen has no right button).
+/// are a finger's height on two rails in the sides' lower halves, as the battle's: the other items left, the week's commands
+/// right under their caption (owner, 2026-10-30: at the right thumb), each from the foot up, Turn END on the right rail's top;
+/// the map's button, reading Close, stands at the right rail's foot. A tap off the rails cancels, as the button does (owner,
+/// 2026-10-24: a touch screen has no right button).
 /// On the phone held landscape the rails are the black sides (docs/ui/phone.md, §12, LM1b; <c>CommandMenuView.Phone.cs</c>).
 /// </summary>
 internal sealed partial class CommandMenuView : Control
@@ -25,11 +26,11 @@ internal sealed partial class CommandMenuView : Control
     // Debug → Menu Row Height says otherwise (MenuRowsChoice).
     private const float Pad = 18;
     // The touch mode's layout: rails 244 wide at the picture's sides down to its foot, rows 220×46 (45 × 9.3 mm on the
-    // tablet) 54 apart; the lowest command's top at 732, the lowest item's at 656 over the Close button (CommandsButton:
-    // 220×72 at 1044, 712); Turn END 62 high, 26 over the items with a divider between.
+    // tablet) 54 apart; the lowest item's top at 732, the lowest command's at 656 over the Close button (CommandsButton:
+    // 220×72 at 1044, 712); Turn END 62 high, 46 over the commands: the caption 8 under it, a divider 34, the first row 46.
     private const float RailW = 244, LeftRail = 4, RightRail = 1032, RailFoot = 796, RailInset = 12;
-    private const float TouchRowW = 220, TouchRowH = 46, TouchPitch = 54, TouchEndH = 62, TouchEndGap = 26;
-    private const float CommandFoot = 732, LinkFoot = 656, RailHead = 50;
+    private const float TouchRowW = 220, TouchRowH = 46, TouchPitch = 54, TouchEndH = 62;
+    private const float LinkFoot = 732, CommandFoot = 656, RailHead = 46;
 
     private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
 
@@ -141,25 +142,28 @@ internal sealed partial class CommandMenuView : Control
 
     private float Line(float width) => Lacquer.Line(width, _k);
 
-    /// <summary>The touch mode's top item on the right rail (the highest of the items, from the foot up).</summary>
+    /// <summary>The touch mode's top item on the left rail (the highest of the items, from the foot up).</summary>
     private float TopLink => LinkFoot - Math.Max(0, Links - 1) * TouchPitch;
 
-    /// <summary>The touch mode's left rail: the week's commands under their caption.</summary>
+    /// <summary>The touch mode's Turn END on the right rail's top, over the commands' caption.</summary>
+    private float TurnEndTop => CommandFoot - Math.Max(0, Commands - 1) * TouchPitch - RailHead - TouchEndH;
+
+    /// <summary>The touch mode's left rail: the other items.</summary>
     private Rect2 LeftRailRect
     {
         get
         {
-            float top = CommandFoot - Math.Max(0, Commands - 1) * TouchPitch - RailHead;
+            float top = TopLink - RailInset;
             return new Rect2(LeftRail, top, RailW, RailFoot - top);
         }
     }
 
-    /// <summary>The touch mode's right rail: Turn END, the other items, the map's button at its foot.</summary>
+    /// <summary>The touch mode's right rail: Turn END, the week's commands under their caption, the map's button at its foot.</summary>
     private Rect2 RightRailRect
     {
         get
         {
-            float top = TopLink - TouchEndGap - TouchEndH - RailInset;
+            float top = TurnEndTop - RailInset;
             return new Rect2(RightRail, top, RailW, RailFoot - top);
         }
     }
@@ -169,12 +173,12 @@ internal sealed partial class CommandMenuView : Control
         float x = PanelX, y = PanelY;
         if (Touch)
         {
-            // From the foot up, as the battle's rails: the first command lowest on the left, the first item lowest on the right.
+            // From the foot up, as the battle's rails: the first command lowest on the right, the first item lowest on the left.
             if (row < Commands)
-                return new Rect2(LeftRail + RailInset, CommandFoot - row * TouchPitch, TouchRowW, TouchRowH);
+                return new Rect2(RightRail + RailInset, CommandFoot - row * TouchPitch, TouchRowW, TouchRowH);
             if (row < Commands + Links)
-                return new Rect2(RightRail + RailInset, LinkFoot - (row - Commands) * TouchPitch, TouchRowW, TouchRowH);
-            return new Rect2(RightRail + RailInset, TopLink - TouchEndGap - TouchEndH, TouchRowW, TouchEndH);
+                return new Rect2(LeftRail + RailInset, LinkFoot - (row - Commands) * TouchPitch, TouchRowW, TouchRowH);
+            return new Rect2(RightRail + RailInset, TurnEndTop, TouchRowW, TouchEndH);
         }
         if (row < Commands)
             return new Rect2(x + 14, y + CommandsTop + row * RowPitch, Width - 28, RowH);
@@ -277,21 +281,20 @@ internal sealed partial class CommandMenuView : Control
     }
 
     /// <summary>
-    /// The touch mode's two rails (the owner's A): the left one's caption over the week's commands, a divider between the
-    /// right one's Turn END and the other items; the map's button draws itself, as Close, at the right rail's foot.
+    /// The touch mode's two rails (the owner's A): the left one with the other items; the right one's Turn END, then the
+    /// caption over a divider and the week's commands; the map's button draws itself, as Close, at the right rail's foot.
     /// </summary>
     private void DrawRails()
     {
-        var left = LeftRailRect;
         var right = RightRailRect;
-        Ui.DrawPanel(this, left, _k);
+        Ui.DrawPanel(this, LeftRailRect, _k);
         Ui.DrawPanel(this, right, _k);
         const string caption = "THIS WEEK";
+        float head = TurnEndTop + TouchEndH;
         float cw = _cinzel.GetStringSize(caption, fontSize: CaptionSize).X;
-        DrawString(_cinzel, new Vector2(left.GetCenter().X - cw / 2, Lacquer.Baseline(new Rect2(left.Position.X, left.Position.Y + 12, RailW, 20), _cinzel, CaptionSize)),
+        DrawString(_cinzel, new Vector2(right.GetCenter().X - cw / 2, Lacquer.Baseline(new Rect2(right.Position.X, head + 8, RailW, 20), _cinzel, CaptionSize)),
             caption, fontSize: CaptionSize, modulate: Ui.Subtitle);
-        Ui.DrawDivider(this, left.Position.X + 16, left.End.X - 16, left.Position.Y + 38, _k);
-        Ui.DrawDivider(this, right.Position.X + 16, right.End.X - 16, TopLink - TouchEndGap / 2, _k);
+        Ui.DrawDivider(this, right.Position.X + 16, right.End.X - 16, head + 34, _k);
     }
 
     private void DrawCommand(int r)

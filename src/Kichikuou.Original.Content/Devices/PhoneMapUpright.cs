@@ -7,8 +7,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// PM1c): the status on top (<see cref="StatusBand"/>: the date, the budget, the troops, the week's uses as tags in rows),
 /// the map's whole height at the screen's width under it down to the bar (<see cref="MapBox"/>, scrolled sideways only,
 /// <see cref="MapView"/>), the bar with Commands at the right thumb (<see cref="CommandsCell"/>; Menu, Log and Skip stay at
-/// its left, PK1). Commands opens the command panel as a sheet over the map's foot (<see cref="Commands"/>: the week's
-/// commands in the left column and the other items in the right, both from the foot up, Turn END at the top right), Close
+/// its left, PK1). Commands opens the command panel as a sheet over the map's foot (<see cref="Commands"/>: the other items
+/// in the left column and the week's commands in the right, both from the foot up, Turn END at the top right; owner,
+/// 2026-10-30: the week's commands at the right thumb), Close
 /// where Commands was; a province's card and commands rise as a sheet too (<see cref="Province"/>), Return there, and the
 /// map is scrolled up so the ringed province stays over the sheet (<see cref="MapView.Lift"/>). The figures are the
 /// mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>m1()</c>) in the reference phone's pixels (<see cref="PhoneFrame.Px"/>),
@@ -32,9 +33,11 @@ public static class PhoneMapUpright
 
     /// <summary>
     /// The command panel's sheet (PM1b): its padding over Turn END, its rows' foot over the map's, the columns' margins and
-    /// the room between them, the rows' height (7.1 mm) and the room between them, the room under Turn END.
+    /// the room between them, the rows' height (7.1 mm) and the room between them, the room under Turn END, "This week"'s
+    /// band under it over the commands.
     /// </summary>
-    private const float SheetTop = 24, SheetFoot = 28, ColumnSide = 16, RowHeight = 124, RowGap = 14, TurnEndGap = 30;
+    private const float SheetTop = 24, SheetFoot = 28, ColumnSide = 16, RowHeight = 124, RowGap = 14, TurnEndGap = 30,
+        CaptionHeight = 56;
 
     /// <summary>The sheets' least distance from the status band: some of the map always shows.</summary>
     private const float SheetLeast = 240;
@@ -136,9 +139,9 @@ public static class PhoneMapUpright
         IReadOnlyList<PhoneFrame.Box> Commands, IReadOnlyList<PhoneFrame.Box> Links);
 
     /// <summary>
-    /// The command panel as a sheet over the map's foot (PM1b): two columns side by side, <paramref name="commands"/> of
-    /// the week's in the left and <paramref name="links"/> other items in the right, both from the foot up, "This week" and
-    /// Turn END over them; as tall as the longer column, its rows lower when it would come within
+    /// The command panel as a sheet over the map's foot (PM1b): two columns side by side, <paramref name="links"/> other
+    /// items in the left and <paramref name="commands"/> of the week's in the right, both from the foot up, Turn END and
+    /// "This week" over the commands; as tall as the longer column, its rows lower when it would come within
     /// <see cref="SheetLeast"/> of <paramref name="band"/>.
     /// </summary>
     public static CommandSheet Commands(PhoneFrame f, PhoneFrame.Box band, int commands, int links)
@@ -146,17 +149,18 @@ public static class PhoneMapUpright
         float colw = (f.Room.W - 3 * f.Px(ColumnSide)) / 2;
         float lx = f.Room.X + f.Px(ColumnSide), rx = lx + colw + f.Px(ColumnSide);
         float foot = MapFoot(f) - f.Px(SheetFoot);
-        float head = f.Px(SheetTop + RowHeight + TurnEndGap);
+        float head = f.Px(SheetTop + RowHeight + TurnEndGap + CaptionHeight);
         float least = band.Bottom + f.Px(SheetLeast) + head;
         int n = Math.Max(commands, links);
         float scale = Rows(f, n, RowHeight, RowGap, foot - least);
         float h = f.Px(RowHeight) * scale, g = f.Px(RowGap) * scale;
         float rowsTop = foot - n * h - Math.Max(0, n - 1) * g;
-        float turnTop = rowsTop - f.Px(TurnEndGap + RowHeight);
+        float captionTop = rowsTop - f.Px(CaptionHeight);
+        float turnTop = captionTop - f.Px(TurnEndGap + RowHeight);
         var sheet = new PhoneFrame.Box(f.Room.X, turnTop - f.Px(SheetTop), f.Room.W, MapFoot(f) - turnTop + f.Px(SheetTop));
-        return new CommandSheet(sheet, new PhoneFrame.Box(lx, turnTop, colw, f.Px(RowHeight)),
-            new PhoneFrame.Box(rx, turnTop, colw, f.Px(RowHeight)), Stack(lx, colw, foot, h, g, commands),
-            Stack(rx, colw, foot, h, g, links));
+        return new CommandSheet(sheet, new PhoneFrame.Box(rx, captionTop, colw, f.Px(CaptionHeight)),
+            new PhoneFrame.Box(rx, turnTop, colw, f.Px(RowHeight)), Stack(rx, colw, foot, h, g, commands),
+            Stack(lx, colw, foot, h, g, links));
     }
 
     // ---------------------------------------------------------------- a province

@@ -195,7 +195,8 @@ or `--touch`; the PC's mouse interface does not change.
   map ends the week (owner, 2026-10-25; the phone's mock-up M1 put it on the map's rail, asking first).
 - **Choices within the thumbs' reach** (~70 mm round where each hand holds its side): the battle's commands and the map's
   command panel on rails in the sides' lower halves, filled from the foot up, the risky button (Retreat, Turn END) at a
-  rail's top, furthest from the resting thumb (docs/ui/touch.md, 2026-10-25). What belongs to a place on the map shows
+  rail's top, furthest from the resting thumb (docs/ui/touch.md, 2026-10-25); the map's commands, the week's, on the right
+  rail under Turn END, the other items on the left (owner, 2026-10-30). What belongs to a place on the map shows
   there, the choices still on the rail: the province menu's card beside the tapped province, its commands on the right
   rail (the owner's B).
 - Controls sit where the thumb learns them (the drawer at the left edge, Commands bottom right), never over a face, a

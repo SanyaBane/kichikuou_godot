@@ -1327,6 +1327,19 @@ mock-ups (phone.md) had the act at the right thumb; the build swaps each pair, t
 - **Kept**: the battle's retreat question (the tablet and the phone) keeps Cease Retreat | Retreat, Retreat farthest
   from the rail's Retreat it answers (the owner's A2, docs/ui/touch.md), so a second tap there never confirms it.
 
+### After the build: the week's commands at the right thumb (owner, 2026-10-30)
+
+The owner, looking at the gallery's `command-menu`: the command panel's game commands (Subordinates, Merchant, Treasure,
+Harem, Construction) on the right, the other items (Think, All Data, Save, Load, → Leazas Castle) on the left; Turn END
+and Close where they stand. On the tablet too (docs/ui/touch.md, "The sides swapped"). The rows' figures kept:
+
+- **Held landscape** (`PhoneMap`): the items from the foot up in the left side under the status's figures (`LinkRows`, at
+  most 30 under `HeaderBox`); Turn END on the right's top, "This week" 26 under it (`CaptionBox`), the commands from the
+  foot up over Close under the caption (`CommandRows`).
+- **Upright** (`PhoneMapUpright.Commands`): the items in the left column, the commands in the right, both from the foot
+  up; Turn END on the right column's top, "This week" in a band 56 high between it and the commands, so the sheet is 56
+  taller (the top-left beside Turn END left empty).
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

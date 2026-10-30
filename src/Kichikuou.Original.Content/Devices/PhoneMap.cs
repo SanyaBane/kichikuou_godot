@@ -6,8 +6,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// black sides. On the map's wait the left side holds the Menu cell, the status stacked under it (<see cref="StatusBox"/>)
 /// and the drawer at the thumb; the right side the week's uses by group (<see cref="Tags"/>) and Commands at the thumb
 /// (<see cref="CommandsCell"/>). The command panel takes both sides: the status's figures on the left's top
-/// (<see cref="HeaderBox"/>), the week's commands from the foot up under their caption, Turn END on the right's top and the
-/// other items from the foot up over Close, which stands at the right side's foot (<see cref="FootCell"/>). A province's
+/// (<see cref="HeaderBox"/>) and the other items from the foot up under them; Turn END on the right's top and the week's
+/// commands under their caption from the foot up over Close, which stands at the right side's foot (<see cref="FootCell"/>;
+/// owner, 2026-10-30: the week's commands at the right thumb). A province's
 /// card stands beside it in the frame (<see cref="ProvinceCard"/>), the province ringed, its commands in the right side
 /// from the foot up over Return. The rows are two lines (the tag over the name), 14.5 × 7.0 mm, as many as a rail has
 /// room for at that height, lower when they would not fit. The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>)
@@ -25,8 +26,11 @@ public static class PhoneMap
     /// <summary>The status under the Menu cell (the date, the budget, the troops): its distance from the cell and its height.</summary>
     private const float StatusGap = 34, StatusHeight = 246;
 
-    /// <summary>The status's figures on the left side's top while the command panel is open, and the week's caption under them.</summary>
-    private const float HeaderTop = 20, HeaderHeight = 130, CaptionTop = 176, CaptionHeight = 34, CaptionGap = 16;
+    /// <summary>The status's figures on the left side's top while the command panel is open, and the room under them before the items.</summary>
+    private const float HeaderTop = 20, HeaderHeight = 130, HeaderGap = 30;
+
+    /// <summary>The week's caption under Turn END: its distance from it, its height, the room under it before the commands.</summary>
+    private const float CaptionTop = 26, CaptionHeight = 34, CaptionGap = 16;
 
     /// <summary>The week's uses in the right side: from this far under its top, a group's caption, a tag and its pitch, the room after a group.</summary>
     private const float TagsTop = 24, GroupCaption = 36, TagHeight = 46, TagPitch = 54, GroupGap = 12, TagInset = 6;
@@ -34,8 +38,8 @@ public static class PhoneMap
     /// <summary>Commands at the right thumb (8.5 mm high); Close and Return a row's height where it stands.</summary>
     private const float CommandsHeight = 150;
 
-    /// <summary>Turn END on the right side's top, and the room under it before the items.</summary>
-    private const float TurnEndTop = 16, TurnEndHeight = 140, TurnEndGap = 30;
+    /// <summary>Turn END on the right side's top.</summary>
+    private const float TurnEndTop = 16, TurnEndHeight = 140;
 
     /// <summary>A province's commands: the rail's highest row's least distance from the side's top, and the place's caption over them.</summary>
     private const float ProvinceTop = 16, PlaceCaption = 50;
@@ -57,15 +61,12 @@ public static class PhoneMap
     /// <summary>The status's figures on the left side's top while the command panel is open (LM1b): the Menu cell is gone then.</summary>
     public static PhoneFrame.Box HeaderBox(PhoneFrame f) => Left(f, f.LeftRoom.Y + f.Px(HeaderTop), HeaderHeight);
 
-    /// <summary>The caption over the week's commands ("This week") under the header.</summary>
-    public static PhoneFrame.Box CaptionBox(PhoneFrame f) => Left(f, f.LeftRoom.Y + f.Px(CaptionTop), CaptionHeight);
+    /// <summary>The caption over the week's commands ("This week") under Turn END.</summary>
+    public static PhoneFrame.Box CaptionBox(PhoneFrame f) => Right(f, TurnEnd(f).Bottom + f.Px(CaptionTop), CaptionHeight);
 
-    /// <summary>The command panel's week's commands in the left side, the first lowest (index 0 at the foot, LM1b).</summary>
-    public static IReadOnlyList<PhoneFrame.Box> CommandRows(PhoneFrame f, int count)
-    {
-        var column = Left(f, 0, 0);
-        return Stack(f, column, f.LeftRoom.Bottom - f.Px(RailFoot), CaptionBox(f).Bottom + f.Px(CaptionGap), count);
-    }
+    /// <summary>The command panel's week's commands in the right side over Close, the first lowest, under their caption.</summary>
+    public static IReadOnlyList<PhoneFrame.Box> CommandRows(PhoneFrame f, int count) =>
+        Stack(f, Right(f, 0, 0), FootCell(f).Y - f.Px(RowGap), CaptionBox(f).Bottom + f.Px(CaptionGap), count);
 
     /// <summary>Commands at the right thumb on the map's wait (LM1a).</summary>
     public static PhoneFrame.Box CommandsCell(PhoneFrame f) => FootOf(f, CommandsHeight);
@@ -76,9 +77,9 @@ public static class PhoneMap
     /// <summary>Turn END on the right side's top (LM1b).</summary>
     public static PhoneFrame.Box TurnEnd(PhoneFrame f) => Right(f, f.RightRoom.Y + f.Px(TurnEndTop), TurnEndHeight);
 
-    /// <summary>The command panel's other items in the right side over Close, the first lowest, under Turn END (LM1b).</summary>
+    /// <summary>The command panel's other items in the left side, the first lowest (index 0 at the foot), under the header.</summary>
     public static IReadOnlyList<PhoneFrame.Box> LinkRows(PhoneFrame f, int count) =>
-        Stack(f, Right(f, 0, 0), FootCell(f).Y - f.Px(RowGap), TurnEnd(f).Bottom + f.Px(TurnEndGap), count);
+        Stack(f, Left(f, 0, 0), f.LeftRoom.Bottom - f.Px(RailFoot), HeaderBox(f).Bottom + f.Px(HeaderGap), count);
 
     /// <summary>
     /// A province's commands in the right side over Return, the first lowest (LM1c); with <paramref name="caption"/> (the

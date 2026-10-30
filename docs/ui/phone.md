@@ -1174,3 +1174,11 @@ No | Yes). Looking at the gallery's Android passes, the owner turned that round:
 anything — Stop, End, Cancel — stands right of the action (docs/ui/style.md, §5). The build swapped each pair, the
 figures kept (docs/ui/phone-build.md, §5, "After the build: the way back at the right"); the drawings here stay as they
 were drawn.
+
+## 28. After the build: the week's commands at the right thumb (owner, 2026-10-30)
+
+LM1b and PM1b put the week's commands in the left side or column and the other items in the right. Looking at the
+gallery's `command-menu`, the owner swapped them: the game's commands at the right thumb under Turn END (with their
+caption, "This week"), Think, All Data, Save, Load and → Leazas Castle at the left; Turn END and Close stay where they
+stand (docs/ui/phone-build.md, §5, "After the build: the week's commands at the right thumb"). The drawings here stay as
+they were drawn.

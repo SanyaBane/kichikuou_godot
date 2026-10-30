@@ -46,29 +46,30 @@ public class PhoneMapTests
     [Fact]
     public void The_command_panel_takes_both_sides_from_the_foot_up()
     {
-        // land_panel_rails: THIS WEEK at 176; five commands 123 high 12 apart, the first at FOOT - 10.
-        Equal(new(116, 176, 254, 34), PhoneMap.CaptionBox(Reference));
-        var commands = PhoneMap.CommandRows(Reference, 5);
-        Equal(new(116, 1037, 254, 123), commands[0]);
-        Equal(new(116, 497, 254, 123), commands[4]);
-        // Turn END on the right's top; Close at the foot, the items over it, the first lowest.
-        Equal(new(2342, 16, 254, 140), PhoneMap.TurnEnd(Reference));
-        Equal(new(2342, 1037, 254, 123), PhoneMap.FootCell(Reference));
+        // land_panel_rails, the sides swapped (owner, 2026-10-30): five items 123 high 12 apart in the left, the first at FOOT - 10.
         var links = PhoneMap.LinkRows(Reference, 5);
-        Equal(new(2342, 902, 254, 123), links[0]);
-        Equal(new(2342, 362, 254, 123), links[4]);
+        Equal(new(116, 1037, 254, 123), links[0]);
+        Equal(new(116, 497, 254, 123), links[4]);
+        // Turn END on the right's top, THIS WEEK 26 under it; Close at the foot, the commands over it, the first lowest.
+        Equal(new(2342, 16, 254, 140), PhoneMap.TurnEnd(Reference));
+        Equal(new(2342, 182, 254, 34), PhoneMap.CaptionBox(Reference));
+        Equal(new(2342, 1037, 254, 123), PhoneMap.FootCell(Reference));
+        var commands = PhoneMap.CommandRows(Reference, 5);
+        Equal(new(2342, 902, 254, 123), commands[0]);
+        Equal(new(2342, 362, 254, 123), commands[4]);
     }
 
     [Fact]
     public void Rows_too_many_for_a_rail_are_lower_and_stay_under_its_top()
     {
-        var links = PhoneMap.LinkRows(Reference, 8);
-        Assert.True(links[0].H < 123);
-        Assert.Equal(1025, links[0].Bottom, Close);
-        Assert.Equal(PhoneMap.TurnEnd(Reference).Bottom + 30, links[^1].Y, Close);
-        var commands = PhoneMap.CommandRows(Reference, 9);
-        Assert.True(commands[^1].Y >= PhoneMap.CaptionBox(Reference).Bottom);
-        Assert.Empty(PhoneMap.CommandRows(Reference, 0));
+        var commands = PhoneMap.CommandRows(Reference, 8);
+        Assert.True(commands[0].H < 123);
+        Assert.Equal(1025, commands[0].Bottom, Close);
+        Assert.Equal(PhoneMap.CaptionBox(Reference).Bottom + 16, commands[^1].Y, Close);
+        var links = PhoneMap.LinkRows(Reference, 9);
+        Assert.Equal(1160, links[0].Bottom, Close);
+        Assert.Equal(PhoneMap.HeaderBox(Reference).Bottom + 30, links[^1].Y, Close);
+        Assert.Empty(PhoneMap.LinkRows(Reference, 0));
     }
 
     [Fact]
