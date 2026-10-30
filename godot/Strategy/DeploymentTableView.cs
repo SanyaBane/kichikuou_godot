@@ -702,11 +702,12 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// <summary>
     /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column, a member of the
     /// party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
-    /// vermilion (on the deployment screen a button where the unit can be replenished, else greyed with its reason as the
-    /// tooltip), the troops with a bar of their strength under them.
+    /// vermilion (on the deployment screen a button in Troops' colour where the unit can be replenished, else greyed with
+    /// its reason as the tooltip), the troops with a bar of their strength under them.
     /// </summary>
     private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen, int place)
     {
+        int chipColumn = -1;                                        // the Refill chip's cell: its row's tint drawn under the chip
         for (int c = 0; c < _columns.Count; c++)
         {
             var info = _columns[c];
@@ -725,8 +726,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             if (info.Column == DeploymentColumn.Refill && _refillButtons && row.CanRefill)
             {
                 item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
-                var (text, unit) = (row.Text(info.Column), row.Unit);
-                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawRefill(rect, text, unit)));
+                var (text, unit, party) = (row.Text(info.Column), row.Unit, place > 0);
+                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawRefill(rect, text, unit, party)));
+                chipColumn = c + 1;
                 item.SetTooltipText(c + 1, $"Replenish: {Figures.Signed(row.MaxTroops - row.Troops)} troops");
             }
             else if (info.IsText && info.Column != DeploymentColumn.Name)
@@ -742,13 +744,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         {
             if (place > 0 || chosen)
                 for (int c = 0; c < Columns; c++)
-                    item.SetCustomBgColor(c, chosen ? Ui.ChosenRow : Ui.PartyRow);
+                    if (c != chipColumn)
+                        item.SetCustomBgColor(c, chosen ? Ui.ChosenRow : Ui.PartyRow);
             return;
         }
         if (place > 0)
         {
             for (int c = 0; c < Columns; c++)
-                item.SetCustomBgColor(c, Ui.PartyRow);
+                if (c != chipColumn)
+                    item.SetCustomBgColor(c, Ui.PartyRow);
             item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
             item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
             {
@@ -819,22 +823,25 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>
-    /// A Refill button (owner's decision 27, mock-up A1): the price right in a chip ruled in green ink, filled with the
-    /// strip's Troops green, the use it spends (the owner's TR1, 2026-10-31; <see cref="TagColours"/>), with the paper's
-    /// colour for its text while hovered or asked about.
+    /// A Refill button (owner's decision 27, mock-up A1): the price right in a chip ruled and written in the strip's Troops
+    /// colour, the use it spends (the owner's TR1 and TC3, 2026-10-31; <see cref="TagColours"/>), filled with it and the
+    /// paper's colour for its text while hovered or asked about. A party's row is tinted here, under the chip: the tree
+    /// tints over a custom cell, which greyed the chip.
     /// </summary>
-    private void DrawRefill(Rect2 cell, string text, int unit)
+    private void DrawRefill(Rect2 cell, string text, int unit, bool party)
     {
         bool lit = unit == _refillHovered || unit == AskedRefill;
-        var fill = TagColours.Of(WeekAction.Troops);
+        var ink = TagColours.Of(WeekAction.Troops);
+        if (party)                                                  // the tree's tint reaches a separation left of the cell
+            DrawRect(cell.GrowIndividual(GetThemeConstant("h_separation"), 0, 0, 0), Ui.PartyRow);
         float inset = _upright is { } upright ? (cell.Size.Y - upright.Px(PhoneLedgerUpright.RefillChip)) / 2   // upright: PD2s2's chip
             : _rowMinimum > 0 ? cell.Size.Y / 12 : 2;                       // a taller row's chip grows with it: a finger's button
         var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
         var box = new StyleBoxFlat
         {
-            BgColor = lit ? fill : new Color(0, 0, 0, 0),
-            BorderColor = Ui.InkGreen with { A = lit ? 1 : 0.6f },
+            BgColor = lit ? ink : new Color(0, 0, 0, 0),
+            BorderColor = ink with { A = lit ? 1 : 0.6f },
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
             CornerRadiusTopLeft = (int)corner, CornerRadiusTopRight = (int)corner,
             CornerRadiusBottomLeft = (int)corner, CornerRadiusBottomRight = (int)corner,
@@ -842,7 +849,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         DrawStyleBox(box, chip);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2;
         DrawString(_font, new Vector2(chip.Position.X, baseline), text, HorizontalAlignment.Right, chip.Size.X - 5, _fontSize,
-            lit ? Ui.Paper : Ui.InkGreen);
+            lit ? Ui.Paper : ink);
     }
 
     /// <summary>

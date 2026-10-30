@@ -393,9 +393,9 @@ docs/strategy/README.md.
   `DeploymentRow.CanRefill` and `RefillNote` (why a price is no button: "used this week", "not now (Subordinates
   first)", "deployed this week", "not enough gold"); `DeploymentTable.ReplenishQuestion`; `DeploymentReplenish` (the
   request and the click at the unit's cell, the plate's `SubordinateResult` after it).
-- **Godot**: `DeploymentTableView` draws a Refill cell the unit can be replenished from as a chip (ruled in green ink,
-  filled with the strip's Troops green while hovered or asked about — vermilion until the owner's TR1, 2026-10-31:
-  it spends Troops; docs/ui/command-screen.md, "The tags' colours") and raises `RefillPressed` for it — the rest of the row still joins the unit;
+- **Godot**: `DeploymentTableView` draws a Refill cell the unit can be replenished from as a chip (ruled and written in
+  the strip's Troops colour, filled with it while hovered or asked about: it spends Troops — vermilion until the
+  owner's TR1, green until TC3, 2026-10-31; docs/ui/command-screen.md, "The tags' colours") and raises `RefillPressed` for it — the rest of the row still joins the unit;
   `GameScreen.Replenish.cs` asks in a `TreasureCallout` at the cell, sets the request on Yes and shows the plate,
   `OrderResultPlate` — the Subordinates screen's R4/R5, now one control both screens use. The table's other presses
   wait while the question or the Replenish is under way.

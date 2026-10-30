@@ -550,8 +550,13 @@ stay; spent tags stay grey.
   the gallery's `command-menu`, `province-menu-own-all`, `command-menu-building` and `deployment-refill-question` —
   with a key of Now against it): **TC3** Construction in the own city's orange (172, 84, 30), its half-lit tag while a
   building is under way too; Troops and Talk in Construction's blue (46, 62, 104), and the panel's Units and the Refill
-  chips with them; the own city in Troops' green (70, 96, 52), and every command that spends it. Awaiting the owner's
-  look.
+  chips with them; the own city in Troops' green (70, 96, 52), and every command that spends it.
+- **The owner chose TC3** (2026-10-31), **built**: `TagColours` swaps the three, so the strip, the panel, the province
+  menu and the half-lit Construction follow; the Refill chips are ruled, written and (hovered or asked about) filled in
+  Troops' colour itself, no ink of the palette's. A party's row was greyed on its chip, the tree tinting over a custom
+  cell: `DrawRefill` now draws the row's tint under the chip (a separation wider at the left, as the tree's) and the
+  tree leaves that cell untinted. The gallery's `province-menu*`, `command-menu*`, `map-north` and `deployment*` in
+  every pass.
 
 ## Questions for the owner
 
