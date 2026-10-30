@@ -1092,8 +1092,8 @@ P7b:
 
 **Step P8, where it stands (2026-10-30):** split as L9 was — P8a the options window (PO1 with PO1o), P8b the dungeon's
 ladder (PF1, PF1e), P8c All Data (PG2m, PG2), P8d the title, the import screen and the original's own screens (PE2, PI,
-PIp, PIr, PXf, PXc, PXm, PXr). **P8a-P8d are built, awaiting the owner's look on the Poco** (P8c and P8d not installed
-yet: the Poco was not connected at their builds). P8a:
+PIp, PIr, PXf, PXc, PXm, PXr). **P8a-P8d are built, awaiting the owner's look on the Poco** (P8c and P8d installed with
+P9, 2026-10-30). P8a:
 
 - **The model** (`Original.Content/Devices/PhoneOptionsUpright`, tested in `PhoneOptionsUprightTests`): the places at the
   mock-ups' figures (`po1`, `po1o`, `defaults_close`) from the room's top and the bar — the title (the brush face, 62) 30
@@ -1243,7 +1243,7 @@ P8d:
 
 **Step P9, where it stands (2026-10-30):** the agent's part done; **the phone held upright awaits the owner's play on the
 Poco** (every step's look above, the agent's choices with them), and with it the whole phone: the landscape phone's play
-(step L10) and a turn of the phone on every screen. P8c, P8d and P9 are not installed yet (the Poco was not connected).
+(step L10) and a turn of the phone on every screen. Installed on the Poco with P8c and P8d (2026-10-30).
 
 - **Unattended play** headless as the phone held upright (`--phone upright`, the 610 × 1356 canvas) from the week-18
   save, each exercise in a working folder of its own (`--saves user://saves-look-phone-up-…`; CLAUDE.md, "A look at one
