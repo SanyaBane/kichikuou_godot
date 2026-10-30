@@ -6,7 +6,7 @@ namespace Kichikuou.Original.Content.Devices;
 /// rows 6.4 mm (<see cref="Row"/>), every column of a tab in one line, the tabs over it. On the deployment table the
 /// ledger stands wholly at the left, from the hole's strip (<see cref="Ledger"/>), and everything else in a part of its
 /// own at the right (<see cref="Part"/>): the title, the date and the budget over the party two cards a row as the battle
-/// shows our army (the back row left), the troops and the war expenses under it, Stop | Attack at the right thumb. On
+/// shows our army (the back row left), the troops and the war expenses under it, Attack | Stop at the right thumb. On
 /// Subordinates the ledger fills the frame; the left side holds the chosen unit's Add New Troops from the foot up, the
 /// dearest on top (<see cref="Steps"/>); the right side the title, the date and the budget, then Talk, Replenish and End
 /// at the thumb, Replenish's question in a callout left of it (<see cref="ReplenishQuestion"/>). The figures are the
@@ -97,18 +97,19 @@ public static class PhoneLedger
     public static float TotalsMiddle(PhoneFrame f) => Card(f, 2).Bottom + f.Px(TotalsUnder);
 
     /// <summary>
-    /// The bar's buttons from the left: Stop (300 wide) and then the <paramref name="sends"/> buttons that send the party
-    /// sharing the rest, 150 high over the gesture zone. Stop is the first box, a send's follow.
+    /// The bar's buttons: the <paramref name="sends"/> buttons that send the party from the left, sharing the room, and Stop
+    /// (300 wide) at the right — a way back stands right of the action (owner, 2026-10-30) —, 150 high over the gesture zone.
+    /// Stop is the first box, a send's follow.
     /// </summary>
     public static IReadOnlyList<PhoneFrame.Box> Bar(PhoneFrame f, int sends)
     {
         var part = Part(f);
         float foot = f.Screen.H - f.Safe.Bottom - f.Px(BarFoot), h = f.Px(BarHeight), top = foot - h, gap = f.Px(BarGap);
-        var boxes = new List<PhoneFrame.Box> { new(part.X, top, f.Px(StopWidth), h) };
-        float x = part.X + f.Px(StopWidth) + gap;
-        float w = sends <= 0 ? 0 : (part.Right - x - (sends - 1) * gap) / sends;
+        float stop = part.Right - f.Px(StopWidth);
+        var boxes = new List<PhoneFrame.Box> { new(stop, top, f.Px(StopWidth), h) };
+        float w = sends <= 0 ? 0 : (stop - gap - part.X - (sends - 1) * gap) / sends;
         for (int i = 0; i < sends; i++)
-            boxes.Add(new PhoneFrame.Box(x + i * (w + gap), top, w, h));
+            boxes.Add(new PhoneFrame.Box(part.X + i * (w + gap), top, w, h));
         return boxes;
     }
 

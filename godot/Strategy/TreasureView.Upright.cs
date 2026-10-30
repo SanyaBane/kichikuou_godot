@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Strategy;
 // band under the hole, the selected entry's picture at the room's width (an item's words say what it does), its name and
 // figures under it, Characters | Items (while a first pick waits, its prompt and Back in their place), then the picker's
 // grid in rows of 6.7 mm, as many in view as the room holds, scrolled by a finger or the wheel (PickerGridScroll), a thin
-// bar in the room's right margin, an item's name and its holder in one line; End | the touch mode's red button in the bar,
+// bar in the room's right margin, an item's name and its holder in one line; the touch mode's red button | End in the bar,
 // the script's questions and refusals in a callout across the room over it (ShowCallout). Drawn in the frame's layout
 // pixels over the whole screen (PhoneUnits), the places PhonePickersUpright's; the details, the button, the prompt, the
 // tabs and the cells as held landscape draws them (TreasureView.Phone.cs).

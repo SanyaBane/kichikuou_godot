@@ -110,8 +110,8 @@ public class PhoneScenesTests
         Equal(new(570, tiles[4].Y - 30 - 420, 1100, 420), restart.Box);
         Assert.Equal(tiles[4].X + tiles[4].W / 2, restart.TipX, Close);
         Assert.Equal(tiles[4].Y, restart.TipY, Close);
-        Assert.True(restart.Confirm.X > restart.Cancel.Right);
-        Assert.Equal(restart.Box.Right - 40, restart.Confirm.Right, Close);
+        Assert.True(restart.Cancel.X > restart.Confirm.Right);              // a way back right of the action (owner, 2026-10-30)
+        Assert.Equal(restart.Box.Right - 40, restart.Cancel.Right, Close);
 
         var captures = PhoneMenu.QuestionAt(Reference, tiles[1]);       // the first row: no room above it
         Assert.True(captures.Below);

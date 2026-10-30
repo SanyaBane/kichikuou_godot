@@ -96,11 +96,12 @@ public class PhonePickersUprightTests
     }
 
     [Fact]
-    public void End_and_the_red_button_share_the_bar()
+    public void The_red_button_and_End_share_the_bar()
     {
-        // end_and: End (16, BAR[0], PW - 32 - 760, BAR[1]), the red button (PW - 16 - 760, BAR[0], PW - 16, BAR[1]).
-        Equal(new(16, 2504, 412, 148), PhonePickersUpright.End(Reference));
-        Equal(new(444, 2504, 760, 148), PhonePickersUpright.Action(Reference));
+        // end_and, its two buttons swapped (owner, 2026-10-30): the red button (16, BAR[0], 16 + 760, BAR[1]), End
+        // (16 + 760 + 16, BAR[0], PW - 16, BAR[1]).
+        Equal(new(792, 2504, 412, 148), PhonePickersUpright.End(Reference));
+        Equal(new(16, 2504, 760, 148), PhonePickersUpright.Action(Reference));
     }
 
     [Fact]

@@ -6,7 +6,7 @@ namespace Kichikuou.Original.Content.Devices;
 /// divider), the picture at the room's width in the PC's shape (<see cref="Picture"/>, its own words 2.4 mm), the details
 /// under it (<see cref="Details"/>), then the pickers' 3 × 17 grid in taller cells than held landscape's, as many rows in
 /// view as its room holds, the rest a drag away (<see cref="ScrolledGrid"/>: the harem's <see cref="HaremGrid"/>), a thin
-/// scroll bar in the room's right margin; End | the red button in the bar (<see cref="End"/>, <see cref="Action"/>). The
+/// scroll bar in the room's right margin; the red button | End in the bar (<see cref="Action"/>, <see cref="End"/>). The
 /// figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>: <c>plain_title</c>, <c>ph2</c>, <c>girl_details</c>,
 /// <c>picker_grid</c>, <c>harem_cell</c>, <c>end_and</c>) in the reference phone's pixels, from the room's top and the bar;
 /// the boxes in the canvas's units. A longer screen gives the grid more rows in view. Interface only. Engine-independent.
@@ -191,12 +191,16 @@ public static class PhonePickersUpright
 
     // ------------------------------------------------------------------ the bar (end_and)
 
-    /// <summary>The red button's width at the bar's right; the gap before it.</summary>
+    /// <summary>The red button's width at the bar's left; the gap after it.</summary>
     private const float ActionWidth = 760, BarGap = 16;
 
-    /// <summary>End at the bar's left.</summary>
-    public static PhoneFrame.Box End(PhoneFrame f) => new(f.Bar.X, f.Bar.Y, Math.Max(0, f.Bar.W - f.Px(ActionWidth + BarGap)), f.Bar.H);
+    /// <summary>End at the bar's right: a way back stands right of the action (owner, 2026-10-30).</summary>
+    public static PhoneFrame.Box End(PhoneFrame f)
+    {
+        float w = Math.Max(0, f.Bar.W - f.Px(ActionWidth + BarGap));
+        return new(f.Bar.Right - w, f.Bar.Y, w, f.Bar.H);
+    }
 
-    /// <summary>The red button at the right thumb: Summon, Take Off, …</summary>
-    public static PhoneFrame.Box Action(PhoneFrame f) => new(f.Bar.Right - f.Px(ActionWidth), f.Bar.Y, f.Px(ActionWidth), f.Bar.H);
+    /// <summary>The red button at the bar's left: Summon, Take Off, …</summary>
+    public static PhoneFrame.Box Action(PhoneFrame f) => new(f.Bar.X, f.Bar.Y, f.Px(ActionWidth), f.Bar.H);
 }

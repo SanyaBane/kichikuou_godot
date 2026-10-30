@@ -533,3 +533,12 @@ the map before Turn END; no notice — owner's decision 31 (docs/strategy/README
   comment); a new entry `save-load-auto-end` chooses it. `--saveload` writes a comment on the newest auto-save.
 - Checked headless on the week-18 save: `--turn-end` writes `end-0002.ksav`; `--load --auto` from that folder loads it,
   resumes in `COMMAND` of week 18 and writes `end-0003.ksav` at the next Turn END.
+
+## 13. The way back at the right (owner, 2026-10-30)
+
+The owner's rule for every screen (docs/ui/style.md, §5, "The way back stands right of the action"): a button that goes
+back without changing anything stands right of the one that acts. On this screen, in every interface and device, the
+foot is the red button | Back: on the PC and the tablet the red button at the page's foot left (426, 330 wide), Back at
+its right (1086, 140 wide), "Saving: …" between them; on the phone held landscape and upright the same with Back at the
+right thumb, and the comment's card Keep | Cancel (docs/ui/phone-build.md, §5, "After the build: the way back at the
+right"). The questions were already Delete | Keep.

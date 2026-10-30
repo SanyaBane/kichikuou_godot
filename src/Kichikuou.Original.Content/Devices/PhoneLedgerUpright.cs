@@ -8,7 +8,7 @@ namespace Kichikuou.Original.Content.Devices;
 /// title, the date at the right, the subtitle under them, a divider; <see cref="Band"/>). The deployment table puts the party
 /// under it as the battle shows our army (PB3: the back row on top, then the front row, facing down; <see cref="Card"/>),
 /// the troops and the war expenses under the cards, then the ledger's tabs and the ledger at the thumb down to the bar,
-/// Stop | Attack in the bar (<see cref="Bar"/>). Subordinates puts the ledger under its tabs and the chosen unit's orders
+/// Attack | Stop in the bar (<see cref="Bar"/>). Subordinates puts the ledger under its tabs and the chosen unit's orders
 /// under it (<see cref="Orders"/>: Replenish and Talk on one row, Add New Troops three a row), the budget at the bar's left
 /// as text and End at the right thumb (<see cref="End"/>). The ledger's rows are two lines (PD2s2): the seal (or the chosen
 /// row's diamond), № and the name over the unit's type fixed at the left (<see cref="Fixed"/>), the tab's other columns
@@ -183,18 +183,18 @@ public static class PhoneLedgerUpright
     public const float StopText = 48, SendText = 60, SendsText = 46, NoteText = 28;
 
     /// <summary>
-    /// The deployment's bar from the left: Stop (404 wide) and then the <paramref name="sends"/> buttons that send the party
-    /// sharing the rest, as high as the bar. Stop is the first box, a send's follow.
+    /// The deployment's bar: the <paramref name="sends"/> buttons that send the party from the left, sharing the room, and
+    /// Stop (404 wide) at the right — a way back stands right of the action (owner, 2026-10-30) —, as high as the bar. Stop
+    /// is the first box, a send's follow.
     /// </summary>
     public static IReadOnlyList<PhoneFrame.Box> Bar(PhoneFrame f, int sends)
     {
         var bar = f.Bar;
-        float gap = f.Px(BarGap), stop = f.Px(StopWidth);
-        var boxes = new List<PhoneFrame.Box> { new(bar.X, bar.Y, stop, bar.H) };
-        float x = bar.X + stop + gap;
-        float w = sends <= 0 ? 0 : (bar.Right - x - (sends - 1) * gap) / sends;
+        float gap = f.Px(BarGap), stop = bar.Right - f.Px(StopWidth);
+        var boxes = new List<PhoneFrame.Box> { new(stop, bar.Y, f.Px(StopWidth), bar.H) };
+        float w = sends <= 0 ? 0 : (stop - gap - bar.X - (sends - 1) * gap) / sends;
         for (int i = 0; i < sends; i++)
-            boxes.Add(new PhoneFrame.Box(x + i * (w + gap), bar.Y, w, bar.H));
+            boxes.Add(new PhoneFrame.Box(bar.X + i * (w + gap), bar.Y, w, bar.H));
         return boxes;
     }
 

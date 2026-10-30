@@ -50,18 +50,20 @@ public class PhoneLedgerTests
     }
 
     [Fact]
-    public void Stop_and_Attack_stand_at_the_right_thumb()
+    public void Attack_and_Stop_stand_at_the_right_thumb()
     {
-        // ld2: Stop (rx0, FOOT - 160, rx0 + 300, FOOT - 10), Attack (rx0 + 316, …, rx1, FOOT - 10), FOOT = 1170.
+        // ld2's bar, its buttons swapped (owner, 2026-10-30): Attack (rx0, FOOT - 160, rx1 - 316, FOOT - 10), Stop
+        // (rx1 - 300, …, rx1, FOOT - 10), FOOT = 1170.
         var one = PhoneLedger.Bar(Reference, 1);
         Assert.Equal(2, one.Count);
-        Equal(new(1716, 1010, 300, 150), one[0]);
-        Equal(new(2032, 1010, 2596 - 2032, 150), one[1]);
+        Equal(new(2296, 1010, 300, 150), one[0]);
+        Equal(new(1716, 1010, 2280 - 1716, 150), one[1]);
         var two = PhoneLedger.Bar(Reference, 2);                                  // a defence's Plains and City share the room
         Assert.Equal(3, two.Count);
         Assert.Equal(two[1].W, two[2].W, Close);
-        Assert.Equal(2596, two[2].Right, Close);
+        Assert.Equal(1716, two[1].X, Close);
         Assert.Equal(16, two[2].X - two[1].Right, Close);
+        Assert.Equal(16, two[0].X - two[2].Right, Close);
         Assert.Single(PhoneLedger.Bar(Reference, 0));
     }
 

@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Strategy;
 
 // Our Harem screen on the phone held landscape (docs/ui/phone-build.md, step L7; docs/ui/phone.md, §15, LH2): across the
 // whole width between the hole's strips over the wave backdrop — at the left the title and the date, her picture at the
-// column's width, her name, visits and last summons under it, End | Summon at the left thumb; at the right thumb the
+// column's width, her name, visits and last summons under it, Summon | End at the left thumb; at the right thumb the
 // picker's grid folded after its ninth row, every girl at her number's cell. Drawn in the frame's layout pixels over the
 // whole screen (PhoneUnits), the places PhonePickers'.
 internal sealed partial class HaremView

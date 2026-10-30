@@ -98,11 +98,12 @@ public class PhoneSavesUprightTests
     }
 
     [Fact]
-    public void Back_and_the_red_button_share_the_bar()
+    public void The_red_button_and_Back_share_the_bar()
     {
-        // back_and: Back (16, y0, 400, y1), the red button (416, y0, PW - 16, y1).
-        Equal(new(16, 2504, 384, 148), PhoneSavesUpright.Back(Reference));
-        Equal(new(416, 2504, 788, 148), PhoneSavesUpright.Button(Reference));
+        // back_and, its two buttons swapped (owner, 2026-10-30): the red button (16, y0, PW - 400, y1), Back (PW - 400, y0,
+        // PW - 16, y1).
+        Equal(new(820, 2504, 384, 148), PhoneSavesUpright.Back(Reference));
+        Equal(new(16, 2504, 788, 148), PhoneSavesUpright.Button(Reference));
     }
 
     [Fact]
@@ -119,15 +120,15 @@ public class PhoneSavesUprightTests
     public void The_comment_card_stands_over_the_keyboard()
     {
         // py2: the card (16, KB_TOP - 24 - 560, PW - 16, KB_TOP - 24), KB_TOP = PH - 1000; comment_card: the field (x0 + 24,
-        // y0 + 100, x1 - 24, y0 + 300), the count's right x1 - 32 at the field's foot + 36, Cancel | Keep 130 high 36 over the
-        // foot, 16 apart.
+        // y0 + 100, x1 - 24, y0 + 300), the count's right x1 - 32 at the field's foot + 36, Keep | Cancel (swapped, owner,
+        // 2026-10-30) 130 high 36 over the foot, 16 apart.
         Equal(new(16, 1128, 1188, 560), PhoneSavesUpright.Card(Reference, 0));
         Equal(new(40, 1228, 1140, 200), PhoneSavesUpright.Field(Reference, 0));
         var (right, middle) = PhoneSavesUpright.Count(Reference, 0);
         Assert.Equal(1172, right, Close);
         Assert.Equal(1464, middle, Close);
-        Equal(new(40, 1522, 562, 130), PhoneSavesUpright.Cancel(Reference, 0));
-        Equal(new(618, 1522, 562, 130), PhoneSavesUpright.Keep(Reference, 0));
+        Equal(new(618, 1522, 562, 130), PhoneSavesUpright.Cancel(Reference, 0));
+        Equal(new(40, 1522, 562, 130), PhoneSavesUpright.Keep(Reference, 0));
     }
 
     [Fact]

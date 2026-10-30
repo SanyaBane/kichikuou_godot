@@ -54,15 +54,15 @@ public class PhoneLedgerUprightTests
     }
 
     [Fact]
-    public void Stop_and_the_sends_share_the_bar()
+    public void The_sends_and_Stop_share_the_bar()
     {
-        // stop_attack: Stop 16-420, Attack 436 to PW - 16 over BAR (2504-2652).
+        // stop_attack, its buttons swapped (owner, 2026-10-30): Attack 16-784, Stop 800 to PW - 16 over BAR (2504-2652).
         var one = PhoneLedgerUpright.Bar(Reference, 1);
-        Equal(new(16, 2504, 404, 148), one[0]);
-        Equal(new(436, 2504, 768, 148), one[1]);
+        Equal(new(800, 2504, 404, 148), one[0]);
+        Equal(new(16, 2504, 768, 148), one[1]);
         var two = PhoneLedgerUpright.Bar(Reference, 2);
-        Equal(new(436, 2504, 376, 148), two[1]);
-        Equal(new(828, 2504, 376, 148), two[2]);
+        Equal(new(16, 2504, 376, 148), two[1]);
+        Equal(new(408, 2504, 376, 148), two[2]);
     }
 
     [Fact]

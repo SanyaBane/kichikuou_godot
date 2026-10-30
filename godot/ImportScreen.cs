@@ -27,7 +27,8 @@ public partial class ImportScreen : Control
     private static readonly Rect2 Frame = new(250, 110, 780, 580);
     private static readonly Rect2 Paper = new(276, 136, 728, 528);
     private static readonly Rect2 WideButton = new(500, 588, 280, 48), NarrowButton = new(540, 588, 200, 48);
-    private static readonly Rect2 BackLink = new(StepX, 600, 170, 24);
+    // the way back right of the red button: a way back stands right of the action (owner, 2026-10-30)
+    private static readonly Rect2 BackLink = new(TextRight - 170, 600, 170, 24);
     private const float StepX = 316, TextX = 364, TextRight = 964;
 
     private static Color FieldFill => Ui.Field;
@@ -279,12 +280,15 @@ public partial class ImportScreen : Control
 
     // ---------------------------------------------------------------- input
 
-    /// <summary>The red button: Import (narrow) or Choose another folder (wide); on the phone at the right thumb (upright in the bar).</summary>
+    /// <summary>
+    /// The red button: Import (narrow) or Choose another folder (wide); on the phone left of the way back (upright in the
+    /// bar), alone at the right thumb without one.
+    /// </summary>
     private Rect2 Button => _phone is { } f
-        ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Button(f) : PhoneImport.Button(f, _phase == Phase.Refused))
+        ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Button(f, HasBack) : PhoneImport.Button(f, _phase == Phase.Refused, HasBack))
         : _phase == Phase.Refused ? WideButton : NarrowButton;
 
-    /// <summary>The way back's link; on the phone level with the red button (upright in the bar left of it).</summary>
+    /// <summary>The way back's link, right of the red button; on the phone level with it (upright in the bar right of it).</summary>
     private Rect2 BackBox => _phone is { } f
         ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Back(f) : PhoneImport.Back(f, _phase == Phase.Refused))
         : BackLink;
@@ -298,7 +302,10 @@ public partial class ImportScreen : Control
 
     private bool FieldLive => !_dialogOpen && _phase is Phase.Choose or Phase.Refused;
 
-    private bool BackLive => !_dialogOpen && _back is not null && _unattended is null && _phase is Phase.Choose or Phase.Refused;
+    /// <summary>Whether this screen has a way back (none at a first launch).</summary>
+    private bool HasBack => _back is not null && _unattended is null;
+
+    private bool BackLive => !_dialogOpen && HasBack && _phase is Phase.Choose or Phase.Refused;
 
     private void GoBack()
     {
@@ -426,7 +433,7 @@ public partial class ImportScreen : Control
         }
         if (BackLive)
             DrawString(_cinzel, new Vector2(BackLink.Position.X, Lacquer.Baseline(BackLink, _cinzel, 15)), "← Back to the title",
-                fontSize: 15, modulate: _hoverBack ? Ui.Vermilion : Ui.InkQuiet);
+                HorizontalAlignment.Right, BackLink.Size.X, 15, _hoverBack ? Ui.Vermilion : Ui.InkQuiet);
     }
 
     private void DrawChoose()

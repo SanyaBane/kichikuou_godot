@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Strategy;
 /// on top of the left side, and the sheet it opens — the menu bar's commands as tiles four a row in a panel over the frame's
 /// middle, the screen dimmed, the cell reading Close (<see cref="PhoneMenu"/>). A tile's tap acts (<see cref="Chosen"/>)
 /// and the sheet closes; a switch's tile changes and the sheet stays; Restart and Exit ask first in a callout at their
-/// tile, Cancel | the confirming red button inside; Debug opens its own tiles. A tap off the panel or on Close closes the
+/// tile, the confirming red button | Cancel inside (a way back stands right of the action, owner, 2026-10-30); Debug opens its own tiles. A tap off the panel or on Close closes the
 /// sheet, Back (the right click) too — an open question first. Closed it takes the cell's box alone; open the whole screen
 /// (its parent's area), and the game waits from <see cref="Opened"/> to <see cref="Closed"/>. Drawn in the frame's layout
 /// pixels (<see cref="PhoneUnits"/>); placed only on a phone. Held upright (step P1; §25, PN1, PN1q) the cell is the bar's
@@ -379,7 +379,7 @@ internal sealed partial class MenuSheetView : Control
         DrawString(font, new Vector2(cx - Width(font, text, size) / 2, cy + (font.GetAscent(size) - font.GetDescent(size)) / 2), text,
             fontSize: size, modulate: ink);
 
-    /// <summary>The question's callout at its tile (the house's, as Treasure's): its title, its line, Cancel | the red button.</summary>
+    /// <summary>The question's callout at its tile (the house's, as Treasure's): its title, its line, the red button | Cancel.</summary>
     private void DrawQuestion(PhoneUnits u, PhoneMenu.Callout callout, PhoneMenu.Question question)
     {
         var box = u.Rect(callout.Box);

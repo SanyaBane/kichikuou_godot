@@ -1166,3 +1166,11 @@ with no layout of ours in either orientation, their small targets upright accept
 The agent's choices above stand as drawn. The other variants (PN2, PN3, PR1, PR3, PY1, PY3, LN1, LN2, LR1, LY2) stay in
 the rounds' sheets only. With these every screen of ours has a chosen base version in both orientations; the chosen
 ones are on the gallery's phone tabs.
+
+## 27. After the build: the way back at the right (owner, 2026-10-30)
+
+The rounds above put the act at the right thumb (End | Summon, Stop | Attack, Back | the red button, Cancel | Keep,
+No | Yes). Looking at the gallery's Android passes, the owner turned that round: a button that goes back without changing
+anything — Stop, End, Cancel — stands right of the action (docs/ui/style.md, §5). The build swapped each pair, the
+figures kept (docs/ui/phone-build.md, §5, "After the build: the way back at the right"); the drawings here stay as they
+were drawn.

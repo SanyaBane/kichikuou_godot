@@ -7,10 +7,11 @@ namespace Kichikuou.Game;
 
 // The import screen on the phone held landscape (docs/ui/phone-build.md, step L9; docs/ui/phone.md, §23: LI, LIp, LIr, the
 // owner's choice as drawn): our paper sheet in the frame at the phone's type, the sides empty — the steps in two columns,
-// the first with the folder's field at the left, the check and Play at the right; Import red at the sheet's right foot
-// (the right thumb), Back to the title at its left foot. Importing, the folder ticked at the left, the stage and its bar
-// at the right; refused, GameFiles' message across the sheet, its hashes in two lines under it, the field at the left,
-// the stamp at the right, Choose another folder at the right thumb with Back left of it. A folder is its name over its
+// the first with the folder's field at the left, the check and Play at the right; Import red at the right column's foot
+// and Back to the title right of it, the right thumb (a way back stands right of the action, owner, 2026-10-30; at a first
+// launch Import alone at the thumb). Importing, the folder ticked at the left, the stage and its bar at the right;
+// refused, GameFiles' message across the sheet, its hashes in two lines under it, the field at the left, the stamp at the
+// right, Choose another folder with Back right of it at the thumb. A folder is its name over its
 // place, a path its folders with Android's storage named (PhoneImport.FolderLines, Readable). Drawn in the frame's layout
 // pixels over the whole screen (PhoneUnits), the places PhoneImport's; held upright as PI, PIp, PIr (ImportScreen.Upright.cs).
 public partial class ImportScreen
@@ -255,7 +256,7 @@ public partial class ImportScreen
         Middle(_brush, word, size, r.Position.X, r.GetCenter().Y, live ? Ui.Name : Ui.OffText, r.Size.X);
     }
 
-    /// <summary>Back: its arrow and its word (Cinzel) at the box's left, level with the red button.</summary>
+    /// <summary>Back: its arrow and its word (Cinzel, shrunk to the box) at the box's left, level with the red button and right of it.</summary>
     private void PhoneBack(PhoneUnits u)
     {
         var r = BackBox;
@@ -263,8 +264,9 @@ public partial class ImportScreen
         float cy = r.GetCenter().Y, x = r.Position.X, half = u.Px(PhoneImport.ArrowHalf);
         DrawColoredPolygon([new(x + u.Px(PhoneImport.ArrowWidth), cy - half), new(x, cy), new(x + u.Px(PhoneImport.ArrowWidth), cy + half)],
             colour);
-        Middle(_cinzelBold, PhoneImport.BackWord(_phase == Phase.Refused), u.Size(PhoneImport.BackText), x + u.Px(PhoneImport.BackTextIn),
-            cy, colour);
+        string word = PhoneImport.BackWord(_phase == Phase.Refused);
+        int size = SideCells.Fit(_cinzelBold, word, u.Size(PhoneImport.BackText), r.End.X - x - u.Px(PhoneImport.BackTextIn));
+        Middle(_cinzelBold, word, size, x + u.Px(PhoneImport.BackTextIn), cy, colour);
     }
 
     /// <summary><paramref name="text"/> with its middle at <paramref name="middle"/> (the mock-ups' anchor "lm"), centred in <paramref name="width"/> when given.</summary>

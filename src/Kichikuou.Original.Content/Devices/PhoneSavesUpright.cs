@@ -9,10 +9,11 @@ namespace Kichikuou.Original.Content.Devices;
 /// right). The chosen save's page stands on the bar (<see cref="Page"/>): its title with Delete (<see cref="Delete"/>), the
 /// map at the room's width cut at its foot (<see cref="Map"/>; an auto-save's two lines on its load under the comment cut it
 /// lower still), the figures in two columns (<see cref="Figure"/>), the comment with Edit (<see cref="Comment"/>,
-/// <see cref="Edit"/>); Back | the red button in the bar (<see cref="Back"/>, <see cref="Button"/>). Delete's question hangs
+/// <see cref="Edit"/>); the red button | Back in the bar (<see cref="Button"/>, <see cref="Back"/>; a way back stands right
+/// of the action, owner, 2026-10-30). Delete's question hangs
 /// under Delete, the sweep's under the sweep (<see cref="DeleteQuestion"/>, <see cref="SweepQuestion"/>). While the comment
 /// is written its own card stands just over Android's keyboard (<see cref="Card"/>, PY2): whose comment, the field two lines
-/// high (the words wrapped, <see cref="Wrap"/>), the count, Cancel | Keep at its foot, Keep at the right thumb. The figures
+/// high (the words wrapped, <see cref="Wrap"/>), the count, Keep | Cancel at its foot, Cancel at the right thumb. The figures
 /// are the mock-ups' (<c>tools/ui/mock_phone.py</c>: <c>save_title</c>, <c>save_list</c>, <c>save_row</c>,
 /// <c>save_page</c>, <c>back_and</c>, <c>pl2</c>, <c>comment_card</c>, <c>py2</c>) in the reference phone's pixels from the
 /// room's top and the bar; the boxes in the canvas's units. A longer screen gives the list more rows in view. Interface
@@ -225,21 +226,18 @@ public static class PhoneSavesUpright
 
     // ------------------------------------------------------------------ the bar (back_and)
 
-    /// <summary>Back's width at the bar's left, the gap before the red button.</summary>
+    /// <summary>Back's width at the bar's right, the gap between it and the red button.</summary>
     private const float BackWidth = 384, BarGap = 16;
 
     /// <summary>Back's and the red button's type (the brush face), the red button's line under its word.</summary>
     public const float BackText = 50, ButtonText = 58, ButtonLineText = 28;
 
-    /// <summary>Back at the bar's left.</summary>
-    public static PhoneFrame.Box Back(PhoneFrame f) => new(f.Bar.X, f.Bar.Y, f.Px(BackWidth), f.Bar.H);
+    /// <summary>Back at the bar's right — the right thumb: a way back stands right of the action (owner, 2026-10-30).</summary>
+    public static PhoneFrame.Box Back(PhoneFrame f) => new(f.Bar.Right - f.Px(BackWidth), f.Bar.Y, f.Px(BackWidth), f.Bar.H);
 
-    /// <summary>The red button (Load, Save, Save over No. n) right of Back, at the right thumb.</summary>
-    public static PhoneFrame.Box Button(PhoneFrame f)
-    {
-        float x = f.Bar.X + f.Px(BackWidth + BarGap);
-        return new PhoneFrame.Box(x, f.Bar.Y, Math.Max(0, f.Bar.Right - x), f.Bar.H);
-    }
+    /// <summary>The red button (Load, Save, Save over No. n) from the bar's left to 16 short of Back.</summary>
+    public static PhoneFrame.Box Button(PhoneFrame f) =>
+        new(f.Bar.X, f.Bar.Y, Math.Max(0, f.Bar.W - f.Px(BackWidth + BarGap)), f.Bar.H);
 
     // ------------------------------------------------------------------ the questions (the PC's callouts at the phone's sizes)
 
@@ -320,11 +318,11 @@ public static class PhoneSavesUpright
         return new PhoneFrame.Box(x, card.Bottom - f.Px(ButtonFoot + ButtonHeight), w, f.Px(ButtonHeight));
     }
 
-    /// <summary>Cancel at the card's foot left.</summary>
-    public static PhoneFrame.Box Cancel(PhoneFrame f, float keyboard) => Half(f, keyboard, right: false);
+    /// <summary>Cancel at the card's foot right — the right thumb: a way back stands right of the action (owner, 2026-10-30).</summary>
+    public static PhoneFrame.Box Cancel(PhoneFrame f, float keyboard) => Half(f, keyboard, right: true);
 
-    /// <summary>Keep, red, at the card's foot right — the right thumb.</summary>
-    public static PhoneFrame.Box Keep(PhoneFrame f, float keyboard) => Half(f, keyboard, right: true);
+    /// <summary>Keep, red, at the card's foot left.</summary>
+    public static PhoneFrame.Box Keep(PhoneFrame f, float keyboard) => Half(f, keyboard, right: false);
 
     // ------------------------------------------------------------------ the field's words wrapped
 

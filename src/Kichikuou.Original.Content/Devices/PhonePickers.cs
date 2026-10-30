@@ -6,8 +6,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// and the date, the picture (<see cref="Picture"/>, the PC's shape) and the details under it, the buttons at the left
 /// thumb; at the right thumb the pickers' 3 × 17 grid folded after its ninth row (<see cref="Cell"/>: rows 1-9 in the left
 /// half, 10-17 in the right, a gold rule between them, every cell in view and each girl or item still at her number's
-/// cell, the order read down the left half, then the right). The harem's foot is End | Summon (<see cref="HaremEnd"/>,
-/// <see cref="Summon"/>); the treasure's Characters | Items and End (<see cref="Tab"/>, <see cref="TreasureEnd"/>), the
+/// cell, the order read down the left half, then the right). The harem's foot is Summon | End (<see cref="Summon"/>,
+/// <see cref="HaremEnd"/>); the treasure's Characters | Items and End (<see cref="Tab"/>, <see cref="TreasureEnd"/>), the
 /// touch mode's button beside the details (<see cref="Action"/>), and while a first pick waits for its second the pick's
 /// prompt and Back in the tabs' place (<see cref="Prompt"/>, <see cref="Back"/>: the tabs would drop the pick as Back
 /// does). The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>lh2</c>, <c>lt2</c>, <c>folded_grid</c>,
@@ -93,19 +93,19 @@ public static class PhonePickers
 
     // ------------------------------------------------------------------ the foot's buttons
 
-    /// <summary>The harem's buttons: 140 high, End 320 wide, Summon 16 right of it to the column's right.</summary>
+    /// <summary>The harem's buttons: 140 high, End 320 wide at the column's right, Summon from the column's left to 16 short of it.</summary>
     private const float HaremButtons = 140, EndWidth = 320, ButtonsGap = 16;
 
-    /// <summary>The harem's End at the left thumb.</summary>
+    /// <summary>The harem's End at the column's right: a way back stands right of the action (owner, 2026-10-30).</summary>
     public static PhoneFrame.Box HaremEnd(PhoneFrame f) =>
-        new(Left(f), ButtonsFoot(f) - f.Px(HaremButtons), f.Px(EndWidth), f.Px(HaremButtons));
+        new(Column(f).Right - f.Px(EndWidth), ButtonsFoot(f) - f.Px(HaremButtons), f.Px(EndWidth), f.Px(HaremButtons));
 
-    /// <summary>Summon, red, right of End.</summary>
+    /// <summary>Summon, red, left of End.</summary>
     public static PhoneFrame.Box Summon(PhoneFrame f)
     {
         var end = HaremEnd(f);
-        float x = end.Right + f.Px(ButtonsGap);
-        return new PhoneFrame.Box(x, end.Y, Column(f).Right - x, end.H);
+        float x = Left(f);
+        return new PhoneFrame.Box(x, end.Y, end.X - f.Px(ButtonsGap) - x, end.H);
     }
 
     /// <summary>The foot's type: End's word, Summon's (the brush face), the tabs' (Cinzel).</summary>

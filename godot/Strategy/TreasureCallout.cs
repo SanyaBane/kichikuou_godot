@@ -16,7 +16,7 @@ namespace Kichikuou.Game.Strategy;
 /// the 1280×800 screen's pixels, scaled with the picture. On the phone held landscape (<see cref="PlacePhone"/>; docs/ui/phone-build.md,
 /// step L5, LU1q) it is laid out over the whole screen in the reference phone's pixels at the phone's sizes, a callout beside its
 /// anchor standing on the room's foot (its tail to the anchor on either hand), the answers filling its width with the first, in
-/// red lacquer, at the right: nearer the thumb.
+/// red lacquer, at the left, as on the PC: a way back (No, Keep) stands right of the action (owner, 2026-10-30).
 /// </summary>
 internal sealed partial class TreasureCallout : Control
 {
@@ -239,8 +239,8 @@ internal sealed partial class TreasureCallout : Control
         var box = Box;
         if (!_phone)
             return new Rect2(box.Position.X + Pad + i * (ButtonW + ButtonGap), box.End.Y - Gap - 4 - ButtonH, ButtonW, ButtonH);
-        float w = (box.Size.X - 2 * Pad - (Answers - 1) * ButtonGap) / Math.Max(1, Answers);     // the first at the right
-        return new Rect2(box.Position.X + Pad + (Answers - 1 - i) * (w + ButtonGap), box.End.Y - Gap - 4 - ButtonH, w, ButtonH);
+        float w = (box.Size.X - 2 * Pad - (Answers - 1) * ButtonGap) / Math.Max(1, Answers);     // the first at the left
+        return new Rect2(box.Position.X + Pad + i * (w + ButtonGap), box.End.Y - Gap - 4 - ButtonH, w, ButtonH);
     }
 
     private int ButtonAt(Vector2 window)

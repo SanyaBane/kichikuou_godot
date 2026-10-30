@@ -11,9 +11,9 @@ namespace Kichikuou.Game.Strategy;
 // Load | Save from COMMAND, the two lists' tabs, the heading with the sweep and the list in one-line rows (a comment only on
 // the page, its star on the seal), as many as fit, the rest a finger's drag away (the scroll bar); at the right the chosen
 // save's page — its title with Delete, the map at the page's width cut lower for the figures in three columns and the
-// comment with Edit (an auto-save's lines on its load under it), Back | the red button at its foot, the red one at the right
+// comment with Edit (an auto-save's lines on its load under it), the red button | Back at its foot, Back at the right
 // thumb; Delete's and the sweep's questions in callouts at them. Edit raises the comment's own card just over Android's
-// keyboard (LY1), the screen dimmed: whose comment, the field in one line, the count, Cancel | Keep at the right thumb; the
+// keyboard (LY1), the screen dimmed: whose comment, the field in one line, the count, Keep | Cancel at the right thumb; the
 // keyboard's ✓ keeps it, Back cancels (the keyboard it closes, or Back over the card). Drawn in the frame's layout pixels
 // over the whole screen (PhoneUnits), the places PhoneSaves'.
 internal sealed partial class SaveLoadView
@@ -390,7 +390,7 @@ internal sealed partial class SaveLoadView
         TextCentred(_brush, u.Size(PhoneSaves.EditText), edit.GetCenter().X, edit.GetCenter().Y, "Edit", hover ? Ui.Name : Ui.Text);
     }
 
-    /// <summary>Back at the foot's left (<c>land_back</c>): a panel, the gold triangle, its word in the brush face.</summary>
+    /// <summary>Back at the foot's right (<c>land_back</c>): a panel, the gold triangle, its word in the brush face.</summary>
     private void PhoneBack(PhoneUnits u)
     {
         var r = BackBox;
@@ -496,7 +496,7 @@ internal sealed partial class SaveLoadView
 
     /// <summary>
     /// The comment's own card over the dimmed screen (<c>ly1</c>): "COMMENT" and whose, the field (paper in a vermilion
-    /// frame, the line edit in it), the count under its right, Cancel | Keep.
+    /// frame, the line edit in it), the count under its right, Keep | Cancel.
     /// </summary>
     private void PhoneCard(PhoneUnits u)
     {

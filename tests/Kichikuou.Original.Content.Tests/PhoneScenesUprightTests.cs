@@ -168,7 +168,7 @@ public class PhoneScenesUprightTests
         Equal(new(60, restart.Y - 44 - 420, 1100, 420), q.Box);
         Assert.Equal(610, q.TipX, Close);
         Assert.Equal(restart.Y, q.TipY, Close);
-        Assert.True(q.Confirm.X > q.Cancel.Right);
+        Assert.True(q.Cancel.X > q.Confirm.Right);                          // a way back right of the action (owner, 2026-10-30)
 
         var high = PhoneMenu.QuestionAt(Reference, new PhoneFrame.Box(40, 300, 1140, 130));
         Assert.True(high.Below);

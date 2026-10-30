@@ -34,11 +34,12 @@ public class PhonePickersTests
     }
 
     [Fact]
-    public void The_harem_s_End_and_Summon_stand_at_the_left_thumb()
+    public void The_harem_s_Summon_and_End_stand_at_the_left_thumb()
     {
-        // lh2: foot = (FOOT - 10 - 140, FOOT - 10); End (LX0, …, LX0 + 320), Summon (LX0 + 336, …, LX0 + PIC_W2).
-        Equal(new(116, 1020, 320, 140), PhonePickers.HaremEnd(Reference));
-        Equal(new(452, 1020, 768, 140), PhonePickers.Summon(Reference));
+        // lh2's foot = (FOOT - 10 - 140, FOOT - 10), its two buttons swapped (owner, 2026-10-30): Summon (LX0, …,
+        // LX0 + PIC_W2 - 336), End (LX0 + PIC_W2 - 320, …, LX0 + PIC_W2).
+        Equal(new(900, 1020, 320, 140), PhonePickers.HaremEnd(Reference));
+        Equal(new(116, 1020, 768, 140), PhonePickers.Summon(Reference));
     }
 
     [Fact]

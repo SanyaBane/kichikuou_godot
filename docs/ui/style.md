@@ -136,6 +136,13 @@ narration, place title, 131) in docs/ui/messages.md.
 - **Before destroying:** a callout saying "It cannot be undone." with Delete | Keep; a sweep says how many it takes
   ("Delete all without ★ (3)"), is off at 0, and veils the rows it would take while it asks. One question, never two.
 - **A choice then a red button is the confirmation** — no question after it (Save/Load C, the harem's Summon).
+- **The way back stands right of the action** (owner, 2026-10-30), on every device: where a button that leaves without
+  changing anything (End, Stop, Back, Cancel, No, Keep) stands beside one that acts (a red button, Yes, Delete, Abandon,
+  Restart), the way back is the right one — Load | Back, Summon | End, Attack | Stop, Plains | City | Back, Yes | No,
+  Delete | Keep, Keep | Cancel (a comment's card), Restart | Cancel. A red button with no way back beside it keeps the
+  right thumb (the import's first launch). The one exception is the battle's retreat question on the tablet and the
+  phone: Retreat stays farthest from the rail's Retreat it answers (the owner's A2, docs/ui/touch.md), so a second tap
+  there never confirms it.
 - **Results** go on the plate in the middle and wait for the click (since 2026-10-24: "gone by itself, it could be
   missed"); no character reports them. Small events flash instead (a label goes saturated, holds, fades) and their
   wait is answered at once; a frequent battle result holds a moment (Option → Battle) unless it carries a wiped-out mark.
@@ -195,8 +202,8 @@ or `--touch`; the PC's mouse interface does not change.
   name plate or text; they hide under menus, dialogs and our screens, and their taps never reach the script.
 - **The phone held landscape** (docs/ui/phone-build.md, steps F and L1-L10, built 2026-10-28): the frame keeps the
   1280×800 layout, its picture fitted to the height; our controls go to the black sides, on rails (14.5 mm) between the
-  camera's strip (6.3 mm, kept free on both sides) and the frame, the act at the right thumb, Menu and the way back at
-  the left; nothing in the gesture zone at the foot (3 mm). A screen of our own that is a sheet (the options, Save/Load,
+  camera's strip (6.3 mm, kept free on both sides) and the frame, the commands at the right thumb, Menu at the left, a
+  way back beside an act right of it (§5); nothing in the gesture zone at the foot (3 mm). A screen of our own that is a sheet (the options, Save/Load,
   the import, the pickers, the enemy attack) takes the whole width at the phone's type. The figures are the reference
   phone's pixels (the Poco X6 Pro, 17.6 a millimetre; `PhoneFrame`): text 2.3-2.7 mm, small lines 1.7 mm at least, a
   target 6.4 mm high at least (chips; cells 7.5 mm, red buttons 7.4 mm). On the original's own screens a long press is the
@@ -204,7 +211,7 @@ or `--touch`; the PC's mouse interface does not change.
 - **The phone held upright** (docs/ui/phone-build.md, steps P0-P9, built 2026-10-30): the engine's picture at the screen's
   width (762.5 reference pixels high) in the room between the camera's strip (6.3 mm) and the gesture zone (3 mm), where
   each screen puts it (in the middle by default); the bar at the room's foot (8.4 mm), Menu, Log and Skip at its left, the
-  act at the right thumb (End | the red button, Back | the red button). The scenes' windows above the picture for the left
+  act and the way back right of it (the red button | End, the red button | Back; §5), the way back at the right thumb. The scenes' windows above the picture for the left
   portrait's, under it for every other, the script's line breaks kept; a screen of our own stacked down the width (a title
   band, the picture or the party on top, a sheet or a list at the thumb, scrolled by a finger with a thin bar), a menu or
   a province's commands a sheet over the map's foot. The figures are the reference phone's pixels scaled by the width

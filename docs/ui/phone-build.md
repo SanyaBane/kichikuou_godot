@@ -1302,6 +1302,31 @@ Poco** (every step's look above, the agent's choices with them), and with it the
   scroll, centred on the script's view again after a trip to landscape; the order strip's fly-in snapped; a map plate
   pressed across a turn; an original screen's press across a turn read at two points; the spotlight's 0.15 s fade-out).
 
+### After the build: the way back at the right (owner, 2026-10-30)
+
+The owner, looking at the gallery's Android passes: the buttons that go back without changing anything — Stop, End,
+Cancel — stand right of the action, not left (docs/ui/style.md, §5, "The way back stands right of the action"). The
+mock-ups (phone.md) had the act at the right thumb; the build swaps each pair, the figures kept:
+
+- **Held landscape**: the harem's Summon | End (`PhonePickers.Summon`, `HaremEnd`; End at the column's right); the
+  deployment's Attack | Stop and a defence's Plains | City | Back (`PhoneLedger.Bar`, Stop 300 at the part's right);
+  Save/Load's red button | Back (`PhoneSaves.Button`, `Back`; Back 360 at the right thumb) and the comment's card Keep |
+  Cancel (`PhoneSaves.Keep`, `Cancel`); the import's red button at the right column's left and Back right of it to the
+  column's right (`PhoneImport.Button`, `Back`; Import 460 wide, was 520, so "Back to the title" fits beside it; at a
+  first launch, with no way back, Import alone at the column's right as before).
+- **Upright**: the harem's and the treasure's red button | End (`PhonePickersUpright.Action`, `End`); the deployment's
+  sends | Stop (`PhoneLedgerUpright.Bar`, Stop 404 at the bar's right); Save/Load's and the import's red button | Back
+  (`PhoneSavesUpright.Button`, `Back`; the import's red button alone at the bar's right at a first launch,
+  `PhoneImportUpright.Button(f, back)`) and the comment's card Keep | Cancel.
+- **Both**: the questions in the house's callout (`TreasureCallout`: the Refill and troop orders' questions, Treasure's,
+  the enemy attack's Abandon) Yes | No and Abandon | Keep, as on the PC (they were No | Yes, the first nearer the
+  thumb); the Menu sheet's Restart / Exit questions the red button | Cancel (`PhoneMenu.QuestionAt`).
+- **The PC and the tablet**: Save/Load's red button at the page's foot left, Back at its right ("Saving: …" between
+  them); the import screen's "← Back to the title" at the sheet's foot right. The rest already stood so (Attack | Stop,
+  Yes | No, Delete | Keep, the harem's End).
+- **Kept**: the battle's retreat question (the tablet and the phone) keeps Cease Retreat | Retreat, Retreat farthest
+  from the rail's Retreat it answers (the owner's A2, docs/ui/touch.md), so a second tap there never confirms it.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

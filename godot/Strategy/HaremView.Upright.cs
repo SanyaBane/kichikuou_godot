@@ -6,7 +6,7 @@ namespace Kichikuou.Game.Strategy;
 // Our Harem screen on the phone held upright (docs/ui/phone-build.md, step P7; docs/ui/phone.md, §9, PH2): the title band
 // under the hole, her picture at the room's width, her name, visits and last summons under it, then the picker's grid in
 // rows of 7.3 mm, as many in view as the room holds, scrolled by a finger's drag (a flick goes on) or the wheel
-// (PickerGridScroll), a thin bar in the room's right margin; End | Summon in the bar. A girl chosen out of view scrolls the grid the
+// (PickerGridScroll), a thin bar in the room's right margin; Summon | End in the bar. A girl chosen out of view scrolls the grid the
 // least that shows her. Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places
 // PhonePickersUpright's; her details, her cells and Summon as held landscape draws them (HaremView.Phone.cs).
 internal sealed partial class HaremView

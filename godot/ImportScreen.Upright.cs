@@ -8,8 +8,9 @@ namespace Kichikuou.Game;
 // The import screen on the phone held upright (docs/ui/phone-build.md, step P8d; docs/ui/phone.md, §22: PI, PIp, PIr, the
 // owner's choice as drawn): the wave backdrop, our paper sheet as a card in the room's middle at held landscape's type, the
 // steps 一 二 三 one under another — the folder's field under the first; importing, the folder ticked, the stage and its
-// bar, Play under it; refused, GameFiles' message, its hashes, the field and the stamp under it — and Back | the red button
-// in the bar at the thumb (Import, Choose another folder; greyed while it cannot act, Back left out at a first launch).
+// bar, Play under it; refused, GameFiles' message, its hashes, the field and the stamp under it — and the red button | Back
+// in the bar, Back at the thumb (Import, Choose another folder; greyed while it cannot act; at a first launch Back left
+// out and the red button alone at the thumb).
 // Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhoneImportUpright's; a step, the
 // field and the button as held landscape draws them (ImportScreen.Phone.cs).
 public partial class ImportScreen

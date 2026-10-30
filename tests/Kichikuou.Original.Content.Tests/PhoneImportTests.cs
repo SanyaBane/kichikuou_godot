@@ -60,14 +60,16 @@ public class PhoneImportTests
     }
 
     [Fact]
-    public void The_red_button_stands_at_the_right_thumb_Back_left_of_it()
+    public void The_red_button_stands_in_the_right_column_Back_right_of_it_at_the_thumb()
     {
-        // foot = p[3] - 30; Import (rx1 - 520, foot - 130, rx1, foot), Choose another folder (rx1 - 640, …); Back's arrow
-        // at lx0 (a folder chosen) or rx0 (refused), its middle at foot - 65.
-        Equal(new(1726, 980, 520, 130), PhoneImport.Button(Reference, refused: false));
-        Equal(new(1606, 980, 640, 130), PhoneImport.Button(Reference, refused: true));
-        Equal(new(466, 980, 640, 130), PhoneImport.Back(Reference, refused: false));
-        Equal(new(1396, 980, 190, 130), PhoneImport.Back(Reference, refused: true));
+        // foot = p[3] - 30; a way back right of the action (owner, 2026-10-30): Import (rx0, foot - 130, rx0 + 460, foot),
+        // Choose another folder (rx0, …, rx0 + 640, …); Back's arrow 20 right of it, its box to rx1, its middle at
+        // foot - 65; without a way back Import alone at rx1.
+        Equal(new(1396, 980, 460, 130), PhoneImport.Button(Reference, refused: false));
+        Equal(new(1396, 980, 640, 130), PhoneImport.Button(Reference, refused: true));
+        Equal(new(1786, 980, 460, 130), PhoneImport.Button(Reference, refused: false, back: false));
+        Equal(new(1876, 980, 370, 130), PhoneImport.Back(Reference, refused: false));
+        Equal(new(2056, 980, 190, 130), PhoneImport.Back(Reference, refused: true));
         Assert.Equal(1045, PhoneImport.Back(Reference, refused: false).Y + PhoneImport.Back(Reference, refused: false).H / 2, Close);
         Assert.True(PhoneImport.Button(Reference, true).Bottom <= Reference.Screen.H - Reference.Safe.Bottom);
         Assert.Equal("Back to the title", PhoneImport.BackWord(refused: false));

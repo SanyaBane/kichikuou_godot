@@ -8,13 +8,14 @@ namespace Kichikuou.Original.Content.Devices;
 /// as many as fit — seven on the reference phone —, the rest a drag away (the scroll bar). At the right the chosen save's
 /// page: its title with Delete (<see cref="Delete"/>), the map at the page's width cut lower (<see cref="Map"/>) for the
 /// figures in three columns (<see cref="Figure"/>) and the comment with Edit (<see cref="Comment"/>, <see cref="Edit"/>; an
-/// auto-save's two lines on what its load does under them, the map cut lower by their room), Back | the red button at its
-/// foot (<see cref="Back"/>, <see cref="Button"/>), the red one at the right thumb; Delete's and the sweep's questions in
-/// callouts at them (<see cref="DeleteQuestion"/>, <see cref="SweepQuestion"/>). While the comment is written, its own card
-/// stands just over Android's keyboard (<see cref="Card"/>, LY1): whose comment, the field in one line, the count, Cancel |
-/// Keep at the right thumb. The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>ll1</c>,
-/// <c>land_save_list</c>, <c>save_row</c>, <c>land_save_page</c>, <c>load_save_chips</c>, <c>land_back</c>,
-/// <c>bin_button</c>, <c>ly1</c>) in the reference phone's pixels, the boxes in the canvas's units; a longer screen widens
+/// auto-save's two lines on what its load does under them, the map cut lower by their room), the red button | Back at its
+/// foot (<see cref="Button"/>, <see cref="Back"/>), Back at the right thumb (a way back stands right of the action, owner,
+/// 2026-10-30); Delete's and the sweep's questions in callouts at them (<see cref="DeleteQuestion"/>,
+/// <see cref="SweepQuestion"/>). While the comment is written, its own card stands just over Android's keyboard
+/// (<see cref="Card"/>, LY1): whose comment, the field in one line, the count, Keep | Cancel at the right thumb. The figures
+/// are the mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>ll1</c>, <c>land_save_list</c>, <c>save_row</c>,
+/// <c>land_save_page</c>, <c>load_save_chips</c>, <c>land_back</c>, <c>bin_button</c>, <c>ly1</c>; the foot's and the
+/// card's buttons swapped since) in the reference phone's pixels, the boxes in the canvas's units; a longer screen widens
 /// the page (the list keeps its width). Interface only. Engine-independent.
 /// </summary>
 public static class PhoneSaves
@@ -231,15 +232,16 @@ public static class PhoneSaves
     public static float LineMiddle(PhoneFrame f, int index) =>
         Comment(f, true).Bottom + f.Px(LinesDown + LinePitch / 2 + index * LinePitch);
 
-    /// <summary>Back at the page's foot, at its left.</summary>
-    public static PhoneFrame.Box Back(PhoneFrame f) => new(Page(f).X, Foot(f) - f.Px(FootHeight), f.Px(BackWidth), f.Px(FootHeight));
+    /// <summary>Back at the page's foot, at its right — the right thumb: a way back stands right of the action (owner, 2026-10-30).</summary>
+    public static PhoneFrame.Box Back(PhoneFrame f) =>
+        new(Right(f) - f.Px(BackWidth), Foot(f) - f.Px(FootHeight), f.Px(BackWidth), f.Px(FootHeight));
 
-    /// <summary>The red button (Load, Save, Save over No. n) right of Back, at the right thumb.</summary>
+    /// <summary>The red button (Load, Save, Save over No. n) from the page's left to 16 short of Back.</summary>
     public static PhoneFrame.Box Button(PhoneFrame f)
     {
         var back = Back(f);
-        float x = back.Right + f.Px(FootGap);
-        return new PhoneFrame.Box(x, back.Y, Right(f) - x, back.H);
+        float x = Page(f).X;
+        return new PhoneFrame.Box(x, back.Y, back.X - f.Px(FootGap) - x, back.H);
     }
 
     // ------------------------------------------------------------------ the questions (the PC's callouts at the phone's sizes)
@@ -310,21 +312,21 @@ public static class PhoneSaves
         return new PhoneFrame.Box(Left(f), y, Right(f) - Left(f), f.Px(CardHeight));
     }
 
-    /// <summary>Keep, red, at the card's right — the right thumb.</summary>
-    public static PhoneFrame.Box Keep(PhoneFrame f, float keyboard)
+    /// <summary>Cancel at the card's right — the right thumb: a way back stands right of the action (owner, 2026-10-30).</summary>
+    public static PhoneFrame.Box Cancel(PhoneFrame f, float keyboard)
     {
         var card = Card(f, keyboard);
         return new PhoneFrame.Box(card.Right - f.Px(CardButtonIn + CardButton), card.Y + f.Px(FieldDown), f.Px(CardButton), f.Px(FieldHeight));
     }
 
-    /// <summary>Cancel left of Keep, as far from the field as Keep from it.</summary>
-    public static PhoneFrame.Box Cancel(PhoneFrame f, float keyboard)
+    /// <summary>Keep, red, left of Cancel, 32 right of the field.</summary>
+    public static PhoneFrame.Box Keep(PhoneFrame f, float keyboard)
     {
         var field = Field(f, keyboard);
         return new PhoneFrame.Box(field.Right + f.Px(FieldGap), field.Y, f.Px(CardButton), field.H);
     }
 
-    /// <summary>The field in one line, from 24 in to 32 short of Cancel.</summary>
+    /// <summary>The field in one line, from 24 in to 32 short of Keep.</summary>
     public static PhoneFrame.Box Field(PhoneFrame f, float keyboard)
     {
         var card = Card(f, keyboard);

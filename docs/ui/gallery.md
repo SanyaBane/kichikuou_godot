@@ -505,8 +505,8 @@ landscape's millimetres, `battle-speech…` the portrait at the scene's top corn
 
 Step P5 (2026-10-29) built the deployment table and Subordinates: on this pass `deployment…` show the title band, the
 party on top (the back row, then the front row), the tabs and the ledger at the thumb in two-line rows (the seal, № and
-the name over the type fixed at the left, the tab's other columns beside them), Stop | the sends in the bar (`-defence`
-Back | Plains | City, `-search` one place), `-refill-question` the Refill question at the phone's sizes, `-refill-done` the
+the name over the type fixed at the left, the tab's other columns beside them), the sends | Stop in the bar (`-defence`
+Plains | City | Back, `-search` one place; the way back right of the action since 2026-10-30, docs/ui/style.md, §5), `-refill-question` the Refill question at the phone's sizes, `-refill-done` the
 plate at the screen's width, `deployment-commander` the order's seal on the subtitle's line; `subordinates…` the ledger
 over the orders (Replenish and Talk on one row, Add New Troops three a row), the budget at the bar's left and End at the
 right thumb, `-question` Replenish's question under its button, `-result` the plate at the screen's width. PD2, PD2d, PU1
@@ -518,15 +518,15 @@ question, Abandon City | Ninja Scout over Intercept in the bar —, `-scouted` t
 Ninja Scout, `-abandon` the question above Abandon City. PA1 and PA1n left `GALLERY_ENTRIES`.
 
 Step P7a (2026-10-29) built Harem and Treasure: on this pass `harem` shows the title band, Anasel's picture at the width,
-her details, the grid in rows of 7.3 mm (nine of 17 in view, a thin scroll bar at the right) and End | Summon in the bar;
+her details, the grid in rows of 7.3 mm (nine of 17 in view, a thin scroll bar at the right) and Summon | End in the bar;
 `treasure…` the item's or the character's picture at the width, its details, Characters | Items (`-which-item` Rance's
-prompt and Back in their place), the grid in rows of 6.7 mm, End | the red button (`-refusal` greyed with its reason),
+prompt and Back in their place), the grid in rows of 6.7 mm, the red button | End (`-refusal` greyed with its reason),
 `-question` and `-replace` the questions across the room over the button. PH2 and PT2 left `GALLERY_ENTRIES`.
 
 Step P7b (2026-10-30) built Save/Load: on this pass `save-load…` show the title band with Load | Save at its right
 (`-title` without them), the lists' tabs, the heading with the sweep, the list in one-line rows above the page (nine in
 view, the scroll bar at the right), the chosen save's page standing on the bar (its title with Delete, the map cut at its
-foot, the figures in two columns, the comment with Edit) and Back | the red button in the bar; `-auto` and `-auto-end` an
+foot, the figures in two columns, the comment with Edit) and the red button | Back in the bar; `-auto` and `-auto-end` an
 auto-save's two lines under the comment, the map cut lower; `-delete` the question under Delete, `-sweep` the sweep's
 under the sweep; `-comment` the comment's own card where PY2 has it (the keyboard not drawn), its words wrapped in the
 field two lines high. PL2 and PY2 left `GALLERY_ENTRIES`.
@@ -549,8 +549,8 @@ shown one lit; Back in the bar. PG2m and PG2 left `GALLERY_ENTRIES`.
 
 Step P8d (2026-10-30) built the title and the import screen: on this pass `title…` show the picture over a finger row for
 each button it draws (Start red at the thumb; `title-description` and `title-requests` the picture where the rows put it,
-the rows hidden), `import-…` the paper card in the room's middle with the steps one under another and Back | the red
-button in the bar; `fortune-check`, `cg-gallery` and `music-room` stay as they are. PE2, PI, PIp, PIr, PXf, PXc and PXm
+the rows hidden), `import-…` the paper card in the room's middle with the steps one under another and the red button |
+Back in the bar; `fortune-check`, `cg-gallery` and `music-room` stay as they are. PE2, PI, PIp, PIr, PXf, PXc and PXm
 left `GALLERY_ENTRIES`; PXr stays (no entry of the game's gallery).
 
 ## 10. The copy for a website (owner, 2026-10-29)

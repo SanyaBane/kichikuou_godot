@@ -330,7 +330,7 @@ cards' menu at a finger's size (`Original.Content/Devices/PhoneBattleStates`; `S
 `BattleInfoLayer.Phone.cs`, the phone branches of `BattleOpeningLayer`, `StrategyCutInView`, `SpeechBalloon`).
 Step L5 is built, awaiting the owner's look on the phone (phone-build.md, "Step L5, where it stands"): the deployment table
 and Subordinates — the ledger in one-line rows at the phone's type (wholly at the left on the deployment table, the frame on
-Subordinates), the party two cards a row and Stop | Attack at the right, Add New Troops in the left side, Talk, Replenish
+Subordinates), the party two cards a row and Attack | Stop at the right, Add New Troops in the left side, Talk, Replenish
 and End in the right, the questions in callouts at the phone's sizes, a unit's picture on a long press
 (`Original.Content/Devices/PhoneLedger`; `DeploymentPanels.Phone.cs`, `SubordinatesView.Phone.cs`, `UnitPictureView`,
 `DeploymentTableView.PlacePhone`, `LedgerTabsBar.Phone`, `TreasureCallout.PlacePhone`).
@@ -345,7 +345,7 @@ the pickers' grid folded after its ninth row at the right thumb, every cell at i
 holder (`Original.Content/Devices/PhonePickers`; `HaremView.Phone.cs`, `TreasureView.Phone.cs`, `PhonePickerParts`; the
 callout's placement `TreasureView.ShowCallout`, the game's and the gallery's); L7b is built, awaiting the owner's look on
 the phone: Save/Load as the PC's split across the whole width — the list at the left in one-line rows, the chosen save's
-page at the right with the map cut lower, Back | the red button at its foot — and the comment's own card over Android's
+page at the right with the map cut lower, the red button | Back at its foot — and the comment's own card over Android's
 keyboard (LY1; Godot's field asks for no full-screen editor, the card follows the height Godot reports, Back cancels)
 (`Original.Content/Devices/PhoneSaves`; `SaveLoadView.Phone.cs`; headless `--phone landscape` now on a phone-shaped canvas).
 Step L8 is built, awaiting the owner's look on the phone (phone-build.md, "Step L8, where it stands"): the options window
@@ -398,7 +398,7 @@ the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLay
 Step P5 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P5, where it stands"): the deployment table
 and Subordinates upright — the title band, the party on top as our army in the battle, the ledger at the thumb in two-line
 rows (the seal, № and the name over the type fixed at the left, the tab's other columns scrolled sideways under them, each
-tab its own scroll), Stop | the sends in the bar; Subordinates' orders under the ledger, Replenish and Talk on one row, the
+tab its own scroll), the sends | Stop in the bar; Subordinates' orders under the ledger, Replenish and Talk on one row, the
 budget at the bar's left and End at the right thumb, a question under its button; a unit's picture on a long press as a
 sheet over the foot (`Original.Content/Devices/PhoneLedgerUpright`; `DeploymentTableView.Upright.cs`,
 `DeploymentPanels.Upright.cs`, `SubordinatesView.Upright.cs`, `UnitPictureView`, `OrderResultPlate`).
@@ -410,12 +410,12 @@ over Intercept in the bar; Ninja Scout's list and Abandon City's question above 
 totals shared with `EnemyAttackView.Phone.cs`).
 Step P7 is split as L7 was (phone-build.md, "Step P7, where it stands"): P7a is built, awaiting the owner's look on the
 Poco — Harem and Treasure upright: the title band, the picture at the width, the details, (Treasure's tabs or a first
-pick's prompt and Back,) the picker's grid in rows of 7.3 / 6.7 mm scrolled by a finger with a thin bar, End | the red
-button in the bar, Treasure's questions across the room over it (`Original.Content/Devices/PhonePickersUpright` with its
+pick's prompt and Back,) the picker's grid in rows of 7.3 / 6.7 mm scrolled by a finger with a thin bar, the red button |
+End in the bar, Treasure's questions across the room over it (`Original.Content/Devices/PhonePickersUpright` with its
 `ScrolledGrid`; `HaremView.Upright.cs`, `TreasureView.Upright.cs`, `PickerGridScroll`); P7b is built, awaiting the
 owner's look on the Poco — Save/Load upright as PL2: the title band with Load | Save, the tabs, the list in one-line rows
 above the page (nine in view, a drag for the rest), the chosen save's page standing on the bar (the map cut at its foot,
-the figures in two columns, the comment with Edit), Back | the red button in the bar; the comment's own card over
+the figures in two columns, the comment with Edit), the red button | Back in the bar; the comment's own card over
 Android's keyboard as PY2, its words wrapped in a field two lines high and drawn by the view, the line edit taking the keys
 unseen (`Original.Content/Devices/PhoneSavesUpright`; `SaveLoadView.Upright.cs`, held landscape's drawing shared through
 its `Places`).
@@ -435,7 +435,7 @@ laid out again from the presenter's bars (`GamePresenter.DataBars`) and the scal
 Poco — the title upright as PE2: the picture moved over a finger row for each button it draws (`PhoneFrame.WithPictureAt`,
 `Device.PictureTop`; `Original.Content/Devices/PhoneTitleUpright`, `godot/Strategy/TitleRowsView`, `GameScreen.Title.cs`),
 a row a click in its button's box; the import screen as PI, PIp, PIr, a card in the middle with the steps one under
-another, Back | the red button in the bar (`Original.Content/Devices/PhoneImportUpright`; `godot/ImportScreen.Upright.cs`);
+another, the red button | Back in the bar (`Original.Content/Devices/PhoneImportUpright`; `godot/ImportScreen.Upright.cs`);
 the original's own screens as they are, a long press the right click upright too.
 Step P9 is done but the owner's play (phone-build.md, "Step P9, where it stands"): unattended play headless with
 `--phone upright` from the week-18 save through every exercise, all as before, and again with the window turned every n
@@ -605,8 +605,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   auto-saves, newest first, scrolling, each tagged "Turn Start" or "Turn End" under the time (decision 31, §12, the
   owner's K1); the chosen save's page with its
   map as All Data draws it, its figures, the save's comment (Edit, written in place), Delete at the save's
-  title (a danger button, its callout under it; the owner's B5, §11), Back at the foot's left and a red button that
-  answers the script's menu with the save's item; Load | Save tabs from `COMMAND`,
+  title (a danger button, its callout under it; the owner's B5, §11), a red button at the foot's left that
+  answers the script's menu with the save's item and Back at its right (owner, 2026-10-30); Load | Save tabs from `COMMAND`,
   `LoadSaveShortcut.Switch`; the model `Original.Content/Strategy/SaveSlots` (`ReadLibrary`, `SaveShelf`) — each save's
   summary read from the `ISaveLibrary`, the menu's saves from `GamePresenter.SaveLibraryList` —, the window 113 under it
   not drawn, `GamePresenter.SaveScreenCovered`);

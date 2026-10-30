@@ -86,11 +86,12 @@ public class PhoneSavesTests
     }
 
     [Fact]
-    public void Back_and_the_red_button_stand_at_the_page_s_foot()
+    public void The_red_button_and_Back_stand_at_the_page_s_foot()
     {
-        // ll1: land_back (px0, foot[0], px0 + 360, foot[1]); red_button (px0 + 376, foot[0], LX1, foot[1]).
-        Equal(new(1040, 1010, 360, 150), PhoneSaves.Back(Reference));
-        Equal(new(1416, 1010, 1180, 150), PhoneSaves.Button(Reference));
+        // ll1's foot, its two buttons swapped (owner, 2026-10-30): red_button (px0, foot[0], LX1 - 376, foot[1]); land_back
+        // (LX1 - 360, foot[0], LX1, foot[1]).
+        Equal(new(2236, 1010, 360, 150), PhoneSaves.Back(Reference));
+        Equal(new(1040, 1010, 1180, 150), PhoneSaves.Button(Reference));
     }
 
     [Fact]
@@ -107,12 +108,12 @@ public class PhoneSavesTests
     public void The_comment_s_card_stands_just_over_the_keyboard()
     {
         // ly1: the card (LX0, LKB_TOP - 24 - 360, LX1, LKB_TOP - 24), LKB_TOP = LH - 650; the field (x0 + 24, y0 + 100, fx1,
-        // y0 + 230), fx1 = x1 - 32 - 2 × 330 - 32; Cancel (fx1 + 32, …, fx1 + 362), Keep (x1 - 354, …, x1 - 24); the count's
-        // right at fx1, its top y0 + 270.
+        // y0 + 230), fx1 = x1 - 32 - 2 × 330 - 32; Keep (fx1 + 32, …, fx1 + 362), Cancel (x1 - 354, …, x1 - 24) — the two
+        // swapped (owner, 2026-10-30); the count's right at fx1, its top y0 + 270.
         Equal(new(116, 186, 2480, 360), PhoneSaves.Card(Reference, 0));
         Equal(new(140, 286, 1732, 130), PhoneSaves.Field(Reference, 0));
-        Equal(new(1904, 286, 330, 130), PhoneSaves.Cancel(Reference, 0));
-        Equal(new(2242, 286, 330, 130), PhoneSaves.Keep(Reference, 0));
+        Equal(new(2242, 286, 330, 130), PhoneSaves.Cancel(Reference, 0));
+        Equal(new(1904, 286, 330, 130), PhoneSaves.Keep(Reference, 0));
         Assert.Equal((1872f, 456f), PhoneSaves.Count(Reference, 0));
         // A keyboard reported 500 high: the card 24 over it; one taller than the screen leaves it at the top.
         Assert.Equal(1220 - 500 - 24, PhoneSaves.Card(Reference, 500).Bottom, Close);

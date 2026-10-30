@@ -236,8 +236,9 @@ public static class PhoneMenu
 
     /// <summary>
     /// The callout of the question a tile asks: as wide as the mock-up's (PN1q), kept within the panel; above the tile,
-    /// pointing down at it, unless the screen's top leaves no room there — then under it, pointing up. Cancel and the
-    /// confirming button side by side at its foot, the confirming one at the right.
+    /// pointing down at it, unless the screen's top leaves no room there — then under it, pointing up. The confirming
+    /// button and Cancel side by side at its foot, Cancel at the right: a way back stands right of the action (owner,
+    /// 2026-10-30).
     /// </summary>
     public static Callout QuestionAt(PhoneFrame f, PhoneFrame.Box tile)
     {
@@ -253,7 +254,7 @@ public static class PhoneMenu
         float bm = f.Px(ButtonMargin), bh = f.Px(ButtonHeight), bg = f.Px(ButtonGap), mid = x + w / 2;
         float by = box.Bottom - bm - bh;
         return new Callout(box, tile.X + tile.W / 2, below ? tile.Bottom : tile.Y, below,
-            new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh), new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh));
+            new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh), new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh));
     }
 
     /// <summary>A question's callout held upright (PN1q): across the screen over its row, pointing down at it; under it when the top leaves no room.</summary>
@@ -264,7 +265,7 @@ public static class PhoneMenu
         var box = new PhoneFrame.Box(x, below ? tile.Bottom + gap : tile.Y - gap - h, w, h);
         float bm = f.Px(ButtonMargin), bh = f.Px(ButtonHeight), bg = f.Px(ButtonGap), mid = x + w / 2, by = box.Bottom - bm - bh;
         return new Callout(box, tile.X + tile.W / 2, below ? tile.Bottom : tile.Y, below,
-            new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh), new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh));
+            new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh), new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh));
     }
 
 }

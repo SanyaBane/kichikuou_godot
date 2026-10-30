@@ -238,7 +238,7 @@ internal sealed partial class DeploymentPanels : Control
         int[] sends = [.. new[] { 1, 2 }.Where(HasButton)];
         if (_phone is { } phone)
         {
-            var boxes = phone.IsUpright ? PhoneLedgerUpright.Bar(phone, sends.Length) : PhoneLedger.Bar(phone, sends.Length);   // Stop first, at the left
+            var boxes = phone.IsUpright ? PhoneLedgerUpright.Bar(phone, sends.Length) : PhoneLedger.Bar(phone, sends.Length);   // Stop first, at the right
             for (int i = 0; i < sends.Length; i++)
                 yield return (sends[i], Box(boxes[i + 1]));
             if (HasButton(3))

@@ -17,8 +17,9 @@ namespace Kichikuou.Game.Strategy;
 /// miniature), its figures, the save's comment (Edit writes it in place: Enter keeps it, Esc leaves the old one), an
 /// auto-save's kind after the title and what its load does under the comment,
 /// Delete at the save's title (a danger button asking in a callout under it, the owner's B5 of 2026-10-25,
-/// docs/ui/save-load.md, §11), Back at the foot's left and a red button that answers the script's menu with the save's item
-/// ("Load", "Save over No. n", "Save") — the second click, so no question. An auto-save takes no Save; Delete works in
+/// docs/ui/save-load.md, §11), a red button at the foot's left that answers the script's menu with the save's item
+/// ("Load", "Save over No. n", "Save") — the second click, so no question — and Back at its right (a way back stands right
+/// of the action, owner, 2026-10-30). An auto-save takes no Save; Delete works in
 /// either list and either tab. After Sengoku Rance's notes (docs/ui/save-load.md, §10, the owner's N1, 2026-10-22): a
 /// save with a comment has a gold star on its seal's top left corner, and the manual saves' heading has a button
 /// deleting every one without a comment, asking first in a callout beside it while the rows to go are struck through. From <c>COMMAND</c> the Load | Save tabs switch lists (<see cref="LoadSaveShortcut.Switch"/>).
@@ -37,8 +38,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 
     private static readonly Rect2 PanelRect = new(30, 24, 1220, 752);
     private static readonly Rect2 MapRect = new(426, 118, 800, 333);
-    private static readonly Rect2 ButtonRect = new(896, 694, 330, 58);
-    private static readonly Rect2 DeleteRect = new(1090, 84, 136, 30), BackRect = new(426, 694, 140, 58);
+    // the red button at the page's foot left, Back at its right: a way back stands right of the action (owner, 2026-10-30)
+    private static readonly Rect2 ButtonRect = new(426, 694, 330, 58);
+    private static readonly Rect2 DeleteRect = new(1090, 84, 136, 30), BackRect = new(1086, 694, 140, 58);
     private static readonly Rect2 CommentRect = new(426, 585, 696, 34);
     private static readonly Rect2 EditRect = new(1132, 585, 94, 34);
     private static readonly Rect2 CalloutRect = new(806, 126, 420, 110);
@@ -1032,7 +1034,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
                 Text(_gothic, 14, PageX, cy + 97, lines.Item2, Ui.Quiet);
             }
         }
-        float by = ButtonRect.Position.Y, lx = BackRect.End.X + 20, lw = ButtonRect.Position.X - 16 - lx;
+        float by = ButtonRect.Position.Y, lx = ButtonRect.End.X + 20, lw = BackRect.Position.X - 16 - lx;
         if (save && _now is { } now)
         {
             Text(_gothic, 15, lx, by + 16, Fit($"Saving: {now.DateText}", 15, lw), Ui.Text);
@@ -1053,7 +1055,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         : ("Written at the start of the week. Loading it plays the week's start again:",
             "the budget, then the commands.");
 
-    /// <summary>Back at the foot's left, as a right click: a row box with a gold arrow.</summary>
+    /// <summary>Back at the foot's right, as a right click: a row box with a gold arrow.</summary>
     private void DrawBack()
     {
         bool hover = _hovered == BackHit;

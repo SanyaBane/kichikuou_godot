@@ -6,7 +6,7 @@ namespace Kichikuou.Original.Content.Devices;
 /// 一 二 三 one under another (<see cref="MarkX"/>, <see cref="TextLeft"/>, <see cref="Right"/>), the folder's field under
 /// the first (<see cref="Field"/>), the next step <see cref="FieldUnder"/> under it; importing, the decompile's bar under the
 /// second step's words; refused, the hashes under the message and the stamp under the field (<see cref="StampX"/>,
-/// <see cref="StampDown"/>); Back | the red button in the bar at the thumb, as Save/Load's (<see cref="Back"/>,
+/// <see cref="StampDown"/>); the red button | Back in the bar, Back at the thumb, as Save/Load's (<see cref="Back"/>,
 /// <see cref="Button"/>). The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>: <c>import_upright</c>,
 /// <c>sheet_head</c>, <c>step_mark</c>, <c>step_text</c>, <c>folder_field</c>, <c>hash_lines</c>, <c>stamp</c>,
 /// <c>back_and</c>) in the reference phone's pixels from the room and the bar; the boxes in the canvas's units. The type is
@@ -106,9 +106,16 @@ public static class PhoneImportUpright
     /// <summary>Back's and the red button's type (the brush face).</summary>
     public const float BackText = PhoneSavesUpright.BackText, ButtonText = PhoneSavesUpright.ButtonText;
 
-    /// <summary>Back at the bar's left, as Save/Load's.</summary>
+    /// <summary>Back at the bar's right, the right thumb, as Save/Load's.</summary>
     public static PhoneFrame.Box Back(PhoneFrame f) => PhoneSavesUpright.Back(f);
 
-    /// <summary>The red button (Import, Choose another folder) right of Back at the right thumb, as Save/Load's.</summary>
-    public static PhoneFrame.Box Button(PhoneFrame f) => PhoneSavesUpright.Button(f);
+    /// <summary>
+    /// The red button (Import, Choose another folder) left of Back, as Save/Load's; without a way back
+    /// (<paramref name="back"/> false: a first launch) as wide, alone at the bar's right, the right thumb.
+    /// </summary>
+    public static PhoneFrame.Box Button(PhoneFrame f, bool back = true)
+    {
+        var button = PhoneSavesUpright.Button(f);
+        return back ? button : new PhoneFrame.Box(f.Bar.Right - button.W, button.Y, button.W, button.H);
+    }
 }

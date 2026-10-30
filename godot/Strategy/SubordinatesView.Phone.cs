@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Strategy;
 // owner's change): the ledger fills the frame under its tabs; the left side holds the chosen unit's Add New Troops from the
 // foot up, the dearest on top; the right side the title, the units ready, the date and the budget, then Talk (the unit's
 // face), Replenish and End at the thumb. A troop order's question stands in a callout beside its button (LU1q: left of
-// Replenish, right of a step), Yes nearer the thumb. The unit's picture comes by a long press on its row. Drawn in the
+// Replenish, right of a step), Yes | No as on the PC (a way back stands right of the action, owner, 2026-10-30). The unit's picture comes by a long press on its row. Drawn in the
 // frame's layout pixels over the whole screen (PhoneUnits), the places PhoneLedger's.
 internal sealed partial class SubordinatesView
 {

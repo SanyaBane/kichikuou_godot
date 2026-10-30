@@ -8,10 +8,10 @@ namespace Kichikuou.Game.Strategy;
 // changed it, and §25, PY2): one page down the room over the wave backdrop — the title band with Load | Save at its right,
 // the two lists' tabs, the heading with the sweep, the list in one-line rows above the page, nine in view on the reference,
 // the rest a finger's drag away (the scroll bar at the right); the chosen save's page standing on the bar (its title with
-// Delete, the map cut at its foot, the figures in two columns, the comment with Edit); Back | the red button in the bar.
+// Delete, the map cut at its foot, the figures in two columns, the comment with Edit); the red button | Back in the bar.
 // The list, the rows, the page, the questions and the bar are held landscape's drawing at PhoneSavesUpright's places
 // (Places picks the orientation's); the band and the comment's card are upright's own. The card (PY2) stands just over
-// Android's keyboard: whose comment, the field two lines high, the count, Cancel | Keep at its foot. Its words are wrapped
+// Android's keyboard: whose comment, the field two lines high, the count, Keep | Cancel at its foot. Its words are wrapped
 // and drawn here with the caret; the line edit in it takes the keys (and Android's keyboard) unseen, a tap in the field
 // moving its caret to the letter tapped.
 internal sealed partial class SaveLoadView
@@ -155,7 +155,7 @@ internal sealed partial class SaveLoadView
     /// <summary>
     /// The comment's own card over the dimmed screen (<c>comment_card</c>, PY2): "COMMENT" at the left, whose at the right,
     /// the field two lines high (paper in a vermilion frame, the words wrapped, the caret), the count under its right,
-    /// Cancel | Keep at the card's foot.
+    /// Keep | Cancel at the card's foot.
     /// </summary>
     private void UprightCard(PhoneUnits u)
     {

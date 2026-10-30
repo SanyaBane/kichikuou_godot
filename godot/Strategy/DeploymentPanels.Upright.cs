@@ -7,7 +7,7 @@ namespace Kichikuou.Game.Strategy;
 // The deployment table on the phone held upright (docs/ui/phone-build.md, step P5; docs/ui/phone.md, §7 and §20, PD2): the
 // title band, the party under it as the battle shows our army (the back row on top, then the front row, facing down; each
 // card with its ✕), the troops and the war expenses under the cards, then the ledger's tabs and the ledger at the thumb
-// (GameScreen places it, two-line rows scrolled sideways), Stop | Attack in the bar. A unit's picture comes by a long press
+// (GameScreen places it, two-line rows scrolled sideways), Attack | Stop in the bar. A unit's picture comes by a long press
 // on its row (UnitPictureView). Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places
 // PhoneLedgerUpright's.
 internal sealed partial class DeploymentPanels

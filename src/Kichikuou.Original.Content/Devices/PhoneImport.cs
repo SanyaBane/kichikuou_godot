@@ -4,8 +4,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// The import screen on the phone held landscape (docs/ui/phone-build.md, step L9; docs/ui/phone.md, §23: LI, LIp, LIr, the
 /// owner's choice as drawn): our paper sheet in the frame at the phone's type, the sides empty; the steps in two columns —
 /// the first, with the folder's field, at the left (<see cref="Column"/> 0), the others at the right —, the red button at
-/// the sheet's right foot, the right thumb (<see cref="Button"/>: Import, or Choose another folder once refused), Back to
-/// the title at its left foot (<see cref="Back"/>; once refused left of the red button). Refused, GameFiles' message runs
+/// the right column's foot (<see cref="Button"/>: Import, or Choose another folder once refused) and Back to the title
+/// right of it at the right thumb (<see cref="Back"/>: a way back stands right of the action, owner, 2026-10-30; without
+/// a way back the red button alone at the thumb). Refused, GameFiles' message runs
 /// across the sheet, its hashes in two lines under it (<see cref="HashLines"/>), the field at the left, the stamp at the
 /// right (<see cref="StampX"/>). A folder is shown as its name over its place (<see cref="FolderLines"/>), a path as its
 /// parts with Android's storage named (<see cref="Readable(string)"/>). The figures are the mock-ups'
@@ -136,37 +137,39 @@ public static class PhoneImport
     // ------------------------------------------------------------------ the foot: the red button and Back
 
     /// <summary>The red button: this far over the sheet's foot, as high; Import's width and Choose another folder's.</summary>
-    private const float ButtonsUp = 30, ButtonHeight = 130, ImportWidth = 520, ChooseWidth = 640;
+    private const float ButtonsUp = 30, ButtonHeight = 130, ImportWidth = 460, ChooseWidth = 640;
 
     /// <summary>The red button's word (the brush face): Import's, Choose another folder's.</summary>
     public const float ImportText = 54, ChooseText = 50;
 
-    /// <summary>The red button at the right column's foot, the right thumb: Import, or (<paramref name="refused"/>) Choose another folder.</summary>
-    public static PhoneFrame.Box Button(PhoneFrame f, bool refused)
+    /// <summary>
+    /// The red button at the right column's foot: Import, or (<paramref name="refused"/>) Choose another folder; at the
+    /// column's left with a way back right of it (<paramref name="back"/>), else alone at its right, the right thumb.
+    /// </summary>
+    public static PhoneFrame.Box Button(PhoneFrame f, bool refused, bool back = true)
     {
-        float right = Column(f, 1).Right, w = f.Px(refused ? ChooseWidth : ImportWidth);
-        float bottom = Paper(f).Bottom - f.Px(ButtonsUp);
-        return new PhoneFrame.Box(right - w, bottom - f.Px(ButtonHeight), w, f.Px(ButtonHeight));
+        var (left, right) = Column(f, 1);
+        float w = f.Px(refused ? ChooseWidth : ImportWidth), bottom = Paper(f).Bottom - f.Px(ButtonsUp);
+        return new PhoneFrame.Box(back ? left : right - w, bottom - f.Px(ButtonHeight), w, f.Px(ButtonHeight));
     }
 
-    /// <summary>Back: its arrow's width and half height, its word in from the arrow's tip (Cinzel); the box a finger takes, as wide on the left.</summary>
+    /// <summary>Back: its arrow's width and half height, its word in from the arrow's tip (Cinzel); the box a finger takes.</summary>
     public const float ArrowWidth = 24, ArrowHalf = 16, BackTextIn = 44, BackText = 34;
 
-    private const float BackWidth = 640, BackGap = 20;
+    private const float BackGap = 20;
 
     /// <summary>
-    /// Back, level with the red button: at the left column's foot ("Back to the title"), or (<paramref name="refused"/>)
-    /// from the right column's left to the red button ("Back"). Its arrow's tip is the box's left, at its middle.
+    /// Back, level with the red button: from 20 right of it to the right column's right, the right thumb ("Back to the
+    /// title", or once <paramref name="refused"/> "Back"). Its arrow's tip is the box's left, at its middle.
     /// </summary>
     public static PhoneFrame.Box Back(PhoneFrame f, bool refused)
     {
         var button = Button(f, refused);
-        float x = Column(f, refused ? 1 : 0).Left;
-        float w = refused ? button.X - f.Px(BackGap) - x : f.Px(BackWidth);
-        return new PhoneFrame.Box(x, button.Y, w, button.H);
+        float x = button.Right + f.Px(BackGap);
+        return new PhoneFrame.Box(x, button.Y, Column(f, 1).Right - x, button.H);
     }
 
-    /// <summary>Back's word: the whole way at the sheet's left foot, short beside the red button.</summary>
+    /// <summary>Back's word: the whole way beside Import, short beside Choose another folder.</summary>
     public static string BackWord(bool refused) => refused ? "Back" : "Back to the title";
 
     // ------------------------------------------------------------------ the words

@@ -48,11 +48,13 @@ public class PhoneImportUprightTests
     }
 
     [Fact]
-    public void Back_and_the_red_button_stand_in_the_bar()
+    public void The_red_button_and_Back_stand_in_the_bar()
     {
-        // back_and: Back (16 … 400), the red button (416 … PW − 16).
-        Equal(new(16, 2504, 384, 148), PhoneImportUpright.Back(Reference));
-        Equal(new(416, 2504, 788, 148), PhoneImportUpright.Button(Reference));
+        // back_and, its two buttons swapped (owner, 2026-10-30): the red button (16 … PW − 400), Back (PW − 400 … PW − 16);
+        // without a way back the red button alone at the bar's right.
+        Equal(new(820, 2504, 384, 148), PhoneImportUpright.Back(Reference));
+        Equal(new(16, 2504, 788, 148), PhoneImportUpright.Button(Reference));
+        Equal(new(416, 2504, 788, 148), PhoneImportUpright.Button(Reference, back: false));
     }
 
     [Fact]
