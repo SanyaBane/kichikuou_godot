@@ -7,7 +7,8 @@ namespace Kichikuou.Game.Strategy;
 /// press that wanders past <see cref="Slop"/> scrolls, the list following the finger from where it passed the slop (so it
 /// does not jump by it); risen at <see cref="FlingStart"/> or more (measured over its last <see cref="FlingWindow"/>) the
 /// scroll goes on as a flick that slows; a press while a flick goes on stops it and scrolls at once, never tapping. The
-/// list keeps its own scroll values; this keeps the finger's, in its control's pixels.
+/// list keeps its own scroll values; this keeps the finger's, in its control's pixels, so a turn of the phone
+/// (<see cref="Device.Turns"/>) ends the press and a flick: their pixels are the other layout's.
 /// </summary>
 internal sealed class FingerScroll
 {
@@ -25,24 +26,47 @@ internal sealed class FingerScroll
 
     private readonly Queue<(ulong Usec, Vector2 At)> _moves = new();
     private Vector2 _fling;
+    private bool _down, _dragging;
+    private int _turn = Device.Turns;
 
     /// <summary>Whether a press is down and not released yet.</summary>
-    public bool Down { get; private set; }
+    public bool Down
+    {
+        get
+        {
+            Settle();
+            return _down;
+        }
+    }
 
     /// <summary>Whether the press scrolls: it wandered past the slop, or it stopped a flick.</summary>
-    public bool Dragging { get; private set; }
+    public bool Dragging
+    {
+        get
+        {
+            Settle();
+            return _dragging;
+        }
+    }
 
     /// <summary>Where the scroll is measured from: the press, then the place it passed the slop.</summary>
     public Vector2 Origin { get; private set; }
 
     /// <summary>Whether a flick goes on.</summary>
-    public bool Flinging => _fling != Vector2.Zero;
+    public bool Flinging
+    {
+        get
+        {
+            Settle();
+            return _fling != Vector2.Zero;
+        }
+    }
 
     /// <summary>A press at <paramref name="at"/>; returns whether it stopped a flick (it then scrolls from here, no tap).</summary>
     public bool Press(Vector2 at)
     {
         bool stopped = Flinging;
-        (_fling, Down, Dragging, Origin) = (Vector2.Zero, true, stopped, at);
+        (_fling, _down, _dragging, Origin) = (Vector2.Zero, true, stopped, at);
         _moves.Clear();
         Moved(at);
         return stopped;
@@ -54,9 +78,9 @@ internal sealed class FingerScroll
         if (!Down)
             return false;
         Moved(at);
-        if (Dragging || at.DistanceTo(Origin) <= Slop)
+        if (_dragging || at.DistanceTo(Origin) <= Slop)
             return false;
-        (Dragging, Origin) = (true, at);
+        (_dragging, Origin) = (true, at);
         return true;
     }
 
@@ -66,20 +90,22 @@ internal sealed class FingerScroll
     /// </summary>
     public bool Release(Vector2 at)
     {
-        bool scrolled = Down && Dragging;
-        Down = Dragging = false;
+        bool scrolled = Down && _dragging;
+        _down = _dragging = false;
         if (!scrolled)
             return false;
         Moved(at);
         var (usec, from) = _moves.Peek();
         double seconds = (Time.GetTicksUsec() - usec) / 1e6;
         var speed = seconds > 0.02 ? (at - from) / (float)seconds : Vector2.Zero;
-        _fling = speed.Length() >= FlingStart ? speed : Vector2.Zero;        return true;
+        _fling = speed.Length() >= FlingStart ? speed : Vector2.Zero;
+        return true;
     }
 
     /// <summary>A frame of the flick, <paramref name="seconds"/> long: how far the finger would have moved, the flick slowing.</summary>
     public Vector2 Step(double seconds)
     {
+        Settle();
         var move = _fling * (float)seconds;
         _fling *= Mathf.Exp(-FlingDecay * (float)seconds);
         if (_fling.Length() < FlingStop)
@@ -96,8 +122,17 @@ internal sealed class FingerScroll
     /// <summary>The press and a flick end (the list hid or stopped taking the finger).</summary>
     public void Cancel()
     {
-        Down = Dragging = false;
+        _down = _dragging = false;
         _fling = Vector2.Zero;
+    }
+
+    /// <summary>A turn since the press (<see cref="Device.Turns"/>) ends it and a flick, as <see cref="Cancel"/>.</summary>
+    private void Settle()
+    {
+        if (_turn == Device.Turns)
+            return;
+        _turn = Device.Turns;
+        Cancel();
     }
 
     /// <summary>A move to <paramref name="at"/>, kept while it is younger than <see cref="FlingWindow"/>.</summary>

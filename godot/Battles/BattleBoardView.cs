@@ -537,7 +537,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         if (_placedPhone is null != phone is null || _placedUpright is null != upright is null || height != _height)
         {
             _height = height;
-            _cardsKey = _stripKey = "?";                                // the cards' insides at the device's sizes
+            _cardsKey = _stripKey = _speakerKey = "?";                  // the cards' insides and the speaker at the device's sizes
             _stones.Texture = BoardStones.For(Ui, GaugeCaptionArea, StonesArea);
             bool across = upright is not null;                          // upright the enemy's name at the left as ours (PB3)
             _enemyArmyLine.Alignment = across ? BoxContainer.AlignmentMode.Begin : BoxContainer.AlignmentMode.End;

@@ -31,6 +31,9 @@ internal sealed partial class DeploymentTableView
     private double? _pendingScroll;
     private ulong _pendingFrame;
 
+    /// <summary>After a turn, the unit whose row stood first in view, to stand there again once the rows are laid out (0: none).</summary>
+    private int _pendingTop;
+
     /// <summary>
     /// Covers <paramref name="rect"/> on the phone held upright (PD2s2): rows <see cref="PhoneLedgerUpright.Row"/> high, the
     /// figures <see cref="PhoneLedgerUpright.Text"/>, the columns <see cref="PhoneLedgerUpright.ColumnGap"/> apart, the
@@ -58,6 +61,8 @@ internal sealed partial class DeploymentTableView
     {
         if (_upright is null)
             return;
+        if (Tab is { } tab)
+            _tabScroll[tab] = HScroll?.Value ?? 0;                      // kept for a turn back upright
         (_upright, _fixedWidth, _pendingScroll) = (null, 0, null);
         _fixedRows.Visible = false;
         ShowColumns();
@@ -83,11 +88,57 @@ internal sealed partial class DeploymentTableView
     /// <summary>A tab's kept scroll, a frame after its columns were laid out (the tree sizes its bar as it draws).</summary>
     private void TakePendingScroll()
     {
-        if (_pendingScroll is not { } value || Godot.Engine.GetProcessFrames() <= _pendingFrame)
+        if (Godot.Engine.GetProcessFrames() <= _pendingFrame)
             return;
-        _pendingScroll = null;
-        if (HScroll is { } bar)
-            bar.Value = value;
+        if (_pendingScroll is { } value)
+        {
+            _pendingScroll = null;
+            if (HScroll is { } bar)
+                bar.Value = value;
+        }
+        if (_pendingTop != 0)
+        {
+            ScrollToTop(_pendingTop);
+            _pendingTop = 0;
+        }
+    }
+
+    /// <summary>The unit whose row stands first in view under the header (0: none).</summary>
+    private int TopUnit()
+    {
+        for (var item = GetRoot()?.GetFirstChild(); item is not null; item = item.GetNext())
+        {
+            if (GetItemAreaRect(item, 0).End.Y > HeaderBottom + 1)
+                return item.GetMetadata(0).AsInt32();
+        }
+        return 0;
+    }
+
+    /// <summary>
+    /// A turn of the phone laid the rows out again (a row's height is another, so the scroll's pixels show other rows): the
+    /// row that stood first in view, <paramref name="top"/>'s, stands first again, and upright the tab's sideways scroll is
+    /// the one it had there — both a frame later, once the tree has laid its rows out.
+    /// </summary>
+    private void KeepTopAcrossTurn(int top)
+    {
+        _pendingTop = top;
+        if (_upright is not null && Tab is { } tab && _tabScroll.TryGetValue(tab, out double across))
+            _pendingScroll = across;
+        _pendingFrame = Godot.Engine.GetProcessFrames();
+    }
+
+    /// <summary><paramref name="unit"/>'s row first in view under the header, as far as the scroll goes.</summary>
+    private void ScrollToTop(int unit)
+    {
+        if (VScroll is not { } bar)
+            return;
+        for (var item = GetRoot()?.GetFirstChild(); item is not null; item = item.GetNext())
+        {
+            if (item.GetMetadata(0).AsInt32() != unit)
+                continue;
+            bar.Value = bar.Value + GetItemAreaRect(item, 0).Position.Y - HeaderBottom;
+            return;
+        }
     }
 
     // ---------------------------------------------------------------- the fixed part's headings

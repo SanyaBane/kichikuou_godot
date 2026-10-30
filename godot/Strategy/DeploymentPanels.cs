@@ -151,6 +151,11 @@ internal sealed partial class DeploymentPanels : Control
         var area = phone is null ? new Vector2(1280, 800) * k : Size;
         if (origin == _origin && Math.Abs(k - _k) < 0.0001f && _backdrop.Size == area && phone == _phone)
             return;
+        if (phone != _phone)                                    // a turn: a drag's places and a press were the old layout's
+        {
+            EndDrag();
+            _pressed = NoPart;
+        }
         _origin = origin;
         _k = k;
         _phone = phone;

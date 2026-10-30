@@ -53,6 +53,8 @@ internal sealed partial class ProvinceMenuView
         var size = GetParentAreaSize();
         if (f == _phone && Position == Vector2.Zero && Size == size)
             return true;
+        if (f != _phone)
+            _pressed = -1;                                      // a turn: the press was on the old layout's row
         (_phone, Position, Size) = (f, Vector2.Zero, size);
         QueueRedraw();
         return true;

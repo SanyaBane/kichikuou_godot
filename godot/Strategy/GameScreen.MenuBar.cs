@@ -25,6 +25,7 @@ public partial class GameScreen
 
     private Button _skipItem = null!;
     private Control _menuBar = null!;
+    private int _turnSeen = Device.Turns;               // the layout's changes seen (Device.Turns)
 
     /// <summary>
     /// The screen laid out for the device (docs/ui/phone-build.md, §3), each frame, so a phone turned or a window resized
@@ -35,6 +36,13 @@ public partial class GameScreen
     /// </summary>
     private void UpdateDevice()
     {
+        if (_turnSeen != Device.Turns)
+        {
+            _turnSeen = Device.Turns;
+            (_screenTouch, _cardTouch) = (null, null);          // a press held back at the old layout's pixels is let go
+            _screenTouches++;
+            _cardTouches++;
+        }
         bool phone = Device.Phone;
         _menuBar.Visible = !phone;
         _content.OffsetTop = phone ? 0 : MenuBarHeight;

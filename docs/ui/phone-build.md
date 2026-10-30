@@ -1241,6 +1241,67 @@ P8d:
 - **Unattended play**: headless with `--phone upright` from the week-18 save to its deployment picker (through the title's
   load) and `--phone upright --import-screen DIR --quit`, exit 0 both.
 
+**Step P9, where it stands (2026-10-30):** the agent's part done; **the phone held upright awaits the owner's play on the
+Poco** (every step's look above, the agent's choices with them), and with it the whole phone: the landscape phone's play
+(step L10) and a turn of the phone on every screen. P8c, P8d and P9 are not installed yet (the Poco was not connected).
+
+- **Unattended play** headless as the phone held upright (`--phone upright`, the 610 × 1356 canvas) from the week-18
+  save, each exercise in a working folder of its own (`--saves user://saves-look-phone-up-…`; CLAUDE.md, "A look at one
+  screen"): every run ended as asked, exit 0, nothing unported met, each as L10's.
+
+  | Switches | What it went through | Time |
+  |---|---|---|
+  | `--until battle-end` | Replenish of Haurein (unit 12) on our Subordinates screen; the attack on Oaks (6), the party built in our deployment table by drops, its first two places swapped and back; the battle to its end (lost, as with `--seed 2`) | 11 s |
+  | `--treasure --until deployment` | our Treasure screen on Rance (unit 1) and the L. Holy Sword (item 6), then the attack's deployment | 6 s |
+  | `--saveload --until deployment` | our Save/Load screen: a new manual save by the red button, its comment written, left by Back | 7 s |
+  | `--turn-end --scout --until deployment` | the rebels' attack on Ys (5) on our enemy attack screen, Ninja Scout, the deployment left by Back and the attack screen back in 200 ms | 6 s |
+  | `--refill --until deployment` | Replenish on the deployment table: Haurein (unit 12) asked and replenished | 5 s |
+  | `--harem 6 --until deployment` | the harem's cell 6, Kanami's visit | 7 s |
+  | `--dungeon --weeks 18` | the Monsters' Cave (dungeon 2) searched with Rance (unit 1) to floor 4, a battle fought, the floor menus answered to the way out; then the week's Replenish and the rebels' attack on Ys (5), won | 11 s |
+  | `--weeks 21` | weeks 18-21 whole: Oaks (6) lost in week 18 and taken in week 19 (stage 2), the attacks on Ys (5) and, twice in week 20, on Leazas Castle (1), all won | 46 s |
+
+- **Turning — the survey** (what each view keeps across a turn): nothing stays drawn at the old size. Every view of ours is
+  placed again each frame from `GameScreen._Process` and lays itself out again when its `PhoneFrame` differs (a record,
+  compared by value), and `Device` reads the layout on the window's every size change; but no view was told of a turn,
+  so what a turn lost was state kept in the old layout's pixels or rows: Subordinates' troop-order question and the
+  deployment table's Refill question stood at the old layout's place (off the screen after a turn, the screen deaf till
+  Back answered No); the battle's order toggles were hit-tested at their old places and the cards' menu stood at the old
+  point; the ledger's scroll kept its pixels (another first row, a row's height 112 against 150 reference pixels); the
+  message log's reading place was an index into the other list (the names over the lines upright); the speaker's
+  portrait stayed put while its balloon moved; the exchange's counters kept the upright size in landscape's sides till
+  the next exchange; a finger's press or flick held through a turn jumped, flicked falsely or swallowed the next tap
+  (the deployment table, Save/Load, Options, the pickers' grids); a party member's drag dropped on the old layout's
+  place; a press held back for a long press (a card's, an original screen's) went on at the old pixels; a menu's pressed
+  row answered whatever row stood there now; on Save/Load the keyboard's moment down during a turn could be taken for
+  Android's Back and drop the comment being typed (not seen; the code allowed it). Already kept before: the message
+  windows' typing, the Menu sheet and its question, the week report, Harem's and Treasure's grid scroll (in rows) and the
+  treasure's callout, Save/Load's list (the chosen save scrolled into view), the options' scroll, the enemy attack's
+  question and list, the dungeon's ladder, All Data, the title's rows, the import screen.
+- **Turning — the fixes**: `Device.Turns` counts the layout's changes; `FingerScroll` ends its press and a flick when a
+  turn came since the press (every list scrolled by a finger at once). Subordinates' question and the Refill question are
+  shown again at their buttons as the open screen lays them out (as the enemy attack's Abandon City already was). The
+  battle takes the order toggles' boxes again where the board draws them, closes the cards' menu (a tap opens it again),
+  lays the speaker's portrait out again with the balloon, fits the counters to the sides on a turn to landscape
+  mid-exchange. The ledger (the deployment table and Subordinates) keeps the row first in view — and upright each tab's
+  sideways scroll — a frame after the rows are laid out again (`KeepTopAcrossTurn`); the message log its reading place
+  (`PhoneScenes.ToNamesOver`, `FromNamesOver`, tested). A drag of a party member, a press on the `]` menus', the command
+  panel's or a province's rows, an Options slider's drag and a header's tip end with the turn, and so does a press held
+  back for a long press (`GameScreen.UpdateDevice`). On Save/Load a turn while the comment's card is up waits for the keyboard's new
+  height and takes no moment down for Back. The PC's, the tablet's and the landscape phone's layouts are untouched.
+- **Turning — unattended**: `--turn-every n` (a PC playing a phone, `Device.TurnWhenDue`) turns the window every `n`
+  frames, upright to landscape and back. The eight runs again with `--turn-every 45` (4-55 turns a run) ended as above,
+  exit 0, the battles' results the same; with `--turn-every 7` (11-341 turns a run) seven did, and `--saveload` failed
+  its own check ("the clicks on the Save list gave the script no answer"): the bot takes a button's place, then moves and
+  presses there frames later, so a turn between moved the button from under its click — the bot's way, not a player's (a
+  finger presses where the button is; a release after a turn elsewhere does nothing).
+- **The gallery**: the PC, touch, landscape and upright passes same (no entry turns).
+- **The docs**: phone.md (§24), touch.md ("Phones (put off)"), style.md (§6, the phone held upright), the backlog
+  ("Android"; "A turn of the phone, the rest").
+- **Left open**: the owner's play on the Poco (both orientations, the turns, System's rotation lock); the Poco's keyboard
+  height (steps L7b, P7b); what a turn still loses, each small or brief (the backlog: the upright map's own sideways
+  scroll, centred on the script's view again after a trip to landscape; the order strip's fly-in snapped; a map plate
+  pressed across a turn; an original screen's press across a turn read at two points; the spotlight's 0.15 s fade-out).
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.
@@ -1248,6 +1309,8 @@ P8d:
 - The development screens get no phone layout (they show as on the tablet, in the frame).
 - Until the upright phase the phone is held to landscape, both ways round by the sensor (since step P0 it turns as
   Option → Display says, System by default).
+- A turn closes the battle's cards' menu (a tap opens it again) and ends a finger's press, flick or drag; a question open
+  stays open at its button (step P9).
 - In landscape the status lives in the sides, so the map's headroom under the strip stays off on the phone.
 - The phone's layouts are written in the reference phone's pixels, so phone.md's figures are the code's.
 

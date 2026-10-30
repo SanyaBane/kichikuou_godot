@@ -22,6 +22,12 @@ internal static class Device
     public static DeviceLayout Layout => _layout;
 
     /// <summary>
+    /// How many times the layout changed this launch (a phone turned, a window resized across its shape): a view that keeps
+    /// a gesture's or a callout's place in pixels compares it with the count it last saw and lets go of the stale ones.
+    /// </summary>
+    public static int Turns { get; private set; }
+
+    /// <summary>
     /// Whether our views take the touch mode's layout, the tablet's: on the tablet, and on a phone wherever a screen has
     /// no phone layout of its own yet (each phone step gives its screens theirs).
     /// </summary>
@@ -137,11 +143,33 @@ internal static class Device
     /// <summary>Whether a PC plays a phone (<c>--phone</c>), whose window a choice of the orientation turns.</summary>
     public static bool PlaysPhone => OS.GetName() != "Android" && PhoneSwitch is not null;
 
+    private static int? _turnEvery;
+
+    /// <summary>
+    /// <c>--turn-every n</c> on a PC playing a phone (docs/ui/phone-build.md, step P9): the window turned every
+    /// <c>n</c> frames, upright to landscape and back, so unattended play goes through turns on every screen it reaches.
+    /// Called once a frame; nothing without the switch.
+    /// </summary>
+    public static void TurnWhenDue()
+    {
+        if (_turnEvery is null)
+        {
+            var args = OS.GetCmdlineUserArgs();
+            int at = Array.IndexOf(args, "--turn-every");
+            _turnEvery = PlaysPhone && at >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out int n) && n > 0 ? n : 0;
+        }
+        if (_turnEvery == 0 || Godot.Engine.GetProcessFrames() % (ulong)_turnEvery != 0)
+            return;
+        TurnWindow(_layout != DeviceLayout.PhoneUpright);
+    }
+
     private static void Read()
     {
         var window = _root?.Size ?? DisplayServer.WindowGetSize();     // the root's own: headless has no window to ask
         var was = _layout;
         _layout = DeviceLayouts.Decide(TouchMode.On, Phone, window.X, window.Y);
+        if (_layout != was)
+            Turns++;
         if (OS.GetName() != "Android" && _layout != was && Phone)
             GD.Print($"Kichikuou: {_layout}, window {window.X}×{window.Y}.");
         if (OS.GetName() != "Android" || window.X <= 0 || _root is null)

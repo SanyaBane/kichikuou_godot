@@ -218,10 +218,18 @@ internal sealed partial class BattleCommandLayer : Control
     /// </summary>
     public void Layout(Func<BattlePlace, Rect2> cardArea, float scale, Original.Content.Devices.PhoneFrame? phone = null, float height = 800)
     {
+        bool turned = phone != _phone;
         _cardArea = cardArea;
         _scale = scale;
         _phone = phone;
         _height = height;
+        if (turned && _commands is not null && Touch)
+        {
+            if (_menu is not null)
+                CloseMenu();                                        // a turn: the cards' menu stood at the old layout's point
+            _toggles = [.. OrderToggleChoices()];                   // the order toggles where the board draws them now
+            (_hotToggle, _pressedToggle) = (-1, -1);
+        }
         QueueRedraw();
     }
 

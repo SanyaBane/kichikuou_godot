@@ -1036,6 +1036,11 @@ as they are for the owner to confirm.
 The landscape phone is built (2026-10-28, phone-build.md, steps F and L1-L10): every landscape base version above, each
 step awaiting the owner's look on the Poco; upright next (steps P0-P9).
 
+The phone held upright is built too (2026-10-30, phone-build.md, steps P0-P9): every upright base version above, the
+orientation a choice in Option → Display (System by default), a turn of the phone laying the open screen out again with
+what it showed kept (a scroll's place, a question open; phone-build.md, "Step P9, where it stands"); the whole phone awaits
+the owner's look and play on the Poco.
+
 ## 25. Round P20: the Menu sheet, the message log and the comment's editing upright (2026-10-28)
 
 The build's step 0 (docs/ui/phone-build.md, §5). Drawn by `mock_phone.py --round P20` over PS2 (the week-18 look's

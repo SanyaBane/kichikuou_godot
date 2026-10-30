@@ -133,6 +133,8 @@ public class PhoneScenesUprightTests
             new(LogKind.Choice, "", "Attack", true),
         ];
         Assert.Equal(expected, PhoneScenes.NamesOver(lines));
+        Assert.Equal([0, 1, 3, 4, 5, 7], Enumerable.Range(0, 6).Select(i => PhoneScenes.ToNamesOver(lines, i)));
+        Assert.Equal([0, 1, 1, 2, 3, 4, 4, 5], Enumerable.Range(0, 8).Select(i => PhoneScenes.FromNamesOver(lines, i)));
     }
 
     [Fact]

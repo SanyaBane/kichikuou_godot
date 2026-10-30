@@ -18,6 +18,7 @@ public partial class GameScreen
     private TreasureCallout _refillCallout = null!;
     private OrderResultPlate _refillPlate = null!;
     private DeploymentReplenish? _replenish;            // the Replenish asked for, until Sﾌﾞﾀｲ has taken it
+    private IReadOnlyList<string> _refillQuestion = [];
     private bool _autoRefillDone;
 
     private void ReadyDeploymentReplenish(FacePictures faces)
@@ -47,6 +48,8 @@ public partial class GameScreen
             return;
         }
         _refillCallout.PlaceOnDevice(picture);                  // on the phone at its sizes over the whole screen
+        if (_refillCallout.MenuOpen && _table.RefillCellRect(_table.AskedRefill) is { } cell)
+            _refillCallout.Show(_refillQuestion, _refillCallout.FromGlobal(cell), waiting: false);   // at its cell as laid out now (a turn)
         _refillPlate.Place(picture);
         if (_replenish is not { Done: true } done || _presenter.State is not { } s)
             return;
@@ -81,7 +84,8 @@ public partial class GameScreen
             return;
         var screenCell = _refillCallout.FromGlobal(cell);
         _table.AskedRefill = unit;
-        _refillCallout.Show(DeploymentTable.ReplenishQuestion(row), screenCell, waiting: false);
+        _refillQuestion = DeploymentTable.ReplenishQuestion(row);
+        _refillCallout.Show(_refillQuestion, screenCell, waiting: false);
         _refillCallout.OpenMenu(["Yes", "No"]);
         int answer;
         try

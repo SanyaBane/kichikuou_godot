@@ -457,8 +457,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         Position = rect.Position;
         Size = rect.Size;
         _overlay.Size = new Vector2(rect.Size.X, OverlayHeight);
+        bool turned = _laidTurn >= 0 && _laidTurn != Device.Turns;   // a press across it ends by itself (FingerScroll)
+        _laidTurn = Device.Turns;
+        if (turned)
+            _tip.Visible = false;                                       // a header's tip stood at the old layout's place
         if (size == _fontSize && minimum == _rowMinimum && separation == _separation && columns == _columnGap)
             return;
+        int top = turned ? TopUnit() : 0;
         (_fontSize, _rowMinimum, _separation, _columnGap) = (size, minimum, separation, columns);
         AddThemeFontSizeOverride("font_size", size);
         AddThemeFontSizeOverride("title_button_font_size", TitleSize);
@@ -466,9 +471,12 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         AddThemeConstantOverride("h_separation", columns);
         ApplyLedger();                                                  // the groups' strip grows with the text
         Fill();
+        if (turned)
+            KeepTopAcrossTurn(top);
     }
 
     private int _separation, _columnGap = 6;
+    private int _laidTurn = -1;                                         // Device.Turns at the last Lay (-1: never laid)
 
     /// <summary>
     /// A row's minimum height in window pixels without the separations: Option's height (<see cref="LedgerRowsChoice"/>,

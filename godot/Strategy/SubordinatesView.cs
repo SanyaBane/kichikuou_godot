@@ -192,6 +192,8 @@ internal sealed partial class SubordinatesView : Control
             layer.Size = area;
             layer.QueueRedraw();
         }
+        if (_callout.MenuOpen && RectOf(_asked) is { } asked)   // a turn: the question at its button's new place
+            ShowQuestion(asked);
     }
 
     /// <summary>
@@ -270,10 +272,7 @@ internal sealed partial class SubordinatesView : Control
         if (_panel is null || _callout.MenuOpen || RectOf(button) is not { } rect)
             return;
         _asked = button;
-        if (_phone is { } phone)
-            ShowPhoneQuestion(phone, rect, button == ReplenishButton);
-        else
-            _callout.Show(SubordinatesScreen.Question, rect, waiting: false);
+        ShowQuestion(rect);
         _callout.OpenMenu(["Yes", "No"]);
         _face.QueueRedraw();
         int answer;
@@ -290,6 +289,15 @@ internal sealed partial class SubordinatesView : Control
         _face.QueueRedraw();
         if (answer == 1 && IsVisibleInTree() && !Busy)
             OrderPressed?.Invoke(kind, unit, step);
+    }
+
+    /// <summary>The question at the asked button's <paramref name="rect"/>, as the device lays it.</summary>
+    private void ShowQuestion(Rect2 rect)
+    {
+        if (_phone is { } phone)
+            ShowPhoneQuestion(phone, rect, _asked == ReplenishButton);
+        else
+            _callout.Show(SubordinatesScreen.Question, rect, waiting: false);
     }
 
     // ---------------------------------------------------------------- the buttons

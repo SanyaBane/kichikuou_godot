@@ -125,6 +125,8 @@ internal sealed partial class ExchangeCountersView : Control
         _sharp = sharp;
         if (sharp is null)
             (_k, _labelK) = (1, 1);
+        else if (_values is not null)
+            FitPhone(_values);                                      // a turn to landscape mid-exchange: the sides' sizes now
         Size = size;
         _labels.Size = size;
         _port.Size = new Vector2I(Math.Max(1, (int)Math.Ceiling(size.X)), Math.Max(1, (int)Math.Ceiling(size.Y)));

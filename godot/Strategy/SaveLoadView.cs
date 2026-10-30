@@ -220,6 +220,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         _backdrop.QueueRedraw();
         if (turned && _chosen is { } chosen)
             ScrollTo(chosen);                                           // the layout's rows in view differ
+        if (turned && _editing)                                         // the keyboard laid out again: its new height awaited,
+            (_keyboard, _keyboardSeen, _keyboardGone) = (0, false, 0);  // its moment down not taken for Back (the comment kept)
         ScrollBy(0);
         PlaceEdit();
         QueueRedraw();

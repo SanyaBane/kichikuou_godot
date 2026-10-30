@@ -145,6 +145,8 @@ internal sealed partial class OptionsView : Control
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        if (phone != _phone)
+            (_dragging, _pressed) = (null, null);                   // a turn: a slider's drag and a press were the old layout's
         _phone = phone;
         _backdrop.Visible = phone is { IsUpright: false };        // upright the view draws it, out of its column's clip
         _backdrop.Size = area.Size;

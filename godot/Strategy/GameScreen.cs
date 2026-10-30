@@ -439,6 +439,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public override void _Process(double delta)
     {
+        Device.TurnWhenDue();
         UpdateDevice();
         if (FrameTimes.On)
             FrameTimes.Record(BattleScreenShown || _presenter.BattleSceneShows ? "battle" : _presenter.MapWaiting ? "map" : "scene", delta);

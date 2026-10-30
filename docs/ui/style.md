@@ -201,6 +201,16 @@ or `--touch`; the PC's mouse interface does not change.
   phone's pixels (the Poco X6 Pro, 17.6 a millimetre; `PhoneFrame`): text 2.3-2.7 mm, small lines 1.7 mm at least, a
   target 6.4 mm high at least (chips; cells 7.5 mm, red buttons 7.4 mm). On the original's own screens a long press is the
   right click; Android's Back is the way back.
+- **The phone held upright** (docs/ui/phone-build.md, steps P0-P9, built 2026-10-30): the engine's picture at the screen's
+  width (762.5 reference pixels high) in the room between the camera's strip (6.3 mm) and the gesture zone (3 mm), where
+  each screen puts it (in the middle by default); the bar at the room's foot (8.4 mm), Menu, Log and Skip at its left, the
+  act at the right thumb (End | the red button, Back | the red button). The scenes' windows above the picture for the left
+  portrait's, under it for every other, the script's line breaks kept; a screen of our own stacked down the width (a title
+  band, the picture or the party on top, a sheet or a list at the thumb, scrolled by a finger with a thin bar), a menu or
+  a province's commands a sheet over the map's foot. The figures are the reference phone's pixels scaled by the width
+  (1220); rows for a finger 6.7-8.5 mm high. The orientation is Option → Display's (System, Upright, Landscape 1,
+  Landscape 2); a turn lays the open screen out again, keeping what it showed (a scroll's first row, a question at its
+  button).
 
 ## 7. How a screen is made
 

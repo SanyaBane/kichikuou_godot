@@ -188,7 +188,7 @@ public static class PhoneScenes
         var stacked = new List<LogLine>(lines.Count * 3 / 2);
         foreach (var line in lines)
         {
-            if (line.Label.Length > 0 && line.Kind != LogKind.Place)
+            if (NameOver(line))
             {
                 stacked.Add(new LogLine(line.Kind, line.Label, ""));
                 stacked.Add(line with { Label = "" });
@@ -200,6 +200,34 @@ public static class PhoneScenes
         }
         return stacked;
     }
+
+    /// <summary>
+    /// Where line <paramref name="index"/> of <paramref name="lines"/> stands in <see cref="NamesOver"/>'s list (its name's
+    /// line when it has one): the log's reading place kept across a turn of the phone; <see cref="FromNamesOver"/> back.
+    /// </summary>
+    public static int ToNamesOver(IReadOnlyList<LogLine> lines, int index)
+    {
+        int at = 0;
+        for (int i = 0; i < Math.Min(index, lines.Count); i++)
+            at += NameOver(lines[i]) ? 2 : 1;
+        return at;
+    }
+
+    /// <summary>The line of <paramref name="lines"/> that line <paramref name="stacked"/> of <see cref="NamesOver"/>'s list comes from.</summary>
+    public static int FromNamesOver(IReadOnlyList<LogLine> lines, int stacked)
+    {
+        int at = 0;
+        for (int i = 0; i < lines.Count; i++)
+        {
+            at += NameOver(lines[i]) ? 2 : 1;
+            if (at > stacked)
+                return i;
+        }
+        return lines.Count;
+    }
+
+    /// <summary>Whether <see cref="NamesOver"/> puts <paramref name="line"/>'s name on a line of its own.</summary>
+    private static bool NameOver(LogLine line) => line.Label.Length > 0 && line.Kind != LogKind.Place;
 
     /// <summary>
     /// A <c>]</c> menu held upright (PS2m): rows across the screen from the bar's foot up, in the script's order, the panel

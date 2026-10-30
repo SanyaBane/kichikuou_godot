@@ -436,7 +436,13 @@ Poco — the title upright as PE2: the picture moved over a finger row for each 
 `Device.PictureTop`; `Original.Content/Devices/PhoneTitleUpright`, `godot/Strategy/TitleRowsView`, `GameScreen.Title.cs`),
 a row a click in its button's box; the import screen as PI, PIp, PIr, a card in the middle with the steps one under
 another, Back | the red button in the bar (`Original.Content/Devices/PhoneImportUpright`; `godot/ImportScreen.Upright.cs`);
-the original's own screens as they are, a long press the right click upright too. P9 (the phone whole) is next.
+the original's own screens as they are, a long press the right click upright too.
+Step P9 is done but the owner's play (phone-build.md, "Step P9, where it stands"): unattended play headless with
+`--phone upright` from the week-18 save through every exercise, all as before, and again with the window turned every n
+frames (`--turn-every n`); a turn keeps what the open screen showed — `Device.Turns` counts the layout's changes,
+`FingerScroll` ends a press and a flick across one, the questions stand at their buttons again, the ledger keeps its
+first row and the message log its reading place, the battle's toggles and portrait are laid out again; the rest is in
+the backlog. **The phone is built in both orientations, awaiting the owner's play on the Poco.**
 **Owner's decision 33** (2026-10-29), the fifth rule change: the ninja follow-up's chance (BRS-11, R14's `RND(3)` = 1) —
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;
@@ -693,7 +699,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   playing a finger (no hover; docs/ui/touch.md). `--phone landscape` (any launch; implies `--touch`) plays a phone held
   landscape: the window at the reference phone's shape fitted to the monitor, no menu bar, the picture in the phone's
   frame (docs/ui/phone-build.md, §3); `--phone upright` one held upright (Option → Display's orientation then turns the
-  window). `--frame-times` logs the frame times every 10 s, as the Android build always does.
+  window); with either, `--turn-every n` turns the window every n frames, upright to landscape and back (unattended
+  play through turns, step P9). `--frame-times` logs the frame times every 10 s, as the Android build always does.
 - Export the Windows release build (the export templates 4.7.2 mono installed):
   `powershell -ExecutionPolicy Bypass -File tools/export-release.ps1 -Out <folder outside the repository>` — the
   preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in

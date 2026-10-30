@@ -42,8 +42,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   version chosen in both orientations (rounds P1-P19, 2026-10-27/28); the build's plan is
   [ui/phone-build.md](ui/phone-build.md) (owner, 2026-10-28: the three missing base versions first, rounds P20-P21;
   then the landscape phone, then upright; the tablet stays landscape) — the landscape phone built (2026-10-28, steps F
-  and L1-L10), awaiting the owner's look on the Poco, upright under way (steps P0-P9; P0 built, 2026-10-29); the Poco's keyboard height (step L7b)
-  read from its log once the owner has tried Edit on Save/Load. Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
+  and L1-L10) and upright (2026-10-30, steps P0-P9), awaiting the owner's look and play on the Poco (P8c, P8d and P9 not
+  installed yet: the Poco was not connected); the Poco's keyboard height (steps L7b, P7b) read from its log once the
+  owner has tried Edit on Save/Load. Built and played on a Galaxy Tab S7 FE since 2026-10-24: the
   preset "Android" and `tools/export-android.ps1` (`run-android.cmd`); the game folder copied into the app's own
   external folder and imported at the first start (`GameData.AndroidGameFolder`: no permission, where the native
   folder dialog would give a `content://` URI that `System.IO` cannot open); the saves beside it
@@ -130,6 +131,12 @@ The stages after stage 1 and the game frame are covered by the port's own tests 
   SHA-256s on one small line under the message, not wrapped, so it runs past the paper and the frame
   (`ImportScreen.DrawRefused`). Wrapping it pushes the folder field down; shortening the hashes loses what a player
   would report.
+- **A turn of the phone, the rest** — *agent* (put off 2026-10-30, [ui/phone-build.md](ui/phone-build.md), "Step P9,
+  where it stands"): what a turn still loses, each small or brief — the upright map's own sideways scroll (centred on the
+  script's view again after a trip to landscape: the script's camera is the one kept), the battle's order strip's
+  fly-in (its chips snap to their places), a map plate pressed across a turn (its release still clicks its marker), a
+  press on an original screen across a turn (the script reads its press and release at two points), the spotlight's
+  0.15 s fade-out at the old places.
 - **Phones shorter than 19.5:9** — *owner* (mock-ups), then *agent* (put off 2026-10-28,
   [ui/phone-build.md](ui/phone-build.md), §1): the phone's layouts are the reference's (20:9) and fit longer screens;
   on an 18:9 phone held landscape the black sides are ~7.6 mm, too narrow for LM1's rails, and upright 272 px less

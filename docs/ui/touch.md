@@ -689,3 +689,8 @@ the reference since is the Poco (154.5 × 69.5 mm held landscape, black sides of
 The landscape phone is built (2026-10-28; docs/ui/phone-build.md, steps F and L1-L10): every screen of ours as its
 landscape base version (docs/ui/phone.md), the touch mode's input with a long press as the right click on the original's
 screens, awaiting the owner's look on the Poco; upright next (steps P0-P9).
+
+The phone held upright is built (2026-10-30; docs/ui/phone-build.md, steps P0-P9): every screen of ours as its upright
+base version, the bar at the foot with Menu, Log and Skip at its left and the act at the right thumb, the orientation
+chosen in Option → Display and a turn of the phone laying the open screen out again (a finger's press or flick across a
+turn ends, `FingerScroll`); the whole phone awaits the owner's look and play on the Poco.

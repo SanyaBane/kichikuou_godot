@@ -69,6 +69,7 @@ internal sealed partial class MessageLogView : Control
     private PhoneUnits? _phone;
     private int _top;
     private float _k = 1;
+    private int _placedTurn = Device.Turns;
 
     /// <summary>The log closed.</summary>
     public event Action? Closed;
@@ -102,6 +103,12 @@ internal sealed partial class MessageLogView : Control
     public void Place(Rect2 area)
     {
         bool newest = _top >= Last;
+        int first = ReferenceEquals(_lines, _all) ? _top : PhoneScenes.FromNamesOver(_all, _top);   // the reading place in the log's own lines
+        if (_placedTurn != Device.Turns)
+        {
+            _placedTurn = Device.Turns;
+            _finger = null;                                 // a turn: the finger's drag was the old layout's
+        }
         if (Device.Held(this) is { } phone)
         {
             var u = new PhoneUnits(phone);
@@ -121,7 +128,7 @@ internal sealed partial class MessageLogView : Control
             Size = area.Size;
             _k = area.Size.X / 1280f;
         }
-        _top = newest ? Last : Math.Min(_top, Last);
+        _top = newest ? Last : Math.Min(ReferenceEquals(_lines, _all) ? first : PhoneScenes.ToNamesOver(_all, first), Last);
         QueueRedraw();
     }
 

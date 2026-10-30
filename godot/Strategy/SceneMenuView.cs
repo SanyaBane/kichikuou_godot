@@ -129,6 +129,8 @@ internal sealed partial class SceneMenuView : Control
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        if (phone != _phone)
+            _pressed = -1;                                      // a turn: the press was on the old layout's row
         _phone = phone;
         PhoneLayout();
         QueueRedraw();
