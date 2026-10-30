@@ -125,3 +125,17 @@ public class ProvinceMenuTests
         Assert.All(names, name => Assert.False(string.IsNullOrWhiteSpace(name) || name.Contains('[')));
     }
 }
+
+public class ProvinceMenuColumnsTests
+{
+    [Theory]
+    [InlineData(6, 9, 6)]           // a usual castle: one column
+    [InlineData(9, 9, 9)]           // the most one column holds on the PC (E)
+    [InlineData(10, 9, 5)]          // past it, halves
+    [InlineData(15, 9, 8)]          // every command: the odd one in the first column
+    [InlineData(12, 12, 12)]        // the tablet's rail holds twelve (TE)
+    [InlineData(13, 12, 7)]
+    [InlineData(0, 7, 0)]
+    public void The_first_column_holds_all_while_they_fit_else_the_first_half(int count, int most, int first) =>
+        Assert.Equal(first, ProvinceMenu.FirstColumn(count, most));
+}

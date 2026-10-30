@@ -8,7 +8,9 @@ namespace Kichikuou.Game.Strategy;
 // province ringed, its card beside it in the frame at the phone's type (the city's picture, the name and the army on one
 // line, the figures a line each, the label left and the figure right), its commands in the right side from the foot up as
 // the command panel's rows, Return at the foot where Commands stands; the dungeon's menu keeps its place's caption over
-// the rows. A tap off the card, the ring and the rows cancels, as on the tablet. Over the whole screen in the frame's
+// the rows. Past what the side holds (seven: Leazas Castle's places) the commands stand in two columns in a panel at the
+// frame's right edge, the card left of it (the owner's PE, docs/ui/touch.md, "Fifteen commands"). A tap off the card, the
+// ring, the panel and the rows cancels, as on the tablet. Over the whole screen in the frame's
 // layout pixels (PhoneUnits); the places are PhoneMap's. Held upright (step P2; phone.md, §3, PM1c) the card and the
 // commands rise as a sheet over the map's foot — the city's picture at its top left, the name, the army and the figures
 // beside it, the commands across it from the foot up — Return at the bar's right, and the map is drawn higher so the
@@ -75,7 +77,21 @@ internal sealed partial class ProvinceMenuView
     }
 
     private PhoneMap.Card PhoneCard(PhoneFrame f, ProvinceMenu m) =>
-        PhoneMap.ProvinceCard(f, PhonePoint(f, _at), m.Card.Count, PhoneTwoLines(f, m));
+        PhoneMap.ProvinceCard(f, PhonePoint(f, _at), m.Card.Count, PhoneTwoLines(f, m), PhonePanel(f)?.Panel);
+
+    /// <summary>Held landscape, past what the side holds: the commands' panel in the frame (the owner's PE); else null.</summary>
+    private PhoneMap.ProvinceColumns? PhonePanel(PhoneFrame f) =>
+        f.IsUpright || _menu is not { } m ? null : PhoneMap.ProvincePanel(f, Items, m.Place is not null);
+
+    /// <summary>The tapped province's point, unless it lies under the commands' panel (its ring and the card's triangle then left out).</summary>
+    private (float X, float Y)? PhoneRingPoint(PhoneFrame f)
+    {
+        if (PhonePoint(f, _at) is not var (x, y))
+            return null;
+        float reach = f.Px(PhoneMap.RingRadius + 10);
+        return PhonePanel(f)?.Panel is { } p && x > p.X - reach && x < p.Right + reach && y > p.Y - reach && y < p.Bottom + reach
+            ? null : (x, y);
+    }
 
     private IReadOnlyList<PhoneFrame.Box> PhoneRows(PhoneFrame f) =>
         f.IsUpright && _menu is { } m ? Sheet(f, m).Rows : PhoneMap.ProvinceRows(f, Items, _menu?.Place is not null);
@@ -101,9 +117,10 @@ internal sealed partial class ProvinceMenuView
                 return false;
             return UprightPoint is not var (ux, uy) || new Vector2(ux, uy).DistanceTo(at) > f.Px(PhoneMapUpright.RingRadius) + f.Px(8);
         }
-        if (PhoneRowAt(f, at) >= 0 || _menu is not { } m || PhoneCard(f, m).Box.Contains(at.X, at.Y))
+        if (PhoneRowAt(f, at) >= 0 || _menu is not { } m || PhoneCard(f, m).Box.Contains(at.X, at.Y)
+            || PhonePanel(f)?.Panel.Contains(at.X, at.Y) == true)
             return false;
-        return PhonePoint(f, _at) is not var (x, y) || new Vector2(x, y).DistanceTo(at) > f.Px(PhoneMap.RingRadius) + f.Px(8);
+        return PhoneRingPoint(f) is not var (x, y) || new Vector2(x, y).DistanceTo(at) > f.Px(PhoneMap.RingRadius) + f.Px(8);
     }
 
     /// <summary>A point of the frame off the card and the ring, global: where unattended play taps to close the menu.</summary>
@@ -135,10 +152,11 @@ internal sealed partial class ProvinceMenuView
             return;
         }
         bool two = PhoneTwoLines(f, m);
-        var card = PhoneMap.ProvinceCard(f, PhonePoint(f, _at), m.Card.Count, two);
+        var columns = PhonePanel(f);
+        var card = PhoneMap.ProvinceCard(f, PhonePoint(f, _at), m.Card.Count, two, columns?.Panel);
         var box = u.Rect(card.Box);
-        // The ring round the province and the card's triangle pointing at it.
-        Vector2? at = PhonePoint(f, _at) is var (px, py) ? new Vector2(px, py) / u.K : null;
+        // The ring round the province and the card's triangle pointing at it, unless the commands' panel covers it.
+        Vector2? at = PhoneRingPoint(f) is var (px, py) ? new Vector2(px, py) / u.K : null;
         if (at is { } p)
         {
             DrawArc(p, u.Px(PhoneMap.RingRadius + 8), 0, MathF.Tau, 64, Ui.HoverLine, Lacquer.Line(u.Px(2), u.K));
@@ -196,12 +214,15 @@ internal sealed partial class ProvinceMenuView
             DrawLine(new Vector2(band.Position.X, cy), new Vector2(mid - pw / 2 - u.Px(12), cy), Ui.DimGold, Lacquer.Line(u.Px(2), u.K));
             DrawLine(new Vector2(mid + pw / 2 + u.Px(12), cy), new Vector2(band.End.X, cy), Ui.DimGold, Lacquer.Line(u.Px(2), u.K));
         }
-        // The commands from the foot up, then Return at the foot.
+        // The commands from the foot up (past what the side holds, in the frame's panel down two columns, the names at
+        // the phone's type: 2.3 mm), then Return at the foot.
+        if (columns is not null)
+            Ui.DrawPanel(this, u.Rect(columns.Panel), u.K);
         for (int r = 0; r < Items; r++)
         {
             var item = m.Items[r];
             SideCells.DrawRow(this, u, u.Rect(rows[r]), _gothic, item.Text, item.Enabled, r == _hovered || r == _pressed,
-                TagOf(item.Action), palette: Ui);
+                TagOf(item.Action), palette: Ui, nameSize: columns is null ? 36 : 40);
         }
         int back = RowCount - 1;
         SideCells.DrawButton(this, u, u.Rect(PhoneMap.FootCell(f)), SideCells.Icon.Close, "Return",

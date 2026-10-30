@@ -361,6 +361,13 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   panel stays well under the strip; F keeps one list but fills the screen's height, G goes back to the rows the owner
   found low, H adds a click to the castle's every visit, I hides rows.
 
+  **The owner's choice (2026-10-30): E**, with TE on the tablet and PE on the phone (docs/ui/touch.md). Built
+  (`ProvinceMenuView`): up to nine commands the panel is A1's; past nine the rows stand in two columns 400 wide (wider
+  with Debug → Menu Row Height's taller rows), 16 apart, down the first, then the second, the first holding the odd one
+  (`ProvinceMenu.FirstColumn`, `ProvinceMenuColumnsTests`); Return under the second at the panel's right; the panel
+  848×603 at fifteen, centred. Looked at by the agent in the screen gallery (`province-menu-own-all`, and
+  `province-menu`, `-own`, `-own-five`, `-cells`, `-cells-full` unchanged).
+
 ## The command panel (owner, 2026-10-16)
 
 **The fourth small step: the right click's menu as our panel, and a status strip.** Three drawn mock-ups in

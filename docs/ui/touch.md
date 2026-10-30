@@ -626,6 +626,22 @@ six every variant but PS is today's):
 rails; on the phone the side's width, not its height, makes the names small, so past what the side holds the commands
 go into the frame as a sheet at the phone's type (PE leaves more map but hides a province under its panel).
 
+**The owner's choice (2026-10-30): TE and PE**, with E on the PC. Built:
+
+- **The tablet** (`ProvinceMenuView`): up to twelve as before; past twelve the right rail holds the first half (the odd
+  one there, `ProvinceMenu.FirstColumn`) from the foot up over Return, and the rest stand on a rail of their own 4 left
+  of it (x 784), from the foot up, the lowest's top at 732 as the command panel's left rail. The card keeps left of the
+  inner rail; a tap on either rail is no cancel.
+- **The phone held landscape** (`PhoneMap.ProvincePanel`, `PhoneMapTests`): up to what the side holds at a row's full
+  height (`PhoneMap.SideMost`: seven on the reference phone) as before; past it the commands stand in a panel at the
+  frame's right edge (21 in), its foot level with Return's, in two columns of 450 × 123 reference pixels (25.6 × 7.0 mm)
+  15 apart, down the left one, then the right, the names up to 40 (2.3 mm; `SideCells.DrawRow`'s `nameSize`), the rows
+  lower in proportion should they not fit the frame's height. The card keeps left of the panel (`PhoneMap.ProvinceCard`'s
+  `beside`); a province under the panel loses its ring and the card's triangle; a tap on the panel is no cancel. The
+  dungeon's menu (at most four cells and Look Around) keeps the side.
+- Looked at by the agent in the screen gallery's touch and landscape passes (`province-menu-own-all`; the others
+  unchanged). Not yet on the tablet or the Poco.
+
 ## The standing orders on the cards (owner, 2026-10-25)
 
 The owner's request: during the player's turn every card of the player's army offers Auto-Atk or Auto-Def in the room at

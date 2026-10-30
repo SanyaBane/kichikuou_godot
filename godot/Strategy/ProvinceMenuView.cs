@@ -12,6 +12,9 @@ namespace Kichikuou.Game.Strategy;
 /// name and army, the card's figures, the commands as rows with a tag each, Return. A row's click answers
 /// the script's menu with its choice; a right click or Esc anywhere cancels (0), as the original's menu —
 /// but not in the dungeon's menu (its place as a caption over the rows), where a cancel only opens it again.
+/// Past nine commands (Leazas Castle's places) the rows stand in two columns, down the first, then the second (the
+/// owner's E, docs/ui/command-screen.md, "Fifteen commands"); on the tablet, past the twelve its rail holds, the first
+/// half stays on the rail and the rest stand on a rail of their own left of it (TE).
 /// Laid out in the 1280×800 screen's pixels, scaled with the picture. In the touch mode (the owner's B, 2026-10-25,
 /// docs/ui/touch.md, "The province menu within the thumbs' reach") the province's card — the picture, the name, the army,
 /// the figures — stands beside the tapped province, a triangle pointing at it and the province ringed in gold, and the
@@ -34,6 +37,11 @@ internal sealed partial class ProvinceMenuView : Control
     private const float RailW = 244, RightRail = 1032, RailFoot = 796, RailInset = 12;
     private const float TouchRowW = 220, TouchRowH = 46, TouchPitch = 54, ItemFoot = 664, TouchReturnTop = 726, TouchReturnH = 60;
     private const float RingRadius = 30;
+    // Fifteen commands (docs/ui/command-screen.md, "Fifteen commands"): the PC's one column holds nine, past them two
+    // columns 400 wide (the owner's E); the tablet's rail holds twelve, past them the rest in a rail of its own left of it
+    // (TE), from the foot up as the command panel's left rail (the lowest's top at 732).
+    private const int OneColumnMost = 9, RailMost = 12;
+    private const float ColumnW = 400, ColumnGap = 16, InnerGap = 4, InnerFoot = 732;
 
     private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
 
@@ -126,7 +134,7 @@ internal sealed partial class ProvinceMenuView : Control
             var point = new Vector2(40, 700);
             if (Touch)
                 point = ((Vector2[])[new(40, 700), new(40, 100), new(980, 100), new(640, 780)])
-                    .First(p => !CardRect.HasPoint(p) && !RailRect.HasPoint(p) && (_at is not { } at || p.DistanceTo(at) > 2 * RingRadius));
+                    .First(p => !OnTouchPanels(p) && (_at is not { } at || p.DistanceTo(at) > 2 * RingRadius));
             return GetGlobalRect().Position + point * _k;
         }
     }
@@ -159,12 +167,20 @@ internal sealed partial class ProvinceMenuView : Control
 
     private int RowCount => _menu is null ? 0 : _menu.Items.Count + 1;
 
-    private float Height => Top + (RowCount - 1) * RowPitch + 1 + ReturnH + 14;
+    /// <summary>The PC's first column: every command up to nine, else the first half; the rest go to the second (E).</summary>
+    private int FirstColumn => ProvinceMenu.FirstColumn(Items, OneColumnMost);
+
+    private bool TwoColumns => FirstColumn < Items;
+
+    /// <summary>A PC column's width: one column as wide as the panel's inside, two 400 each (wider with taller rows).</summary>
+    private float ColumnWidth => TwoColumns ? MathF.Max(ColumnW, MathF.Round(ColumnW * Rows.Scale * 0.9f)) : Width - 32;
+
+    private float Height => Top + FirstColumn * RowPitch + 1 + ReturnH + 14;
 
     /// <summary>Where the PC's rows start, under the header and the place's caption, if any.</summary>
     private float Top => Pad + PictureH + Pad + (_menu?.Place is null ? 0 : Caption);
 
-    private float PanelWidth => Width;
+    private float PanelWidth => TwoColumns ? 16 + 2 * ColumnWidth + ColumnGap + 16 : Width;
 
     /// <summary>The panel's corner: centred on the screen, as the original's menu (owner, 2026-10-16).</summary>
     private float PanelX => MathF.Round((1280 - PanelWidth) / 2);
@@ -175,21 +191,42 @@ internal sealed partial class ProvinceMenuView : Control
 
     /// <summary>
     /// The touch mode's card: beside the tapped province, left of it when there is room, else right of it short of the
-    /// rail, centred on it and kept on the screen; without a point, in the middle of the map left of the rail.
+    /// rails, centred on it and kept on the screen; without a point, in the middle of the map left of the rails.
     /// </summary>
     private Rect2 CardRect
     {
         get
         {
             float h = CardPad + TouchPictureH + 14 + 62 + (_menu?.Card.Count ?? 0) * TouchFigure + CardPad - 8;
+            float end = InnerRect is { } inner ? inner.Position.X : RightRail;
             if (_at is not { } at)
-                return new Rect2(MathF.Round((RightRail - CardW) / 2), MathF.Round((800 - h) / 2), CardW, h);
+                return new Rect2(MathF.Round((end - CardW) / 2), MathF.Round((800 - h) / 2), CardW, h);
             float x = at.X - CardGap - CardW;
             if (x < 8)
-                x = Math.Min(at.X + CardGap, RightRail - 8 - CardW);
+                x = at.X + CardGap;
+            x = Math.Min(x, end - 8 - CardW);
             return new Rect2(x, MathF.Round(Math.Clamp(at.Y - h / 2, 8, 792 - h)), CardW, h);
         }
     }
+
+    /// <summary>The touch mode's right rail's commands: every one up to twelve, else the first half (TE).</summary>
+    private int RailFirst => ProvinceMenu.FirstColumn(Items, RailMost);
+
+    /// <summary>The touch mode's inner rail, left of the right one, holding the commands past the first half; null while the rail holds them all.</summary>
+    private Rect2? InnerRect
+    {
+        get
+        {
+            int inner = Items - RailFirst;
+            if (inner <= 0)
+                return null;
+            float top = InnerFoot - (inner - 1) * TouchPitch - RailInset;
+            return new Rect2(RightRail - InnerGap - RailW, top, RailW, RailFoot - top);
+        }
+    }
+
+    /// <summary>A point on the touch mode's card or rails.</summary>
+    private bool OnTouchPanels(Vector2 p) => CardRect.HasPoint(p) || RailRect.HasPoint(p) || InnerRect?.HasPoint(p) == true;
 
     private const float TouchTagW = 62, TouchTextLeft = 78;
 
@@ -214,20 +251,32 @@ internal sealed partial class ProvinceMenuView : Control
     {
         get
         {
-            int items = Math.Max(0, RowCount - 1);
+            int items = RailFirst;
             float top = (items == 0 ? TouchReturnTop : ItemFoot - (items - 1) * TouchPitch) - RailInset
                 - (_menu?.Place is null ? 0 : Caption);
             return new Rect2(RightRail, top, RailW, RailFoot - top);
         }
     }
 
-    private Rect2 RowRect(int row) => Touch
-        ? row < RowCount - 1
-            ? new Rect2(RightRail + RailInset, ItemFoot - row * TouchPitch, TouchRowW, TouchRowH)  // from the foot up
-            : new Rect2(RightRail + RailInset, TouchReturnTop, TouchRowW, TouchReturnH)
-        : row < RowCount - 1
-            ? new Rect2(PanelX + 16, PanelY + Top + row * RowPitch, Width - 32, RowH)
-            : new Rect2(PanelX + Width - 16 - ReturnW, PanelY + Top + (RowCount - 1) * RowPitch + 1, ReturnW, ReturnH);
+    /// <summary>
+    /// Row <paramref name="row"/>'s box: the commands, then Return. The touch mode's from the foot up on the right rail, past
+    /// its first half on the inner one; the PC's down the first column, then the second, Return under the last.
+    /// </summary>
+    private Rect2 RowRect(int row)
+    {
+        if (Touch)
+        {
+            if (row >= Items)
+                return new Rect2(RightRail + RailInset, TouchReturnTop, TouchRowW, TouchReturnH);
+            if (row < RailFirst)
+                return new Rect2(RightRail + RailInset, ItemFoot - row * TouchPitch, TouchRowW, TouchRowH);
+            return new Rect2(InnerRect!.Value.Position.X + RailInset, InnerFoot - (row - RailFirst) * TouchPitch, TouchRowW, TouchRowH);
+        }
+        if (row >= Items)
+            return new Rect2(PanelX + PanelWidth - 16 - ReturnW, PanelY + Top + FirstColumn * RowPitch + 1, ReturnW, ReturnH);
+        int column = row / FirstColumn, at = row % FirstColumn;
+        return new Rect2(PanelX + 16 + column * (ColumnWidth + ColumnGap), PanelY + Top + at * RowPitch, ColumnWidth, RowH);
+    }
 
     private bool Enabled(int row) => _menu is { } m && (row == RowCount - 1 || m.Items[row].Enabled);
 
@@ -266,7 +315,7 @@ internal sealed partial class ProvinceMenuView : Control
                 int at = RowAt(button.Position);
                 var point = button.Position / _k;
                 bool outside = _menu is { CancelReopens: false } && (_phone is { } phone ? PhoneOutside(phone, button.Position)
-                    : Touch && !CardRect.HasPoint(point) && !RailRect.HasPoint(point));
+                    : Touch && !OnTouchPanels(point));
                 if (button.Pressed)
                     (_pressed, _outside) = (at, outside);
                 else if (at >= 0 && at == _pressed && Enabled(at))
@@ -320,7 +369,7 @@ internal sealed partial class ProvinceMenuView : Control
         DrawRect(picture.Grow(1), Ui.DimGold, false, Line(1));
         // The name (made smaller to fit), the army, the figures: right of the picture, in the touch mode under it.
         float tx = Touch ? picture.Position.X : picture.End.X + Pad, ty = Touch ? picture.End.Y + 14 : y + 16;
-        float room = Touch ? TouchPictureW : x + Width - 16 - tx;
+        float room = Touch ? TouchPictureW : x + PanelWidth - 16 - tx;
         int nameSize = Touch ? 22 : 21, armySize = 14, labelSize = 14, valueSize = Touch ? 16 : 17;
         while (nameSize > 11 && _brush.GetStringSize(m.Name, fontSize: nameSize).X > room)
             nameSize--;
@@ -341,7 +390,7 @@ internal sealed partial class ProvinceMenuView : Control
         if (m.Place is { } place)
         {
             var rail = RailRect;
-            float cx0 = Touch ? rail.Position.X + 16 : x + 16, cx1 = Touch ? rail.End.X - 16 : x + Width - 16, mid = (cx0 + cx1) / 2;
+            float cx0 = Touch ? rail.Position.X + 16 : x + 16, cx1 = Touch ? rail.End.X - 16 : x + PanelWidth - 16, mid = (cx0 + cx1) / 2;
             float cy = Touch ? rail.Position.Y + RailInset + Caption / 2 : y + Top - Caption / 2 - 4;
             float pw = _cinzel.GetStringSize(place, fontSize: 16).X;
             DrawString(_cinzel, new Vector2(mid - pw / 2, cy + (_cinzel.GetAscent(16) - _cinzel.GetDescent(16)) / 2), place,
@@ -377,6 +426,8 @@ internal sealed partial class ProvinceMenuView : Control
             DrawPolyline(triangle, Ui.Gold, Line(2));
         }
         Ui.DrawPanel(this, RailRect, _k);
+        if (InnerRect is { } inner)
+            Ui.DrawPanel(this, inner, _k);
     }
 
     private void DrawRow(int r)

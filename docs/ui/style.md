@@ -198,7 +198,9 @@ or `--touch`; the PC's mouse interface does not change.
   rail's top, furthest from the resting thumb (docs/ui/touch.md, 2026-10-25); the map's commands, the week's, on the right
   rail under Turn END, the other items on the left (owner, 2026-10-30). What belongs to a place on the map shows
   there, the choices still on the rail: the province menu's card beside the tapped province, its commands on the right
-  rail (the owner's B).
+  rail (the owner's B). Past what a rail holds, the rest go into a second column inward, at the same thumb: a rail of
+  their own on the tablet, two columns in the frame's right edge on the phone held landscape (the owner's TE and PE,
+  2026-10-30; the PC's panel two columns past nine, E; docs/ui/command-screen.md, "Fifteen commands").
 - Controls sit where the thumb learns them (the drawer at the left edge, Commands bottom right), never over a face, a
   name plate or text; they hide under menus, dialogs and our screens, and their taps never reach the script.
 - **The phone held landscape** (docs/ui/phone-build.md, steps F and L1-L10, built 2026-10-28): the frame keeps the

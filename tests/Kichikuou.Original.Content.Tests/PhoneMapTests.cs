@@ -87,6 +87,34 @@ public class PhoneMapTests
     }
 
     [Fact]
+    public void Past_what_the_side_holds_a_provinces_commands_stand_in_two_columns_in_the_frame()
+    {
+        // The owner's PE (2026-10-30): the side holds seven at a row's full height; Leazas Castle's fifteen go into a panel
+        // at the frame's right edge (21 in), its foot level with Return's, 2 × 450 + 15 wide with 21 of padding.
+        Assert.Equal(7, PhoneMap.SideMost(Reference));
+        Assert.Null(PhoneMap.ProvincePanel(Reference, 7));
+        Assert.Equal(2342, PhoneMap.ProvinceRows(Reference, 7)[6].X, Close);
+        var columns = PhoneMap.ProvincePanel(Reference, 15)!;
+        float h = 2 * 21 + 8 * 123 + 7 * 12;
+        Equal(new(2332 - 21 - 957, 1160 - h, 957, h), columns.Panel);
+        Assert.Equal(PhoneMap.FootCell(Reference).Bottom, columns.Panel.Bottom, Close);
+        // Down the left column, then the right; the odd one in the first.
+        var rows = PhoneMap.ProvinceRows(Reference, 15);
+        Assert.Equal(15, rows.Count);
+        Equal(new(columns.Panel.X + 21, columns.Panel.Y + 21, 450, 123), rows[0]);
+        Equal(new(columns.Panel.X + 21, columns.Panel.Y + 21 + 7 * 135, 450, 123), rows[7]);
+        Equal(new(columns.Panel.X + 21 + 465, columns.Panel.Y + 21, 450, 123), rows[8]);
+        Equal(new(columns.Panel.X + 21 + 465, columns.Panel.Y + 21 + 6 * 135, 450, 123), rows[14]);
+        // The dungeon's menu keeps the side.
+        Assert.Null(PhoneMap.ProvincePanel(Reference, 9, caption: true));
+        // The card keeps left of the panel, though its province lies under it.
+        var card = PhoneMap.ProvinceCard(Reference, (2000, 600), 3, beside: columns.Panel).Box;
+        Assert.Equal(columns.Panel.X - 20, card.Right, Close);
+        var middle = PhoneMap.ProvinceCard(Reference, null, 3, beside: columns.Panel).Box;
+        Assert.Equal(380 + (columns.Panel.X - 380 - 560) / 2, middle.X, Close);
+    }
+
+    [Fact]
     public void A_provinces_card_stands_left_of_it_when_the_frame_has_room()
     {
         // province_card: 560 wide, 90 from the province, its middle level with it, kept over FOOT.

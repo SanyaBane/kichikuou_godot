@@ -123,10 +123,11 @@ internal static class SideCells
     /// <summary>
     /// A rail's row in a side (docs/ui/phone.md, §12, LM1b, LM1c): with a tag, the tag over the name in two lines (a side has
     /// no room for both in one), a building under way's weeks on its chip; without one, the name centred. Dimmed when off,
-    /// lit while held. <paramref name="font"/> is the game's.
+    /// lit while held. <paramref name="font"/> is the game's; <paramref name="nameSize"/> the name's most, in reference
+    /// pixels (a row wider than a side's has room for more).
     /// </summary>
     public static void DrawRow(CanvasItem c, PhoneUnits u, Rect2 box, Font font, string name, bool on = true, bool held = false,
-        (string Word, Color Colour)? tag = null, int? weeks = null, UiPalette? palette = null)
+        (string Word, Color Colour)? tag = null, int? weeks = null, UiPalette? palette = null, float nameSize = 36)
     {
         var ui = palette ?? Ui;
         ui.DrawRowBox(c, box, held && on, u.K);
@@ -151,7 +152,7 @@ internal static class SideCells
             ui.DrawBusyTag(c, font, band, word, colour, u.K, tagSize, weeks);
         else
             ui.DrawTag(c, font, band, word, colour, on, u.K, tagSize);
-        int size = Fit(font, name, u.Size(36 * s), box.Size.X - u.Px(30));
+        int size = Fit(font, name, u.Size(nameSize * s), box.Size.X - u.Px(30));
         var line = new Rect2(box.Position.X, box.End.Y - u.Px(34 * s) - u.Px(20 * s), box.Size.X, u.Px(40 * s));
         c.DrawString(font, new Vector2(box.Position.X + u.Px(16), Lacquer.Baseline(line, font, size)), name, fontSize: size,
             modulate: weeks is not null ? ui.Quiet : ink);

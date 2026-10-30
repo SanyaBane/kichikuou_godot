@@ -1,3 +1,5 @@
+using Kichikuou.Original.Content.Strategy;
+
 namespace Kichikuou.Original.Content.Devices;
 
 /// <summary>
@@ -45,6 +47,12 @@ public static class PhoneMap
     private const float ProvinceTop = 16, PlaceCaption = 50;
 
     /// <summary>
+    /// A province's commands in the frame (PE): a column's width (25.6 mm), the room between the columns, the panel's
+    /// padding, its least distance from the frame's right edge and top.
+    /// </summary>
+    private const float ColumnWidth = 450, ColumnGap = 15, ColumnPad = 21, ColumnMargin = 21;
+
+    /// <summary>
     /// A province's card (LM1c): its width, its distance from the province, its margins in the frame, its padding, the city's
     /// picture (at the PC's 3:2 as the tablet's 272 × 180), the room under the picture, the name's line, the army's line
     /// under a long name, a figure's line.
@@ -82,12 +90,54 @@ public static class PhoneMap
         Stack(f, Left(f, 0, 0), f.LeftRoom.Bottom - f.Px(RailFoot), HeaderBox(f).Bottom + f.Px(HeaderGap), count);
 
     /// <summary>
-    /// A province's commands in the right side over Return, the first lowest (LM1c); with <paramref name="caption"/> (the
-    /// dungeon's menu, its place) the caption's room kept over them.
+    /// A province's commands (LM1c): in the right side over Return, the first lowest, with <paramref name="caption"/> (the
+    /// dungeon's menu, its place) the caption's room kept over them; past what the side holds at a row's full height, in
+    /// the frame's columns, the first top left (<see cref="ProvincePanel"/>).
     /// </summary>
     public static IReadOnlyList<PhoneFrame.Box> ProvinceRows(PhoneFrame f, int count, bool caption = false) =>
-        Stack(f, Right(f, 0, 0), FootCell(f).Y - f.Px(RowGap),
-            f.RightRoom.Y + f.Px(ProvinceTop + (caption ? PlaceCaption : 0)), count);
+        ProvincePanel(f, count, caption)?.Rows ?? Stack(f, Right(f, 0, 0), RowsFoot(f), RowsTop(f, caption), count);
+
+    /// <summary>How many of a province's commands the right side holds at a row's full height over Return: seven on the reference phone.</summary>
+    public static int SideMost(PhoneFrame f, bool caption = false)
+    {
+        float h = f.Px(RowHeight), g = f.Px(RowGap);
+        return Math.Max(0, (int)MathF.Floor((RowsFoot(f) - RowsTop(f, caption) + g) / (h + g) + 0.0001f));
+    }
+
+    /// <summary>The panel of a province's commands in the frame and the rows in it (<see cref="ProvincePanel"/>).</summary>
+    public sealed record ProvinceColumns(PhoneFrame.Box Panel, IReadOnlyList<PhoneFrame.Box> Rows);
+
+    /// <summary>
+    /// A province's commands past what the right side holds (the owner's PE, 2026-10-30; docs/ui/touch.md, "Fifteen
+    /// commands"): a panel in the frame's right edge at the right thumb, its foot level with Return's, the commands in two
+    /// columns at the phone's type, down the left one, then the right (<see cref="ProvinceMenu.FirstColumn"/>), the rows
+    /// 7.0 × 25.6 mm, lower in proportion should they not fit the frame's height. Null while the side holds them, and for
+    /// the dungeon's menu (<paramref name="caption"/>: at most four cells and Look Around).
+    /// </summary>
+    public static ProvinceColumns? ProvincePanel(PhoneFrame f, int count, bool caption = false)
+    {
+        int most = SideMost(f, caption);
+        if (caption || count <= most)
+            return null;
+        int first = ProvinceMenu.FirstColumn(count, most);
+        float w = f.Px(ColumnWidth), gap = f.Px(ColumnGap), pad = f.Px(ColumnPad), h = f.Px(RowHeight), g = f.Px(RowGap);
+        float bottom = FootCell(f).Bottom, top = f.Frame.Y + f.Px(ColumnMargin);
+        float scale = Math.Min(1, (bottom - top - 2 * pad) / (first * h + (first - 1) * g));
+        (h, g) = (h * scale, g * scale);
+        float height = 2 * pad + first * h + (first - 1) * g;
+        float right = f.Frame.Right - f.Px(ColumnMargin), x = right - 2 * w - gap - 2 * pad;
+        var panel = new PhoneFrame.Box(x, bottom - height, right - x, height);
+        return new ProvinceColumns(panel, [.. Enumerable.Range(0, count).Select(i =>
+        {
+            int column = i < first ? 0 : 1, row = i < first ? i : i - first;
+            return new PhoneFrame.Box(x + pad + column * (w + gap), panel.Y + pad + row * (h + g), w, h);
+        })]);
+    }
+
+    /// <summary>The province's rows in the side: the lowest's foot, the highest's least top.</summary>
+    private static float RowsFoot(PhoneFrame f) => FootCell(f).Y - f.Px(RowGap);
+
+    private static float RowsTop(PhoneFrame f, bool caption) => f.RightRoom.Y + f.Px(ProvinceTop + (caption ? PlaceCaption : 0));
 
     /// <summary>The place's caption over a province's rows (the dungeon's menu): its band, just over the highest row.</summary>
     public static PhoneFrame.Box PlaceBox(PhoneFrame f, IReadOnlyList<PhoneFrame.Box> rows)
@@ -136,26 +186,30 @@ public static class PhoneMap
     /// The card of a province at <paramref name="at"/> (the canvas's units; null when it is out of view, the card then in
     /// the frame's middle) with <paramref name="figures"/> lines of figures, the army under the name when
     /// <paramref name="armyUnder"/> (a long name): left of it when the frame has room there, else right of it, its middle
-    /// level with it, kept in the frame over the gesture zone.
+    /// level with it, kept in the frame over the gesture zone — and left of the commands' panel (<paramref name="beside"/>,
+    /// <see cref="ProvincePanel"/>), however near it the province lies.
     /// </summary>
-    public static Card ProvinceCard(PhoneFrame f, (float X, float Y)? at, int figures, bool armyUnder = false)
+    public static Card ProvinceCard(PhoneFrame f, (float X, float Y)? at, int figures, bool armyUnder = false,
+        PhoneFrame.Box? beside = null)
     {
         float w = f.Px(CardWidth), pad = f.Px(CardPad), picture = f.Px(PictureHeight);
         float name = f.Px(NameLine + (armyUnder ? ArmyLine : 0));
         float h = pad + picture + f.Px(PictureGap) + name + figures * f.Px(FigureLine) + pad;
-        float left = f.Frame.X + f.Px(CardMargin), right = f.Frame.Right - f.Px(CardMargin);
+        float end = beside?.X ?? f.Frame.Right;
+        float left = f.Frame.X + f.Px(CardMargin), right = end - f.Px(CardMargin);
         float top = f.LeftRoom.Y + f.Px(CardMargin), foot = f.LeftRoom.Bottom - f.Px(CardMargin);
         float x, y;
         if (at is not { } p)
         {
-            x = f.Frame.X + (f.Frame.W - w) / 2;
+            x = f.Frame.X + (end - f.Frame.X - w) / 2;
             y = f.Frame.Y + (f.Frame.H - h) / 2;
         }
         else
         {
             x = p.X - f.Px(CardGap) - w;
             if (x < left)
-                x = Math.Min(p.X + f.Px(CardGap), right - w);
+                x = p.X + f.Px(CardGap);
+            x = Math.Min(x, right - w);
             y = p.Y - h / 2;
         }
         y = Math.Clamp(y, top, Math.Max(top, foot - h));

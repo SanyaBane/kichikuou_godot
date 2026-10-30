@@ -156,4 +156,11 @@ public sealed record ProvinceMenu(
 
     /// <summary>An item's text without the mark the files put first (○ free, × spent this week).</summary>
     private static string Unmarked(string shown) => shown.TrimStart('○', '×', '△', '◎', ' ', '　').Replace('’', '\'');
+
+    /// <summary>
+    /// How many of <paramref name="count"/> commands the first column holds when one column holds at most
+    /// <paramref name="most"/> (docs/ui/command-screen.md, "Fifteen commands"; the owner's E, TE and PE): all of them
+    /// while they fit, else the first half, the odd one there; the rest go to the second column. Interface only.
+    /// </summary>
+    public static int FirstColumn(int count, int most) => count <= most ? count : (count + 1) / 2;
 }
