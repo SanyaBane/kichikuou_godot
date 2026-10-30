@@ -108,11 +108,24 @@ public sealed class StrategyRules(IScenarioSource scenario, IStoryHooks unported
         _ => unported.RunEventAsync(file, entry),
     };
 
-    /// <summary>A battle file between its <see cref="BattleScreenEvent"/>s.</summary>
+    /// <summary>
+    /// A battle file between its <see cref="BattleScreenEvent"/>s. A battle that ends the game leaves by a jump to
+    /// <c>OVER</c> (Rance's fall, <c>FIGTﾐｶDE.ADV:38-39</c>; Leazas Castle (1) lost, <c>FIGT_B.ADV:824</c>; Kayblis's
+    /// death short of the whole map, <c>死亡捕獲.ADV:362-367</c>): its screen is closed then too, so the ending is not
+    /// drawn as the battle's.
+    /// </summary>
     private async Task BattleAsync(string file, Func<Battle, Task> run)
     {
         await Script.ShowAsync(new BattleScreenEvent(file, true));
-        await run(Battle);
+        try
+        {
+            await run(Battle);
+        }
+        catch (ScenarioJumpException)
+        {
+            await Script.ShowAsync(new BattleScreenEvent(file, false));
+            throw;
+        }
         await Script.ShowAsync(new BattleScreenEvent(file, false));
     }
 }

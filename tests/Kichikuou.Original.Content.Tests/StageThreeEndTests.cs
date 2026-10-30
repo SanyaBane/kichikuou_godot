@@ -86,6 +86,10 @@ public class StageThreeEndTests(ITestOutputHelper output)
         Assert.Equal(8, game.State.EndingId.Value);
         Assert.Equal(3, game.State.StoryStage.Value);
         AssertTheEndRan(game);
+        // The jump leaves the battle file: its screen is closed for OVER, which draws on the map's.
+        var screens = game.View.Events.OfType<BattleScreenEvent>().ToList();
+        Assert.NotEmpty(screens);
+        Assert.Equal(screens.Count(e => e.Open), screens.Count(e => !e.Open));
     }
 
     private static void AssertTheEndRan(Game game)
@@ -97,7 +101,7 @@ public class StageThreeEndTests(ITestOutputHelper output)
         Assert.Equal(6, game.State.F_Kaybnyan_State.Value);
     }
 
-    private sealed record Game(GameState State, OriginalScriptContext Script, List<string> Calls);
+    private sealed record Game(GameState State, OriginalScriptContext Script, List<string> Calls, RecordingView View);
 
     /// <summary>
     /// The boot and the new game with the rule files routed and the scenes run from the decompile
@@ -113,7 +117,8 @@ public class StageThreeEndTests(ITestOutputHelper output)
         var rules = new StrategyRules(scripts, unported);
         var runner = new SceneRunner(scripts, rules);
         var calls = new List<string>();
-        var script = new OriginalScriptContext(state, new QueuedRandom { DefaultToOne = true }, new RecordingView(), new KeysOnly(),
+        var view = new RecordingView();
+        var script = new OriginalScriptContext(state, new QueuedRandom { DefaultToOne = true }, view, new KeysOnly(),
             new Recorder(runner, state, calls))
         {
             Saves = new MemorySaveStore(),
@@ -133,7 +138,8 @@ public class StageThreeEndTests(ITestOutputHelper output)
         state.Bt_EnemyParty3 = 0;
         state.Bt_EnemyParty4 = 0;
         state.Cmdrs[135].Status = 0;
-        return new Game(state, script, calls);
+        view.Events.Clear();
+        return new Game(state, script, calls, view);
     }
 
     /// <summary>Every call to another file, recorded with its entry, then run.</summary>
