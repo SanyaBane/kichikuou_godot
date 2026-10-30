@@ -80,7 +80,10 @@ Read this before a new screen's survey and mock-ups: the first round should not 
 ## 3. Type
 
 - **Shojumaru** (`Lacquer.Brush`) — titles and names: panel titles, unit and place names, army names, Turn END, the
-  touch buttons, a strategy's title.
+  touch buttons, a strategy's title. **Never money or troops** (owner, 2026-10-31): a budget, a price, a troop count or
+  gain, a battle's damages are Cinzel 700 wherever they stand out on their own (the Subordinates' and the deployment
+  screen's budget, Add New Troops' steps, the results plate's damages), the game's font in a note or a ledger. Other
+  figures may stay in Shojumaru: a floor ("3F"), a percentage in a strategy's title, a count in a button's words.
 - **Cinzel** (`Lacquer.Cinzel(weight)`, 500-900) — subtitles, labels, ledger headers, plates, dates, the name plate
   over a window (600, capitals).
 - **The game's font** (MS Gothic or BIZ UDGothic, the default; `GodotGlyphRenderer.Chosen`) — the script's text, at its

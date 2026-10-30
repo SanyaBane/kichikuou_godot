@@ -75,7 +75,7 @@ internal sealed partial class SubordinatesView
         float rule = u.Px(PhoneLedger.SideRule);
         c.DrawLine(new Vector2(rx, rule), new Vector2(rx + rw, rule), Ui.DimGold, Line(1));
         Top(c, _cinzelLight, "Budget", u.Size(PhoneLedger.LabelText), Ui.Subtitle, rx, u.Px(PhoneLedger.BudgetLabelTop), rw);
-        Top(c, _brush, Figures.GoldShort(panel.Gold * 100), u.Size(PhoneLedger.SideBudgetText), Ui.Name, rx, u.Px(PhoneLedger.SideBudgetTop), rw);
+        Top(c, _cinzel, Figures.GoldShort(panel.Gold * 100), u.Size(PhoneLedger.SideBudgetText), Ui.Name, rx, u.Px(PhoneLedger.SideBudgetTop), rw);
 
         DrawPhoneTalk(c, u, panel);
         var rep = RectOf(ReplenishButton)!.Value;
@@ -104,7 +104,7 @@ internal sealed partial class SubordinatesView
             c.DrawRect(rect, AskedLine, false, Line(2));
         int men = u.Size(PhoneLedger.StepText), price = u.Size(PhoneLedger.PriceText);
         float y = rect.Position.Y + Math.Min(u.Px(40), rect.Size.Y * 0.34f);
-        c.DrawString(_brush, new Vector2(rect.Position.X + u.Px(20), y + (_brush.GetAscent(men) - _brush.GetDescent(men)) / 2),
+        c.DrawString(_cinzel, new Vector2(rect.Position.X + u.Px(20), y + (_cinzel.GetAscent(men) - _cinzel.GetDescent(men)) / 2),
             Figures.Signed(step.Men), fontSize: men, modulate: on ? Ui.Text : Ui.OffText);
         string cost = Figures.GoldShort(step.Price * 100);
         int fitted = SideCells.Fit(_gothic, cost, price, rect.Size.X - u.Px(32));

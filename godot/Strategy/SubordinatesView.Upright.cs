@@ -60,7 +60,7 @@ internal sealed partial class SubordinatesView
                 var step = panel.Steps[i];
                 var rect = StepRect(i);
                 string cost = Figures.GoldShort(step.Price * 100);
-                DrawPlain(c, rect, Figures.Signed(step.Men), cost, StepButton + i, _brush, men,
+                DrawPlain(c, rect, Figures.Signed(step.Men), cost, StepButton + i, _cinzel, men,
                     SideCells.Fit(_gothic, cost, price, rect.Size.X - u.Px(24)));
             }
         }
@@ -71,9 +71,9 @@ internal sealed partial class SubordinatesView
         c.DrawString(_cinzelLight, new Vector2(bx, Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetLabelMiddle))),
             "Budget", fontSize: label, modulate: Ui.Subtitle);
         string gold = Figures.Number(panel.Gold * 100);
-        c.DrawString(_brush, new Vector2(bx, Middle(_brush, figure, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetFigureMiddle))), gold,
+        c.DrawString(_cinzel, new Vector2(bx, Middle(_cinzel, figure, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetFigureMiddle))), gold,
             fontSize: figure, modulate: Ui.Name);
-        c.DrawString(_cinzelLight, new Vector2(bx + _brush.GetStringSize(gold, fontSize: figure).X + u.Px(PhoneLedgerUpright.BudgetUnitGap),
+        c.DrawString(_cinzelLight, new Vector2(bx + _cinzel.GetStringSize(gold, fontSize: figure).X + u.Px(PhoneLedgerUpright.BudgetUnitGap),
             Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetUnitMiddle))), "K GOLD", fontSize: label, modulate: Ui.Subtitle);
         var end = RectOf(EndButton)!.Value;
         DrawPlain(c, end, "End", null, EndButton, _brush, SideCells.Fit(_brush, "End", u.Size(PhoneLedgerUpright.EndText), end.Size.X - u.Px(30)), 0);

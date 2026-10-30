@@ -48,7 +48,7 @@ internal sealed partial class BattleInfoLayer
         foreach (var (name, value, ax) in new[] { (r.PlayerArmy, r.PlayerDamages, cx - quarter), (r.EnemyArmy, r.EnemyDamages, cx + quarter) })
         {
             Mid(_semi, ax, y + P(PhoneBattleStates.ArmyMiddle), Fit(_semi, name.ToUpperInvariant(), army, quarter * 2 - P(60)), army, Ui.Label);
-            Mid(_brush, ax, y + P(PhoneBattleStates.DamagesMiddle), Figures.Number(value), damages, Ui.Minus);
+            Mid(_bold, ax, y + P(PhoneBattleStates.DamagesMiddle), Figures.Number(value), damages, Ui.Minus);
             Mid(_semi, ax, y + P(PhoneBattleStates.DamagesWordMiddle), "DAMAGES", word, Ui.Subtitle);
         }
         DrawLine(new Vector2(cx, y + P(PhoneBattleStates.RuleTop)), new Vector2(cx, y + P(PhoneBattleStates.RuleFoot)), Ui.DimGold,

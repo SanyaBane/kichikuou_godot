@@ -514,7 +514,7 @@ internal sealed partial class SubordinatesView : Control
             for (int i = 0; i < panel.Steps.Count; i++)
             {
                 var s = panel.Steps[i];
-                DrawPlain(c, StepRect(i), Figures.Signed(s.Men), Figures.GoldShort(s.Price * 100), StepButton + i, _brush, 17, 12);
+                DrawPlain(c, StepRect(i), Figures.Signed(s.Men), Figures.GoldShort(s.Price * 100), StepButton + i, _cinzel, 17, 12);
             }
         }
         c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Ui.DimGold, Line(1));
