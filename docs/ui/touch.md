@@ -600,6 +600,32 @@ consistent with the panel but sends the finger across the screen and back; B spl
   `-cells-full`) and in the unattended `--touch` look from the week-18 save: Oaks (6)'s card left of it, its tap off the
   menu cancels. Not yet on the tablet.
 
+**Fifteen commands (owner, 2026-10-30).** Leazas Castle (1)'s menu can hold fifteen commands and Return
+(docs/ui/command-screen.md, "The province menu", "Fifteen commands"). The rail holds twelve from the foot up under
+the status strip; at fifteen the top three rows are above the screen. On the phone held landscape the side's rows
+(`PhoneMap.Stack`) are lowered to fit, about 4 mm at fifteen, and the side's 14.5 mm width caps a long name ("Demon
+Lord's Room") at 1.4 mm whatever the row's height. Upright (`PhoneMapUpright.Rows`) fits as it is. Mock-up round 2
+(`tools/ui/mock_province_long.py`, over the gallery's touch and landscape dumps of `province-menu-own-all`; at a usual
+six every variant but PS is today's):
+
+- **TL — the rest on the left rail** past twelve: the first half on the right rail, the rest on the left one, both from
+  the foot up as the command panel's rails; rows 220×46 (9.3 mm); the card between the rails. Every row within a thumb.
+- **TE — a second column inward** past twelve: the first half at the edge, the rest in a column beside it, from the
+  foot up; the inner column 50 mm further in, at the reach's edge.
+- **TG — one rail, the rows lower** past twelve: 36 px, 44 apart (7.3 mm, the ledgers' rows), text 15; the top rows
+  past the thumb's reach.
+- **PL — the rest in the left side** (the phone) past seven: seven on the right over Return, eight on the left, rows
+  7.0 mm; the Menu cell and the status give way while the menu is open; the names 1.4-2.0 mm, as the side's width
+  allows.
+- **PE — two columns in the frame's right edge** past seven, at the right thumb: rows 7.0 × 25.6 mm, the names 2.3 mm;
+  a province under the panel (Leazas Castle (1) in the gallery's view) loses its ring, the card moves left of it.
+- **PS — a sheet across the frame**: the map dimmed, the card left, the commands in three columns down then across, rows
+  7.0 × 23.8 mm, the names 2.3 mm; Return in the right side. Drawn at six too, as if always.
+
+**Recommendation: TL and PS past seven** — TL keeps every row full size and within a thumb, as the command panel's two
+rails; on the phone the side's width, not its height, makes the names small, so past what the side holds the commands
+go into the frame as a sheet at the phone's type (PE leaves more map but hides a province under its panel).
+
 ## The standing orders on the cards (owner, 2026-10-25)
 
 The owner's request: during the player's turn every card of the player's army offers Auto-Atk or Auto-Def in the room at

@@ -337,6 +337,29 @@ Search, Battle, Ninja), and Return. The mock-ups hold the player's CGs and stay 
   text 26) scaled the same way, the marks ○ × △ too; in every mode. Checked on the Monsters' Cave (dungeon 2)'s
   Start Search / Return and Descend / Retreat at 18 and 60 (`--dungeon` on the week-18 save). Our other questions
   (the callouts, the battle's dialog) do not follow it.
+- **Fifteen commands (owner, 2026-10-30).** Leazas Castle (1)'s own-city menu (`Cｼﾊｲﾄｼ.ADV:39-290`,
+  `OwnCityCommand.MenuItems`) can hold fifteen commands and Return at once: every own city's Temporary Levy, Bolster
+  Defense, Dig Giant Hole and Set Poison Food, and the castle's eleven places (Tulip Research, Military Academy, Genius
+  Hospital, Magic Research, Giant Library, S&M Tower, Aoi Rehab, Dungeon, Demon Lord's Room, Special Room, Lady
+  Caravan); a late game reaches twelve or thirteen. A1's panel is 192 + 45·N + 51 px high: it fits up to eleven, and
+  at fifteen it is 918, the picture under the status strip (its foot at 50) and Return below the screen. The screen
+  gallery's `province-menu-own-all` (`GalleryStates.CastleEveryCommand`) shows the case. Mock-up round 2
+  (`tools/ui/mock_province_long.py`, over the gallery's dumps; each variant at fifteen and at a usual six — two commands
+  and four places —, the six as today under every variant but H; the touch parts in docs/ui/touch.md, "The province
+  menu within the thumbs' reach"):
+  - **E — two columns past nine**: A1's header and rows, the rows down the left column then the right, Return under the
+    right one; 848×603 at fifteen, centred.
+  - **F — the card beside one list past eleven**: the picture, the name, the army and the figures in a column at the
+    left, the rows A1's 38 px at a 44 px pitch in one column right of it; 754×730 at fifteen, under the strip.
+  - **G — the rows lower to fit** past eleven: 27 px, 32 apart, text 16 at fifteen (round 1's A0, which the owner found
+    low).
+  - **H — the places under one Visit row**: "Visit a place" with the count, opened in a second panel beside it; a
+    place's click answers the script's menu with that place, so every visit takes two clicks.
+  - **I — a scrolled list**: nine rows shown, the wheel for the rest, a thin bar and "▼ n more".
+
+  **Recommendation: E** — the rows and the header stay A1's, the original's order reads down then across, and the
+  panel stays well under the strip; F keeps one list but fills the screen's height, G goes back to the rows the owner
+  found low, H adds a click to the castle's every visit, I hides rows.
 
 ## The command panel (owner, 2026-10-16)
 
