@@ -546,6 +546,12 @@ stay; spent tags stay grey.
   `command-menu*` and `map-north` in every pass. TR1: the deployment screen's Refill chips ruled in the ledger's green
   ink (`InkGreen`), filled with Troops' green while hovered or asked about (`DeploymentTableView.DrawRefill`); the
   gallery's `deployment*`. The Subordinates screen's Refill column, a cost and no button, keeps the costs' red ink.
+- **Mock-ups, round 2** (owner, 2026-10-31: three colours swapped; the script's round 2, over TC2 and TR1 as built —
+  the gallery's `command-menu`, `province-menu-own-all`, `command-menu-building` and `deployment-refill-question` —
+  with a key of Now against it): **TC3** Construction in the own city's orange (172, 84, 30), its half-lit tag while a
+  building is under way too; Troops and Talk in Construction's blue (46, 62, 104), and the panel's Units and the Refill
+  chips with them; the own city in Troops' green (70, 96, 52), and every command that spends it. Awaiting the owner's
+  look.
 
 ## Questions for the owner
 
