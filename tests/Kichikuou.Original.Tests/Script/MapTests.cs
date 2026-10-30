@@ -136,6 +136,62 @@ public class MapTests
     }
 
     [Fact]
+    public async Task WAO_MAP_op_5_moves_the_markers_after_the_one_taken_out_down_and_keeps_the_count()
+    {
+        // Shangri-La's end (Iｼｬﾝｸﾞﾘﾗ.ADV:1075-1079): its entrance (CG 843 at (1048, 326)) taken out.
+        var rig = new ScriptRig();
+        rig.State.Ui_MarkCount = 3;
+        rig.State.Marks[0].X = 10;
+        rig.State.Marks[0].Cg = 10820;
+        rig.State.Marks[1].X = 1048;
+        rig.State.Marks[1].Y = 326;
+        rig.State.Marks[1].Cg = 843;
+        rig.State.Marks[2].X = 30;
+        rig.State.Marks[2].Y = 40;
+        rig.State.Marks[2].Cg = 10822;
+        rig.State.Marks[99].Cg = 7;                  // NB's last source: copied down, kept
+        rig.State.Tmp0021 = 1048;
+        rig.State.Tmp0022 = 326;
+
+        await rig.Script.WaoMapCallAsync(5);
+
+        Is(0, rig.State.RetVal);
+        Is(1, rig.State.Ui_MarkCur);
+        Is(2, rig.State.Ui_MarkNextCur);
+        Is(3, rig.State.Ui_MarkCount);               // QUIRK: STR-59
+        Is(10820, rig.State.Marks[0].Cg);
+        Is(30, rig.State.Marks[1].X);
+        Is(40, rig.State.Marks[1].Y);
+        Is(10822, rig.State.Marks[1].Cg);
+        Is(0, rig.State.Marks[2].X);                 // what lay past the list
+        Is(0, rig.State.Marks[2].Cg);
+        Is(7, rig.State.Marks[98].Cg);
+        Is(7, rig.State.Marks[99].Cg);
+        Assert.Equal([new WaoMapEvent(5)], rig.View.Events);
+    }
+
+    [Fact]
+    public async Task WAO_MAP_op_5_leaves_the_list_alone_without_a_marker_there()
+    {
+        var rig = new ScriptRig();
+        rig.State.Ui_MarkCount = 1;
+        rig.State.Marks[0].X = 1129;
+        rig.State.Marks[0].Y = 400;
+        rig.State.Marks[0].Cg = 842;
+        rig.State.Tmp0021 = 1129;
+        rig.State.Tmp0022 = 401;
+
+        await rig.Script.WaoMapCallAsync(5);
+
+        Is(1, rig.State.RetVal);
+        Is(1, rig.State.Ui_MarkCur);
+        Is(0, rig.State.Ui_MarkNextCur);
+        Is(1, rig.State.Ui_MarkCount);
+        Is(1129, rig.State.Marks[0].X);
+        Is(842, rig.State.Marks[0].Cg);
+    }
+
+    [Fact]
     public async Task Op_3_walks_every_marker_and_lifts_the_high_flags()
     {
         var rig = Map(3, 0, 0, 0, 0);

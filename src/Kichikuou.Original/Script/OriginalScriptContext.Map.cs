@@ -8,8 +8,10 @@ namespace Kichikuou.Original.Script;
 // behind (Tmp0021-0030, Tmp0039/0040, CallArg, RetVal from the Y 3 pauses) and the map marker
 // list on page 10. Drawing (PC, G, J0, CC, CS, EC) is the MapEvent that MapCallAsync raises
 // first; each G counts its CG (CountCgLoad). Found necessary by the first golden capture: the scratch values and RetVal that M.ADV
-// op 13 leaves are what FIGT_A returns to its caller. Ported so far: the operations the battle
-// reaches; the others (WAO_MAP op 1 drag-scroll, op 5, op 100) come with the parts that use them.
+// op 13 leaves are what FIGT_A returns to its caller. Ported: every operation a call reaches —
+// M ops 0, 1, 3, 4, 10-13 and WAO_MAP ops 0, 1, 3, 4, 5. Not ported: M op 5 and WAO_MAP op 2,
+// which nothing calls, and WAO_MAP op 100 (the debug map's coordinates), whose one call
+// (ｽﾀMENU.ADV:554-560) follows a return and is never reached.
 public sealed partial class OriginalScriptContext
 {
     /// <summary>
@@ -364,8 +366,8 @@ public sealed partial class OriginalScriptContext
     }
 
     /// <summary>
-    /// <c>%#WAO_MAP.ADV</c> with the operation in <c>CallArg</c>, for the operations the battle
-    /// reaches (<c>WAO_MAP.ADV:1-4</c>, <c>:81-117</c>, <c>:183-196</c>).
+    /// <c>%#WAO_MAP.ADV</c> with the operation in <c>CallArg</c>, but the drag (op 1,
+    /// <see cref="MapDragAsync"/>): <c>WAO_MAP.ADV:1-4</c>, <c>:86-133</c>, <c>:183-196</c>.
     /// </summary>
     private void MapWaoMap()
     {
@@ -406,6 +408,25 @@ public sealed partial class OriginalScriptContext
                 at.Y = State.Tmp0022;
                 at.Cg = State.Tmp0023;
                 State.Ui_MarkCount = State.Ui_MarkCount + State.RetVal;
+                return;
+            case 5:
+                // :124-133 — take the marker at (Tmp0021, Tmp0022) out: NB moves the slots after it
+                // down a place, up to slot 99 (Shangri-La's end, Iｼｬﾝｸﾞﾘﾗ.ADV:1075-1084).
+                // QUIRK: STR-59 — the count stays, so the list ends in what lay past it.
+                MapFindMarker();
+                if (State.RetVal == 0)
+                {
+                    State.Ui_MarkNextCur = State.Ui_MarkCur + 1;
+                    int from = State.Ui_MarkCur.Value, count = 99 - from;
+                    for (int i = 0; i < count; i++)
+                    {
+                        var to = State.Marks[from + i];
+                        var next = State.Marks[from + i + 1];
+                        to.X = next.X;
+                        to.Y = next.Y;
+                        to.Cg = next.Cg;
+                    }
+                }
                 return;
             default:
                 throw new InvalidOperationException($"WAO_MAP.ADV operation {State.CallArg} is not ported.");

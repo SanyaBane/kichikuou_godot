@@ -179,8 +179,11 @@ after `Week += 1`, history shift and BGM stop, at the start of the player phase"
 
 `M` and `WAO_MAP` ops 0, 1, 3, 4, 10-13 are ported for state in
 `src/Kichikuou.Original/Script/OriginalScriptContext.Map.cs`, `WAO_MAP` op 1 (the drag-scroll, `WAO_MAP.ADV:5-81`,
-used only by `COMMAND`) with W3; not ported: op 5 (marker delete, never reached) and op 100
-(debug coordinate picker, only in dead code `ｽﾀMENU.ADV:558`).
+used only by `COMMAND`) with W3. `M` op 5 is never called, but `WAO_MAP` op 5 (marker delete) is called
+directly, past `M`, by Shangri-La's end (`Iｼｬﾝｸﾞﾘﾗ.ADV:1075-1084`): this survey missed it, and it was ported
+2026-10-30 after the owner met it on the phone (STR-59; `ScenarioProgramSweepTests` now lists every map
+operation the scenes call). Not ported: `WAO_MAP` op 100 (debug coordinate picker, only in dead code
+`ｽﾀMENU.ADV:558`) and `WAO_MAP` op 2 (a bare return, never called).
 
 ## 4. State
 

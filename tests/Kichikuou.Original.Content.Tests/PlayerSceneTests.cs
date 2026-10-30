@@ -124,6 +124,40 @@ public class PlayerSceneTests(ITestOutputHelper output)
         Assert.Equal(51, rig.State.Gold.Value);
     }
 
+    /// <summary>
+    /// Shangri-La's end (<c>Iｼｬﾝｸﾞﾘﾗ.ADV</c> entry 5, from <c>Cｼﾊｲﾄｼ.ADV:719-722</c>), its menu's first item
+    /// (<c>:795</c>): Rance leaves, the city's two markers come off the map through <c>WAO_MAP</c> op 5
+    /// (<c>:1075-1084</c>, unported until the owner met it on the phone, 2026-10-30) and Shangri-La (29) goes to
+    /// owner 3. The list keeps its count (STR-59), so it ends in empty markers.
+    /// </summary>
+    [ScenarioFact]
+    public async Task Shangri_Las_end_takes_its_markers_off_the_map()
+    {
+        var rig = await NewGameAsync();
+        int count = rig.State.Ui_MarkCount.Value;
+        (int X, int Y, int Cg)[] added = [(1048, 326, 843), (1129, 401, 842), (500, 300, 10820)];
+        foreach (var (x, y, cg) in added)
+        {
+            var mark = rig.State.Marks[count++];
+            mark.X = (Sys3Int)x;
+            mark.Y = (Sys3Int)y;
+            mark.Cg = (Sys3Int)cg;
+        }
+        rig.State.Ui_MarkCount = (Sys3Int)count;
+
+        await rig.EventAsync("Iｼｬﾝｸﾞﾘﾗ.ADV", 5);
+
+        var marks = Enumerable.Range(0, rig.State.Ui_MarkCount.Value)
+            .Select(i => rig.State.Marks[i]).Select(m => ((int)m.X.Value, (int)m.Y.Value, (int)m.Cg.Value)).ToList();
+        Assert.DoesNotContain(added[0], marks);
+        Assert.DoesNotContain(added[1], marks);
+        Assert.Contains(added[2], marks);
+        Assert.Contains((0, 0, 0), marks);                                      // QUIRK: STR-59
+        Assert.Equal(7, rig.State.F_ShangriLa_State.Value);
+        Assert.Equal(3, rig.State.Provs[29].Owner.Value);
+        output.WriteLine($"markers: {count} -> {rig.State.Ui_MarkCount.Value}; inputs: {rig.Input.Answers}");
+    }
+
     [ScenarioFact]
     public async Task The_opening_runs_to_its_end()
     {

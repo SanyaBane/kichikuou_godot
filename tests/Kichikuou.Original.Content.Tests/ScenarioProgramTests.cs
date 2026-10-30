@@ -413,6 +413,37 @@ public class ScenarioProgramSweepTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// The map helpers' operations that the files run as programs call (the operation is the constant
+    /// <c>CallArg</c> set last before the call): every one is ported (<c>OriginalScriptContext.Map.cs</c>)
+    /// but <c>WAO_MAP</c> op 100, the debug map's coordinates, whose one call (<c>ｽﾀMENU.ADV:554-560</c>)
+    /// follows a return. <c>WAO_MAP</c> op 5 (Shangri-La's end) was found missing on the owner's phone
+    /// (2026-10-30) because nothing listed the operations; this list does.
+    /// </summary>
+    [ScenarioFact]
+    public void The_map_operations_the_scenes_call_are_the_ported_ones()
+    {
+        const int callArg = 516;
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var calls = new SortedSet<string>(StringComparer.Ordinal);
+        foreach (string file in SceneFiles().Concat(OtherFiles).Concat(["CG.ADV", "MMODE.ADV"]))
+        {
+            string op = "?";
+            foreach (var statement in scripts.ReadProgram(file).Statements)
+            {
+                if (statement is AssignStatement { Var: callArg } set)
+                    op = set.Value is ConstExpr c ? c.Value.Value.ToString() : "?";
+                else if (statement is CallFileStatement { File: "M.ADV" or "WAO_MAP.ADV" } call)
+                    calls.Add($"{call.File} {op}");
+            }
+        }
+        Assert.Equal(
+        [
+            "M.ADV 0", "M.ADV 1", "M.ADV 10", "M.ADV 11", "M.ADV 12", "M.ADV 3", "M.ADV 4",
+            "WAO_MAP.ADV 100", "WAO_MAP.ADV 3", "WAO_MAP.ADV 4", "WAO_MAP.ADV 5",
+        ], calls);
+    }
+
+    /// <summary>
     /// The rule files of the strategic layer read as programs too, so the differential tests can
     /// run them against their ports (<c>COM</c>, <c>COMMAND</c>) and the unported ones can run
     /// as programs while a part is checked.
