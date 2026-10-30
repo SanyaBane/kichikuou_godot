@@ -536,14 +536,16 @@ Treasure's Items brown, Dungeon and Search teal. The two choices mix (the own ci
 Merchant gold). **TR1** the Refill chips in Troops' green instead of vermilion (the seals stay vermilion). The words
 stay; spent tags stay grey.
 
-- **The owner chose TC2** (2026-10-31); TR1 is left open (the answer named TC2 alone), the Refill chips vermilion meanwhile.
+- **The owner chose TC2** (2026-10-31), then **TR1** the same day.
 - **Built (2026-10-31):** which use a command spends is the model's, `ProvinceMenu.UseOf` and `CommandMenu.UseOf`
   (`ProvinceMenuUseTests`, `CommandMenuUseTests`); the colours are one table, `godot/Strategy/TagColours` — a use's
   colour, Treasure's and Ninja Maneuver's own —, which the strip (`StatusStripView`), the command panel
   (`CommandMenuView`) and the province menu (`ProvinceMenuView`) read on the PC, the rails and the phone's sheets, so a
   command's tag cannot part from its use's again. Own city (172, 84, 30) on Levy, Build, Plot, Visit, Cell and Look;
   Merchant and Trade (138, 104, 34); Items (104, 70, 34); the rest as before. The screen gallery's `province-menu*`,
-  `command-menu*` and `map-north` in every pass.
+  `command-menu*` and `map-north` in every pass. TR1: the deployment screen's Refill chips ruled in the ledger's green
+  ink (`InkGreen`), filled with Troops' green while hovered or asked about (`DeploymentTableView.DrawRefill`); the
+  gallery's `deployment*`. The Subordinates screen's Refill column, a cost and no button, keeps the costs' red ink.
 
 ## Questions for the owner
 

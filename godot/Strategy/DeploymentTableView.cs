@@ -819,20 +819,22 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>
-    /// A Refill button (owner's decision 27, mock-up A1): the price right in a vermilion-ruled chip, filled vermilion with
-    /// the paper's colour for its text while hovered or asked about.
+    /// A Refill button (owner's decision 27, mock-up A1): the price right in a chip ruled in green ink, filled with the
+    /// strip's Troops green, the use it spends (the owner's TR1, 2026-10-31; <see cref="TagColours"/>), with the paper's
+    /// colour for its text while hovered or asked about.
     /// </summary>
     private void DrawRefill(Rect2 cell, string text, int unit)
     {
         bool lit = unit == _refillHovered || unit == AskedRefill;
+        var fill = TagColours.Of(WeekAction.Troops);
         float inset = _upright is { } upright ? (cell.Size.Y - upright.Px(PhoneLedgerUpright.RefillChip)) / 2   // upright: PD2s2's chip
             : _rowMinimum > 0 ? cell.Size.Y / 12 : 2;                       // a taller row's chip grows with it: a finger's button
         var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
         var box = new StyleBoxFlat
         {
-            BgColor = lit ? Ui.Vermilion : new Color(0, 0, 0, 0),
-            BorderColor = Ui.VermilionInk with { A = lit ? 1 : 0.6f },
+            BgColor = lit ? fill : new Color(0, 0, 0, 0),
+            BorderColor = Ui.InkGreen with { A = lit ? 1 : 0.6f },
             BorderWidthLeft = 1, BorderWidthTop = 1, BorderWidthRight = 1, BorderWidthBottom = 1,
             CornerRadiusTopLeft = (int)corner, CornerRadiusTopRight = (int)corner,
             CornerRadiusBottomLeft = (int)corner, CornerRadiusBottomRight = (int)corner,
@@ -840,7 +842,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         DrawStyleBox(box, chip);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2;
         DrawString(_font, new Vector2(chip.Position.X, baseline), text, HorizontalAlignment.Right, chip.Size.X - 5, _fontSize,
-            lit ? Ui.Paper : Ui.VermilionInk);
+            lit ? Ui.Paper : Ui.InkGreen);
     }
 
     /// <summary>
