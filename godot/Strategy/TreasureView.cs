@@ -369,6 +369,8 @@ internal sealed partial class TreasureView : Control
 
     private float Line(float width) => Lacquer.Line(width, _k);
 
+    private float Frame(float width) => Lacquer.Frame(width, _k);
+
     private void DrawScreen(Control c)
     {
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));

@@ -195,7 +195,7 @@ internal sealed partial class SaveLoadView
         if (off)
         {
             DrawRect(r, Ui.OffButton);
-            DrawRect(r, Ui.OffLine, false, Line(1));
+            DrawRect(r, Ui.OffLine, false, Frame(1));
         }
         else
             Ui.DrawRowBox(this, r, hover, _k);
@@ -424,7 +424,7 @@ internal sealed partial class SaveLoadView
     {
         var r = ButtonBox;
         DrawRect(r, Ui.OffButton);
-        DrawRect(r, Ui.OffLine, false, Line(2));
+        DrawRect(r, Ui.OffLine, false, Frame(2));
         TextCentred(_brush, u.Size(Places.ButtonText(u.Frame) * 0.86f), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.4f, "Save", Ui.OffText);
         TextCentred(_gothic, u.Size(PhoneSaves.ButtonLineText), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.77f, "auto-saves are the game's own", Ui.OffText);
     }

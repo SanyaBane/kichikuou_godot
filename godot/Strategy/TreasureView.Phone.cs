@@ -119,7 +119,7 @@ internal sealed partial class TreasureView
             return;
         }
         c.DrawRect(r, Ui.OffButton);
-        c.DrawRect(r, Ui.OffLine, false, Line(1));
+        c.DrawRect(r, Ui.OffLine, false, Frame(1));
         int word = SideCells.Fit(_cinzel, b.Label, u.Size(PhonePickers.ActionText * 0.7f), room);
         Centred(c, _cinzel, b.Label, word, Ui.OffText, cx, PhonePickerParts.Middle(_cinzel, word, r.Position.Y + r.Size.Y * 0.34f));
         int why = SideCells.Fit(_gothic, b.Refusal, u.Size(28), room);
@@ -171,7 +171,7 @@ internal sealed partial class TreasureView
             var r = tab(view);
             bool on = view == _view, hover = !on && !Busy && _hovered == (view == 0 ? TabCharacters : TabItems);
             c.DrawRect(r, on ? Ui.ChosenFill : hover ? Ui.RowHover : Ui.Row);
-            c.DrawRect(r, on ? Ui.Gold : hover ? Ui.HoverLine : Ui.DimGold, false, Line(on || hover ? 2 : 1));
+            c.DrawRect(r, on ? Ui.Gold : hover ? Ui.HoverLine : Ui.DimGold, false, Frame(on || hover ? 2 : 1));
             string label = view == 0 ? "Characters" : "Items";
             Centred(c, _cinzel, label, size, on || hover ? Ui.Name : Ui.Quiet, r.GetCenter().X, PhonePickerParts.Middle(_cinzel, size, r.GetCenter().Y));
         }

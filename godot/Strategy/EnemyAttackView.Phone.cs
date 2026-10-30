@@ -249,7 +249,7 @@ internal sealed partial class EnemyAttackView
         else
         {
             _sheet.DrawRect(scout, Ui.OffButton);
-            _sheet.DrawRect(scout, Ui.OffLine, false, Lacquer.Line(1, _k));
+            _sheet.DrawRect(scout, Ui.OffLine, false, Lacquer.Frame(1, _k));
         }
         int scoutSize = SideCells.Fit(_brush, "Ninja Scout", u.Size(PhoneAttack.ScoutText), scout.Size.X - u.Px(40));
         CentredAt(_brush, "Ninja Scout", scoutSize, scout.GetCenter().X, Middle(_brush, scoutSize, scout.Position.Y + u.Px(56)),
@@ -293,7 +293,7 @@ internal sealed partial class EnemyAttackView
             else
             {
                 _sheet.DrawRect(row, Ui.OffButton);
-                _sheet.DrawRect(row, Ui.OffLine, false, Lacquer.Line(1, _k));
+                _sheet.DrawRect(row, Ui.OffLine, false, Lacquer.Frame(1, _k));
             }
             float inset = u.Px(PhoneAttack.RowFaceIn), size = row.Size.Y - 2 * inset;
             var face = new Rect2(row.Position + new Vector2(inset, inset), new Vector2(size, size));

@@ -90,7 +90,7 @@ internal sealed partial class SubordinatesView
         if (!on)
         {
             c.DrawRect(rect, Ui.OffButton);
-            c.DrawRect(rect, Ui.OffLine, false, Line(1));
+            c.DrawRect(rect, Ui.OffLine, false, Frame(1));
         }
         else
             Ui.DrawRowBox(c, rect, hover, _k);

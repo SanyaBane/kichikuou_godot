@@ -219,9 +219,11 @@ or `--touch`; the PC's mouse interface does not change.
   portrait's, under it for every other, the script's line breaks kept; a screen of our own stacked down the width (a title
   band, the picture or the party on top, a sheet or a list at the thumb, scrolled by a finger with a thin bar), a menu or
   a province's commands a sheet over the map's foot. The figures are the reference phone's pixels scaled by the width
-  (1220); rows for a finger 6.7-8.5 mm high. The orientation is Option → Display's (System, Upright, Landscape 1,
-  Landscape 2); a turn lays the open screen out again, keeping what it showed (a scroll's first row, a question at its
-  button).
+  (1220); rows for a finger 6.7-8.5 mm high. A line is 2 of those pixels at least and a control's frame (a row's box, a
+  button's outline, the gold frame round a main choice) 3, as the mock-ups draw them: a pixel of the 1280×800 layout is
+  0.95 of them there, and the rows' 1 px frames vanished (owner, 2026-10-30; `Lacquer.Line`, `Lacquer.Frame`). The
+  orientation is Option → Display's (System, Upright, Landscape 1, Landscape 2); a turn lays the open screen out again,
+  keeping what it showed (a scroll's first row, a question at its button).
 
 ## 7. How a screen is made
 

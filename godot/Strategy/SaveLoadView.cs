@@ -708,6 +708,8 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
 
     private float Line(float width) => Lacquer.Line(width, _k);
 
+    private float Frame(float width) => Lacquer.Frame(width, _k);
+
     /// <summary>The baseline that puts text of <paramref name="size"/> with its middle at <paramref name="y"/>.</summary>
     private static float Middle(Font font, int size, float y) => y + (font.GetAscent(size) - font.GetDescent(size)) / 2;
 

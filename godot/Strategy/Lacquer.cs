@@ -1,4 +1,5 @@
 using Godot;
+using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -27,9 +28,35 @@ internal static class Lacquer
 
     /// <summary>
     /// A line's width, at least one window pixel: a thinner one may fall between the pixels' centres when the
-    /// screen is scaled down and vanish (the first row's top edge did, owner, 2026-10-16).
+    /// screen is scaled down and vanish (the first row's top edge did, owner, 2026-10-16). The window's pixels count the
+    /// canvas's stretch (<c>canvas_items</c>) as well as <paramref name="k"/>: held upright the canvas is 1280 units across
+    /// the phone's short side, a unit 0.95 of the reference phone's pixels (half a window pixel in the gallery's pass), and
+    /// the rows' frames vanished there (owner, 2026-10-30). On the phone held upright a line is also at least 2 of the
+    /// reference phone's pixels, the mock-ups' thinnest (<c>tools/ui/mock_phone.py</c>).
     /// </summary>
-    public static float Line(float width, float k) => Math.Max(width, 1 / k);
+    public static float Line(float width, float k) => Math.Max(width, Thinnest(2) / k);
+
+    /// <summary>
+    /// A control's frame (a row's box, a button's outline, the gold frame round a main choice): as <see cref="Line"/>, but
+    /// on the phone held upright at least 3 of the reference phone's pixels, as the mock-ups draw a row's box.
+    /// </summary>
+    public static float Frame(float width, float k) => Math.Max(width, Thinnest(3) / k);
+
+    /// <summary>
+    /// The thinnest line in the canvas's units: one of them, or one window pixel where the canvas is scaled down, and on the
+    /// phone held upright <paramref name="reference"/> of the reference phone's pixels (<see cref="PhoneFrame.Unit"/>, the
+    /// canvas's width over the reference's short side).
+    /// </summary>
+    private static float Thinnest(float reference)
+    {
+        if ((Godot.Engine.GetMainLoop() as SceneTree)?.Root is not { } root)
+            return 1;
+        float stretch = root.GetFinalTransform().X.Length();                    // window pixels a canvas unit; 0 minimized
+        float pixel = stretch > 0 ? Math.Max(1, 1 / stretch) : 1;              // a window pixel in the canvas's units
+        return Device.Layout == DeviceLayout.PhoneUpright
+            ? Math.Max(pixel, reference * root.GetVisibleRect().Size.X / PhoneFrame.ReferenceShort)
+            : pixel;
+    }
 
     /// <summary>
     /// A filled polygon with smooth edges. Godot fills a coloured polygon without antialiasing, and a slanted edge shows

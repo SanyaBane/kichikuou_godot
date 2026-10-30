@@ -433,6 +433,8 @@ internal sealed partial class SubordinatesView : Control
 
     private float Line(float width) => Lacquer.Line(width, _k);
 
+    private float Frame(float width) => Lacquer.Frame(width, _k);
+
     /// <summary>The backdrop: dark lacquer under a faint gold wave pattern (seigaiha), darkened towards the edges.</summary>
     private void DrawBackdrop(Control c)
     {
@@ -566,12 +568,12 @@ internal sealed partial class SubordinatesView : Control
         if (!on)
         {
             c.DrawRect(rect, Ui.OffButton);
-            c.DrawRect(rect, Ui.OffLine, false, Line(1));
+            c.DrawRect(rect, Ui.OffLine, false, Frame(1));
         }
         else
         {
             c.DrawRect(rect, down ? Ui.Row : hover ? Ui.RowHover : Ui.Row);
-            c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
+            c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Frame(hover ? 2 : 1));
         }
         DrawLabels(c, rect, title, titleFont, titleSize, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text,
             note, _gothic, noteSize, on ? Ui.Quiet : Ui.OffText);
@@ -587,12 +589,12 @@ internal sealed partial class SubordinatesView : Control
         if (!on)
         {
             c.DrawRect(rect, Ui.OffButton);
-            c.DrawRect(rect, Ui.OffLine, false, Line(1));
+            c.DrawRect(rect, Ui.OffLine, false, Frame(1));
         }
         else
         {
             c.DrawRect(rect, hover ? Ui.RowHover : Ui.Row);
-            c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
+            c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Frame(hover ? 2 : 1));
         }
         float size = rect.Size.Y - 12;
         var faceRect = new Rect2(rect.Position + new Vector2(6, 6), new Vector2(size, size));

@@ -67,7 +67,7 @@ internal sealed partial record UiPalette
         Color top = down ? Color.Color8(96, 22, 16) : hover ? Color.Color8(150, 40, 30) : Color.Color8(128, 32, 24);
         Color bottom = down ? Color.Color8(70, 14, 10) : hover ? Color.Color8(96, 20, 14) : Color.Color8(80, 16, 12);
         c.DrawPolygon([rect.Position, new(rect.End.X, rect.Position.Y), rect.End, new(rect.Position.X, rect.End.Y)], [top, top, bottom, bottom]);
-        c.DrawRect(rect, hover ? HoverLine : Gold, false, Parts.Line(2, k));
+        c.DrawRect(rect, hover ? HoverLine : Gold, false, Parts.Frame(2, k));
         c.DrawRect(rect.Grow(-4), Color.Color8(150, 96, 52), false, Parts.Line(1, k));
     }
 
@@ -78,7 +78,7 @@ internal sealed partial record UiPalette
     public void DrawDangerButton(CanvasItem c, Rect2 rect, bool hover, float k)
     {
         c.DrawRect(rect, hover ? DangerHover : DangerFill);
-        c.DrawRect(rect, Vermilion, false, Parts.Line(2, k));
+        c.DrawRect(rect, Vermilion, false, Parts.Frame(2, k));
         c.DrawRect(rect.Grow(-4), DangerLine, false, Parts.Line(1, k));
     }
 
@@ -86,7 +86,7 @@ internal sealed partial record UiPalette
     public void DrawRowBox(CanvasItem c, Rect2 rect, bool hover, float k)
     {
         c.DrawRect(rect, hover ? RowHover : Row);
-        c.DrawRect(rect, hover ? HoverLine : DimGold, false, Parts.Line(hover ? 2 : 1, k));
+        c.DrawRect(rect, hover ? HoverLine : DimGold, false, Parts.Frame(hover ? 2 : 1, k));
     }
 
     /// <summary>A command's tag: its colour framed in gold, or grey when the command is off.</summary>

@@ -83,7 +83,7 @@ internal sealed partial class FloorLadderView
         var start = RectOf(Part.Start);
         PhoneRung(u, Part.Start, entry.StartText, "a unit goes down", false, true);
         if (_hovered != Part.Start)
-            DrawRect(start, Ui.Gold, false, Lacquer.Line(2, _k));
+            DrawRect(start, Ui.Gold, false, Lacquer.Frame(2, _k));
     }
 
     /// <summary>A rung (ladder_rung): its arrow at the left, its word in one line over its sub-line; the way deeper in gold.</summary>

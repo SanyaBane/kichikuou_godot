@@ -296,7 +296,7 @@ internal sealed partial class MenuSheetView : Control
     private void DrawRow(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held)
     {
         DrawRect(box, Ui.Row);
-        DrawRect(box, Ui.DimGold, false, Lacquer.Line(2, u.K));
+        DrawRect(box, Ui.DimGold, false, Lacquer.Frame(2, u.K));
         if (held && !tile.Disabled)
             DrawRect(box.Grow(-u.Px(4)), Held);
         var font = SideCells.Font;
@@ -340,7 +340,7 @@ internal sealed partial class MenuSheetView : Control
     {
         bool lit = tile is { Kind: PhoneMenu.Kind.Switch, On: true };
         DrawRect(box, lit ? Lit : Ui.Row);
-        DrawRect(box, lit ? Ui.Gold : Ui.DimGold, false, Lacquer.Line(2, u.K));
+        DrawRect(box, lit ? Ui.Gold : Ui.DimGold, false, Lacquer.Frame(2, u.K));
         if (held && !tile.Disabled)
             DrawRect(box.Grow(-u.Px(4)), Held);
         var font = SideCells.Font;
