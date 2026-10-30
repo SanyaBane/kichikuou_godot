@@ -150,6 +150,33 @@ public static class GalleryStates
     }
 
     /// <summary>
+    /// Made up: every command Leazas Castle's menu can hold at once (<c>Cｼﾊｲﾄｼ.ADV:39-290</c>), 15 and Return — the levy
+    /// and the defence, Babolat's pitfall and Galtia's poison asked for, the six buildings standing, Maria (unit 16) in
+    /// the forces with her tulip unfinished, Aoi in her rehabilitation, Miki in the castle, a girl in the Special Room,
+    /// Lady's caravan at the castle. A look at the menu's height (owner, 2026-10-30).
+    /// </summary>
+    public static void CastleEveryCommand(GameState s)
+    {
+        s.Ui_CmdOwnCityAvail = 1;
+        s.Provs[1].Economy = s.Provs[1].Economy == 0 ? (Sys3Int)1 : s.Provs[1].Economy;
+        s.F_Babolat_State = 2;
+        s.F_Galtia_State = 3;
+        s.Bld_MariaLab = 1;
+        s.Bld_GirlsAcademy = 1;
+        s.Bld_Hospital = 1;
+        s.Bld_MagicLab = 1;
+        s.Bld_Library = 1;
+        s.Bld_SMTower = 1;
+        s.Units[16].Status = 1;
+        s.F_Maria_Tulip = 0;
+        s.F_Aoi_State = 10;
+        s.F_Miki_InCastle = 1;
+        s.N_SpecialRoom_Girls = 1;
+        s.LadyCaravan_Prov = 1;
+        s.F_Cafe_State = 0;
+    }
+
+    /// <summary>
     /// An attack of <paramref name="nation"/> on our <paramref name="province"/> as <c>FIGT_B</c> announces it: the nation
     /// file's <c>Ev_PhaseNation</c> and its army's name in string 10 (<c>TCﾘｰｻﾞｽ.ADV:1-3</c> for the rebels, nation 2,
     /// <paramref name="army"/> read by the caller), the attacked province in <c>Prov_Cur</c> and its name in string 8

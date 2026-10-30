@@ -141,6 +141,8 @@ public class ScreenGalleryTests
         Assert.Equal((1, 16), (s.Prov_Cur.Value, s.Unit_Cur.Value));
         GalleryStates.CastleBuildings(s);
         Assert.Equal([41, 47, 97, 103, 133, 502], Lines(GalleryStates.ProvinceMenuItems(s, 1)));
+        GalleryStates.CastleEveryCommand(s);
+        Assert.Equal([41, 47, 53, 59, 91, 97, 103, 109, 115, 121, 127, 133, 139, 145, 289, 502], Lines(GalleryStates.ProvinceMenuItems(s, 1)));
     }
 
     [Fact]

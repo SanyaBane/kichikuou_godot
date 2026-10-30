@@ -61,6 +61,9 @@ internal static partial class GalleryEntries
         yield return new("province-menu-own-five", Map, "Province menu: Leazas Castle (1) with two buildings", Week18,
             "Made up: the Military Academy and the Genius Hospital built (GalleryStates.CastleBuildings), so the castle has five commands.",
             g => Province(g, LeazasCastle, GalleryStates.CastleBuildings));
+        yield return new("province-menu-own-all", Map, "Province menu: Leazas Castle (1) with every command", Week18,
+            "Made up: all 15 commands the castle's menu can hold at once, and Return (GalleryStates.CastleEveryCommand).",
+            g => Province(g, LeazasCastle, GalleryStates.CastleEveryCommand));
         yield return new("province-menu-cells", Map, "The castle's cells", Week18,
             "Dungeon from Leazas Castle (1): the prisoners the save holds, Look Around, Return.",
             g => Cells(g, _ => { }));

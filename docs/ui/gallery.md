@@ -243,7 +243,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    `touch-commands-close` (the map's button, and its Close over the command panel), `options-messages`, `-display`,
    `-battle`, `-game` (with a `MessageSkip` of its own that records nothing; the window writes `settings.cfg` only when
    a control is used). And `province-menu-own-five` (made up: two buildings standing, `GalleryStates.CastleBuildings`,
-   so Leazas Castle (1) has the five commands touch.md asks about). **Step 2 is done** (2026-10-25): 45 entries, the
+   so Leazas Castle (1) has the five commands touch.md asks about), and `province-menu-own-all` (made up: all 15 commands
+   the castle's menu can hold at once, `GalleryStates.CastleEveryCommand`; the menu's height, owner 2026-10-30). **Step 2 is done** (2026-10-25): 45 entries, the
    Lacquer and Touch passes dump them all, two dumps of the same build all "same". Left out: the dungeon's own menu of
    the castle's cells (`Cｼﾊｲﾄｼ.ADV:732-763`, its items built in `CellsAsync`), for a later round. Not yet looked at by the
    owner. Later (2026-10-25): `command-menu-building` (made up: the Military Academy under way, 5 weeks left,
