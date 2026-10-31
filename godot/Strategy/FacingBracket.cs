@@ -6,8 +6,8 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// The bracket holding an army's front row on the phone held upright (<see cref="PhoneBracket"/>; docs/ui/phone.md, §31-§32):
 /// a gold line across the row's outer side, its ends turned to the cards, its arms bending to the head in the middle, in
-/// the name's gold, which points the way the army faces — up at the province on the enemy attack (PA1f2a), down as our
-/// army in the battle on the deployment table (PD2f2). The PC's <see cref="EnemyAttackView"/> bracket turned. Drawn in a
+/// the name's gold, which points the way the army faces — up at the province on the enemy attack (PA1f2a) and on the
+/// ninja's scout report (PB4sf2m2), down as our army in the battle on the deployment table (PD2f2). The PC's <see cref="EnemyAttackView"/> bracket turned. Drawn in a
 /// <see cref="PhoneUnits"/> drawing; the positions in the canvas's units, as the layouts give them.
 /// </summary>
 internal static class FacingBracket

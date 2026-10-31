@@ -1406,6 +1406,18 @@ Built:
 - **The view**: `DeploymentPanels.Upright.cs` draws the bracket head down and "Front row" on its middle; the ▼ is gone.
   The PC's, the tablet's and the landscape phone's deployment screens are unchanged.
 
+### After the build: the scout report's bracket upright (owner, 2026-10-31)
+
+The scout report upright showed the enemy's front row with no mark of its facing. Rounds P27-P28 (phone.md, §33-§34):
+the owner chose PB4sf2m2. Built:
+
+- **The model**: `PhoneBattleStatesUpright` — Kanami's portrait, her report and the cards one block 1134 high (the front
+  row 580 under its top, 60 lower than before), in the middle between the room's top and `BlockFoot` (Rance's portrait's
+  top, a row higher with Maris's comment; the bar when nobody answers), at least 20 under the room's top; the places take
+  that foot. `Bracket(f, foot)`: PA1f2a's, its line 30 over "FRONT ROW"'s middle.
+- **The view**: `ScoutReportView.Upright.cs` draws the bracket head up through `FacingBracket`. The PC's, the tablet's
+  and the landscape phone's reports are unchanged.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

@@ -393,7 +393,8 @@ Step P4 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P
 states upright — the opening's plate on top of the scene and the names at its sides, the results plate over the dimmed
 board at the width (growing up over Skip), our panel where it stands, the speaker's portrait at the scene's top corner and
 our balloon beside it, a defence's ribbon and caption at held landscape's millimetres, the cards' menu at a finger's rows,
-the scout report and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesUpright`;
+the scout report (since 2026-10-31 the ninja and the enemy one block in the middle over Rance's answer, the front row in
+the bracket, the owner's PB4sf2m2, phone.md §34) and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesUpright`;
 the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Upright.cs`,
 `ScoutReportView.Upright.cs`, `StrategyCutInView.Upright.cs`).
 Step P5 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P5, where it stands"): the deployment table

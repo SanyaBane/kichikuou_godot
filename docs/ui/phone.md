@@ -1297,4 +1297,6 @@ bar as now:
 - **PB4sf2m2 — the middle over Rance's answer**: 477 px over the block and under it; with Maris's comment the block
   rises with his row, 315 px over and under.
 
-The agent recommends PB4sf2m2: the gaps stay even, and Maris's comment never meets the cards.
+The agent recommends PB4sf2m2: the gaps stay even, and Maris's comment never meets the cards. **The owner chose
+PB4sf2m2**, built as drawn; with no answer the block stands in the middle over the bar (docs/ui/phone-build.md, §5,
+"After the build: the scout report's bracket upright").
