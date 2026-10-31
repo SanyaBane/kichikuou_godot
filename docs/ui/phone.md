@@ -1335,3 +1335,10 @@ same script, beside Now and H2) draws **H4**: both bars as thick as the troops' 
 3 or 4 px apart, as long as each other, as a battle card stacks its two gauges; the Troops column keeps its green, amber
 and red. The battle's colours are made for the cards' dark lacquer: on the ledger's paper the green is lighter than the
 paper's inks.
+
+## 38. The owner's choice: H4, darker (2026-10-31)
+
+The owner chose H4 with both colours a little darker, the battle's being too bright on the paper: the troops' blue
+(52, 88, 168) for the battle's (69, 117, 219), the HP's green (76, 146, 76) for its (107, 194, 107) — the palette's
+`GaugeTroops` and `GaugeHp`. Built (docs/ui/phone-build.md, §5, "After the build: a face and a troops' bar in the
+ledger's Name cell").

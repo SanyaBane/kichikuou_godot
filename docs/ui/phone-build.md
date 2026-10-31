@@ -1446,7 +1446,12 @@ type upright (phone.md, §35). Built as asked, no mock-up round:
   name in every tab), the column as much wider; the row's party or chosen tint drawn in the cell, as the Refill chip's
   is. Upright the fixed part (`DrawFixedRow`) draws them. The faces come from the screen holding the table
   (`DeploymentTableView.Faces`: `DeploymentPanels`, `SubordinatesView`) with the owner's squares; a grey row's face and
-  bar faded. The bar's colours are the Troops cell's (`DrawStrength`). The PC's and the tablet's ledgers are unchanged.
+  bar faded. The PC's and the tablet's ledgers are unchanged.
+- **The commander's HP** (rounds P29-P30, the owner's H4 darker; phone.md, §36-§38): under the troops' bar a bar of the
+  HP as thick, as a battle card stacks its gauges — held landscape `PhoneLedger.NameBarGap` (3) under it, upright at
+  `PhoneLedgerUpright.HpTop` (130, the troops' at 118, both 8 high). The Name cell's troops in a battle card's blue, the
+  HP in its green, both darker for the paper (`UiPalette.GaugeTroops`, `GaugeHp`; `DeploymentTableView.DrawGauge`); the
+  Troops column keeps its green, amber and red (`DrawStrength`).
 
 ## 6. The agent's own choices, for the owner to confirm
 

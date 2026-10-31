@@ -6,8 +6,8 @@ using Kichikuou.Original.Strategy;
 namespace Kichikuou.Game.Strategy;
 
 // The ledger on the phone held upright (docs/ui/phone-build.md, step P5; docs/ui/phone.md, §20, the owner's PD2s2): two-line
-// rows, the seal (or the chosen row's diamond), №, the face and the name over the unit's type over the troops' bar fixed
-// at the left, the tab's other columns beside them in one line, scrolled sideways under a finger, each tab its own scroll.
+// rows, the seal (or the chosen row's diamond), №, the face and the name over the unit's type over the troops' and the HP's
+// bars fixed at the left, the tab's other columns beside them in one line, scrolled sideways under a finger, each tab its own scroll.
 // The tree keeps its rows, its sort and its gestures; its first column is the fixed part's room, which the overlays cover —
 // the header's (DrawOverlay) and the rows' (DrawFixedRows, clipped under the header) —, so the columns scrolled sideways
 // pass under it. A shadow at the fixed part's edge while columns have passed under it, a shadow and ▶ at the view's right
@@ -267,8 +267,8 @@ internal sealed partial class DeploymentTableView
     /// <summary>
     /// A row's fixed part (PD2s2): the paper (gilt for the party, tinted for the chosen row), the party's seal or the chosen
     /// row's bar and diamond, № and the name on the first line, the type under it, a talk's bubble at the name's right; the
-    /// unit's face between № and the name, a bar of the troops' strength without figures under the name and the type (owner,
-    /// 2026-10-31).
+    /// unit's face between № and the name, under the name and the type a bar of the troops in a battle card's blue and one of
+    /// the commander's HP in its green, no figures (owner, 2026-10-31; the owner's H4, docs/ui/phone.md §37-§38).
     /// </summary>
     private void DrawFixedRow(Control c, PhoneFrame f, Rect2 cell, DeploymentRow row)
     {
@@ -305,7 +305,9 @@ internal sealed partial class DeploymentTableView
         Middle(c, type, SideCells.Fit(_font, type, (int)Math.Round(f.Px(PhoneLedgerUpright.TypeText)), right - typeX),
             row.Grey ? Ui.InkGrey : Ui.InkQuiet, typeX, typeMid);
         float barTop = y + h * PhoneLedgerUpright.BarTop / PhoneLedgerUpright.Row;
-        DrawStrength(c, new Rect2(nameX, barTop, right - nameX, f.Px(PhoneLedgerUpright.BarHeight)), row.Troops, row.MaxTroops, row.Grey);
+        float hpTop = y + h * PhoneLedgerUpright.HpTop / PhoneLedgerUpright.Row, barHeight = f.Px(PhoneLedgerUpright.BarHeight);
+        DrawGauge(c, new Rect2(nameX, barTop, right - nameX, barHeight), row.Troops, row.MaxTroops, Ui.GaugeTroops, row.Grey);
+        DrawGauge(c, new Rect2(nameX, hpTop, right - nameX, barHeight), row.Hp, row.MaxHp, Ui.GaugeHp, row.Grey);
         if (talk is { } shown)
             DrawBubble(c, new Vector2(right - bubble / 2, nameMid), f.Px(PhoneLedgerUpright.NameText) * 1.2f, shown);
     }

@@ -3,8 +3,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// <summary>
 /// The deployment table and the Subordinates screen on the phone held landscape (docs/ui/phone-build.md, step L5;
 /// docs/ui/phone.md, §13: LD2, LU1, LU1q, the owner's changes): the unit ledger in one-line rows at the phone's type —
-/// rows 6.4 mm (<see cref="Row"/>), every column of a tab in one line, the Name cell's face and troops' bar
-/// (<see cref="NameFace"/>), the tabs over it. On the deployment table the
+/// rows 6.4 mm (<see cref="Row"/>), every column of a tab in one line, the Name cell's face and its bars of the troops
+/// and the HP (<see cref="NameFace"/>), the tabs over it. On the deployment table the
 /// ledger stands wholly at the left, from the hole's strip (<see cref="Ledger"/>), and everything else in a part of its
 /// own at the right (<see cref="Part"/>): the title, the date and the budget over the party two cards a row as the battle
 /// shows our army (the back row left), the troops and the war expenses under it, Attack | Stop at the right thumb. On
@@ -27,9 +27,10 @@ public static class PhoneLedger
 
     /// <summary>
     /// The Name cell (owner, 2026-10-31): the unit's face left of the name, its square's side (5 mm) and the room after it;
-    /// the name stands over a bar of the troops' strength without figures, drawn as the Troops cell draws its own.
+    /// the name stands over a bar of the troops without figures, where and as thick as the Troops cell draws its own, and
+    /// the commander's HP in a bar as thick this much under it (the owner's H4, docs/ui/phone.md §37-§38).
     /// </summary>
-    public const float NameFace = 88, NameFaceGap = 14;
+    public const float NameFace = 88, NameFaceGap = 14, NameBarGap = 3;
 
     /// <summary>The ledger's paper: its top under the tabs, its foot over the screen's edge, in from the hole's strip or the frame.</summary>
     private const float LedgerTop = 104, LedgerFoot = 12, ScreenIn = 6, FrameIn = 12;

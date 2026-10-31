@@ -12,8 +12,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// Attack | Stop in the bar (<see cref="Bar"/>). Subordinates puts the ledger under its tabs and the chosen unit's orders
 /// under it (<see cref="Orders"/>: Replenish and Talk on one row, Add New Troops three a row), the budget at the bar's left
 /// as text and End at the right thumb (<see cref="End"/>). The ledger's rows are two lines (PD2s2): the seal (or the chosen
-/// row's diamond), №, the unit's face and the name over the unit's type over a bar of the troops' strength fixed at the left
-/// (<see cref="Fixed"/>; the face and the bar the owner's, 2026-10-31), the tab's other columns
+/// row's diamond), №, the unit's face and the name over the unit's type over bars of the troops and of the commander's HP
+/// fixed at the left (<see cref="Fixed"/>; the face and the bars the owner's, 2026-10-31), the tab's other columns
 /// beside them in one line, scrolled sideways under a finger (<see cref="Scrolled"/>), each tab its own scroll. A unit's
 /// picture rises on a long press as a sheet over the screen's foot (<see cref="PictureSheet"/>). The figures are the
 /// mock-ups' (<c>tools/ui/mock_phone.py</c>: <c>title_band</c>, <c>pd2_base</c>, <c>pd2d</c>, <c>pu1_base</c>,
@@ -157,13 +157,13 @@ public static class PhoneLedgerUpright
     /// The fixed part's width from the paper's left (to 29.5 mm of the screen) and its places from there: the party's seal
     /// (its left and size), the chosen row's bar (its width) and diamond (its middle and half-width), №'s right, the unit's
     /// face (its left and its square's side, 6.2 mm, in the row's middle; owner, 2026-10-31), the name's left and middle,
-    /// the type's left and middle, the bar of the troops' strength under them both (its top and height, from the name's left
-    /// to the name's right margin; no figures); in the header the party's dot (its middle), №'s right, the name's left (over
-    /// the names, not the faces).
+    /// the type's left and middle, the bars of the troops and of the commander's HP under them both (their tops and height,
+    /// from the name's left to the name's right margin; no figures; the owner's H4, docs/ui/phone.md §37-§38); in the header
+    /// the party's dot (its middle), №'s right, the name's left (over the names, not the faces).
     /// </summary>
     public const float Fixed = 518, SealX = 12, Seal = 60, ChosenBar = 8, DiamondX = 42, Diamond = 10, NumberRight = 142,
-        FaceX = 156, Face = 108, NameX = 280, NameMiddle = 44, TypeX = 282, TypeMiddle = 92, BarTop = 118, BarHeight = 8,
-        NameRight = 12, DotX = 42, HeadNumberRight = 138, HeadNameX = 280;
+        FaceX = 156, Face = 108, NameX = 280, NameMiddle = 44, TypeX = 282, TypeMiddle = 92, BarTop = 118, HpTop = 130,
+        BarHeight = 8, NameRight = 12, DotX = 42, HeadNumberRight = 138, HeadNameX = 280;
 
     /// <summary>
     /// The shadow's width at the fixed part's edge (while columns have passed under it) and the view's (while some lie

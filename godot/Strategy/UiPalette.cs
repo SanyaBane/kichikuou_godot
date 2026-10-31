@@ -68,6 +68,8 @@ internal sealed partial record UiPalette
     public required Color BarGood { get; init; }
     public required Color BarLow { get; init; }
     public required Color BarBad { get; init; }
+    public required Color GaugeTroops { get; init; }      // the phone ledger's Name cell: a battle card's troops (ours) and HP,
+    public required Color GaugeHp { get; init; }          // a little darker for the paper (the owner's H4, docs/ui/phone.md §38)
     public required Color Plus { get; init; }
     public required Color Minus { get; init; }
 
@@ -144,6 +146,8 @@ internal sealed partial record UiPalette
         BarGood = Color.Color8(70, 110, 50),
         BarLow = Color.Color8(160, 110, 30),
         BarBad = Color.Color8(170, 50, 36),
+        GaugeTroops = Color.Color8(52, 88, 168),   // BattleBoardView.PlayerColour (69, 117, 219) darkened
+        GaugeHp = Color.Color8(76, 146, 76),       // BattleBoardView.HpColour (107, 194, 107) darkened
         Plus = Color.Color8(150, 196, 110),
         Minus = Color.Color8(222, 110, 90),
         MarkNew = Color.Color8(150, 196, 110),

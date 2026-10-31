@@ -738,7 +738,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
     /// vermilion (on the deployment screen a button in Troops' colour where the unit can be replenished, else greyed with
     /// its reason as the tooltip), the troops with a bar of their strength under them; held landscape the name with the face
-    /// left of it and the troops' bar under it (<see cref="DrawNameCell"/>).
+    /// left of it and the bars of the troops and the HP under it (<see cref="DrawNameCell"/>).
     /// </summary>
     private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen, int place)
     {
@@ -900,14 +900,21 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// The troops' figures (a custom cell draws no text of its own) a little raised, and their strength under them:
     /// green from three quarters, amber from a third, else red.
     /// </summary>
-    private void DrawTroops(Rect2 row, string text, int troops, int max, bool grey)
+    private void DrawTroops(Rect2 row, string text, int troops, int max, bool grey) =>
+        DrawStrength(this, TextOverBar(row, text, grey), troops, max, grey);
+
+    /// <summary>
+    /// <paramref name="text"/> a little raised in <paramref name="row"/> (a custom cell draws no text of its own) and the
+    /// place of the bar right under it, in a taller row too.
+    /// </summary>
+    private Rect2 TextOverBar(Rect2 row, string text, bool grey)
     {
-        var cell = Content(row);                                    // the bar right under the figures in a taller row too
+        var cell = Content(row);
         float h = Math.Max(2, cell.Size.Y * 0.11f);
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2 - h / 2;
         DrawString(_font, new Vector2(cell.Position.X + 2, baseline), text, HorizontalAlignment.Left, cell.Size.X - 2, _fontSize,
             grey ? Ui.InkGrey : Ui.Ink);
-        DrawStrength(this, new Rect2(cell.Position.X + 2, cell.End.Y - h - 1, cell.Size.X - 4, h), troops, max, grey);
+        return new Rect2(cell.Position.X + 2, cell.End.Y - h - 1, cell.Size.X - 4, h);
     }
 
     /// <summary>
@@ -917,7 +924,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private static void DrawStrength(CanvasItem c, Rect2 bar, int troops, int max, bool grey)
     {
         float f = max > 0 ? Math.Clamp(troops / (float)max, 0, 1) : 0;
-        var colour = f >= 0.75f ? Ui.BarGood : f >= 0.35f ? Ui.BarLow : Ui.BarBad;
+        DrawGauge(c, bar, troops, max, f >= 0.75f ? Ui.BarGood : f >= 0.35f ? Ui.BarLow : Ui.BarBad, grey);
+    }
+
+    /// <summary><paramref name="value"/> of <paramref name="max"/> as a bar in <paramref name="colour"/> on the paper's rule; faded in a grey row.</summary>
+    private static void DrawGauge(CanvasItem c, Rect2 bar, int value, int max, Color colour, bool grey)
+    {
+        float f = max > 0 ? Math.Clamp(value / (float)max, 0, 1) : 0;
         if (grey)
             colour = colour with { A = 0.45f };
         c.DrawRect(bar, Ui.PaperRule);
@@ -925,8 +938,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>
-    /// The Name cell held landscape (owner, 2026-10-31): the unit's face left of the name, the name over a bar of its troops'
-    /// strength without figures, the name and the bar where the Troops cell has its figures and bar. The row's
+    /// The Name cell held landscape (owner, 2026-10-31): the unit's face left of the name, the name over a bar of its troops
+    /// without figures — where the Troops cell has its figures and bar, in a battle card's blue — and the commander's HP in a
+    /// bar as thick under it, in a battle card's green (the owner's H4, docs/ui/phone.md §37-§38). The row's
     /// <paramref name="tint"/> drawn here, under the face: the tree tints over a custom cell.
     /// </summary>
     private void DrawNameCell(Rect2 cell, DeploymentRow row, Color? tint)
@@ -939,8 +953,10 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         var face = new Rect2(cell.Position.X + 2, cell.GetCenter().Y - side / 2, side, side);
         DrawFace(this, face, row.FaceCg, row.Grey);
         float x = face.End.X + f.Px(PhoneLedger.NameFaceGap);
-        DrawTroops(new Rect2(x, cell.Position.Y, cell.End.X - x, cell.Size.Y), row.Text(DeploymentColumn.Name), row.Troops,
-            row.MaxTroops, row.Grey);
+        var bar = TextOverBar(new Rect2(x, cell.Position.Y, cell.End.X - x, cell.Size.Y), row.Text(DeploymentColumn.Name), row.Grey);
+        DrawGauge(this, bar, row.Troops, row.MaxTroops, Ui.GaugeTroops, row.Grey);
+        var hp = bar with { Position = bar.Position + new Vector2(0, bar.Size.Y + f.Px(PhoneLedger.NameBarGap)) };
+        DrawGauge(this, hp, row.Hp, row.MaxHp, Ui.GaugeHp, row.Grey);
     }
 
     /// <summary>A unit's face in <paramref name="rect"/> on its back, framed in the quiet ink; faded in a grey row.</summary>
