@@ -23,10 +23,14 @@ public static class PhoneScrollBar
     /// The thumb in <paramref name="groove"/>: as long as the share <paramref name="shown"/> of the list in view (at least
     /// <see cref="ThumbLeast"/>), at <paramref name="at"/> of its way (0 the list's top, 1 its end).
     /// </summary>
-    public static PhoneFrame.Box Thumb(PhoneFrame f, PhoneFrame.Box groove, float shown, float at)
+    public static PhoneFrame.Box Thumb(PhoneFrame f, PhoneFrame.Box groove, float shown, float at) =>
+        ThumbOf(groove, f.Px(ThumbIn), f.Px(ThumbLeast), shown, at);
+
+    /// <summary>The thumb in an upright <paramref name="groove"/>, <paramref name="inset"/> in from it, at least <paramref name="least"/> long.</summary>
+    internal static PhoneFrame.Box ThumbOf(PhoneFrame.Box groove, float inset, float least, float shown, float at)
     {
-        float inset = f.Px(ThumbIn), room = Math.Max(0, groove.H - 2 * inset);
-        float h = Math.Min(room, Math.Max(f.Px(ThumbLeast), room * Math.Clamp(shown, 0, 1)));
+        float room = Math.Max(0, groove.H - 2 * inset);
+        float h = Math.Min(room, Math.Max(least, room * Math.Clamp(shown, 0, 1)));
         return new PhoneFrame.Box(groove.X + inset, groove.Y + inset + (room - h) * Math.Clamp(at, 0, 1), groove.W - 2 * inset, h);
     }
 }

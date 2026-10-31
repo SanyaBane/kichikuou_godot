@@ -1411,4 +1411,5 @@ and foot. The agent recommends PB: the vermilion is the paper's own accent, and 
 
 The owner chose PB, the vermilion ink, for the reference on the paper. Built on the phone, both ways (docs/ui/phone-build.md,
 §5, "After the build: the reference scroll bar"): the save lists in the lacquer's gold, the message log, the options'
-sheet upright and the ledgers' Godot bars on the paper in the vermilion. The tablet waits for the owner's word (§42).
+sheet upright and the ledgers' Godot bars on the paper in the vermilion. The tablet and the PC took the same look,
+8 layout pixels wide (1.6 mm on the owner's tablet; round T's T2, docs/ui/touch.md, "Round T: the reference scroll bar").

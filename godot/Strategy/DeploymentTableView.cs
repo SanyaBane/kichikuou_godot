@@ -392,56 +392,43 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private float _barsThickness = -1;
 
     /// <summary>
-    /// The tree's scroll bars for <paramref name="phone"/>: on the phone the reference (the owner's S2 on the paper in PB's
-    /// vermilion, docs/ui/phone.md §43; <see cref="PhoneScrollBar"/>) — a groove of the paper's head in a faint ink rim, the
-    /// thumb in the vermilion ink inside it, both rounded; elsewhere as thick as the default theme's, the thumb in the
-    /// quiet ink.
+    /// The tree's scroll bars for <paramref name="phone"/>: the reference on the paper (the owner's S2 in PB's vermilion,
+    /// docs/ui/phone.md §43) — a groove of the paper's head in a faint ink rim, the thumb in the vermilion ink inside it,
+    /// both rounded; on the phone at its millimetres (<see cref="PhoneScrollBar"/>), on the PC and the tablet round T's T2
+    /// (<see cref="LayoutScrollBar"/>, docs/ui/touch.md), its rim and inset whole canvas units (Godot's borders are).
     /// </summary>
     private void StyleBars(PhoneFrame? phone)
     {
         _barsPhone = phone;
-        float thickness = phone?.Px(PhoneScrollBar.Width) ?? 8;
+        float thickness = phone?.Px(PhoneScrollBar.Width) ?? LayoutScrollBar.Width;
         if (thickness == _barsThickness)
             return;
         _barsThickness = thickness;
+        int r = (int)Math.Round(thickness / 2);
+        int rim = Math.Max(1, (int)Math.Round(phone?.Px(PhoneScrollBar.Rim) ?? 1));
+        int inset = Math.Max(1, (int)Math.Round(phone?.Px(PhoneScrollBar.ThumbIn) ?? LayoutScrollBar.ThumbIn));
         var bars = new Theme();
         foreach (string bar in new[] { "HScrollBar", "VScrollBar" })
         {
-            if (phone is { } f)
+            var groove = new StyleBoxFlat { BgColor = Ui.PaperHead, BorderColor = Ui.InkFaint, AntiAliasing = true };
+            groove.SetBorderWidthAll(rim);
+            groove.SetCornerRadiusAll(r);
+            groove.SetContentMarginAll(r);                          // the bar's thickness
+            bars.SetStylebox("scroll", bar, groove);
+            bars.SetStylebox("scroll_focus", bar, groove);
+            StyleBoxFlat Thumb(Color colour)
             {
-                int r = (int)Math.Round(thickness / 2), rim = Math.Max(1, (int)Math.Round(f.Px(PhoneScrollBar.Rim)));
-                int inset = Math.Max(1, (int)Math.Round(f.Px(PhoneScrollBar.ThumbIn)));
-                var groove = new StyleBoxFlat { BgColor = Ui.PaperHead, BorderColor = Ui.InkFaint, AntiAliasing = true };
-                groove.SetBorderWidthAll(rim);
-                groove.SetCornerRadiusAll(r);
-                groove.SetContentMarginAll(r);                          // the bar's thickness
-                bars.SetStylebox("scroll", bar, groove);
-                bars.SetStylebox("scroll_focus", bar, groove);
-                StyleBoxFlat Thumb(Color colour)
-                {
-                    var thumb = new StyleBoxFlat { BgColor = colour, BorderColor = Colors.Transparent, AntiAliasing = true };
-                    thumb.SetBorderWidthAll(inset);                     // the thumb stands inside the groove
-                    thumb.SetCornerRadiusAll(r);
-                    return thumb;
-                }
-                bars.SetStylebox("grabber", bar, Thumb(Ui.VermilionInk));
-                bars.SetStylebox("grabber_highlight", bar, Thumb(Ui.VermilionInk.Lightened(0.15f)));
-                bars.SetStylebox("grabber_pressed", bar, Thumb(Ui.VermilionInk.Lightened(0.15f)));
-                continue;
+                var thumb = new StyleBoxFlat { BgColor = colour, BorderColor = Colors.Transparent, AntiAliasing = true };
+                thumb.SetBorderWidthAll(inset);                     // the thumb stands inside the groove
+                thumb.SetCornerRadiusAll(r);
+                return thumb;
             }
-            bars.SetStylebox("scroll", bar, BarBox(Ui.PaperHead));
-            bars.SetStylebox("grabber", bar, BarBox(Ui.InkQuiet));
-            bars.SetStylebox("grabber_highlight", bar, BarBox(Ui.VermilionInk));
-            bars.SetStylebox("grabber_pressed", bar, BarBox(Ui.VermilionInk));
+            bars.SetStylebox("grabber", bar, Thumb(Ui.VermilionInk));
+            bars.SetStylebox("grabber_highlight", bar, Thumb(Ui.VermilionInk.Lightened(0.15f)));
+            bars.SetStylebox("grabber_pressed", bar, Thumb(Ui.VermilionInk.Lightened(0.15f)));
         }
         Theme = bars;
     }
-
-    /// <summary>A scroll bar's part: its margins make the bar as thick as the default theme's.</summary>
-    private static StyleBoxFlat BarBox(Color color) => new()
-    {
-        BgColor = color, ContentMarginLeft = 4, ContentMarginRight = 4, ContentMarginTop = 4, ContentMarginBottom = 4,
-    };
 
     /// <summary>Option → Display: the table's text in the chosen font (regular, unlike the surface's bold).</summary>
     public void SetFont(GameFont font)

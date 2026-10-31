@@ -124,7 +124,7 @@ Shared parts, with their users; a new screen takes these before drawing its own.
 | Picture panel | the original's unit / girl picture with its own frame | `FacePictures.PicturePanel` |
 | Face square | a unit's face cut for cards (owner's crops in Debug → Portraits) | `UnitFaces` |
 | Dashed frame | an unknown or empty place | `Lacquer.DrawDashed` |
-| Scroll bar | a list that scrolls, on the phone: a groove 1.1 mm wide in a dim gold rim, the gold thumb with a lit edge, 10 px right of the list (the owner's S2, docs/ui/phone.md §41); on the paper the paper's head in a faint ink rim, the thumb in the vermilion ink (PB, §43) | `DrawScrollBar`, `PhoneScrollBar`; the ledgers' `StyleBars` |
+| Scroll bar | a list that scrolls: a groove in a dim gold rim, the gold thumb with a lit edge — on the phone 1.1 mm wide, 10 px right of the list (the owner's S2, docs/ui/phone.md §41), on the PC and the tablet 8 layout px, 4 right of it (T2, docs/ui/touch.md, "Round T"); on the paper the paper's head in a faint ink rim, the thumb in the vermilion ink (PB, phone.md §43) | `DrawScrollBar`, `PhoneScrollBar`, `LayoutScrollBar`; the ledgers' `StyleBars` |
 | Tooltip | instant, context-menu style, never over a dialog | `AdvantageTip`, `HeaderTip` (touch) |
 | Touch controls | one lacquer look: pill, drawer, Commands | `TouchPill`, `SkipDrawer`, `CommandsButton` |
 

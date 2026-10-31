@@ -43,6 +43,16 @@ internal static class Lacquer
     public static float Frame(float width, float k) => Math.Max(width, Thinnest(3) / k);
 
     /// <summary>
+    /// One window pixel in the units of a drawing scaled by <paramref name="k"/> (<c>DrawSetTransform</c>), the canvas's
+    /// stretch counted: the reference scroll bar's rim on the 1280×800 layout (<c>LayoutScrollBar</c>).
+    /// </summary>
+    public static float WindowPixel(float k)
+    {
+        float stretch = (Godot.Engine.GetMainLoop() as SceneTree)?.Root.GetFinalTransform().X.Length() ?? 1;   // 0 minimized
+        return 1 / (k * (stretch > 0 ? stretch : 1));
+    }
+
+    /// <summary>
     /// The thinnest line in the canvas's units: one of them, or one window pixel where the canvas is scaled down, and on the
     /// phone held upright <paramref name="reference"/> of the reference phone's pixels (<see cref="PhoneFrame.Unit"/>, the
     /// canvas's width over the reference's short side).

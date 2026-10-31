@@ -726,6 +726,40 @@ Mock-ups (`tools/ui/mock_map_log.py`, over the gallery's touch `map-markers` and
 - **The gallery**: the Touch tab's map entries draw the drawer (docs/ui/gallery.md, §7).
 - Looked at by the agent (2026-10-26) in a window and in the gallery. Not yet on the tablet.
 
+## Round T: the reference scroll bar (owner, 2026-10-31)
+
+The owner found the scroll bars of our touch and phone screens almost unseen and chose a reference for all of them on
+the phone: round P31's S2 (a groove 1.1 mm wide in a dim gold rim, the gold thumb with a lit edge) and, on the paper,
+round P32's PB (the groove the paper's head in a faint ink rim, the thumb in the vermilion ink) — docs/ui/phone.md,
+§40-§43. The tablet's three lists that scroll still drew the old bars: the save lists (a groove 5 px wide, the thumb
+flat gold), the message log (a track 4 px wide in the paper's head, the thumb 6 px in the vermilion ink at 70%) and the
+ledgers of the deployment table and Subordinates (Godot's bars, 8 px, flat, the thumb in the quiet ink). Their width was
+already about the phone's (a layout pixel is 0.203 mm on the owner's tablet, so 0.8-1.6 mm); their look was not.
+
+The round (`tools/ui/mock_scroll_bar_tablet.py`, over the touch pass's `save-load`, `message-log` and `deployment` at the
+tablet's own pixels, the dumps doubled) drew the reference's look in two widths, its rim one tablet pixel and the thumb
+two in:
+
+- **T1 — 6 layout px** (1.2 mm): the phone's millimetres.
+- **T2 — 8 layout px** (1.6 mm): the phone's bar as the eye sees it at the tablet's longer reach (~40 cm against ~30);
+  the ledgers' bars keep their thickness.
+
+The agent recommended T2. **The owner chose T2, on the tablet and the PC alike** (2026-10-31): one look on every device,
+the PC sharing the tablet's 1280×800 layout. Built:
+
+- **The figures** (`Original.Content/Devices/LayoutScrollBar`): a groove 8 wide, the thumb 1 in, at least 24 long, as
+  long as the share in view; the list it scrolls 4 left of it; the rim one window pixel (`Lacquer.WindowPixel`, the
+  canvas's stretch counted: one tablet pixel, one on a PC window of 1280×800). Drawn by `UiPalette.DrawScrollBar` as the
+  phone's.
+- **The save lists** (`SaveLoadView.DrawGroove`): the groove's right at the list's and the tabs' (382), the rows (318)
+  as they were, 4 short of it; on the lacquer.
+- **The message log** (`MessageLogView`, the PC's branch): the groove's right 5 in from the paper's edge (where the old
+  thumb's was), from the body's top to the paper's foot less its margin, the rules ending 4 before it; on the paper.
+- **The ledgers** (`DeploymentTableView.StyleBars` from `Place`): Godot's bars styled as the phone's, 8 thick, the rim
+  and the inset one canvas unit each (Godot's borders are whole units: on the tablet two of its pixels).
+- Checked in the screen gallery's lacquer, steel and touch passes (the save lists, the log, both ledgers); the phone's
+  passes unchanged to the pixel. Not yet on the tablet.
+
 ## Phones (put off)
 
 Put off by the owner (2026-10-24). What is ready for them: the measurements above, mock-ups B1, B3 (the battle),

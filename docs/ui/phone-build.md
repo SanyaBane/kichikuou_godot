@@ -1496,12 +1496,15 @@ took the reference, both ways:
 - **The options' sheet upright** (`PhoneOptionsUpright`): the groove 6 in from the sheet's right along `View`; the column
   36 from the sheet's right (30 before), whether its tab scrolls or not; on the paper.
 - **The message log** (`MessageLogView`, held either way): the groove 12 in from the paper's edge, from the body's top to
-  the paper's foot less its margin, the rules ending the gap before it; on the paper. The PC's and the tablet's log keep
-  their thin bar.
+  the paper's foot less its margin, the rules ending the gap before it; on the paper.
 - **The ledgers** (`DeploymentTableView.StyleBars`, from `PlacePhone` and `PlaceUpright`): Godot's own bars styled as the
   reference, both ways — the groove a rounded `StyleBoxFlat` in the rim, as thick as the reference (its content margins),
   the thumb inset by a transparent border, the vermilion lightened while hovered or dragged; no lit edge (a style box
-  draws none). The PC's and the tablet's keep theirs (`Place`).
+  draws none).
+
+The tablet and the PC took the reference's look too, 8 layout pixels wide (round T's T2, the owner's choice of
+2026-10-31; docs/ui/touch.md, "Round T: the reference scroll bar"): the save lists, the message log and the ledgers'
+Godot bars, their figures `Original.Content/Devices/LayoutScrollBar`.
 
 ## 6. The agent's own choices, for the owner to confirm
 

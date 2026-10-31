@@ -805,18 +805,21 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         DrawGroove();
     }
 
-    /// <summary>The scroll bar right of the rows. The groove stays when every save fits, so the rows keep their width.</summary>
+    /// <summary>
+    /// The scroll bar right of the rows: the reference (round T's T2, <see cref="LayoutScrollBar"/>), its right at the list's.
+    /// The groove stays when every save fits, so the rows keep their width.
+    /// </summary>
     private void DrawGroove()
     {
         int count = Shown.Count;
-        float top = RowsTop, span = ListBottom - top, x = ListX + ListW - 6;
-        DrawRect(new Rect2(x, top, 5, span), Ui.Groove);
-        if (count > RowsShown)
-        {
-            float a = top + span * _scroll / count, b = top + span * Math.Min(count, _scroll + RowsShown) / count;
-            DrawRect(new Rect2(x, a, 5, b - a), Ui.Gold);
-        }
+        var groove = LayoutScrollBar.Groove(ListX + ListW, RowsTop, ListBottom - RowsTop);
+        Rect2? thumb = count > RowsShown
+            ? R(LayoutScrollBar.Thumb(groove, (float)RowsShown / count, (float)_scroll / (count - RowsShown)))
+            : null;
+        Ui.DrawScrollBar(this, R(groove), thumb, Lacquer.WindowPixel(_k));
     }
+
+    private static Rect2 R(PhoneFrame.Box b) => new(b.X, b.Y, b.W, b.H);
 
     private void DrawNewRow()
     {
