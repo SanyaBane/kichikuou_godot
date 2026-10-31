@@ -4,7 +4,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// Our enemy attack screen on the phone held landscape (docs/ui/phone-build.md, step L6; docs/ui/phone.md, §14: LA2 and
 /// LA2n with the owner's changes): across the whole width between the hole's strips, the facts at the left — the defended
 /// province's panel (<see cref="Province"/>: its picture and four figures) and beyond "VS" the attacking army's
-/// (<see cref="Army"/>: the four places' cards two a row, the front row left, facing the province; the totals and the
+/// (<see cref="Army"/>: the four places' cards two a row, the front row left, held in the bracket facing the province,
+/// <see cref="Bracket"/>; the totals and the
 /// report's source under them), both panels' content in their middle, their captions at their top — and a column of its own
 /// at the right thumb (<see cref="Column"/>): the title, the date and the news, Maris's question, then Abandon City (10%
 /// narrower and lower) | Ninja Scout, and Intercept, half as high as first drawn, at the thumb. Ninja Scout's list opens
@@ -87,11 +88,13 @@ public static class PhoneAttack
     // ------------------------------------------------------------------ the army's panel (rebels_panel, attacker_card)
 
     /// <summary>
-    /// The cards: in from the panel's left past the triangle pointing at the province, 24 short of its right, 16 apart in a
-    /// row and 14 in a column, 300 high; the rows' captions 40 over them; the totals 20 under them, their block 106 high.
+    /// The cards: in from the panel's left past the bracket pointing at the province (the owner's LA2f1, docs/ui/phone.md,
+    /// §47: its head's tip 24 in, where LA2's pointer had its own, its line <see cref="PhoneBracket.HeadTip"/> right of it and
+    /// <see cref="PhoneBracket.Beside"/> off the cards), 24 short of its right, 16 apart in a row and 14 in a column, 300
+    /// high; the rows' captions 40 over them; the totals 20 under them, their block 106 high.
     /// </summary>
-    private const float CardsIn = 64, CardsRight = 24, CardColumns = 16, CardRows = 14, CardHeight = 300, CaptionsRoom = 40,
-        TotalsUnder = 20, TotalsBlock = 106;
+    private const float TipIn = 24, CardsIn = TipIn + PhoneBracket.HeadTip + PhoneBracket.Beside, CardsRight = 24, CardColumns = 16,
+        CardRows = 14, CardHeight = 300, CaptionsRoom = 40, TotalsUnder = 20, TotalsBlock = 106;
 
     /// <summary>The rows' captions' middle over the cards and their type.</summary>
     public const float RowCaptionAbove = 26, RowCaption = 26;
@@ -131,9 +134,17 @@ public static class PhoneAttack
         return (card.X + card.W / 2, card.Y - f.Px(RowCaptionAbove));
     }
 
-    /// <summary>The gold triangle pointing at the province: its tip 24 in from the panel's left, 30 deep, 68 high, level with the gap between the rows.</summary>
-    public static (float TipX, float Middle, float Depth, float Half) Pointer(PhoneFrame f) =>
-        (Army(f).X + f.Px(24), (Card(f, 1).Bottom + Card(f, 2).Y) / 2, f.Px(30), f.Px(34));
+    /// <summary>
+    /// The bracket left of the front row, its head pointing at the province (the owner's LA2f1): its ends at the top (1 in)
+    /// of place 1's card and the foot of place 2's, its middle theirs, level with the gap between the rows; its line
+    /// <see cref="PhoneBracket.Beside"/> left of the cards' left side, which its ends come up to.
+    /// </summary>
+    public static (float Y0, float Y1, float Middle, float Line, float CardsSide) Bracket(PhoneFrame f)
+    {
+        var top = Card(f, 1);
+        float y0 = top.Y + f.Px(1), y1 = Card(f, 2).Bottom - f.Px(1);
+        return (y0, y1, (y0 + y1) / 2, top.X - f.Px(PhoneBracket.Beside), top.X);
+    }
 
     /// <summary>The totals under the cards: from the cards' left to 28 short of the panel's right; their top, 20 under the cards.</summary>
     public static (float X0, float X1, float Top) Totals(PhoneFrame f) =>

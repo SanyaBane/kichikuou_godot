@@ -325,19 +325,19 @@ Step L3 is built, awaiting the owner's look on the phone (phone-build.md, "Step 
 question beside Retreat, the exchange's counters in the scene's blurred sides (`Original.Content/Devices/PhoneBattle`;
 `BattleBoardView`'s phone places, `BattleCommandLayer.Phone.cs`, `BattleDialogLayer.Phone.cs`, `TouchPill.Phone`).
 Step L4 is built, awaiting the owner's look on the phone (phone-build.md, "Step L4, where it stands"): the battle's other
-states — the opening at the lower scene band, the scout report across the width, the cut-in's band on across the sides,
+states — the opening at the lower scene band, the scout report across the width (its front row in the bracket, LB3sf1), the cut-in's band on across the sides,
 the results plate and our panel in the frame's middle, the ribbon and caption, the balloon over the scene's foot, the
 cards' menu at a finger's size (`Original.Content/Devices/PhoneBattleStates`; `ScoutReportView.Phone.cs`,
 `BattleInfoLayer.Phone.cs`, the phone branches of `BattleOpeningLayer`, `StrategyCutInView`, `SpeechBalloon`).
 Step L5 is built, awaiting the owner's look on the phone (phone-build.md, "Step L5, where it stands"): the deployment table
 and Subordinates — the ledger in one-line rows at the phone's type (wholly at the left on the deployment table, the frame on
 Subordinates; since 2026-10-31 a unit's face left of its name and bars of its troops (blue) and its commander's HP (green)
-under it, upright under the type too, `DeploymentTableView.DrawNameCell`, phone.md §35-§38), the party two cards a row and Attack | Stop at the right, Add New Troops in the left side, Talk, Replenish
+under it, upright under the type too, `DeploymentTableView.DrawNameCell`, phone.md §35-§38), the party two cards a row (the front row in the bracket, LD2f1, phone.md §47-§48) and Attack | Stop at the right, Add New Troops in the left side, Talk, Replenish
 and End in the right, the questions in callouts at the phone's sizes, a unit's picture on a long press
 (`Original.Content/Devices/PhoneLedger`; `DeploymentPanels.Phone.cs`, `SubordinatesView.Phone.cs`, `UnitPictureView`,
 `DeploymentTableView.PlacePhone`, `LedgerTabsBar.Phone`, `TreasureCallout.PlacePhone`).
 Step L6 is built, awaiting the owner's look on the phone (phone-build.md, "Step L6, where it stands"): the enemy attack
-across the whole width — the province and the army at the left, the news, Maris's question and the answers in a column at
+across the whole width — the province and the army at the left (its front row in the bracket, LA2f1), the news, Maris's question and the answers in a column at
 the right thumb, Ninja Scout's list above its button two ninjas a row, Abandon City's question above its
 (`Original.Content/Devices/PhoneAttack`; `EnemyAttackView.Phone.cs`, `Battles/PhoneCommanderCard`, shared with the scout
 report).
@@ -573,7 +573,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   the owner's E1/E2 in lacquer, laid out again (2026-10-26, docs/ui/unit-ledger.md): the ledger down the left, its
   columns a tab's at a time (Overview, Troops, Commander; `Strategy/LedgerTabsBar`, the tab kept per screen by
   `LedgerTabChoice`), the hovered unit's picture panel (`FacePictures.PicturePanel`) top right, the party's 2×2 cards
-  with one gold triangle right of them (the way the party faces), totals and bar below it — docs/ui/deployment-table.md,
+  held by a gold bracket right of them (the way the party faces; `Strategy/FacingBracket`, every mode's), totals and bar below it — docs/ui/deployment-table.md,
   "The lacquer look"; `GameScreen` feeds the script its gestures, `Original.Content/Strategy/DeploymentTable` the rows);
   `Strategy/SubordinatesView` (our Subordinates screen over `Sﾌﾞｶ` and `Cﾌﾞｶ`'s troop menu, our interface,
   docs/ui/subordinates.md: drawn by hand in lacquer (mock-up G3) over a wave-patterned backdrop — the table down the

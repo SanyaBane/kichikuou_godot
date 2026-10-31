@@ -9,8 +9,9 @@ namespace Kichikuou.Game.Battles;
 // The scout report on the phone held landscape (docs/ui/phone-build.md, step L4; docs/ui/phone.md, §17, LB3s): across the
 // whole width between the hole's strips, at the phone's type — the ninja and her report on top, the approaching
 // commanders' cards under it as the enemy attack's (the place on a gold diamond, the face at the right, TROOPS at the
-// foot), the front row left; Rance's answer at the foot left, Maris's comment, when she has one, at the foot right. Drawn
-// over the whole screen in the frame's layout pixels (PhoneUnits), the places PhoneBattleStates'.
+// foot), the front row left held in the bracket pointing left (LB3sf1, docs/ui/phone.md, §47); Rance's answer at the
+// foot left, Maris's comment, when she has one, at the foot right. Drawn over the whole screen in the frame's layout
+// pixels (PhoneUnits), the places PhoneBattleStates'.
 internal sealed partial class ScoutReportView
 {
     private PhoneFrame? _phone;
@@ -46,6 +47,8 @@ internal sealed partial class ScoutReportView
         }
         for (int slot = 1; slot <= 4; slot++)
             PhoneCard(u, u.Rect(PhoneBattleStates.ScoutCard(f, slot)), slot, report.Places[slot - 1]);
+        var (y0, y1, middle, bracketLine, cards) = PhoneBattleStates.ScoutBracket(f);
+        FacingBracket.DrawSide(_sheet, u, Ui, u.K, y0, y1, middle, bracketLine, cards, right: false);
 
         if (report.Reply != "")
         {

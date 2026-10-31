@@ -83,11 +83,6 @@ internal sealed partial class EnemyAttackView
         {
             var (cx, cy) = PhoneAttack.RowCaptionAt(f, column);
             CentredAt(_cinzelBold, column == 0 ? "FRONT ROW" : "BACK ROW", caption, cx / u.K, Middle(_cinzelBold, caption, cy / u.K), Ui.Subtitle);
-            if (column == 0)
-            {
-                float ax = cx / u.K - u.Px(120), ay = cy / u.K, a = u.Px(8);      // the front row faces the province
-                _sheet.DrawColoredPolygon([new(ax + a, ay - a), new(ax + a, ay + a), new(ax - a, ay)], Ui.Subtitle);
-            }
         }
         for (int slot = 1; slot <= 4; slot++)
         {
@@ -99,9 +94,8 @@ internal sealed partial class EnemyAttackView
             else
                 PhoneEmptyCard(u, card, slot);
         }
-        var (tip, middle, depth, half) = PhoneAttack.Pointer(f);
-        float tx = tip / u.K, ty = middle / u.K, d = depth / u.K, h = half / u.K;
-        Lacquer.DrawSmoothPolygon(_sheet, [new(tx, ty), new(tx + d, ty - h), new(tx + d, ty + h)], Ui.Gold, _k);
+        var (y0, y1, middle, line, cards) = PhoneAttack.Bracket(f);                     // the front row faces the province (LA2f1)
+        FacingBracket.DrawSide(_sheet, u, Ui, _k, y0, y1, middle, line, cards, right: false);
 
         var (x0, x1, top) = PhoneAttack.Totals(f);
         PhoneTotals(u, x0, x1, top, attack);

@@ -480,10 +480,7 @@ internal sealed partial class DeploymentPanels : Control
         var back = CardRect(3);
         var front = CardRect(1);
         CentredString(c, _cinzel, "Back row", 13, Ui.Label, back.GetCenter().X, RowLabelsY + 5);
-        const string frontLabel = "Front row";
-        float fw = _cinzel.GetStringSize(frontLabel, fontSize: 13).X;
-        CentredString(c, _cinzel, frontLabel, 13, Ui.Label, front.GetCenter().X - 8, RowLabelsY + 5);
-        c.DrawString(_gothic, new Vector2(front.GetCenter().X - 8 + fw / 2 + 6, RowLabelsY + 5), "▶", fontSize: 11, modulate: Ui.Label);
+        CentredString(c, _cinzel, "Front row", 13, Ui.Label, front.GetCenter().X, RowLabelsY + 5);   // the bracket says the way (F5t)
 
         for (int place = 1; place <= party.Places.Count; place++)
             DrawCard(c, place, party.Places[place - 1]);
@@ -547,12 +544,7 @@ internal sealed partial class DeploymentPanels : Control
     {
         var top = CardRect(1);
         var bottom = places >= 2 ? CardRect(2) : top;
-        float x = PartyPanel.End.X - 14 - FacingStrip + 1, ends = top.End.X + 2, tip = PartyPanel.End.X - 10;
-        float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (y0 + y1) / 2;
-        float width = Line(2.5f);
-        c.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x + 10, cy - 6)], Ui.Gold, width, true);
-        c.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x + 10, cy + 6)], Ui.Gold, width, true);
-        Lacquer.DrawSmoothPolygon(c, [new(x + 6, cy - 14), new(tip, cy), new(x + 6, cy + 14)], Ui.Name, _k);
+        FacingBracket.DrawPc(c, Ui, _k, top.End.X, top.Position.Y + 1, bottom.End.Y - 1, right: true);
     }
 
     /// <summary>A label in Cinzel and its figure in the game's font after it, centred in <paramref name="band"/>.</summary>

@@ -23,10 +23,11 @@ public class PhoneLedgerTests
     [Fact]
     public void The_deployment_s_ledger_stands_wholly_at_the_left_and_the_rest_at_the_right()
     {
-        // ld2: land_ledger at (SIDE + 6, 104, LD2_SPLIT, LH - 12), the right part from LD2_SPLIT + 16 to LW - SIDE - 6.
-        Equal(new(116, 104, 1700 - 116, 1208 - 104), PhoneLedger.Ledger(Reference, deployment: true));
-        Equal(new(1716, 0, 880, 1170), PhoneLedger.Part(Reference));
-        Equal(new(116, 16, 1584, 88), PhoneLedger.Tabs(Reference, deployment: true));
+        // ld2: land_ledger at (SIDE + 6, 104, LD2_SPLIT, LH - 12), the right part from LD2_SPLIT + 16 to LW - SIDE - 6;
+        // LD2f1 (mock_facing_modes.py): the part 95 wider into the ledger for the bracket.
+        Equal(new(116, 104, 1605 - 116, 1208 - 104), PhoneLedger.Ledger(Reference, deployment: true));
+        Equal(new(1621, 0, 975, 1170), PhoneLedger.Part(Reference));
+        Equal(new(116, 16, 1489, 88), PhoneLedger.Tabs(Reference, deployment: true));
     }
 
     [Fact]
@@ -40,13 +41,27 @@ public class PhoneLedgerTests
     [Fact]
     public void The_party_stands_two_cards_a_row_as_the_battle_shows_our_army()
     {
-        // ld2: cw = (880 - 12) // 2 = 434, ch = 214 from y 200; the back row (3, 4) left, places 1 and 3 on top.
-        Equal(new(1716, 200, 434, 214), PhoneLedger.Card(Reference, 3));
-        Equal(new(2162, 200, 434, 214), PhoneLedger.Card(Reference, 1));
-        Equal(new(1716, 426, 434, 214), PhoneLedger.Card(Reference, 4));
-        Equal(new(2162, 426, 434, 214), PhoneLedger.Card(Reference, 2));
-        Equal(new(2502, 210, 84, 84), PhoneLedger.RemoveBox(Reference, PhoneLedger.Card(Reference, 1)));
+        // ld2: cw = (880 - 12) // 2 = 434, ch = 214 from y 200; the back row (3, 4) left, places 1 and 3 on top; LD2f1: the
+        // cards at the part's left, the bracket's 95 right of them.
+        Equal(new(1621, 200, 434, 214), PhoneLedger.Card(Reference, 3));
+        Equal(new(2067, 200, 434, 214), PhoneLedger.Card(Reference, 1));
+        Equal(new(1621, 426, 434, 214), PhoneLedger.Card(Reference, 4));
+        Equal(new(2067, 426, 434, 214), PhoneLedger.Card(Reference, 2));
+        Equal(new(2407, 210, 84, 84), PhoneLedger.RemoveBox(Reference, PhoneLedger.Card(Reference, 1)));
         Assert.Equal(686, PhoneLedger.TotalsMiddle(Reference), Close);           // y + 24 after y += 10 under the cards
+    }
+
+    [Fact]
+    public void The_bracket_holds_the_front_row_from_the_right()
+    {
+        // LD2f1: the line 16 right of the front row (2501), its head's tip 75 beyond it, 4 short of the hole's strip.
+        var (y0, y1, middle, line, cards) = PhoneLedger.Bracket(Reference, 4);
+        Assert.Equal((201f, 639f, 420f), (y0, y1, middle));
+        Assert.Equal(2501, cards, Close);
+        Assert.Equal(2517, line, Close);
+        Assert.Equal(PhoneLedger.Part(Reference).Right - 4, line + PhoneBracket.HeadTip, Close);
+        var (_, one, oneMiddle, _, _) = PhoneLedger.Bracket(Reference, 1);           // the dungeon search: its one card
+        Assert.Equal((413f, 307f), (one, oneMiddle));
     }
 
     [Fact]
@@ -57,11 +72,11 @@ public class PhoneLedgerTests
         var one = PhoneLedger.Bar(Reference, 1);
         Assert.Equal(2, one.Count);
         Equal(new(2296, 1010, 300, 150), one[0]);
-        Equal(new(1716, 1010, 2280 - 1716, 150), one[1]);
+        Equal(new(1621, 1010, 2280 - 1621, 150), one[1]);
         var two = PhoneLedger.Bar(Reference, 2);                                  // a defence's Plains and City share the room
         Assert.Equal(3, two.Count);
         Assert.Equal(two[1].W, two[2].W, Close);
-        Assert.Equal(1716, two[1].X, Close);
+        Assert.Equal(1621, two[1].X, Close);
         Assert.Equal(16, two[2].X - two[1].Right, Close);
         Assert.Equal(16, two[0].X - two[2].Right, Close);
         Assert.Single(PhoneLedger.Bar(Reference, 0));
@@ -117,7 +132,7 @@ public class PhoneLedgerTests
     public void A_longer_screen_widens_the_deployment_s_ledger_and_keeps_the_right_part()
     {
         var longer = PhoneFrame.Landscape(2712 * 21f / 20, 1220);
-        Assert.Equal(880, PhoneLedger.Part(longer).W, Close);
+        Assert.Equal(975, PhoneLedger.Part(longer).W, Close);
         Assert.Equal(longer.Screen.W - 116, PhoneLedger.Part(longer).Right, Close);
         Assert.True(PhoneLedger.Ledger(longer, deployment: true).W > PhoneLedger.Ledger(Reference, deployment: true).W);
         Assert.Equal(16, PhoneLedger.Part(longer).X - PhoneLedger.Ledger(longer, deployment: true).Right, Close);

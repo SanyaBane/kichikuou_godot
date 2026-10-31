@@ -1521,3 +1521,9 @@ triangles gone:
 The agent recommends LD2f1 (the cards keep their size, the names stay legible — Haurein's is already squeezed — and the
 ledger, scrolled sideways anyway, loses 3.5% of its width), LA2f1, LB3sf1, Cf1 and F5t, so that every mode marks the
 facing with the same bracket.
+
+## 48. The owner's choice: the recommended set (2026-10-31)
+
+The owner took LD2f1, LA2f1, LB3sf1, Cf1 and F5t, so every mode marks the facing with the same bracket. Built
+(docs/ui/phone-build.md, §5, "After the build: the facing in the other modes"); the enemy attack's cards held landscape
+are only narrower (412.5 × 300), not 6% smaller both ways as drawn, their insides as before.

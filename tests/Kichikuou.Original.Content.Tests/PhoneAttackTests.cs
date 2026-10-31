@@ -44,16 +44,26 @@ public class PhoneAttackTests
     [Fact]
     public void The_army_s_cards_stand_two_a_row_the_front_row_facing_the_province()
     {
-        // rebels_panel(centre=True): cx0 = 796 + 64, cw = (1776 - 24 - 860 - 16) // 2 = 438, ch = 300; y = 610 - 780 / 2 = 220,
-        // the captions at y + 14, the cards from y + 40, the front row (1, 2) left, 16 apart across and 14 down.
-        Equal(new(860, 260, 438, 300), PhoneAttack.Card(Reference, 1));
-        Equal(new(860, 574, 438, 300), PhoneAttack.Card(Reference, 2));
-        Equal(new(1314, 260, 438, 300), PhoneAttack.Card(Reference, 3));
-        Equal(new(1314, 574, 438, 300), PhoneAttack.Card(Reference, 4));
-        Assert.Equal((1079f, 234f), PhoneAttack.RowCaptionAt(Reference, 0));
-        Assert.Equal((1533f, 234f), PhoneAttack.RowCaptionAt(Reference, 1));
-        Assert.Equal((820f, 567f, 30f, 34f), PhoneAttack.Pointer(Reference));        // (x0 + 24, y + ch + 7), 30 deep, 68 high
-        Assert.Equal((860f, 1748f, 894f), PhoneAttack.Totals(Reference));            // y += 2 * ch + 14 + 20
+        // rebels_panel(centre=True) with LA2f1 (mock_facing_modes.py): cx0 = 796 + 24 + 75 + 16 = 911 (past the bracket),
+        // cw = (1776 - 24 - 911 - 16) / 2 = 412.5, ch = 300; y = 610 - 780 / 2 = 220, the captions at y + 14, the cards from
+        // y + 40, the front row (1, 2) left, 16 apart across and 14 down.
+        Equal(new(911, 260, 412.5f, 300), PhoneAttack.Card(Reference, 1));
+        Equal(new(911, 574, 412.5f, 300), PhoneAttack.Card(Reference, 2));
+        Equal(new(1339.5f, 260, 412.5f, 300), PhoneAttack.Card(Reference, 3));
+        Equal(new(1339.5f, 574, 412.5f, 300), PhoneAttack.Card(Reference, 4));
+        Assert.Equal((1117.25f, 234f), PhoneAttack.RowCaptionAt(Reference, 0));
+        Assert.Equal((1545.75f, 234f), PhoneAttack.RowCaptionAt(Reference, 1));
+        Assert.Equal((911f, 1748f, 894f), PhoneAttack.Totals(Reference));            // y += 2 * ch + 14 + 20
+    }
+
+    [Fact]
+    public void The_bracket_holds_the_front_row_facing_the_province()
+    {
+        // LA2f1: the line 16 left of the cards, its head's tip 75 beyond it where LA2's pointer had its own (x0 + 24); its
+        // middle level with the gap between the rows (y + ch + 7).
+        var (y0, y1, middle, line, cards) = PhoneAttack.Bracket(Reference);
+        Assert.Equal((261f, 873f, 567f, 895f, 911f), (y0, y1, middle, line, cards));
+        Assert.Equal(PhoneAttack.Army(Reference).X + 24, line - PhoneBracket.HeadTip, Close);
     }
 
     [Fact]

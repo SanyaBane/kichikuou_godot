@@ -223,6 +223,18 @@ public static class PhoneBattleStates
         return (card.X + card.W / 2, f.Px(CaptionsMiddle));
     }
 
+    /// <summary>
+    /// The bracket left of the front row, its head pointing left as the enemy attack's (the owner's LB3sf1, docs/ui/phone.md,
+    /// §47; <see cref="PhoneBracket"/>): its ends at the top (1 in) of place 1's card and the foot of place 2's, its middle
+    /// theirs; its line <see cref="PhoneBracket.Beside"/> left of the cards' left side, in the black beside them.
+    /// </summary>
+    public static (float Y0, float Y1, float Middle, float Line, float CardsSide) ScoutBracket(PhoneFrame f)
+    {
+        var top = ScoutCard(f, 1);
+        float y0 = top.Y + f.Px(1), y1 = ScoutCard(f, 2).Bottom - f.Px(1);
+        return (y0, y1, (y0 + y1) / 2, top.X - f.Px(PhoneBracket.Beside), top.X);
+    }
+
     /// <summary>Rance's portrait at the bottom left (<paramref name="right"/>: the advisor's, at the bottom right).</summary>
     public static PhoneFrame.Box SpeakerPortrait(PhoneFrame f, bool right)
     {

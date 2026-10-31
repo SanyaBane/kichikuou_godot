@@ -11,9 +11,10 @@ namespace Kichikuou.Game.Battles;
 /// The ninja's scout report as our own overlay (our interface; docs/ui/battle-screen.md, "The scout
 /// report"; owner, 2026-10-14, mock-up C): the original's screen dimmed and blurred under it; the ninja's whole
 /// portrait on the left; our balloon beside it at the top with the army's name and the totals; the approaching
-/// commanders as cards in the places the battle will give them, the front row (places 1-2) in the left column, the
-/// back row (3-4) in the right one. A card tells only what the ninja tells (<see cref="ScoutedCommander"/>): name,
-/// troop type and troops — no maximum, no HP. At its foot Rance's answer and Maris's comment, which the script has them
+/// commanders as cards in the places the battle will give them, the front row (places 1-2) in the left column held in
+/// the enemy attack's bracket, its head pointing left (Cf1, docs/ui/phone.md, §47), the back row (3-4) in the right one.
+/// A card tells only what the ninja tells (<see cref="ScoutedCommander"/>): name, troop type and troops — no maximum, no
+/// HP. At its foot Rance's answer and Maris's comment, which the script has them
 /// say after the report (owner, 2026-10-16). It decides nothing: the report's key waits stay the script's, and
 /// <see cref="GameScreen"/> answers all but the first at once, and their windows' too. Points are layout pixels of the
 /// 1280×800 screen.
@@ -29,7 +30,7 @@ internal sealed partial class ScoutReportView : Control
     private const float ReplyGap = 30, ReplyTop = 8, RanceBalloonRight = 770; // his balloon high beside him, its tail at him;
     private const float CommentLeft = 516, RepliesGap = 16;                    // hers below it to her, overlapping it in x
     private static readonly Vector2 CardSize = new(282, 150);
-    private static readonly float[] Columns = [380, 680];
+    private static readonly float[] Columns = [404, 704];                       // 24 right of mock-up C's, for the bracket (Cf1)
     private static readonly float[] Rows = [190, 350];
     private const float CaptionY = 520, CaptionText = 16;
     private const float FaceSize = 118, TextSize = 17, NumberSize = 26, BalloonText = 24, BalloonPad = 22;
@@ -162,6 +163,7 @@ internal sealed partial class ScoutReportView : Control
 
         for (int slot = 1; slot <= 4; slot++)
             DrawCard(At(CardArea(slot)), slot, report.Places[slot - 1], s);
+        FacingBracket.DrawPc(_sheet, Ui, 1, Columns[0] * s, (Rows[0] + 1) * s, (Rows[1] + CardSize.Y - 1) * s, right: false, s);
         int caption = Px(CaptionText);
         _sheet.DrawString(_font, new Vector2(Columns[0], CaptionY) * s + new Vector2(0, _font.GetAscent(caption)), "front row",
             HorizontalAlignment.Left, -1, caption, Ui.Quiet);

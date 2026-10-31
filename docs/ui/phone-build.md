@@ -1562,6 +1562,36 @@ thumb. Built as asked, no mock-up round:
 - **Checks**: the build and the core tests; the gallery's four passes for `opening` and `cards-sliding`. The slide's
   motion on the Poco is the owner's look.
 
+### After the build: the facing in the other modes (owner, 2026-10-31)
+
+With the brackets built upright the owner asked to check the other modes. Held landscape the deployment table marked its
+party with an 18 px triangle, the enemy attack its army with a lone pointer, the scout report nothing; on the PC and the
+tablet the scout report marked nothing and the dungeon search's bracket held an empty place. Round P35 (phone.md,
+§47-§48): the owner took LD2f1, LA2f1, LB3sf1, Cf1 and F5t. Built:
+
+- **The shared bracket**: `godot/Strategy/FacingBracket` draws it three ways from one core — upright (`Draw`, a row from
+  above or below, as before), held landscape (`DrawSide`, a column from its side, `Devices/PhoneBracket`'s figures, its
+  line `PhoneBracket.Beside` = 16 off the cards) and on the PC and the tablet (`DrawPc`, the F5 figures, which
+  `DeploymentPanels.DrawFacing` and `EnemyAttackView.DrawArmyBracket` drew each by hand; pixel for pixel the same).
+- **The deployment table held landscape (LD2f1)**: `PhoneLedger.Part` 975 wide (880 for the cards and 95 for the bracket:
+  its line 16 off them, the head's tip 75 beyond, 4 short of the hole's strip), so the ledger is 95 narrower at its right;
+  the title band, the totals and the bar span the part; `PhoneLedger.Bracket(f, places)` right of the front row, over
+  place 1's card alone in the dungeon search; the triangle at the caption row's right end gone (`DeploymentPanels.Phone.cs`).
+- **The enemy attack held landscape (LA2f1)**: `PhoneAttack`'s cards from 115 in (the head's tip 24 in, where the pointer's
+  was, 75 to the line, 16 to the cards), 412.5 wide (438 before), as high as before; `PhoneAttack.Bracket(f)` in place of
+  `Pointer`; the small triangle beside "FRONT ROW" gone (`EnemyAttackView.Phone.cs`). The mock-up had the cards 6%
+  smaller both ways; built only narrower, their insides as before.
+- **The scout report held landscape (LB3sf1)**: `PhoneBattleStates.ScoutBracket(f)` left of the front row, in the black
+  beside it; nothing moves (`ScoutReportView.Phone.cs`).
+- **The PC and the tablet**: the scout report's cards and captions 24 right (`ScoutReportView.Columns` 404 and 704), the
+  bracket left of the front row at the PC's size (Cf1); "Front row" on the deployment table and the enemy attack without
+  its small triangle, centred over its cards (F5t); the dungeon search's bracket over its one card (fixed before the round).
+- **Checks**: the build, the core tests and the phone layouts' tests (`PhoneLedgerTests`, `PhoneAttackTests`,
+  `PhoneBattleStatesTests`, the brackets' places among them); the gallery's four passes for `deployment`,
+  `deployment-defence`, `deployment-search`, `enemy-attack`, `enemy-attack-scouted`, `enemy-attack-ninjas`, `scout-report`
+  and `scout-report-comment`: the PC's and the tablet's enemy attack changed only at "Front row", upright unchanged by the
+  bracket's shared core. The look on the Poco is the owner's.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

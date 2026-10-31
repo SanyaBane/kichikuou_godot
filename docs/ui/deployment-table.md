@@ -338,7 +338,8 @@ bracket and the tab), X (more of the crossed swords) and D (those on dark lacque
 owner chose F5**, its ends kept off the cards: a gold bracket holding the front row's two cards from the right, its ends
 in the gap 2 pixels short of the cards' edges, its middle drawn out into a light gold head pointing at the enemy.
 In the dungeon search (one place) it holds place 1's card alone, its head at the card's middle (2026-10-31: it had held
-the empty place under it too; docs/ui/phone.md, §47).
+the empty place under it too; docs/ui/phone.md, §47). Since 2026-10-31 "Front row" stands centred over its cards without
+its small triangle (the owner's F5t), and the phone held landscape draws the same bracket (LD2f1; phone.md, §47-§48).
 The Attack button lost its line ("Go to war · cost", the war expenses being right above it) the same day.
 
 ### The cards' troops (owner, 2026-10-24)

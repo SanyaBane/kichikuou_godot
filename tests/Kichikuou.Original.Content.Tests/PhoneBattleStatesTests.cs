@@ -86,6 +86,20 @@ public class PhoneBattleStatesTests
     }
 
     [Fact]
+    public void The_scout_report_s_bracket_holds_the_front_row_in_the_black_beside_it()
+    {
+        // LB3sf1 (mock_facing_modes.py): the line 16 left of the front row's cards, the head's tip 75 beyond it, clear of
+        // Kanami's portrait; the ends at the cards' top and foot, 1 in, nothing over Rance's answer.
+        var (y0, y1, middle, line, cards) = PhoneBattleStates.ScoutBracket(Reference);
+        var front = PhoneBattleStates.ScoutCard(Reference, 1);
+        Assert.Equal(front.X, cards, Close);
+        Assert.Equal(front.X - 16, line, Close);
+        Assert.Equal((331f, 889f, 610f), (y0, y1, middle));
+        Assert.True(line - PhoneBracket.HeadTip > PhoneBattleStates.NinjaPortrait(Reference).Right + 200);
+        Assert.True(y1 < PhoneBattleStates.ReplyBalloon(Reference, false, 60).Y);
+    }
+
+    [Fact]
     public void The_scout_report_lies_across_the_whole_width()
     {
         // lb3s: Kanami 345 × 460 at (LX0 + 14, 30), LX0 = 116; her balloon (bx0, 40, LX1 - 10, 246), bx0 = LX0 + 14 + 345 + 60.

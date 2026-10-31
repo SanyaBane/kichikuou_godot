@@ -7,7 +7,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// and the HP (<see cref="NameFace"/>), the tabs over it. On the deployment table the
 /// ledger stands wholly at the left, from the hole's strip (<see cref="Ledger"/>), and everything else in a part of its
 /// own at the right (<see cref="Part"/>): the title, the date and the budget over the party two cards a row as the battle
-/// shows our army (the back row left), the troops and the war expenses under it, Attack | Stop at the right thumb. On
+/// shows our army (the back row left, the front row held from the right in the bracket, <see cref="Bracket"/>), the troops
+/// and the war expenses under it, Attack | Stop at the right thumb. On
 /// Subordinates the ledger fills the frame; the left side holds the chosen unit's Add New Troops from the foot up, the
 /// dearest on top (<see cref="Steps"/>); the right side the title, the date and the budget, then Talk, Replenish and End
 /// at the thumb, Replenish's question in a callout left of it (<see cref="ReplenishQuestion"/>). The figures are the
@@ -59,8 +60,12 @@ public static class PhoneLedger
 
     // ------------------------------------------------------------------ the deployment table's right part (LD2)
 
-    /// <summary>The right part: its width (from the split's 1716 to the hole's strip less 6), the room between it and the ledger.</summary>
-    private const float PartWidth = 880, PartGap = 16;
+    /// <summary>
+    /// The right part: its cards' width (from the split's 1716 to the hole's strip less 6), the room right of them for the
+    /// bracket (the owner's LD2f1, docs/ui/phone.md, §47: its line <see cref="PhoneBracket.Beside"/> off the cards, its head's
+    /// tip <see cref="PhoneBracket.HeadTip"/> beyond it, 4 short of the hole's strip), the room between the part and the ledger.
+    /// </summary>
+    private const float PartWidth = 880, BracketStrip = PhoneBracket.Beside + PhoneBracket.HeadTip + 4, PartGap = 16;
 
     /// <summary>
     /// The right part's lines, reference pixels from the screen's top: the title's top and type, the date's (right), the
@@ -81,24 +86,36 @@ public static class PhoneLedger
     /// <summary>The bar's type: Stop's, a send button's alone, two sends' (a defence's Plains and City), a send's note.</summary>
     public const float StopText = 44, SendText = 60, SendsText = 46, NoteText = 28;
 
-    /// <summary>The deployment's right part, the screen's height over the gesture zone.</summary>
+    /// <summary>The deployment's right part, the screen's height over the gesture zone: the cards and the bracket's room right of them.</summary>
     public static PhoneFrame.Box Part(PhoneFrame f)
     {
-        float x1 = f.Screen.W - f.Safe.Right - f.Px(ScreenIn);
-        return new PhoneFrame.Box(x1 - f.Px(PartWidth), 0, f.Px(PartWidth), f.Screen.H - f.Safe.Bottom);
+        float x1 = f.Screen.W - f.Safe.Right - f.Px(ScreenIn), w = f.Px(PartWidth + BracketStrip);
+        return new PhoneFrame.Box(x1 - w, 0, w, f.Screen.H - f.Safe.Bottom);
     }
 
     /// <summary>
     /// Place <paramref name="place"/>'s card as the battle shows our army: the back row (3, 4) left, the front row (1, 2)
-    /// right, places 1 and 3 on top; two a row, 12 apart.
+    /// right, places 1 and 3 on top; two a row, 12 apart, the bracket's room right of them.
     /// </summary>
     public static PhoneFrame.Box Card(PhoneFrame f, int place)
     {
         var part = Part(f);
-        float w = (part.W - f.Px(CardGap)) / 2;
+        float w = (part.W - f.Px(BracketStrip) - f.Px(CardGap)) / 2;
         float x = part.X + (place is 1 or 2 ? w + f.Px(CardGap) : 0);
         float y = f.Px(CardsTop) + (place is 2 or 4 ? f.Px(CardHeight + CardGap) : 0);
         return new PhoneFrame.Box(x, y, w, f.Px(CardHeight));
+    }
+
+    /// <summary>
+    /// The bracket right of the front row (the owner's LD2f1): its ends at the top (1 in) of place 1's card and the foot of
+    /// place 2's — of place 1's alone when <paramref name="places"/> is 1, the dungeon search —, its middle theirs; its line
+    /// <see cref="PhoneBracket.Beside"/> right of the cards' right side, which its ends come up to.
+    /// </summary>
+    public static (float Y0, float Y1, float Middle, float Line, float CardsSide) Bracket(PhoneFrame f, int places)
+    {
+        var top = Card(f, 1);
+        float y0 = top.Y + f.Px(1), y1 = (places >= 2 ? Card(f, 2).Bottom : top.Bottom) - f.Px(1);
+        return (y0, y1, (y0 + y1) / 2, top.Right + f.Px(PhoneBracket.Beside), top.Right);
     }
 
     /// <summary>The totals' middle (the troops left, the war expenses right): under the cards.</summary>

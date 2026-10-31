@@ -315,8 +315,9 @@ picture, the slot panels) is not shown. How it is built:
   whole portrait on the left (the original's framed 192×256 picture of op 321, Kanami's CG 9, 300×400 at
   (40, 40), its top with the balloon's so the tail points at it — owner, 2026-10-14); our balloon (the dialogue panel's, `SpeechBalloon.DrawBalloon`) to its right at the top: "The
   Approaching Enemy  [<army, string 10>]" bold, then "Commanders n      Total troops N"; the commanders as cards
-  in a 2×2 formation — the front row (places 1-2) in the left column, the back row (3-4) in the right one, "front
-  row" / "back row" below — in our battle cards' style (282×150, the face square with the crops, place and name,
+  in a 2×2 formation — the front row (places 1-2) in the left column, held in the enemy attack's bracket pointing left
+  (since 2026-10-31, the owner's Cf1, docs/ui/phone.md, §47-§48; the cards 24 further right for it), the back row (3-4)
+  in the right one, "front row" / "back row" below — in our battle cards' style (282×150, the face square with the crops, place and name,
   troop type muted, "Troops" muted and the number large), an empty place "n  empty". **Only what the ninja
   reports**: name, troop type, troops — no maximum, no HP, no bars; a commander without troops has no troop type
   and troops "none" (the report leaves the line out). The report lists `Bt_EnemyParty1-4` in order and the battle's

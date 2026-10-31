@@ -89,13 +89,13 @@ internal sealed partial class DeploymentPanels
         float cy = u.Px(PhoneLedger.CaptionMiddle);
         LeftAt(c, _cinzel, "Back row", caption, Ui.Label, CardRect(3).Position.X + u.Px(4), cy);
         LeftAt(c, _cinzel, "Front row", caption, Ui.Label, CardRect(1).Position.X + u.Px(4), cy);
-        float a = u.Px(9);
-        Lacquer.DrawSmoothPolygon(c, [new(x1 - u.Px(12) - a, cy - a), new(x1 - u.Px(12) + a, cy), new(x1 - u.Px(12) - a, cy + a)], Ui.Label, _k);
 
         for (int place = 1; place <= party.Places.Count; place++)
             DrawPhoneCard(c, u, place, party.Places[place - 1]);
         if (_dropOn != 0)
             DrawDrop(c, _dropOn);
+        var (y0, y1, middle, line, cards) = PhoneLedger.Bracket(f, party.Places.Count);     // the front row held from the right (LD2f1)
+        FacingBracket.DrawSide(c, u, Ui, _k, y0, y1, middle, line, cards, right: true);
 
         float totals = PhoneLedger.TotalsMiddle(f) / _k;
         int totalsLabel = u.Size(PhoneLedger.TotalsLabel), totalsText = u.Size(PhoneLedger.TotalsText);

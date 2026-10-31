@@ -471,10 +471,7 @@ internal sealed partial class EnemyAttackView : Control
 
         var front = ArmyCard(1);
         float labelsY = front.Position.Y - 12;
-        const string frontLabel = "Front row";
-        float fw = _cinzel.GetStringSize(frontLabel, fontSize: 13).X;
-        CentredAt(_cinzel, frontLabel, 13, front.GetCenter().X + 8, labelsY, Ui.Label);
-        _sheet.DrawString(_font!, new Vector2(front.GetCenter().X + 8 - fw / 2 - 17, labelsY), "◀", fontSize: 11, modulate: Ui.Label);
+        CentredAt(_cinzel, "Front row", 13, front.GetCenter().X, labelsY, Ui.Label);   // the bracket says the way (F5t)
         CentredAt(_cinzel, "Back row", 13, ArmyCard(3).GetCenter().X, labelsY, Ui.Label);
 
         for (int slot = 1; slot <= 4; slot++)
@@ -581,17 +578,8 @@ internal sealed partial class EnemyAttackView : Control
     }
 
     /// <summary>The deployment screen's bracket mirrored: the front row's two cards held from the left, its head pointing at us.</summary>
-    private void DrawArmyBracket()
-    {
-        var top = ArmyCard(1);
-        var bottom = ArmyCard(2);
-        float x = ArmyFrontX - ArmyStripGap - 1, ends = top.Position.X - 2, tip = ArmyFrontX - ArmyStripGap - ArmyStrip - 4;
-        float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (top.End.Y + bottom.Position.Y) / 2;
-        float width = Lacquer.Line(2.5f, _k);
-        _sheet.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x - 10, cy - 6)], Ui.Gold, width, true);
-        _sheet.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x - 10, cy + 6)], Ui.Gold, width, true);
-        Lacquer.DrawSmoothPolygon(_sheet, [new(x - 6, cy - 14), new(tip, cy), new(x - 6, cy + 14)], Ui.Name, _k);
-    }
+    private void DrawArmyBracket() =>
+        FacingBracket.DrawPc(_sheet, Ui, _k, ArmyFrontX, ArmyCard(1).Position.Y + 1, ArmyCard(2).End.Y - 1, right: false);
 
     /// <summary><paramref name="text"/> centred on <paramref name="centre"/> at <paramref name="baseline"/>.</summary>
     private void CentredAt(Font font, string text, int size, float centre, float baseline, Color colour) =>
