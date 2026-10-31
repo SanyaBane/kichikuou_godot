@@ -296,7 +296,8 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
 4. **The battle board** from a replayed capture (§6).
    **Built (2026-10-25).** `GalleryEntries.Board.cs` on `20261010-213758-114-FIGT_A` (an attack on Oaks (6) of story
    stage 1, four rounds, Rance (unit 1) and Rick (unit 7) against Ex (commander 1), Sakanaku (commander 6), Melfeis (commander 4)
-   and Dodge (commander 5)): `opening` (the first header's key wait), `battle-turn` (round 1's first `FIGT_SEL`, our
+   and Dodge (commander 5)): `opening` (the first header's key wait), `cards-sliding` (2026-10-31: there, the cards'
+   slide begun and held at 0.6 of the front row's way in, `BattleBoardView.HoldCardsSlide`), `battle-turn` (round 1's first `FIGT_SEL`, our
    commands begun on its menu as `GameScreen` begins them; the damage forecast on, which the touch pass's rail shows —
    docs/ui/damage-forecast.md, §8; every other entry has it off, whatever the option), `menu` and `menu-orders` (a right click on the acting card
    and on the other, given to the commands as the pointer's), `order-toggles` (made up: the other unit set to Auto-Def;

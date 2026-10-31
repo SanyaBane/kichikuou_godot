@@ -28,6 +28,9 @@ internal static partial class GalleryEntries
     {
         yield return new("opening", Battle, "Battle: the opening", null, CaptureNote + " At the first round's header.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Opening is not null));
+        yield return new("cards-sliding", Battle, "Battle: the cards sliding in", null,
+            CaptureNote + " At the first round's header, the cards' slide begun and held at 0.6 of the front row's way in.",
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Opening is not null, then: (_, _, board) => board.HoldCardsSlide(0.6)));
         yield return new("battle-turn", Battle, "Battle: a player's turn", null,
             CaptureNote + " Round 1's first FIGT_SEL, our commands begun, the damage forecast on (the touch mode's rail shows it).",
             g => Board(g, Turn, then: (_, _, _) => { }, forecast: true));

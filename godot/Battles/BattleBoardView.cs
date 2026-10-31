@@ -200,6 +200,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private readonly Dictionary<BattlePlace, float> _cardTravel = [];  // how far each card slides in (layout pixels)
     private double _cardsSliding = -1;                                  // seconds into the cards' slide; -1 when they stand
     private int _cardSlides;                                            // the slides so far (each its own random stagger)
+    private bool _cardsHeld;                                            // the screen gallery's slide, held (HoldCardsSlide)
     private bool _cardsFade;                                            // a dungeon's: the cards fade in at their places instead
     private readonly Control _actingFrame;
     private BattlePlace? _actingPlace;
@@ -624,7 +625,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _advantageTip.Layout(scale);
         At(_balloon, board);
         _balloon.Layout(scale);
-        At(_cardsClip, PanelArea);
+        At(_cardsClip, CardsArea);
         PlaceCards();
         if (_actingPlace is { } acting)
             At(_actingFrame, CardArea(acting));
@@ -1232,11 +1233,39 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         PlaceCards();
     }
 
-    private const float CardsSlideDistance = 640;
+    // The front row's slide: 640 layout pixels; upright as far as takes both armies' front rows wholly beyond their edges
+    // (the enemy's stands 688 over the deck).
+    private static float CardsSlideDistance =>
+        Upright ? Math.Max(640, Math.Max(SlideEdge(BattleSide.Player), SlideEdge(BattleSide.Enemy))) : 640;
+
+    /// <summary>Upright, how far <paramref name="side"/>'s front row stands from its edge's far side: ours from the scene's foot, the enemy's from the deck's top.</summary>
+    private static float SlideEdge(BattleSide side)
+    {
+        var front = CardArea(new BattlePlace(side, 1));
+        return side == BattleSide.Player ? front.End.Y - SceneFoot : PhoneBattleUpright.DeckTopY - front.Position.Y;
+    }
+
+    // The cards' clip: the panel; upright down to the deck's top, out from behind which the enemy's cards slide up (owner,
+    // 2026-10-31).
+    private Rect2 CardsArea => Upright ? new(0, SceneFoot, 1280, PhoneBattleUpright.DeckTopY - SceneFoot) : PanelArea;
+
+    /// <summary>
+    /// The screen gallery's look at the cards' slide (<c>cards-sliding</c>, docs/ui/gallery.md): begun as a battle begins
+    /// and held at <paramref name="share"/> of the front row's way in.
+    /// </summary>
+    internal void HoldCardsSlide(double share)
+    {
+        StartCardsSlide(fade: false);
+        if (_cardsSliding < 0)
+            return;
+        _cardsSliding = share * BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds);
+        _cardsHeld = true;
+        PlaceCards();
+    }
 
     private void StepCards(double delta)
     {
-        if (_cardsSliding < 0)
+        if (_cardsSliding < 0 || _cardsHeld)
             return;
         _cardsSliding += delta;
         double seconds = BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds);
@@ -1245,21 +1274,27 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         PlaceCards();
     }
 
-    /// <summary>The cards at their places, or where their slide has them (in a dungeon, as opaque as their fade has them).</summary>
+    /// <summary>
+    /// The cards at their places, or where their slide has them (in a dungeon, as opaque as their fade has them): the
+    /// player's from the left, the enemy's from the right; upright (PB3) ours down out from under the scene, the enemy's up
+    /// out from behind the deck (owner, 2026-10-31).
+    /// </summary>
     private void PlaceCards()
     {
         double seconds = BattleScreenSettings.Get(BattleScreenSettings.CardsSlideSeconds);
         foreach (var (place, (card, _)) in _cards)
         {
-            float left = 0, alpha = 1;
+            float away = 0, alpha = 1;
             if (_cardsSliding >= 0 && seconds > 0 && _cardTravel.TryGetValue(place, out float travel))
             {
                 if (_cardsFade)
                     alpha = (float)Math.Min(1, _cardsSliding * CardsSlideDistance / seconds / travel);
                 else
-                    left = (float)Math.Max(0, travel - _cardsSliding * CardsSlideDistance / seconds);
+                    away = (float)Math.Max(0, travel - _cardsSliding * CardsSlideDistance / seconds);
             }
-            var at = CardArea(place).Position - PanelArea.Position + new Vector2(place.Side == BattleSide.Player ? -left : left, 0);
+            if (place.Side == BattleSide.Player)
+                away = -away;
+            var at = CardArea(place).Position - CardsArea.Position + (Upright ? new Vector2(0, away) : new Vector2(away, 0));
             card.Position = at * _scale;
             card.Size = CardSize * _scale;
             card.Modulate = new Color(1, 1, 1, alpha);

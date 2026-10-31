@@ -389,7 +389,9 @@ show is the drag a player would make to bring it there, then the still click (`M
 Step P3 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P3, where it stands"): the battle's turn
 upright — the board 1280 layout pixels wide over the whole room, the scene at the width on top, our rows under it, the
 gauge across between the front rows, the enemy's rows at the thumb, Skip on its strip, the deck at the foot (the commands
-from the foot up, the attacks at the right thumb), the retreat question over the deck's right column
+from the foot up, the attacks at the right thumb), the retreat question over the deck's right column, the cards sliding
+in at a battle's start from their armies' sides (since 2026-10-31: ours down from under the scene, the enemy's up from
+behind the deck; phone-build.md, "After the build: the cards' slide upright")
 (`Original.Content/Devices/PhoneBattleUpright`; `BattleBoardView`'s upright places, `BattleCommandLayer.Upright.cs`,
 `BattleDialogLayer.Phone.cs`).
 Step P4 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P4, where it stands"): the battle's other

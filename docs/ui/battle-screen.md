@@ -391,7 +391,9 @@ picture, the slot panels) is not shown. How it is built:
   Battle Screen… → "Opening: leave", 0.5 s by default, `--opening-seconds x` for a launch; at once while skipping
   and with `--fast`) while the battle goes on; the limit's plate at the scene's top shows as the opening goes.
   **The cards slide in** under the opening as it comes up, after Sengoku Rance's (owner, 2026-10-15; docs/sengoku/04-screen.md
-  §6.5): each from beyond its own side (the player's from the left, the enemy's from the right), linear, clipped to
+  §6.5): each from beyond its own side (the player's from the left, the enemy's from the right; on the phone held upright
+  ours down out from under the scene and the enemy's up out from behind the deck, the front row 688 layout pixels, so
+  that the enemy's starts wholly behind it — owner, 2026-10-31, docs/ui/phone-build.md), linear, clipped to
   the panel; the front row 640 layout pixels in Option → Battle Screen… → "Cards: slide in" (1 s by default, Sengoku
   Rance's 400 px in 1 s ×1.6; `--cards-slide-seconds x` for a launch), each card a random 0-160 pixels further and
   the back row 160 more, so the front row stands at 1-1.25 s and the back row at 1.25-1.5 s (our own random draw,

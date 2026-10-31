@@ -1544,6 +1544,24 @@ mouse. Built:
   the week-18 save to its deployment picker through the title's load, exit 0. A row's long press on the phone itself is
   not checked yet (the gallery holds the description by the title's own right click).
 
+### After the build: the cards' slide upright (owner, 2026-10-31)
+
+Looking at the gallery's `opening` upright, the owner found the cards sliding in at a battle's start as held landscape
+does — ours from the left, the enemy's from the right — though upright our army stands on top and the enemy's at the
+thumb. Built as asked, no mock-up round:
+
+- **The view** (`BattleBoardView`): upright each army comes from its own side — ours down out from under the scene's
+  foot, the enemy's up out from behind the deck's top, which now ends the cards' clip (`CardsArea`; Skip over them). The
+  front row's way in is as long as takes both armies' front rows wholly beyond their edges (`CardsSlideDistance`: 688
+  layout pixels, the enemy's front row standing that far over the deck; the PC's 640 elsewhere), each card's stagger and
+  the back row's 160 as before; "Cards: slide in" still times the front row. The PC's, the tablet's and the landscape
+  phone's slides are unchanged.
+- **The gallery**: a new entry `cards-sliding` in every pass — the opening with the slide begun and held at 0.6 of the
+  front row's way in (`BattleBoardView.HoldCardsSlide`), the slide's direction in a picture; `opening` same on the PC,
+  touch and landscape passes (upright it changed only by the button frames of 2026-10-31, dumped before them).
+- **Checks**: the build and the core tests; the gallery's four passes for `opening` and `cards-sliding`. The slide's
+  motion on the Poco is the owner's look.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.
