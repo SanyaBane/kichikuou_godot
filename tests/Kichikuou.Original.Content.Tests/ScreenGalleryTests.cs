@@ -95,6 +95,19 @@ public class ScreenGalleryTests
     }
 
     [Fact]
+    public void The_long_roster_lists_more_units_and_keeps_the_neediest()
+    {
+        var s = World();
+        for (int n = 20; n <= 50; n++)                              // records that hold troops; the others stay off
+            s.Units[n].MaxTroops = 100;
+        int troopless = Enumerable.Range(1, 19).First(n => s.Units[n].Status.Value == 0 && s.Units[n].MaxTroops.Value == 0);
+        GalleryStates.LongRoster(s);
+        Assert.Equal(GalleryStates.RosterLength, DeploymentTable.Rows(s).Count);
+        Assert.Equal(0, s.Units[troopless].Status.Value);
+        Assert.Equal(12, GalleryStates.NeediestUnit(s));
+    }
+
+    [Fact]
     public void Replenishs_preview_fills_the_troops_at_its_price()
     {
         var result = SubordinateResult.ReplenishPreview(World(), 12);
@@ -264,9 +277,9 @@ public class ScreenGalleryTests
         Assert.Equal(GalleryStates.SampleEndComment, shelf.Autos[1].Comment);
         var manuals = SaveSlots.NewestFirst(shelf.Manuals);
         Assert.Equal(GalleryStates.SampleComments, manuals.Select(m => m.Comment));
-        Assert.Equal([70, 68, 66, 64], manuals.Select(m => m.Week));
+        Assert.Equal([70, 68, 66, 64, 63, 62, 61, 60, 59, 58, 57, 56], manuals.Select(m => m.Week));
         Assert.Equal([null, .. library.Manuals.Select(id => (SaveId?)id)], LoadSaveScreen.Items(library, save: true));
-        Assert.Equal(2 * ISaveLibrary.AutoCount + 4, LoadSaveScreen.Items(library, save: false).Count);
+        Assert.Equal(2 * ISaveLibrary.AutoCount + 12, LoadSaveScreen.Items(library, save: false).Count);
         Assert.Equal(library.Autos[0], LoadSaveScreen.Items(library, save: false)[0]);
     }
 

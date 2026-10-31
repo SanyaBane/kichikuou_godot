@@ -614,3 +614,18 @@ the enemy's is Ex's (commander 1) Leazas Knights (CG 1131) throughout but the po
 | Poison Magic | Rance (unit 1), Leazas Knights; cast by Papaya (commander 104), Zeth Mages, CG 1343, mirrored — no unit of ours casts poison | 1100 |
 | The specials | the sprite the user shows while using it (`FIGT.ADV:1660-1713`): Rance Attack Rance (unit 1), Kentarou-kun Slash Kentarou (unit 31), the White D. Beams Shizuka (unit 17) and Magic (unit 39), EPO Light Gandhi (unit 37), the Black D. Beams Chizuko (unit 38) and Nagi (unit 40), Whirlwind Shot Isoroku (unit 27), High Speed Meglass (unit 30), By la Way Rick (unit 7), Vanish Bomb Miki (unit 32), C. War Dance Patton (unit 18), Chuhai Asuka (unit 11), T2 Soaring Wave Rolex (unit 47); T2 Goliath none (no sprite, as in play) | 1520 … 1530, 1222, 1121, 1252 |
 | The ninjas' follow-ups | Kanami, Freya, Kaoru, Wichita, each her own | 1164, 1176, 1182, 1185 |
+
+## 12. Lists long enough to scroll (owner, 2026-10-31)
+
+With the scroll bars made larger (docs/ui/phone.md, §40-§43), the owner asked for every list in the gallery to be longer
+than the screen in every pass where it can scroll at all, so its bar shows. Made up, each entry's note says so:
+
+- **The ledgers** (`deployment…`, `subordinates…`): `GalleryStates.LongRoster` switches on the unit records the save does
+  not list and that hold troops, in their order, at their full troops, 33 units in all (the PC shows about 25 rows); the
+  save's own units stay the ones short of troops, so Replenish's entries keep Haurein (unit 12).
+- **The manual saves** (`save-load…`): `GalleryStates.SampleComments` holds twelve, the four newest as before every
+  other week, the older ones a week apart (`ManualWeeksBefore`); the most a list shows at once is ten.
+- **The message log**: `GalleryStates.LogSample` opens with the day before (the war room), about twice the PC's paper.
+
+What never scrolls stays as it is: the pickers' grid on the PC, the tablet and held landscape (folded to fit), the
+options' window there, Ninja Scout's list (five ninjas at most) and the menus.

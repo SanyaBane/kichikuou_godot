@@ -168,15 +168,15 @@ internal static partial class GalleryEntries
 
     private static IEnumerable<GalleryEntry> Subordinates()
     {
-        yield return new("subordinates", "Screens", "Subordinates", Week18, "",
+        yield return new("subordinates", "Screens", "Subordinates", Week18, RosterNote,
             g => SubordinatesScreen(g, (_, _) => { }));
-        yield return new("subordinates-question", "Screens", "Subordinates: Replenish asks first", Week18, "",
+        yield return new("subordinates-question", "Screens", "Subordinates: Replenish asks first", Week18, RosterNote,
             g => SubordinatesScreen(g, (s, view) => view.Press(SubordinateOrderKind.Replenish, Neediest(s))));
         yield return new("subordinates-commander", "Screens", "Subordinates: the Commander tab", Week18,
-            "The ledger's Commander tab sorted by Lvl (docs/ui/unit-ledger.md, B5).",
+            "The ledger's Commander tab sorted by Lvl (docs/ui/unit-ledger.md, B5). " + RosterNote,
             g => SubordinatesScreen(g, (_, view) => view.Table.Sort(DeploymentColumn.Level, true), LedgerTab.Commander));
         yield return new("subordinates-result", "Screens", "Subordinates: Replenish's plate", Week18,
-            "The plate's figures are Replenish's for the unit as it is now; the order is not run (SubordinateResult.ReplenishPreview).",
+            "The plate's figures are Replenish's for the unit as it is now; the order is not run (SubordinateResult.ReplenishPreview). " + RosterNote,
             g => SubordinatesScreen(g, (s, view) =>
             {
                 int unit = Neediest(s);
@@ -185,7 +185,7 @@ internal static partial class GalleryEntries
             }));
         yield return new("subordinates-new-troops", "Screens", "Subordinates: Add New Troops' plate", Week18,
             "The plate's figures are Add New Troops' third step (+100 on the week-18 save) for the unit as it is now; the order is " +
-            "not run (SubordinateResult.AddPreview).",
+            "not run (SubordinateResult.AddPreview). " + RosterNote,
             g => SubordinatesScreen(g, (s, view) =>
             {
                 int unit = Neediest(s);
@@ -193,6 +193,10 @@ internal static partial class GalleryEntries
                 view.ShowResult(SubordinateResult.AddPreview(s, unit, 2));
             }));
     }
+
+    /// <summary>The ledgers' note: the roster the gallery lengthens so it scrolls (<see cref="GalleryStates.LongRoster"/>).</summary>
+    private const string RosterNote = "Made up: unit records the save does not list (those with troops) switched on at full troops, "
+        + "33 units in all, so the ledger scrolls on every device.";
 
     private static int Neediest(GameState s) =>
         GalleryStates.NeediestUnit(s) is var unit and > 0 ? unit
@@ -207,6 +211,7 @@ internal static partial class GalleryEntries
     {
         if (g.State(Week18) is not { } s)
             return null;
+        GalleryStates.LongRoster(s);
         var view = g.Add(new SubordinatesView(g.Font, g.Faces) { Visible = true });
         view.LoadCrops();
         view.ShowTab(tab, remember: false);                     // the entry's tab, not the player's

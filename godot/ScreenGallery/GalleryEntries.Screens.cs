@@ -26,28 +26,28 @@ internal static partial class GalleryEntries
     private static IEnumerable<GalleryEntry> DeploymentScreens()
     {
         yield return new("deployment", "Screens", "Deployment: an attack's party", Week18,
-            "The party the week-18 look sends against Oaks (6); Rance's details shown, as when his row is hovered.",
+            "The party the week-18 look sends against Oaks (6); Rance's details shown, as when his row is hovered. " + RosterNote,
             g => Deployment(g, 1, 4, OaksParty, Rance));
         yield return new("deployment-picking", "Screens", "Deployment: two picked", Week18,
-            "Rance and Haurein picked, no row hovered.",
+            "Rance and Haurein picked, no row hovered. " + RosterNote,
             g => Deployment(g, 1, 4, [Rance, 12], 0));
         yield return new("deployment-defence", "Screens", "Deployment: a defence", Week18,
-            "Sﾌﾞﾀｲ in mode 2 (FIGT_B.ADV:78-80), the same party.",
+            "Sﾌﾞﾀｲ in mode 2 (FIGT_B.ADV:78-80), the same party. " + RosterNote,
             g => Deployment(g, 2, 4, OaksParty, Rance));
         yield return new("deployment-search", "Screens", "Deployment: a dungeon search", Week18,
-            "Sﾌﾞﾀｲ in mode 3 for one unit (Cﾒｲｷｭｳ.ADV:333-335).",
+            "Sﾌﾞﾀｲ in mode 3 for one unit (Cﾒｲｷｭｳ.ADV:333-335). " + RosterNote,
             g => Deployment(g, 3, 1, [Rance], Rance));
         yield return new("deployment-refill-question", "Screens", "Deployment: Replenish asks first", Week18,
-            "The unit --refill takes: the fewest troops of its maximum among those Refill offers.",
+            "The unit --refill takes: the fewest troops of its maximum among those Refill offers. " + RosterNote,
             g => Deployment(g, 1, 4, OaksParty, 0, refill: Refill.Question));
         yield return new("deployment-refill-done", "Screens", "Deployment: Replenish's plate", Week18,
-            "The plate's figures are Replenish's for the unit as it is now (SubordinateResult.ReplenishPreview); the table under it is not replenished.",
+            "The plate's figures are Replenish's for the unit as it is now (SubordinateResult.ReplenishPreview); the table under it is not replenished. " + RosterNote,
             g => Deployment(g, 1, 4, OaksParty, 0, refill: Refill.Plate));
         yield return new("deployment-troops", "Screens", "Deployment: the Troops tab", Week18,
-            "The ledger's Troops tab sorted by T.Atk (docs/ui/unit-ledger.md, B2).",
+            "The ledger's Troops tab sorted by T.Atk (docs/ui/unit-ledger.md, B2). " + RosterNote,
             g => Deployment(g, 1, 4, OaksParty, Rance, tab: LedgerTab.Troops, sort: (DeploymentColumn.TroopAtk, true)));
         yield return new("deployment-commander", "Screens", "Deployment: the Commander tab, the order kept", Week18,
-            "The Commander tab with the rows still in the Troops tab's T.Atk order: the order's seal right of the tabs (B3, round D).",
+            "The Commander tab with the rows still in the Troops tab's T.Atk order: the order's seal right of the tabs (B3, round D). " + RosterNote,
             g => Deployment(g, 1, 4, OaksParty, Rance, tab: LedgerTab.Commander, sort: (DeploymentColumn.TroopAtk, true)));
     }
 
@@ -63,6 +63,7 @@ internal static partial class GalleryEntries
     {
         if (g.State(Week18) is not { } s)
             return null;
+        GalleryStates.LongRoster(s);
         GalleryStates.Deployment(s, limit, party, details);
         var p = g.Bound(s);
         p.Show(new PickerScreenEvent(PickerKind.Deployment, (Sys3Int)mode, true));
@@ -113,7 +114,7 @@ internal static partial class GalleryEntries
     /// <summary>When the newest sample save was written: a fixed time, so the pictures stay the same.</summary>
     private static readonly DateTime SavedAt = new(2026, 10, 20, 21, 30, 0);
 
-    private const string SamplesNote = "Made up: ten Turn Start and ten Turn End auto-saves and four manual saves, all the week-18 "
+    private const string SamplesNote = "Made up: ten Turn Start and ten Turn End auto-saves and twelve manual saves, all the week-18 "
         + "game, the older ones a week earlier each (only the date differs), kept in memory.";
 
     private static IEnumerable<GalleryEntry> SaveLoadScreens()

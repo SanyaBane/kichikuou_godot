@@ -66,6 +66,28 @@ public static class GalleryStates
         [.. Enumerable.Range(1, 50).Where(n => s.Units[n].Status.Value is 1 or 2
             && s.Units[n].Item.Value is var item && item != 0 && !TreasureRoster.Fixed(item))];
 
+    /// <summary>How many units <see cref="LongRoster"/> lists: more than any device's ledger shows at once (the PC's about 25 rows).</summary>
+    public const int RosterLength = 33;
+
+    /// <summary>
+    /// The ledgers' roster made long enough to scroll on every device (owner, 2026-10-31): unit records the save does not
+    /// list (status 0) and that hold troops switched on in their order until <see cref="RosterLength"/> are listed, each at
+    /// its full troops so the save's own units stay the ones short of troops (<see cref="NeediestUnit"/>, Replenish's).
+    /// Made up.
+    /// </summary>
+    public static void LongRoster(GameState s)
+    {
+        int listed = Enumerable.Range(1, 50).Count(n => s.Units[n].Status.Value != 0);
+        for (int n = 1; n <= 50 && listed < RosterLength; n++)
+        {
+            if (s.Units[n].Status.Value != 0 || s.Units[n].MaxTroops.Value <= 0)        // Sill (unit 2) commands none
+                continue;
+            s.Units[n].Status = (Sys3Int)1;
+            s.Units[n].Troops = s.Units[n].MaxTroops;
+            listed++;
+        }
+    }
+
     /// <summary>The unit at status 1 with the fewest troops of its maximum, under it (0: none) — Replenish's likely one.</summary>
     public static int NeediestUnit(GameState s) =>
         Enumerable.Range(1, 50)
@@ -217,19 +239,27 @@ public static class GalleryStates
         s.Tmp0033 = (Sys3Int)details;
     }
 
-    /// <summary>The comments of <see cref="SampleLibrary"/>'s manual saves, newest first ("" none).</summary>
-    public static IReadOnlyList<string> SampleComments { get; } = ["before the attack on Oaks", "", "", "Lia's scene next week"];
+    /// <summary>
+    /// The comments of <see cref="SampleLibrary"/>'s manual saves, newest first ("" none): twelve, more than any device's
+    /// list shows at once, so it scrolls and its bar shows (owner, 2026-10-31).
+    /// </summary>
+    public static IReadOnlyList<string> SampleComments { get; } =
+        ["before the attack on Oaks", "", "", "Lia's scene next week", "", "", "after the Monsters' Cave", "", "", "", "", ""];
+
+    /// <summary>How many weeks before the newest <see cref="SampleLibrary"/>'s manual save <paramref name="place"/> (0 the newest) is: the four newest every other week, the older ones a week apart.</summary>
+    public static int ManualWeeksBefore(int place) => place < 4 ? 2 * place : place + 3;
 
     /// <summary>The comment of <see cref="SampleLibrary"/>'s newest Turn END auto-save.</summary>
     public const string SampleEndComment = "before the rebels' turn";
 
     /// <summary>
     /// A library for the Save/Load screen, in memory (nothing is written to disk): <paramref name="data"/>'s game as the
-    /// newest of the auto-saves and of four manual saves, the older ones the same game a week earlier each (made up: only
+    /// newest of the auto-saves and of the manual saves, the older ones the same game a week earlier each (made up: only
     /// the week and the date the lists read, <c>Tmp0021</c>, differ). The auto-saves are both rings full (owner's decision
     /// 31): the turn starts of ten weeks written <paramref name="newest"/> less a day each, the Turn ENDs of the ten weeks
     /// before the newest two hours after their start (the newest with <see cref="SampleEndComment"/>); the manual saves an
-    /// hour after their week's start (the newest is the save written last), every other week, with <see cref="SampleComments"/>.
+    /// hour after their week's start (the newest is the save written last), <see cref="ManualWeeksBefore"/> apart, with
+    /// <see cref="SampleComments"/>.
     /// </summary>
     public static MemorySaveLibrary SampleLibrary(SaveData data, DateTime newest)
     {
@@ -250,7 +280,7 @@ public static class GalleryStates
                 library.WriteAuto(WeeksBefore(weeks, 2).Commented(weeks == 1 ? SampleEndComment : ""), AutoRing.TurnEnd);
         }
         for (int i = SampleComments.Count - 1; i >= 0; i--)
-            library.WriteManual(WeeksBefore(2 * i, 1).Commented(SampleComments[i]));
+            library.WriteManual(WeeksBefore(ManualWeeksBefore(i), 1).Commented(SampleComments[i]));
         return library;
     }
 
@@ -383,6 +413,17 @@ public static class GalleryStates
     /// </summary>
     public static IReadOnlyList<LogPage> LogSample { get; } =
     [
+        // the day before: the log runs to about twice the PC's paper, so its bar's thumb is short (owner, 2026-10-31)
+        new(LogKind.Place, "", ["Leazas Castle", "The War Room"]),
+        new(LogKind.Narration, "", ["The generals gathered around the map."]),
+        new(LogKind.Speech, "Leila", ["The Royal Guards are ready to march."]),
+        new(LogKind.Speech, "Rick", ["The knights too. Give the word."]),
+        new(LogKind.Speech, "Rance", ["Not yet. Let them come to us."]),
+        new(LogKind.Thought, "Leila", ["(He is planning something again...)"]),
+        new(LogKind.Speech, "Menad", ["Sir, a messenger from the north!"]),
+        new(LogKind.Narration, "", ["The messenger knelt and handed over", "a sealed letter."]),
+        new(LogKind.Speech, "Rance", ["Boring. Read it later, Maris."]),
+        new(LogKind.Speech, "Maris", ["As you wish, King Rance."]),
         new(LogKind.Place, "", ["Leazas Castle", "The Throne Room"]),
         new(LogKind.Narration, "", ["The morning sun rose over the castle walls."]),
         new(LogKind.Speech, "Maris", ["Good morning, King Rance.", "The ministers are waiting for you."]),
