@@ -5,9 +5,10 @@ namespace Kichikuou.Original.Content.Devices;
 /// with the owner's change): the PC's screen stacked over the whole room. The head under the hole (<see cref="Head"/>: the
 /// attacker's flag, the title, the date at the right, the news, a divider); the defended province's panel (<see cref="Province"/>:
 /// its picture at the left, its four figures beside it, each a label over its value); "VS"; the attacking army's panel
-/// (<see cref="Army"/>: the four places' cards two a row, the front row (1, 2) on top facing up at the province, the back row
-/// (3, 4) under it, the totals and the report's source under them, all in the panel's middle — the owner's change to the
-/// landscape screen, LA2); Maris's question (<see cref="Advisor"/>); then the answers at the thumb: Abandon City (10% narrower,
+/// (<see cref="Army"/>: the four places' cards two a row, the front row (1, 2) on top facing up at the province, held from
+/// above in the PC's bracket turned up (<see cref="Bracket"/>, the owner's PA1f2a, §31), the back row (3, 4) under it, the
+/// totals and the report's source under them, all in the panel's middle — the owner's change to the landscape screen, LA2);
+/// Maris's question (<see cref="Advisor"/>); then the answers at the thumb: Abandon City (10% narrower,
 /// the owner's change) | Ninja Scout, and Intercept in the bar. Ninja Scout's list opens above its button over Maris's
 /// question: one ninja from the mock-up's left, more two a row across the room. The figures are the mock-ups'
 /// (<c>tools/ui/mock_phone.py</c>: <c>attack_head</c>, <c>pa1_base</c>, <c>pa1n</c>, <c>attacker_card</c>, <c>maris</c>,
@@ -91,14 +92,25 @@ public static class PhoneAttackUpright
 
     /// <summary>
     /// The cards: 16 in from the panel's sides, 14 apart across and down, at most 270 high; each row's caption in the 40 over
-    /// it; the totals 16 under the cards, their block 106 high (<see cref="PhoneAttack.TotalsMiddle"/> on); the room kept
-    /// under the panel's caption and over its foot.
+    /// it; the totals 16 under the cards, their block 106 high (<see cref="PhoneAttack.TotalsMiddle"/> on); the block in the
+    /// panel's middle and 20 lower, room for the bracket's head over the front row's caption (round P25 drew it 40 lower;
+    /// 20 keeps Ninja Scout's list of all five ninjas under the back row); the head's tip at least 20 under the panel's top
+    /// — beside the panel's caption, which keeps to the left —, the room kept over the panel's foot.
     /// </summary>
-    private const float CardsIn = 16, CardGap = 14, CardHeight = 270, CaptionsRoom = 40, TotalsUnder = 16, TotalsBlock = 106,
-        ContentTop = 84, ContentFoot = 24, TotalsIn = 28;
+    private const float CardsIn = 16, CardGap = 14, CardHeight = 270, CaptionsRoom = 40, BracketDrop = 20, TotalsUnder = 16,
+        TotalsBlock = 106, TipUnder = 20, ContentFoot = 24, TotalsIn = 28;
 
-    /// <summary>A row's caption's middle over its cards; the arrow beside the front row's (right of its middle, its half size).</summary>
-    public const float RowCaptionAbove = 24, ArrowRight = 100, ArrowHalf = 8;
+    /// <summary>A row's caption's middle over its cards.</summary>
+    public const float RowCaptionAbove = 24;
+
+    /// <summary>
+    /// The bracket holding the front row from above (the PC's, docs/ui/enemy-attack.md, §8, turned up and scaled as the
+    /// cards are, 573 / 252: the owner's PA1f2a, docs/ui/phone.md, §31): its line this far over "FRONT ROW"'s middle, this
+    /// wide; its ends down to this far over the cards' top; each arm ending this far beside the middle, bending to this far
+    /// beside it and this far up; the head's base and tip over the line, its half width.
+    /// </summary>
+    public const float BracketOver = 30, BracketWidth = 5.7f, BracketEnds = 4.5f, ArmEnd = 36, BendIn = 14, BendUp = 23,
+        HeadBase = 14, HeadTip = 75, HeadHalf = 32;
 
     /// <summary>A card's face: at most this large, as high as the card less 12 at the top and the foot.</summary>
     public const float CardFace = 200;
@@ -106,15 +118,18 @@ public static class PhoneAttackUpright
     /// <summary>The cards' height: 270, less on a screen too short for the panel to hold them.</summary>
     private static float CardH(PhoneFrame f)
     {
-        float fixedPart = 2 * CaptionsRoom + CardGap + TotalsUnder + TotalsBlock;
-        return Math.Max(0, Math.Min(f.Px(CardHeight), (Army(f).H - f.Px(ContentTop + ContentFoot + fixedPart)) / 2));
+        float fixedPart = FrontLeast + CardGap + CaptionsRoom + TotalsUnder + TotalsBlock + ContentFoot;
+        return Math.Max(0, Math.Min(f.Px(CardHeight), (Army(f).H - f.Px(fixedPart)) / 2));
     }
+
+    /// <summary>The front row's least distance under the panel's top: the head's tip, the head, the line and the caption over it.</summary>
+    private const float FrontLeast = TipUnder + HeadTip + BracketOver + RowCaptionAbove;
 
     private static float CardsTop(PhoneFrame f)
     {
         var panel = Army(f);
         float block = 2 * CardH(f) + f.Px(2 * CaptionsRoom + CardGap + TotalsUnder + TotalsBlock);
-        return Math.Max(panel.Y + f.Px(ContentTop), panel.Y + (panel.H - block) / 2) + f.Px(CaptionsRoom);
+        return Math.Max(panel.Y + f.Px(FrontLeast), panel.Y + (panel.H - block) / 2 + f.Px(CaptionsRoom + BracketDrop));
     }
 
     /// <summary>Place <paramref name="slot"/>'s card: the front row (1, 2) on top, nearer the province, the back row (3, 4) under it; 1 and 3 at the left.</summary>
@@ -132,6 +147,17 @@ public static class PhoneAttackUpright
     {
         var panel = Army(f);
         return (panel.X + panel.W / 2, Card(f, 1 + 2 * row).Y - f.Px(RowCaptionAbove));
+    }
+
+    /// <summary>
+    /// The bracket over the front row: its ends at the front row's outer sides (1 in), its middle the panel's, its line
+    /// <see cref="BracketOver"/> over "FRONT ROW"'s middle, and the cards' top its ends come down to (less <see cref="BracketEnds"/>).
+    /// </summary>
+    public static (float X0, float X1, float Middle, float Line, float CardsTop) Bracket(PhoneFrame f)
+    {
+        var (middle, caption) = RowCaptionAt(f, 0);
+        var left = Card(f, 1);
+        return (left.X + f.Px(1), Card(f, 2).Right - f.Px(1), middle, caption - f.Px(BracketOver), left.Y);
     }
 
     /// <summary>The totals under the cards: 28 in from the panel's sides; their top, 16 under the cards.</summary>

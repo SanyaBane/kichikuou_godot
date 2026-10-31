@@ -1221,3 +1221,33 @@ with the screen under the plate dimmed 50% (PU1r1d1), 65% (PU1r1d2) and 80% (PU1
 screen under it is still there to see. **The owner chose PU1r1d2 (65%)**, built (docs/ui/phone-build.md, §5, "After
 the build: the result plate upright"), and then the same 65% on every device: the PC, the tablet and the phone held
 landscape keep their plate's layout over the screen dimmed as upright.
+
+## 31. Round P24: the army's facing upright (2026-10-31)
+
+Looking at the gallery's `enemy-attack` upright, the owner found no telling which way the attacking army faces: held
+landscape the gold pointer left of its cards says it (`PhoneAttack.Pointer`, 30 × 68 reference pixels), on the PC the
+bracket holding its front row (docs/ui/enemy-attack.md, §8), but upright (PA1) the only mark is the triangle beside
+"FRONT ROW", 16 px (0.9 mm; `EnemyAttackView.UprightArmy`). The round (`tools/ui/mock_attack_facing.py`, over the
+upright pass's `enemy-attack-scouted` and `enemy-attack`) draws the facing as plainly, the small triangle gone in each:
+
+- **PA1f1 — the landscape's pointer, turned up**: a gold pointer (5.2 mm wide, 2.3 mm deep) in the panel's middle
+  over "FRONT ROW", the cards 40 px lower (the panel had the room under the report).
+- **PA1f2 — the PC's bracket, turned up**: its F5 bracket scaled with the cards (573 / 252): a gold line over the front
+  row from end to end, hooked onto its outer corners, its head (3.6 mm wide, 3.5 mm deep, in the name's gold) in the
+  middle at the "VS"; the row captions at the cards' left, the cards 30 px lower.
+- **PA1f3 — pointers beside the VS**: two gold pointers as PA1f1's either side of the "VS", between the panels; the
+  army's panel as it is.
+- **PA1f4 — the VS on an arrow**: "VS" on a lacquer arrow (13.7 mm wide) rising from the army's panel, its tip at Ys's
+  panel; the army's panel 60 px lower at its top, the cards 30 px lower.
+
+The agent recommends PA1f2: the PC's own mark for the same thing, and the head belongs to the front row it holds, where
+PA1f3 and PA1f4 say only which way the attack goes. The deployment table upright (PD2, `deployment`) marks its party's
+front row the same small way ("Front row ▼"), so the choice may go there too.
+
+**The owner chose PA1f2, "FRONT ROW" under the bracket.** Round P25 (the same script) draws the bracket's line 30 px
+(1.7 mm) over the caption's middle, its ends down past the caption to the cards' corners, the cards 40 px lower:
+**PA1f2a** the caption in the middle under the head, "BACK ROW" in the middle as now; **PA1f2b** both captions at the
+cards' left. The agent recommends PA1f2a: the head, the caption and the row it names stand in one line down the
+middle, and the back row's caption stays where it is. **The owner chose PA1f2a**, built with the cards 20 px lower than
+before instead of the mock-up's 40, so that Ninja Scout's list of all five ninjas stays clear of the back row
+(docs/ui/phone-build.md, §5, "After the build: the army's bracket upright").

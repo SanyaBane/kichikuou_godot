@@ -1376,6 +1376,21 @@ the rest of the screen dimmed 65% (PU1r1d2). Built:
   closes the plate as any tap does instead of pressing the button (before, the layer was the frame's alone).
 - **The gallery**: `subordinates-new-troops` is the R5 plate (Add New Troops' third step, `AddPreview`) in every pass.
 
+### After the build: the army's bracket upright (owner, 2026-10-31)
+
+The owner, looking at the gallery's `enemy-attack` upright: no telling which way the attacking army faces — held landscape
+the gold pointer says it, upright only a 0.9 mm triangle beside "FRONT ROW". Rounds P24-P25 (phone.md, §31): the owner
+chose the PC's bracket turned up with "FRONT ROW" under it, in the middle (PA1f2a). Built:
+
+- **The model**: `PhoneAttackUpright.Bracket` — the line 30 over "FRONT ROW"'s middle from the front row's outer sides
+  (1 in), its ends down to 4.5 over the cards — and the bracket's figures (`BracketOver` … `HeadHalf`, the PC's
+  `DrawArmyBracket` scaled as the cards are, 573 / 252). The cards' block stands 20 lower than the panel's middle (the
+  cards 20 lower than before), its front row at least 149 under the panel's top (the head's tip 20 under it); the
+  mock-up drew the cards 40 lower, but then the list of all five ninjas would cover the back row's foot
+  (`PhoneAttackUprightTests`).
+- **The view**: `EnemyAttackView.UprightBracket` draws the line in gold (5.7 wide) and the head in the name's gold, as
+  the PC's; the small triangle beside "FRONT ROW" is gone. The PC's and the landscape phone's screens are unchanged.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

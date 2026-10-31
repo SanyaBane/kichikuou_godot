@@ -407,7 +407,8 @@ plate after a troop order a card of its own in the middle over the screen dimmed
 `OrderResultPlate.Upright.cs`, `SubordinateResult.Bar`; the 65% on every device).
 Step P6 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P6, where it stands"): the enemy attack
 upright — the PC's screen stacked, the head with the news, the province's picture with its figures beside it, "VS", the
-army's cards two a row with the front row on top facing up at the province, Maris's question, Abandon City | Ninja Scout
+army's cards two a row with the front row on top facing up at the province (since 2026-10-31 held from above in the PC's
+bracket turned up, the owner's PA1f2a, phone.md §31; `PhoneAttackUpright.Bracket`), Maris's question, Abandon City | Ninja Scout
 over Intercept in the bar; Ninja Scout's list and Abandon City's question above their buttons
 (`Original.Content/Devices/PhoneAttackUpright`; `EnemyAttackView.Upright.cs`, the answers, the list, the cards and the
 totals shared with `EnemyAttackView.Phone.cs`).

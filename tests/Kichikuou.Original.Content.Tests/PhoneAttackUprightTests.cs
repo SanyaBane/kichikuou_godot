@@ -41,15 +41,26 @@ public class PhoneAttackUprightTests
     {
         // pa1_base: the army's panel (16, 922, PW - 16, MARIS_TOP - 20 = 1966); its cards cw = (PW - 64 - 14) // 2 = 571,
         // ch = 270, at x 32 and 617, the rows' captions in the 40 over each row, the totals under them. Their block (756)
-        // centred in the panel: 922 + (1044 - 756) / 2 = 1066, the front row's cards from 1106.
+        // centred in the panel, 922 + (1044 - 756) / 2 = 1066, and 20 lower for the bracket (round P25): the front row's
+        // cards from 1126.
         Equal(new(16, 922, 1188, 1044), PhoneAttackUpright.Army(Reference));
-        Equal(new(32, 1106, 571, 270), PhoneAttackUpright.Card(Reference, 1));
-        Equal(new(617, 1106, 571, 270), PhoneAttackUpright.Card(Reference, 2));
-        Equal(new(32, 1430, 571, 270), PhoneAttackUpright.Card(Reference, 3));
-        Equal(new(617, 1430, 571, 270), PhoneAttackUpright.Card(Reference, 4));
-        Assert.Equal((610f, 1082f), PhoneAttackUpright.RowCaptionAt(Reference, 0));
-        Assert.Equal((610f, 1406f), PhoneAttackUpright.RowCaptionAt(Reference, 1));
-        Assert.Equal((44f, 1176f, 1716f), PhoneAttackUpright.Totals(Reference));       // 28 in, 16 under the cards
+        Equal(new(32, 1126, 571, 270), PhoneAttackUpright.Card(Reference, 1));
+        Equal(new(617, 1126, 571, 270), PhoneAttackUpright.Card(Reference, 2));
+        Equal(new(32, 1450, 571, 270), PhoneAttackUpright.Card(Reference, 3));
+        Equal(new(617, 1450, 571, 270), PhoneAttackUpright.Card(Reference, 4));
+        Assert.Equal((610f, 1102f), PhoneAttackUpright.RowCaptionAt(Reference, 0));
+        Assert.Equal((610f, 1426f), PhoneAttackUpright.RowCaptionAt(Reference, 1));
+        Assert.Equal((44f, 1176f, 1736f), PhoneAttackUpright.Totals(Reference));       // 28 in, 16 under the cards
+    }
+
+    [Fact]
+    public void The_bracket_holds_the_front_row_from_above_its_head_under_the_panel_s_top()
+    {
+        // mock_attack_facing.py, PA1f2a: the line 30 over "FRONT ROW"'s middle, from the cards' outer sides (1 in); the head's
+        // tip 75 over it, 75 under the panel's top.
+        Assert.Equal((33f, 1187f, 610f, 1072f, 1126f), PhoneAttackUpright.Bracket(Reference));
+        var (_, _, _, line, _) = PhoneAttackUpright.Bracket(Reference);
+        Assert.Equal(997, line - PhoneAttackUpright.HeadTip, Close);
     }
 
     [Fact]
@@ -106,6 +117,9 @@ public class PhoneAttackUprightTests
         Assert.InRange(cards, 200f, 269f);
         var (_, _, top) = PhoneAttackUpright.Totals(shorter);
         Assert.True(top + shorter.Px(106) <= PhoneAttackUpright.Army(shorter).Bottom);
-        Assert.True(PhoneAttackUpright.Card(shorter, 1).Y - shorter.Px(40) >= PhoneAttackUpright.Army(shorter).Y + shorter.Px(84) - Close);
+        // The bracket's head stays in the panel, its line under the panel's caption.
+        var (_, _, _, line, _) = PhoneAttackUpright.Bracket(shorter);
+        Assert.True(line - shorter.Px(PhoneAttackUpright.HeadTip) >= PhoneAttackUpright.Army(shorter).Y + shorter.Px(20) - Close);
+        Assert.True(line >= PhoneAttackUpright.Army(shorter).Y + shorter.Px(84) - Close);
     }
 }

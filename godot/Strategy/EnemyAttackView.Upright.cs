@@ -8,7 +8,8 @@ namespace Kichikuou.Game.Strategy;
 // Our enemy attack screen on the phone held upright (docs/ui/phone-build.md, step P6; docs/ui/phone.md, §8, PA1 and PA1n
 // with the owner's change): the PC's screen stacked over the whole room on the wave backdrop — the head (the flag, the
 // title, the date and the news), the province's panel (its picture, its figures beside it), "VS", the army's panel (the
-// front row on top facing up at the province, the back row under it, the totals), Maris's question, then the answers at
+// front row on top facing up at the province, held from above in the PC's bracket turned up — the owner's PA1f2a, §31 —,
+// the back row under it, the totals), Maris's question, then the answers at
 // the thumb: Abandon City | Ninja Scout, Intercept in the bar. The answers, Ninja Scout's list, the cards and the totals
 // are held landscape's (EnemyAttackView.Phone.cs) at PhoneAttackUpright's places; Abandon City asks in the callout above
 // its button. Drawn in the frame's layout pixels over the whole screen (PhoneUnits).
@@ -98,12 +99,8 @@ internal sealed partial class EnemyAttackView
             var (cx, cy) = PhoneAttackUpright.RowCaptionAt(f, row);
             float x = cx / u.K, y = cy / u.K;
             CentredAt(_cinzelBold, row == 0 ? "FRONT ROW" : "BACK ROW", caption, x, Middle(_cinzelBold, caption, y), Ui.Subtitle);
-            if (row == 0)
-            {
-                float ax = x + u.Px(PhoneAttackUpright.ArrowRight), a = u.Px(PhoneAttackUpright.ArrowHalf);  // the front row faces the province
-                _sheet.DrawColoredPolygon([new(ax - a, y + a), new(ax + a, y + a), new(ax, y - a)], Ui.Subtitle);
-            }
         }
+        UprightBracket(u, f);
         for (int slot = 1; slot <= 4; slot++)
         {
             var card = u.Rect(PhoneAttackUpright.Card(f, slot));
@@ -116,6 +113,24 @@ internal sealed partial class EnemyAttackView
         }
         var (x0, x1, top) = PhoneAttackUpright.Totals(f);
         PhoneTotals(u, x0, x1, top, attack);
+    }
+
+    /// <summary>
+    /// The PC's bracket turned up (<see cref="DrawArmyBracket"/>; the owner's PA1f2a): a gold line over "FRONT ROW" from the
+    /// front row's left to its right, its ends down to the cards, its arms bending up to the head in the middle, which points
+    /// at the province.
+    /// </summary>
+    private void UprightBracket(PhoneUnits u, PhoneFrame f)
+    {
+        var (left, right, middle, line, cards) = PhoneAttackUpright.Bracket(f);
+        float x0 = left / u.K, x1 = right / u.K, mid = middle / u.K, y = line / u.K, ends = cards / u.K - u.Px(PhoneAttackUpright.BracketEnds);
+        float arm = u.Px(PhoneAttackUpright.ArmEnd), bendIn = u.Px(PhoneAttackUpright.BendIn), bendUp = y - u.Px(PhoneAttackUpright.BendUp);
+        float width = Lacquer.Line(u.Px(PhoneAttackUpright.BracketWidth), _k);
+        _sheet.DrawPolyline([new(x0, ends), new(x0, y), new(mid - arm, y), new(mid - bendIn, bendUp)], Ui.Gold, width, true);
+        _sheet.DrawPolyline([new(x1, ends), new(x1, y), new(mid + arm, y), new(mid + bendIn, bendUp)], Ui.Gold, width, true);
+        float half = u.Px(PhoneAttackUpright.HeadHalf), headBase = y - u.Px(PhoneAttackUpright.HeadBase);
+        Lacquer.DrawSmoothPolygon(_sheet, [new(mid - half, headBase), new(mid, y - u.Px(PhoneAttackUpright.HeadTip)), new(mid + half, headBase)],
+            Ui.Name, _k);
     }
 
     /// <summary>Maris's face square and her question in her own lines, one size for all.</summary>
