@@ -106,13 +106,14 @@ public sealed record DeploymentColumnInfo(DeploymentColumn Column, string Header
 /// GameState, whether it is grey (deployed this week, status 2) and its place in the party (1-4, or 0);
 /// whether its Refill cell is a button (<see cref="SubordinatesCommand.CanReplenish"/>, owner's decision 27) and, when
 /// it has a price but is none, why (<see cref="DeploymentTable.RefillNote"/>); the six situational modifiers as
-/// the battle adds them (<see cref="DeploymentTable.Modifier"/>), in <see cref="DeploymentColumn"/>'s order.
+/// the battle adds them (<see cref="DeploymentTable.Modifier"/>), in <see cref="DeploymentColumn"/>'s order; its face
+/// (<c>Unit_FaceCg</c>, 0 = none; <see cref="UnitFaces"/> cuts it), which the phone's Name cells show.
 /// </summary>
 public sealed record DeploymentRow(
     int Unit, string Name, int Troops, int MaxTroops, int Hp, int MaxHp, int Exp, int NextExp,
     int Level, int Atk, int Def, int Attacks, int Strategy, int Magic, int TroopAtk, int TroopDef, int Cost,
     bool Grey, int PartyPlace, string TroopType = "", int Refill = 0, string Item = "", string Rows = "",
-    bool CanRefill = false, string RefillNote = "", IReadOnlyList<int>? Modifiers = null)
+    bool CanRefill = false, string RefillNote = "", IReadOnlyList<int>? Modifiers = null, int FaceCg = 0)
 {
     /// <summary>The cell's text.</summary>
     public string Text(DeploymentColumn column) => column switch
@@ -297,7 +298,8 @@ public static class DeploymentTable
                 Rows: RowsOf(u.Class.Value),
                 CanRefill: SubordinatesCommand.CanReplenish(state, (Sys3Int)n),
                 RefillNote: RefillNote(state, n),
-                Modifiers: [.. new[] { u.OffAtkMod, u.OffDefMod, u.DefAtkMod, u.DefDefMod, u.DgnAtkMod, u.DgnDefMod }.Select(Modifier)]));
+                Modifiers: [.. new[] { u.OffAtkMod, u.OffDefMod, u.DefAtkMod, u.DefDefMod, u.DgnAtkMod, u.DgnDefMod }.Select(Modifier)],
+                FaceCg: u.FaceCg.Value));
         }
         return rows;
     }

@@ -100,6 +100,7 @@ internal sealed partial class DeploymentPanels : Control
         {
             field = value;
             value?.Tab = _tabs.Tab;
+            value?.Faces = FaceSquare;                          // the phone's Name cells
         }
     }
 
@@ -670,6 +671,10 @@ internal sealed partial class DeploymentPanels : Control
             c.DrawTextureRect(texture, rect, false, new Color(1, 1, 1, 0.9f));
         c.DrawRect(rect, Ui.HoverLine, false, Line(2));
     }
+
+    /// <summary>A face cut to its square at <paramref name="pixels"/> window pixels (the ledger's Name cells on the phone).</summary>
+    private ImageTexture? FaceSquare(int faceCg, int pixels) =>
+        faceCg == 0 ? null : _faces.SquareTexture(faceCg, _faces.CropOf(faceCg, _crops), Math.Max(16, pixels));
 
     /// <summary>A face cut to its square at <paramref name="size"/> screen pixels, as many window pixels as it covers.</summary>
     private ImageTexture? FaceTexture(int faceCg, float size) =>

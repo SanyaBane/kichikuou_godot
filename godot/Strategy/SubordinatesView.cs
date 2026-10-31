@@ -89,6 +89,8 @@ internal sealed partial class SubordinatesView : Control
         AddChild(_face);
         _table = new DeploymentTableView(font, SubordinatesScreen.Columns, chooser: true, textSize: 8.3f) { Visible = true };
         _table.Tab = _tabs.Tab;
+        _table.Faces = (faceCg, pixels) =>                      // the phone's Name cells
+            faceCg == 0 ? null : _faces.SquareTexture(faceCg, _faces.CropOf(faceCg, _crops), Math.Max(16, pixels));
         _table.RowPressed += unit => _table.Chosen = unit;
         _table.RightPressed += () => EndPressed?.Invoke();
         AddChild(_table);

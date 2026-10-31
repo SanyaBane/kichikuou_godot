@@ -1300,3 +1300,11 @@ bar as now:
 The agent recommends PB4sf2m2: the gaps stay even, and Maris's comment never meets the cards. **The owner chose
 PB4sf2m2**, built as drawn; with no answer the block stands in the middle over the bar (docs/ui/phone-build.md, §5,
 "After the build: the scout report's bracket upright").
+
+## 35. After the build: a face and a troops' bar in the ledger's Name cell (owner, 2026-10-31)
+
+Looking at the gallery's `deployment` and `subordinates` on the phone, the owner asked for the unit's miniature face left
+of its name, in every tab, and a bar of its troops without figures: held landscape under the name (LD2, LU1), upright
+under the name and the type (PD2s2). Built as asked (docs/ui/phone-build.md, §5, "After the build: a face and a troops'
+bar in the ledger's Name cell"); upright the fixed part is 6.5 mm wider for the face. The drawings here stay as they
+were drawn.

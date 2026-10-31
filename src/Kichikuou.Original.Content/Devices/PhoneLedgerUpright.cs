@@ -12,7 +12,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// Attack | Stop in the bar (<see cref="Bar"/>). Subordinates puts the ledger under its tabs and the chosen unit's orders
 /// under it (<see cref="Orders"/>: Replenish and Talk on one row, Add New Troops three a row), the budget at the bar's left
 /// as text and End at the right thumb (<see cref="End"/>). The ledger's rows are two lines (PD2s2): the seal (or the chosen
-/// row's diamond), № and the name over the unit's type fixed at the left (<see cref="Fixed"/>), the tab's other columns
+/// row's diamond), №, the unit's face and the name over the unit's type over a bar of the troops' strength fixed at the left
+/// (<see cref="Fixed"/>; the face and the bar the owner's, 2026-10-31), the tab's other columns
 /// beside them in one line, scrolled sideways under a finger (<see cref="Scrolled"/>), each tab its own scroll. A unit's
 /// picture rises on a long press as a sheet over the screen's foot (<see cref="PictureSheet"/>). The figures are the
 /// mock-ups' (<c>tools/ui/mock_phone.py</c>: <c>title_band</c>, <c>pd2_base</c>, <c>pd2d</c>, <c>pu1_base</c>,
@@ -153,13 +154,16 @@ public static class PhoneLedgerUpright
     public const float Row = 150, NumberText = 46, NameText = 50, TypeText = 34, Text = 46, HeadText = 28, ColumnGap = 24;
 
     /// <summary>
-    /// The fixed part's width from the paper's left (to 23 mm of the screen) and its places from there: the party's seal (its
-    /// left and size), the chosen row's bar (its width) and diamond (its middle and half-width), №'s right, the name's left
-    /// and middle, the type's left and middle; in the header the party's dot (its middle), №'s right, the name's left.
+    /// The fixed part's width from the paper's left (to 29.5 mm of the screen) and its places from there: the party's seal
+    /// (its left and size), the chosen row's bar (its width) and diamond (its middle and half-width), №'s right, the unit's
+    /// face (its left and its square's side, 6.2 mm, in the row's middle; owner, 2026-10-31), the name's left and middle,
+    /// the type's left and middle, the bar of the troops' strength under them both (its top and height, from the name's left
+    /// to the name's right margin; no figures); in the header the party's dot (its middle), №'s right, the name's left (over
+    /// the names, not the faces).
     /// </summary>
-    public const float Fixed = 404, SealX = 12, Seal = 60, ChosenBar = 8, DiamondX = 42, Diamond = 10, NumberRight = 142,
-        NameX = 166, NameMiddle = 50, TypeX = 168, TypeMiddle = 108, NameRight = 12, DotX = 42, HeadNumberRight = 138,
-        HeadNameX = 166;
+    public const float Fixed = 518, SealX = 12, Seal = 60, ChosenBar = 8, DiamondX = 42, Diamond = 10, NumberRight = 142,
+        FaceX = 156, Face = 108, NameX = 280, NameMiddle = 44, TypeX = 282, TypeMiddle = 92, BarTop = 118, BarHeight = 8,
+        NameRight = 12, DotX = 42, HeadNumberRight = 138, HeadNameX = 280;
 
     /// <summary>
     /// The shadow's width at the fixed part's edge (while columns have passed under it) and the view's (while some lie

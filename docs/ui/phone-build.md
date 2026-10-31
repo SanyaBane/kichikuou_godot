@@ -1429,6 +1429,25 @@ it on opening — what op 0 puts back — and the portraits and the centre pictu
 (`BattlePresenter.HideWindow`, called by `GamePresenter.Compose`; `MessageWindowTests`). The gallery's `battle-window`
 holds the captured battle at its narration before the field (docs/ui/gallery.md, §7).
 
+### After the build: a face and a troops' bar in the ledger's Name cell (owner, 2026-10-31)
+
+Looking at the gallery's `deployment` and `subordinates` on the phone, the owner asked for the unit's miniature face left
+of its name in every tab, and a bar of its troops (no figures) under the name held landscape, under the name and the
+type upright (phone.md, §35). Built as asked, no mock-up round:
+
+- **The model**: `DeploymentRow.FaceCg` (the unit's face, as the party cards'). `PhoneLedger.NameFace` and `NameFaceGap`
+  — held landscape the face 88 (5 mm) in the row's middle, 14 before the name. `PhoneLedgerUpright` — the face 108
+  (6.2 mm) at 156, after №, in the row's middle; the name and the type at 280 / 282, their middles 44 and 92 (50 and 108
+  before); the bar at 118, 8 high, from the name's left to the fixed part's right margin; the fixed part 518 wide (404
+  before: the name keeps its 226), so the columns scrolled sideways have 114 less; "Name · Type" in the header over the
+  names.
+- **The view**: `DeploymentTableView` — held landscape the Name column is a custom cell (`DrawNameCell`): the face, then
+  the name and its bar drawn as the Troops cell draws its figures and bar (the same height and thickness, under the
+  name in every tab), the column as much wider; the row's party or chosen tint drawn in the cell, as the Refill chip's
+  is. Upright the fixed part (`DrawFixedRow`) draws them. The faces come from the screen holding the table
+  (`DeploymentTableView.Faces`: `DeploymentPanels`, `SubordinatesView`) with the owner's squares; a grey row's face and
+  bar faded. The bar's colours are the Troops cell's (`DrawStrength`). The PC's and the tablet's ledgers are unchanged.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

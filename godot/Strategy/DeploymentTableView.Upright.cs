@@ -6,11 +6,12 @@ using Kichikuou.Original.Strategy;
 namespace Kichikuou.Game.Strategy;
 
 // The ledger on the phone held upright (docs/ui/phone-build.md, step P5; docs/ui/phone.md, §20, the owner's PD2s2): two-line
-// rows, the seal (or the chosen row's diamond), № and the name over the unit's type fixed at the left, the tab's other
-// columns beside them in one line, scrolled sideways under a finger, each tab its own scroll. The tree keeps its rows, its
-// sort and its gestures; its first column is the fixed part's room, which the overlays cover — the header's (DrawOverlay)
-// and the rows' (DrawFixedRows, clipped under the header) —, so the columns scrolled sideways pass under it. A shadow at the
-// fixed part's edge while columns have passed under it, a shadow and ▶ at the view's right edge while some lie beyond it.
+// rows, the seal (or the chosen row's diamond), №, the face and the name over the unit's type over the troops' bar fixed
+// at the left, the tab's other columns beside them in one line, scrolled sideways under a finger, each tab its own scroll.
+// The tree keeps its rows, its sort and its gestures; its first column is the fixed part's room, which the overlays cover —
+// the header's (DrawOverlay) and the rows' (DrawFixedRows, clipped under the header) —, so the columns scrolled sideways
+// pass under it. A shadow at the fixed part's edge while columns have passed under it, a shadow and ▶ at the view's right
+// edge while some lie beyond it.
 internal sealed partial class DeploymentTableView
 {
     /// <summary>The phone's frame held upright while the table is laid out so (<see cref="PlaceUpright"/>), else null.</summary>
@@ -41,6 +42,7 @@ internal sealed partial class DeploymentTableView
     /// </summary>
     public void PlaceUpright(Rect2 rect, PhoneFrame phone)
     {
+        HoldLandscape(null);
         bool entering = _upright is null;
         _upright = phone;
         _fixedWidth = phone.Px(PhoneLedgerUpright.Fixed);
@@ -264,7 +266,9 @@ internal sealed partial class DeploymentTableView
 
     /// <summary>
     /// A row's fixed part (PD2s2): the paper (gilt for the party, tinted for the chosen row), the party's seal or the chosen
-    /// row's bar and diamond, № and the name on the first line, the type under it, a talk's bubble at the name's right.
+    /// row's bar and diamond, № and the name on the first line, the type under it, a talk's bubble at the name's right; the
+    /// unit's face between № and the name, a bar of the troops' strength without figures under the name and the type (owner,
+    /// 2026-10-31).
     /// </summary>
     private void DrawFixedRow(Control c, PhoneFrame f, Rect2 cell, DeploymentRow row)
     {
@@ -289,6 +293,8 @@ internal sealed partial class DeploymentTableView
         int number = (int)Math.Round(f.Px(PhoneLedgerUpright.NumberText));
         string no = row.Text(DeploymentColumn.Number);
         Middle(c, no, number, ink, f.Px(PhoneLedgerUpright.NumberRight) - _font.GetStringSize(no, fontSize: number).X, nameMid);
+        float side = f.Px(PhoneLedgerUpright.Face);
+        DrawFace(c, new Rect2(f.Px(PhoneLedgerUpright.FaceX), mid - side / 2, side, side), row.FaceCg, row.Grey);
         SceneMark? talk = _chooser && _talkMarks.TryGetValue(row.Unit, out var mark) ? mark : null;
         float bubble = talk is null ? 0 : f.Px(PhoneLedgerUpright.NameText) * 1.4f;
         float nameX = f.Px(PhoneLedgerUpright.NameX), right = _fixedWidth - f.Px(PhoneLedgerUpright.NameRight);
@@ -298,6 +304,8 @@ internal sealed partial class DeploymentTableView
         float typeX = f.Px(PhoneLedgerUpright.TypeX);
         Middle(c, type, SideCells.Fit(_font, type, (int)Math.Round(f.Px(PhoneLedgerUpright.TypeText)), right - typeX),
             row.Grey ? Ui.InkGrey : Ui.InkQuiet, typeX, typeMid);
+        float barTop = y + h * PhoneLedgerUpright.BarTop / PhoneLedgerUpright.Row;
+        DrawStrength(c, new Rect2(nameX, barTop, right - nameX, f.Px(PhoneLedgerUpright.BarHeight)), row.Troops, row.MaxTroops, row.Grey);
         if (talk is { } shown)
             DrawBubble(c, new Vector2(right - bubble / 2, nameMid), f.Px(PhoneLedgerUpright.NameText) * 1.2f, shown);
     }

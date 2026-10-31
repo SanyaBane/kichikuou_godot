@@ -57,6 +57,15 @@ public class DeploymentTableTests
     }
 
     [Fact]
+    public void A_row_carries_its_units_face_for_the_phones_name_cell()
+    {
+        var s = World();
+        s.Units[3].FaceCg = 3;                                              // Bound's face; the others have none
+
+        Assert.Equal([0, 0, 3, 0], DeploymentTable.Rows(s).Select(r => r.FaceCg));
+    }
+
+    [Fact]
     public void A_modifier_is_what_the_battle_adds_below_10_itself_above_10_minus_the_excess_10_none()
     {
         Assert.Equal([0, 3, 9, 0, -1, -9], new[] { 0, 3, 9, 10, 11, 19 }.Select(v => DeploymentTable.Modifier((Sys3Int)v)));

@@ -429,6 +429,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     public void Place(Rect2 rect, float pixelsPerScript)
     {
+        HoldLandscape(null);
         LeaveUpright();
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
@@ -445,10 +446,38 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     public void PlacePhone(Rect2 rect, PhoneFrame phone)
     {
+        HoldLandscape(phone);
         LeaveUpright();
         int separation = (int)Math.Round(phone.Px(6));
         int size = (int)Math.Round(phone.Px(PhoneLedger.Text));
         Lay(rect, size, separation, (int)Math.Round(phone.Px(PhoneLedger.Row)) - 2 * separation, (int)Math.Round(phone.Px(PhoneLedger.ColumnGap)));
+    }
+
+    /// <summary>The phone's frame held landscape while the table is laid out so (<see cref="PlacePhone"/>), else null.</summary>
+    private PhoneFrame? _landscape;
+
+    /// <summary>Held landscape or not (<paramref name="phone"/>; null: not): the Name cells' faces and bars come or go.</summary>
+    private void HoldLandscape(PhoneFrame? phone)
+    {
+        bool changed = (_landscape is null) != (phone is null);
+        _landscape = phone;
+        if (changed)
+            Fill();
+    }
+
+    /// <summary>
+    /// A unit's face cut to its square at a size in window pixels, or null (no CG): the phone's Name cells show it left of
+    /// the name (owner, 2026-10-31). The screen holding the table gives its faces and the owner's squares.
+    /// </summary>
+    public Func<int, int, ImageTexture?>? Faces
+    {
+        get;
+        set
+        {
+            field = value;
+            QueueRedraw();
+            _fixedRows.QueueRedraw();
+        }
     }
 
     /// <summary>The table at <paramref name="rect"/>: its text's size, the rows' separation and least height, the columns' room.</summary>
@@ -606,6 +635,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// <summary>The Refill column's index in the tree (-1 without one, or without buttons).</summary>
     private int RefillColumn => _refillButtons ? _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Refill) + 1 is var c and > 0 ? c : -1 : -1;
 
+    /// <summary>The Name column's index in the tree (-1 without one: upright the fixed part draws the name).</summary>
+    private int NameColumn => _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Name) + 1 is var c and > 0 ? c : -1;
+
     /// <summary>The unit whose Refill button is at <paramref name="local"/>, or 0.</summary>
     private int RefillAt(Vector2 local)
     {
@@ -692,6 +724,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             widths[0] = _fixedWidth - separation - 3;                       // upright: the room the fixed part covers (DrawFixedRows)
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
+        if (_landscape is { } held && NameColumn > 0)
+            widths[NameColumn] += held.Px(PhoneLedger.NameFace + PhoneLedger.NameFaceGap) + 2;   // the face left of the name
         for (int c = 0; c < Columns; c++)
             SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + (Tab is null ? 6 : 3));
         _overlay.Size = new Vector2(Size.X, OverlayHeight);
@@ -703,11 +737,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column, a member of the
     /// party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
     /// vermilion (on the deployment screen a button in Troops' colour where the unit can be replenished, else greyed with
-    /// its reason as the tooltip), the troops with a bar of their strength under them.
+    /// its reason as the tooltip), the troops with a bar of their strength under them; held landscape the name with the face
+    /// left of it and the troops' bar under it (<see cref="DrawNameCell"/>).
     /// </summary>
     private void LedgerRow(TreeItem item, DeploymentRow row, bool chosen, int place)
     {
         int chipColumn = -1;                                        // the Refill chip's cell: its row's tint drawn under the chip
+        int nameColumn = -1;                                        // held landscape the Name cell's: its tint drawn under the face
         for (int c = 0; c < _columns.Count; c++)
         {
             var info = _columns[c];
@@ -739,6 +775,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 var (text, troops, max, grey) = (row.Text(info.Column), row.Troops, row.MaxTroops, row.Grey);
                 item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawTroops(rect, text, troops, max, grey)));
             }
+            if (info.Column == DeploymentColumn.Name && _landscape is not null)
+            {
+                item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
+                Color? tint = chosen ? Ui.ChosenRow : place > 0 ? Ui.PartyRow : null;
+                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawNameCell(rect, row, tint)));
+                nameColumn = c + 1;
+            }
         }
         if (_upright is not null)                                   // upright the fixed part draws the first column's marks (DrawFixedRows)
         {
@@ -751,7 +794,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         if (place > 0)
         {
             for (int c = 0; c < Columns; c++)
-                if (c != chipColumn)
+                if (c != chipColumn && c != nameColumn)
                     item.SetCustomBgColor(c, Ui.PartyRow);
             item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
             item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
@@ -768,7 +811,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             return;
         if (chosen)
             for (int c = talk is null ? 0 : 1; c < Columns; c++)
-                item.SetCustomBgColor(c, Ui.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
+                if (c != nameColumn)
+                    item.SetCustomBgColor(c, Ui.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
         item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
         item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
         {
@@ -863,12 +907,48 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2 - h / 2;
         DrawString(_font, new Vector2(cell.Position.X + 2, baseline), text, HorizontalAlignment.Left, cell.Size.X - 2, _fontSize,
             grey ? Ui.InkGrey : Ui.Ink);
-        float f = Math.Clamp(troops / (float)max, 0, 1);
+        DrawStrength(this, new Rect2(cell.Position.X + 2, cell.End.Y - h - 1, cell.Size.X - 4, h), troops, max, grey);
+    }
+
+    /// <summary>
+    /// <paramref name="troops"/> of <paramref name="max"/> as a bar on the paper's rule: green from three quarters, amber
+    /// from a third, else red; faded in a grey row.
+    /// </summary>
+    private static void DrawStrength(CanvasItem c, Rect2 bar, int troops, int max, bool grey)
+    {
+        float f = max > 0 ? Math.Clamp(troops / (float)max, 0, 1) : 0;
         var colour = f >= 0.75f ? Ui.BarGood : f >= 0.35f ? Ui.BarLow : Ui.BarBad;
         if (grey)
             colour = colour with { A = 0.45f };
-        var bar = new Rect2(cell.Position.X + 2, cell.End.Y - h - 1, cell.Size.X - 4, h);
-        DrawRect(bar, Ui.PaperRule);
-        DrawRect(bar with { Size = new Vector2(Math.Max(1, bar.Size.X * f), h) }, colour);
+        c.DrawRect(bar, Ui.PaperRule);
+        c.DrawRect(bar with { Size = new Vector2(Math.Max(1, bar.Size.X * f), bar.Size.Y) }, colour);
+    }
+
+    /// <summary>
+    /// The Name cell held landscape (owner, 2026-10-31): the unit's face left of the name, the name over a bar of its troops'
+    /// strength without figures, the name and the bar where the Troops cell has its figures and bar. The row's
+    /// <paramref name="tint"/> drawn here, under the face: the tree tints over a custom cell.
+    /// </summary>
+    private void DrawNameCell(Rect2 cell, DeploymentRow row, Color? tint)
+    {
+        if (_landscape is not { } f)
+            return;
+        if (tint is { } colour)                                     // the tree's tint reaches a separation left of the cell
+            DrawRect(cell.GrowIndividual(GetThemeConstant("h_separation"), 0, 0, 0), colour);
+        float side = f.Px(PhoneLedger.NameFace);
+        var face = new Rect2(cell.Position.X + 2, cell.GetCenter().Y - side / 2, side, side);
+        DrawFace(this, face, row.FaceCg, row.Grey);
+        float x = face.End.X + f.Px(PhoneLedger.NameFaceGap);
+        DrawTroops(new Rect2(x, cell.Position.Y, cell.End.X - x, cell.Size.Y), row.Text(DeploymentColumn.Name), row.Troops,
+            row.MaxTroops, row.Grey);
+    }
+
+    /// <summary>A unit's face in <paramref name="rect"/> on its back, framed in the quiet ink; faded in a grey row.</summary>
+    private void DrawFace(CanvasItem c, Rect2 rect, int faceCg, bool grey)
+    {
+        c.DrawRect(rect, Ui.FaceBack);
+        if (faceCg != 0 && Faces?.Invoke(faceCg, (int)Math.Round(rect.Size.X)) is { } texture)
+            c.DrawTextureRect(texture, rect, false, grey ? new Color(1, 1, 1, 0.45f) : Colors.White);
+        c.DrawRect(rect, Ui.InkQuiet, false, 1);
     }
 }
