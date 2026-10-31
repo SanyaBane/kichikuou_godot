@@ -233,6 +233,19 @@ internal sealed partial class OptionsView : Control
         ReadColourChosen?.Invoke();
     }
 
+    /// <summary>The message skip's switches: on the launch's skip at once and kept (<see cref="MessageSkipChoice"/>).</summary>
+    private void SetSkipUnseen(bool on)
+    {
+        MessageSkipChoice.SkipUnseen = on;
+        _skip.SkipUnseen = on;
+    }
+
+    private void SetFastFades(bool on)
+    {
+        MessageSkipChoice.FastFades = on;
+        _skip.FastFades = on;
+    }
+
     private void SetNewScenesFirst(bool on)
     {
         NewScenesChoice.On = on;
@@ -259,8 +272,8 @@ internal sealed partial class OptionsView : Control
             case Tab.Messages:
                 SetTextSpeed(TextSpeedChoice.DefaultStep);
                 SetReadColour(ReadTextChoice.DefaultIndex);
-                _skip.SkipUnseen = true;
-                _skip.FastFades = true;
+                SetSkipUnseen(true);
+                SetFastFades(true);
                 if (!TouchMode.On)                          // not offered there: the PC's choice stays
                     MouseMovementChoice.On = true;
                 break;
@@ -514,9 +527,9 @@ internal sealed partial class OptionsView : Control
     {
         SectionHead(rx, y, "Message skip", rw);
         CheckBox("skip-unseen", rx, y + 38, _skip.SkipUnseen, "Skip unseen text", "MsgSkip and Ctrl skip unread ones too.",
-            () => _skip.SkipUnseen = !_skip.SkipUnseen);
+            () => SetSkipUnseen(!_skip.SkipUnseen));
         CheckBox("fast-fades", rx, y + 92, _skip.FastFades, "MsgSkip speeds up fades", "Fades and waits run fast.",
-            () => _skip.FastFades = !_skip.FastFades);
+            () => SetFastFades(!_skip.FastFades));
         Text(_gothic, new Vector2(rx, y + 165), $"{_skip.SeenCount} messages seen.", fontSize: 14, modulate: Ui.InkQuiet);
         DrawLink("forget", "Forget them…", new Vector2(rx + rw, y + 160),
             () => Ask("Forget seen messages?", $"All {_skip.SeenCount} messages seen so far will count as unseen again.", "Forget",

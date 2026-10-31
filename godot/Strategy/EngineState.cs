@@ -41,12 +41,18 @@ internal static class EngineState
         }
     }
 
-    /// <summary>The message skip whose seen messages are kept with the save slots in <paramref name="saveDirectory"/>.</summary>
+    /// <summary>
+    /// The message skip whose seen messages are kept with the save slots in <paramref name="saveDirectory"/>, opened with
+    /// the kept switches (<see cref="MessageSkipChoice"/>).
+    /// </summary>
     public static MessageSkip Skip(string saveDirectory)
     {
         string path = System.IO.Path.GetFullPath(System.IO.Path.Combine(saveDirectory, "msgskip.txt"));
         if (!Skips.TryGetValue(path, out var skip))
+        {
             Skips[path] = skip = MessageSkip.Open(path);
+            MessageSkipChoice.Apply(skip);
+        }
         return skip;
     }
 }

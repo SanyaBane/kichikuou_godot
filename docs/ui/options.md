@@ -167,6 +167,13 @@ says what it does, is kept between launches, and is gone from the touch mode.
   choice: a finger leaves no pointer to put back, and the script's position alone moves, as with the option off.
   Defaults on Messages leaves the PC's choice alone there.
 
+## The message skip's switches kept (2026-10-31)
+
+Owner's request: **Skip unseen text** and **MsgSkip speeds up fades** on the Messages tab, the last two settings of the
+window held for the launch alone, are kept between launches as the others are: `[msgskip] skip_unseen` and
+`[msgskip] fast_fades` in `settings.cfg`, both on by default (`MessageSkipChoice`; `EngineState` gives each message skip
+it opens the kept ones). Defaults on Messages turns both on and keeps that too.
+
 ## The Battle tab without the order strip (2026-10-27)
 
 Owner's request: the order strip under the Battle tab's timings, whose Preview made Barres jump ahead of Leila, showed a

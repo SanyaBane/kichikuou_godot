@@ -34,7 +34,7 @@ public sealed class MessageSkip
     /// <summary>
     /// <c>MSGSKIP_SKIP_UNSEEN</c>: messages not seen before are skipped too (on by default: the
     /// owner's xsystem35 for Windows keeps no seen messages without a <c>.gr</c> file, so it skips
-    /// everything). Turning it on allows skipping again at once.
+    /// everything). Turning it on allows skipping again at once. The game keeps it for later launches.
     /// </summary>
     public bool SkipUnseen
     {
@@ -51,7 +51,7 @@ public sealed class MessageSkip
     }
 
     /// <summary>
-    /// Ours (Option → Messages → MsgSkip speeds up fades; on by default, for the launch, not saved): while
+    /// Ours (Option → Messages → MsgSkip speeds up fades; on by default, kept by the game for later launches): while
     /// skipping (<see cref="IsSkipping"/>), the palette fades are cut short. xsystem35 never shortens
     /// them (<c>ags_runEffect</c> waits without <c>KEYWAIT_SKIPPABLE</c>); off, they keep their length
     /// as there. Display only: no fade changes what the script reads.

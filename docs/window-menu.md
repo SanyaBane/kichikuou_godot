@@ -157,11 +157,11 @@ web build (seen only) by an option.
   results, `死亡捕獲`'s captures and deaths and the scenes after a battle are never skipped (Ctrl held still skips them);
   every `MessageEvent` /
   `ValueMessageEvent` marks its `ScriptRef` seen. **Option → Messages → Skip unseen text** (checked by
-  default, `MSGSKIP_SKIP_UNSEEN`, and by the tab's Defaults — which had unchecked it until 2026-10-26; for the launch,
-  not saved): unseen messages are skipped too, as
+  default, `MSGSKIP_SKIP_UNSEEN`, and by the tab's Defaults — which had unchecked it until 2026-10-26; kept in
+  `settings.cfg` as `[msgskip] skip_unseen` since 2026-10-31, for the launch before): unseen messages are skipped too, as
   the owner's xsystem35 does; unchecked, an unseen message turns the skip off and greys it out
   (`STOP_ON_UNSEEN`) until a seen one, as the web build does. **Option → Messages → MsgSkip speeds up
-  fades** (ours, owner's request 2026-10-10; checked by default, for the launch, not saved):
+  fades** (ours, owner's request 2026-10-10; checked by default, kept as `[msgskip] fast_fades` since 2026-10-31):
   while MsgSkip is on, a `PF`/`PW` fade lasts 150 ms at most (`MessageSkip.FadeDuration`);
   unchecked, fades keep xsystem35's length while skipping too (`ags_runEffect` waits without
   `KEYWAIT_SKIPPABLE`; `rate * 16 * 1000 / 60` ms). **MsgSkip skips the opening whole** (ours,
