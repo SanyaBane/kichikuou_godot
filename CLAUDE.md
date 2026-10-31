@@ -465,6 +465,10 @@ the backlog. **The phone is built in both orientations, awaiting the owner's pla
 Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read off the same draw, built
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;
 docs/tweaks.md).
+Then (owner, 2026-10-31) screen margins on Android, upright and landscape each their own, for rounded corners and a
+film's opaque edge, which the system's safe area does not report: the model and mock-up round 1 (A steppers in Option →
+Display, B a screen of its own, C the same over the live screen) are docs/ui/screen-margins.md
+(`tools/ui/mock_screen_margins.py`), awaiting the owner's choice.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
