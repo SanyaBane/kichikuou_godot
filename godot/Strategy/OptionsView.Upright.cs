@@ -113,7 +113,7 @@ internal sealed partial class OptionsView
             HorizontalAlignment.Center, close.Size.X, closeSize, Ui.Name);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         if (enabled)
-            _spots.Add(new Spot("defaults", Part(PhoneOptionsUpright.Defaults(f)), Defaults));
+            _spots.Add(new Spot("defaults", Part(PhoneOptionsUpright.Defaults(f)), AskDefaults));
         _spots.Add(new Spot("close", Part(PhoneOptionsUpright.Close(f)), Close));
     }
 

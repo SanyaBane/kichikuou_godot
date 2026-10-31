@@ -182,6 +182,17 @@ window held for the launch alone, are kept between launches as the others are: `
 `[msgskip] fast_fades` in `settings.cfg`, both on by default (`MessageSkipChoice`; `EngineState` gives each message skip
 it opens the kept ones). Defaults on Messages turns both on and keeps that too.
 
+## Defaults asks first (2026-10-31)
+
+Owner's request: Defaults resets nothing at once; it asks in the box Forget and the game folder use, the title
+"Reset the <tab> tab?", Reset (the red button) and Cancel (`OptionsView.AskDefaults`). Of four wordings offered — 1 the
+same short words on every tab, 2 the tab's settings named, 3 the settings that would change as "now → default" (Defaults
+greyed when none would), 4 the short words with a warning where something is hard to redo (the screen margins, the
+tweaks) — the owner chose **1**: "Every setting on this tab goes back to its default. The other tabs stay as they are."
+The box grows round its middle for a third line and more (`QuestionLines`), as on a narrow phone. The preview's 121 on Messages, a child drawn over the sheet, now hides while
+any question is up (Forget's box was under it before). The screen gallery shows the question over Messages
+(`options-defaults`) and `--options` dumps it under the same name.
+
 ## The Battle tab without the order strip (2026-10-27)
 
 Owner's request: the order strip under the Battle tab's timings, whose Preview made Barres jump ahead of Leila, showed a

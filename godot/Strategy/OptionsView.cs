@@ -21,7 +21,7 @@ namespace Kichikuou.Game.Strategy;
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
 /// <see cref="DemonReachChoice"/>, "Ninja follow-up", <see cref="NinjaChanceChoice"/>, "New scenes first",
 /// <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
-/// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Forget and the game folder ask first, in a box over the sheet. Laid out
+/// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Defaults, Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen, each tab
 /// in two columns (LO1, <c>OptionsView.Phone.cs</c>); held upright in one column scrolled by a finger (PO1 with PO1o,
 /// <c>OptionsView.Upright.cs</c>).
@@ -268,6 +268,17 @@ internal sealed partial class OptionsView : Control
         NinjaChanceChosen?.Invoke(chance);
     }
 
+    /// <summary>
+    /// Defaults asks first (owner, 2026-10-31: the short words, the same on every tab); Game has none. Public for the looks
+    /// (<c>--options</c>, the screen gallery).
+    /// </summary>
+    public void AskDefaults()
+    {
+        if (_tab != Tab.Game)
+            Ask($"Reset the {_tab} tab?", "Every setting on this tab goes back to its default. The other tabs stay as they are.",
+                "Reset", Defaults);
+    }
+
     /// <summary>Defaults: the tab shown back to its settings' defaults.</summary>
     private void Defaults()
     {
@@ -393,7 +404,7 @@ internal sealed partial class OptionsView : Control
     {
         if (_question is not null)
         {
-            _question = null;
+            SetQuestion(null);
             QueueRedraw();
         }
         else
@@ -413,9 +424,16 @@ internal sealed partial class OptionsView : Control
 
     private void Ask(string title, string text, string confirm, Action confirmed)
     {
-        _question = new Question(title, text, confirm, confirmed);
+        SetQuestion(new Question(title, text, confirm, confirmed));
         _dragging = null;
         QueueRedraw();
+    }
+
+    /// <summary>The question up, or none: the preview's 121, a child drawn over the sheet, hides while one is up.</summary>
+    private void SetQuestion(Question? question)
+    {
+        _question = question;
+        _preview.Visible = question is null && _tab == Tab.Messages;
     }
 
     // ---------------------------------------------------------------- drawing (mock-up D)
@@ -454,7 +472,7 @@ internal sealed partial class OptionsView : Control
                 DrawTweaks();
                 break;
         }
-        DrawLink("defaults", "Defaults", new Vector2(150, 706), Defaults, enabled: _tab != Tab.Game);   // the game folder has no default
+        DrawLink("defaults", "Defaults", new Vector2(150, 706), AskDefaults, enabled: _tab != Tab.Game);   // the game folder has no default
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
         Text(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
@@ -967,6 +985,9 @@ internal sealed partial class OptionsView : Control
         _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, 72, 70), () => { choose(palette); QueueRedraw(); }));
     }
 
+    /// <summary>The lines of text the question's box holds at its size; each further one makes it taller round its middle.</summary>
+    private const int QuestionLines = 2;
+
     /// <summary>The question over the sheet: its title, its text, the confirmation as the red button and Cancel; the rest waits.</summary>
     private void DrawQuestion(Question question)
     {
@@ -974,6 +995,8 @@ internal sealed partial class OptionsView : Control
         DrawRect(_phone is null ? Frame : new Rect2(Vector2.Zero, Size / _k), new Color(0, 0, 0, 0.35f));
         var box = _phone is { } f ? Part(f.IsUpright ? PhoneOptionsUpright.Question(f) : PhoneOptions.Question(f))
             : new Rect2(390, 300, 500, 200);
+        float grow = Math.Max(0, WrapLines(question.Text, box.Size.X - 80, 15).Count - QuestionLines) * WrapPitch(15) / 2;
+        box = box.GrowIndividual(0, grow, 0, grow);
         Ui.DrawPanel(this, box, _k);
         Text(_cinzelBold, new Vector2(box.Position.X, box.Position.Y + 48), question.Title, HorizontalAlignment.Center,
             box.Size.X, 20, Ui.Name);
@@ -990,7 +1013,7 @@ internal sealed partial class OptionsView : Control
             cancel.Size.X, 16, _hover == "cancel" ? Ui.Name : Ui.Text);
         _spots.Add(new Spot("confirm", confirm, () =>
         {
-            _question = null;
+            SetQuestion(null);
             question.Confirmed();
             QueueRedraw();
         }));
@@ -1003,16 +1026,26 @@ internal sealed partial class OptionsView : Control
     /// <summary>Text wrapped at spaces into <paramref name="width"/>, <see cref="WrapPitch"/> apart; returns the lines drawn.</summary>
     private int Wrap(string text, float x, float baseline, float width, int size, Color colour)
     {
+        var lines = WrapLines(text, width, size);
+        foreach (string line in lines)
+        {
+            Text(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
+            baseline += WrapPitch(size);
+        }
+        return lines.Count;
+    }
+
+    /// <summary>The lines <see cref="Wrap"/> draws <paramref name="text"/> in.</summary>
+    private List<string> WrapLines(string text, float width, int size)
+    {
+        var lines = new List<string>();
         string line = "";
-        int lines = 0;
         foreach (string word in text.Split(' '))
         {
             string tried = line.Length == 0 ? word : line + " " + word;
             if (line.Length > 0 && _gothic.GetStringSize(tried, fontSize: size).X > width)
             {
-                Text(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
-                baseline += WrapPitch(size);
-                lines++;
+                lines.Add(line);
                 line = word;
             }
             else
@@ -1021,10 +1054,7 @@ internal sealed partial class OptionsView : Control
             }
         }
         if (line.Length > 0)
-        {
-            Text(_gothic, new Vector2(x, baseline), line, fontSize: size, modulate: colour);
-            lines++;
-        }
+            lines.Add(line);
         return lines;
     }
 

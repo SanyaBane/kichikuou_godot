@@ -18,6 +18,9 @@ internal static partial class GalleryEntries
             yield return new($"options-{tab.ToString().ToLowerInvariant()}", "Settings", $"Options: {tab}", Week18,
                 "The player's settings as they are; nothing is written unless a control is used.", g => Options(g, tab));
         }
+        yield return new("options-defaults", "Settings", "Options: Defaults asking", Week18,
+            "Defaults asks first, the same words on every tab (owner, 2026-10-31), here over Messages, whose preview hides "
+            + "under it; nothing is reset unless Reset is used.", g => Options(g, OptionsView.Tab.Messages, askDefaults: true));
         yield return new("screen-margins", "Settings", "Screen margins: the calibration", Week18,
             "Option → Display → Screen margins' Adjust… (docs/ui/screen-margins.md, C) at 2.8 mm all round, over the map's "
             + "plates laid out inside them; the touch layout's only (none on the PC).", g => Margins(g, calibration: true));
@@ -40,13 +43,18 @@ internal static partial class GalleryEntries
         return place;
     }
 
-    /// <summary>The options window on <paramref name="tab"/> over the map, with a message skip of its own that records nothing.</summary>
-    private static Action<Rect2>? Options(GalleryStage g, OptionsView.Tab tab)
+    /// <summary>
+    /// The options window on <paramref name="tab"/> over the map, with a message skip of its own that records nothing;
+    /// with <paramref name="askDefaults"/> Defaults' question over it.
+    /// </summary>
+    private static Action<Rect2>? Options(GalleryStage g, OptionsView.Tab tab, bool askDefaults = false)
     {
         if (g.State(Week18) is not { } s)
             return null;
         var backdrop = g.Backdrop(s);
         var view = g.Add(new OptionsView(new MessageSkip([]), folderLocked: GameData.UsesExtract, tab));
+        if (askDefaults)
+            view.AskDefaults();
         return area =>
         {
             GalleryStage.Fill(backdrop, area);

@@ -1940,6 +1940,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 Shot("options-" + tab.ToString().ToLowerInvariant());
                 await FramesAsync(0.1);
             }
+            view.ShowTab(OptionsView.Tab.Messages);
+            view.AskDefaults();                                 // Defaults' question over the hidden preview, left unanswered (ShowTab and Close take it away)
+            await FramesAsync(0.3);
+            Shot("options-defaults");
+            await FramesAsync(0.1);
             if (Device.TouchLayout)     // the screen margins' calibration over the title, 2.8 mm held for the look, never saved
             {
                 view.ShowTab(OptionsView.Tab.Display);

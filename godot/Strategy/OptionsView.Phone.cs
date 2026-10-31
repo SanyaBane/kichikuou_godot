@@ -151,7 +151,7 @@ internal sealed partial class OptionsView
         Text(_cinzelBold, new Vector2(defaults.Position.X, Lacquer.Baseline(defaults, _cinzelBold, size)), "Defaults",
             HorizontalAlignment.Center, defaults.Size.X, size, enabled ? Ui.HeadInk : Ui.InkGrey);
         if (enabled)
-            _spots.Add(new Spot("defaults", defaults, Defaults));
+            _spots.Add(new Spot("defaults", defaults, AskDefaults));
         var close = Part(PhoneOptions.Close(f));
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, close, closeLit, closeLit && _pressed == "close", _k);

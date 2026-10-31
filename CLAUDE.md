@@ -861,7 +861,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
 - Look at the options window: `<Godot console exe> --path godot -- --options --shots <dir> --quit` opens it over the
-  title and saves each tab (a window; nothing moves the pointer); in the touch layout (`--touch`, `--phone …`) also the
+  title and saves each tab and the Defaults question (`options-defaults`; a window; nothing moves the pointer); in the touch layout (`--touch`, `--phone …`) also the
   screen margins' calibration (`options-margins`) and the window inside them (`options-margins-display`), 2.8 mm held
   for the look, never saved.
 - Render our exchange effects' frames (Debug → Effects; docs/ui/battle-screen.md, "The exchange's effects"), in a
