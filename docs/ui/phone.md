@@ -1349,3 +1349,26 @@ Looking at the gallery's `deployment` and `subordinates` on the phone, the owner
 (fewer than a hundred units: two at most) and, on Subordinates, no diamond on the chosen row, its tint telling it. Built
 as asked (docs/ui/phone-build.md, §5, "After the build: № as narrow as its figures"). The drawings here stay as they were
 drawn.
+
+## 40. Round P31: a larger scroll bar upright (2026-10-31)
+
+Going through the gallery's touch and phone screens, the owner found the scroll bars almost unseen: a player cannot tell
+that a list scrolls. Upright, Treasure's and the Harem's grids (`PhonePickersUpright.ScrollBar`) and the options' column
+(`PhoneOptionsUpright.ScrollBar`) have a bar 6 px wide (0.3 mm on the reference phone), the thumb in the cells' own dim
+gold on a faint track, 5 px from the screen's edge — it reads as one more cell line. The owner asked for a larger bar,
+drawn first on Treasure upright, its size then the reference for the others (the save lists' 12 px bars, the message
+log's, the ledgers' Godot scroll bars, held landscape and the tablet).
+
+The round (`tools/ui/mock_scroll_bar.py`, over the upright pass's `treasure`: the week-18 save, the Characters view, the
+grid at its top, 9 of its 17 rows in view) draws the bar in a groove of its own with a 2 px dim gold line, the thumb in
+the lacquer's gold (196, 160, 86) with a lit edge in the name's gold, rounded, the groove as tall as the rows in view
+(the track now runs on to the grid area's foot, past the last row); its right edge at the picture's, the tabs' and End's,
+16 px in from the screen's edge. The grid is narrowed by the bar and a 10 px gap, each cell giving up the same width
+from its middle. The bar stays a sign only, as now: the finger scrolls the grid anywhere.
+
+- **S1 — 12 px** (0.7 mm, Android's own bar's 4 dp): the grid 22 px narrower, each cell 7.
+- **S2 — 20 px** (1.1 mm): the grid 30 px narrower, each cell 10.
+- **S3 — 28 px** (1.6 mm): the grid 38 px narrower, each cell 13.
+
+Each is also drawn as the whole screen at the phone's pixels (`p31-<variant>-phone.png`), to be looked at on the phone
+itself. The agent recommends S2: the gold thumb is seen at a glance at arm's length, and the cells lose little.
