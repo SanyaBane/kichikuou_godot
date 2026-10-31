@@ -24,6 +24,7 @@ internal sealed partial class MessageLogView : Control
     private static readonly Color Dim = new(0, 0, 0, 0.55f);
     private static Color Rule => Ui.PaperRule with { A = 45 / 255f };   // paler than the ledger's (owner, 2026-10-19)
     private const int Step = 3;                                             // lines a wheel notch scrolls
+    private const float PhoneBarIn = 12;                                    // the phone's scroll bar in from the paper's edge (reference pixels)
 
     /// <summary>
     /// The chronicle's figures in screen pixels: its lacquer frame (none on the phone: the paper alone) and paper, the
@@ -230,8 +231,15 @@ internal sealed partial class MessageLogView : Control
         if (!m.Stacked)
             DrawLine(new Vector2(margin, paper.Position.Y + m.Head), new Vector2(margin, paper.End.Y), Ui.VermilionInk with { A = 110 / 255f },
                 Lacquer.Line(1, k));
+        // On the phone the reference scroll bar (the owner's S2 in PB's vermilion, docs/ui/phone.md §43), the rules ending
+        // its gap before it.
+        Rect2? groove = _phone is { } p
+            ? p.Rect(PhoneScrollBar.Groove(p.Frame, (paper.End.X - p.Px(PhoneBarIn)) * p.K, m.BodyTop * p.K,
+                (paper.End.Y - 8 * r - m.BodyTop) * p.K))
+            : null;
+        float rulesEnd = groove is { } g ? g.Position.X - _phone!.Value.Px(PhoneScrollBar.Gap) : paper.End.X - 8 * r;
         for (float y = m.BodyTop + m.Pitch - 4 * r; y < paper.End.Y; y += m.Pitch)
-            DrawLine(new Vector2(paper.Position.X + 8 * r, y), new Vector2(paper.End.X - 8 * r, y), Rule, Lacquer.Line(1, k));
+            DrawLine(new Vector2(paper.Position.X + 8 * r, y), new Vector2(rulesEnd, y), Rule, Lacquer.Line(1, k));
 
         float column = margin + 18 * r, right = paper.End.X - 24 * r;
         for (int i = 0; i < m.Rows && _top + i < _lines.Count; i++)
@@ -275,13 +283,24 @@ internal sealed partial class MessageLogView : Control
         }
 
         // the scroll bar: the track at the paper's right edge, the thumb the part shown
-        var track = new Rect2(paper.End.X - 10 * r, m.BodyTop, 4 * r, paper.End.Y - 8 * r - m.BodyTop);
-        DrawRect(track, Ui.PaperHead);
-        if (_lines.Count > m.Rows)
+        if (groove is { } bar && _phone is { } phone)
         {
-            float h = Math.Max(24 * r, track.Size.Y * m.Rows / _lines.Count);
-            float y = track.Position.Y + (track.Size.Y - h) * _top / Last;
-            DrawRect(new Rect2(track.Position.X - r, y, 6 * r, h), Ui.VermilionInk with { A = 0.7f });
+            var box = new PhoneFrame.Box(bar.Position.X * phone.K, bar.Position.Y * phone.K, bar.Size.X * phone.K, bar.Size.Y * phone.K);
+            Rect2? thumb = _lines.Count > m.Rows
+                ? phone.Rect(PhoneScrollBar.Thumb(phone.Frame, box, (float)m.Rows / _lines.Count, (float)_top / Last))
+                : null;
+            Ui.DrawScrollBar(this, bar, thumb, phone.Px(PhoneScrollBar.Rim), paper: true);
+        }
+        else
+        {
+            var track = new Rect2(paper.End.X - 10 * r, m.BodyTop, 4 * r, paper.End.Y - 8 * r - m.BodyTop);
+            DrawRect(track, Ui.PaperHead);
+            if (_lines.Count > m.Rows)
+            {
+                float h = Math.Max(24 * r, track.Size.Y * m.Rows / _lines.Count);
+                float y = track.Position.Y + (track.Size.Y - h) * _top / Last;
+                DrawRect(new Rect2(track.Position.X - r, y, 6 * r, h), Ui.VermilionInk with { A = 0.7f });
+            }
         }
         if (_phone is { } u)
             SideCells.Draw(this, u, u.Rect(PhoneScenes.LogClose(u.Frame)), SideCells.Icon.Close, "Close", lit: true);

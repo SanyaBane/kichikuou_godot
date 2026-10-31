@@ -46,6 +46,7 @@ internal sealed partial class DeploymentTableView
     public void PlaceUpright(Rect2 rect, PhoneFrame phone)
     {
         HoldLandscape(null);
+        StyleBars(phone);
         bool entering = _upright is null;
         _upright = phone;
         _fixedWidth = phone.Px(Fixed.Width);

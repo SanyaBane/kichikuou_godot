@@ -124,7 +124,7 @@ Shared parts, with their users; a new screen takes these before drawing its own.
 | Picture panel | the original's unit / girl picture with its own frame | `FacePictures.PicturePanel` |
 | Face square | a unit's face cut for cards (owner's crops in Debug → Portraits) | `UnitFaces` |
 | Dashed frame | an unknown or empty place | `Lacquer.DrawDashed` |
-| Scroll bar | a list that scrolls, on the phone and the tablet: a groove 1.1 mm wide in a dim gold rim, the gold thumb with a lit edge, 10 px right of the list (the owner's S2, docs/ui/phone.md §41) | `DrawScrollBar`, `PhoneScrollBar` |
+| Scroll bar | a list that scrolls, on the phone: a groove 1.1 mm wide in a dim gold rim, the gold thumb with a lit edge, 10 px right of the list (the owner's S2, docs/ui/phone.md §41); on the paper the paper's head in a faint ink rim, the thumb in the vermilion ink (PB, §43) | `DrawScrollBar`, `PhoneScrollBar`; the ledgers' `StyleBars` |
 | Tooltip | instant, context-menu style, never over a dialog | `AdvantageTip`, `HeaderTip` (touch) |
 | Touch controls | one lacquer look: pill, drawer, Commands | `TouchPill`, `SkipDrawer`, `CommandsButton` |
 
@@ -222,7 +222,7 @@ or `--touch`; the PC's mouse interface does not change.
   act and the way back right of it (the red button | End, the red button | Back; §5), the way back at the right thumb. The scenes' windows above the picture for the left
   portrait's, under it for every other, the script's line breaks kept; a screen of our own stacked down the width (a title
   band, the picture or the party on top, a sheet or a list at the thumb, scrolled by a finger with the scroll bar of
-  §4 — 2026-10-31, on Treasure and the Harem so far, the others' thin bars to follow), a menu or
+  §4, since 2026-10-31), a menu or
   a province's commands a sheet over the map's foot. The figures are the reference phone's pixels scaled by the width
   (1220); rows for a finger 6.7-8.5 mm high. A line is 2 of those pixels at least and a control's frame (a row's box, a
   button's outline, the gold frame round a main choice) 3, as the mock-ups draw them: a pixel of the 1280×800 layout is

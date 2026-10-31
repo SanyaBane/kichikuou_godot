@@ -1485,6 +1485,24 @@ upright:
   rows in view (the thin bar ran on to the grid area's foot); a grid with every row in view keeps the room's width.
   `ScrolledGrid.Scrolled` is the grid and the bar's room: a finger or the wheel there scrolls it (`PickerGridScroll`).
 
+Then the owner chose PB, the vermilion ink, for the paper (round P32, phone.md §42-§43), and the rest of the phone's bars
+took the reference, both ways:
+
+- **On the paper** (`UiPalette.DrawScrollBar(…, paper: true)`): the groove the paper's head in an `InkFaint` rim, the
+  thumb `VermilionInk` with its edge lightened.
+- **The save lists** (`PhoneSaves`, `PhoneSavesUpright`): the groove in the thin one's room, its right at the list's (the
+  sweep's), the rows the reference's `Room` short of it (upright 2 wider than before); its groove stays when every save
+  fits, as before (`SaveLoadView.Phone.cs`).
+- **The options' sheet upright** (`PhoneOptionsUpright`): the groove 6 in from the sheet's right along `View`; the column
+  36 from the sheet's right (30 before), whether its tab scrolls or not; on the paper.
+- **The message log** (`MessageLogView`, held either way): the groove 12 in from the paper's edge, from the body's top to
+  the paper's foot less its margin, the rules ending the gap before it; on the paper. The PC's and the tablet's log keep
+  their thin bar.
+- **The ledgers** (`DeploymentTableView.StyleBars`, from `PlacePhone` and `PlaceUpright`): Godot's own bars styled as the
+  reference, both ways — the groove a rounded `StyleBoxFlat` in the rim, as thick as the reference (its content margins),
+  the thumb inset by a transparent border, the vermilion lightened while hovered or dragged; no lit edge (a style box
+  draws none). The PC's and the tablet's keep theirs (`Place`).
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

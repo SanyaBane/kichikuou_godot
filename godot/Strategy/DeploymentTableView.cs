@@ -383,9 +383,52 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         AddThemeStyleboxOverride("hovered", new StyleBoxFlat { BgColor = Ui.Vermilion with { A = 0.08f } });
         foreach (var state in new[] { "selected", "selected_focus", "hovered_selected", "hovered_selected_focus" })
             AddThemeStyleboxOverride(state, new StyleBoxEmpty());          // the chosen row is marked by Fill
+        _barsThickness = -1;                                            // the palette's colours
+        StyleBars(_barsPhone);
+    }
+
+    /// <summary>The phone the scroll bars are sized for (null: the PC's and the tablet's); their thickness then (window pixels).</summary>
+    private PhoneFrame? _barsPhone;
+    private float _barsThickness = -1;
+
+    /// <summary>
+    /// The tree's scroll bars for <paramref name="phone"/>: on the phone the reference (the owner's S2 on the paper in PB's
+    /// vermilion, docs/ui/phone.md §43; <see cref="PhoneScrollBar"/>) — a groove of the paper's head in a faint ink rim, the
+    /// thumb in the vermilion ink inside it, both rounded; elsewhere as thick as the default theme's, the thumb in the
+    /// quiet ink.
+    /// </summary>
+    private void StyleBars(PhoneFrame? phone)
+    {
+        _barsPhone = phone;
+        float thickness = phone?.Px(PhoneScrollBar.Width) ?? 8;
+        if (thickness == _barsThickness)
+            return;
+        _barsThickness = thickness;
         var bars = new Theme();
         foreach (string bar in new[] { "HScrollBar", "VScrollBar" })
         {
+            if (phone is { } f)
+            {
+                int r = (int)Math.Round(thickness / 2), rim = Math.Max(1, (int)Math.Round(f.Px(PhoneScrollBar.Rim)));
+                int inset = Math.Max(1, (int)Math.Round(f.Px(PhoneScrollBar.ThumbIn)));
+                var groove = new StyleBoxFlat { BgColor = Ui.PaperHead, BorderColor = Ui.InkFaint, AntiAliasing = true };
+                groove.SetBorderWidthAll(rim);
+                groove.SetCornerRadiusAll(r);
+                groove.SetContentMarginAll(r);                          // the bar's thickness
+                bars.SetStylebox("scroll", bar, groove);
+                bars.SetStylebox("scroll_focus", bar, groove);
+                StyleBoxFlat Thumb(Color colour)
+                {
+                    var thumb = new StyleBoxFlat { BgColor = colour, BorderColor = Colors.Transparent, AntiAliasing = true };
+                    thumb.SetBorderWidthAll(inset);                     // the thumb stands inside the groove
+                    thumb.SetCornerRadiusAll(r);
+                    return thumb;
+                }
+                bars.SetStylebox("grabber", bar, Thumb(Ui.VermilionInk));
+                bars.SetStylebox("grabber_highlight", bar, Thumb(Ui.VermilionInk.Lightened(0.15f)));
+                bars.SetStylebox("grabber_pressed", bar, Thumb(Ui.VermilionInk.Lightened(0.15f)));
+                continue;
+            }
             bars.SetStylebox("scroll", bar, BarBox(Ui.PaperHead));
             bars.SetStylebox("grabber", bar, BarBox(Ui.InkQuiet));
             bars.SetStylebox("grabber_highlight", bar, BarBox(Ui.VermilionInk));
@@ -438,6 +481,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     {
         HoldLandscape(null);
         LeaveUpright();
+        StyleBars(null);
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
         int row = LedgerRowsChoice.Chosen;                                     // read each frame: Option's change shows at once
@@ -455,6 +499,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     {
         HoldLandscape(phone);
         LeaveUpright();
+        StyleBars(phone);
         int separation = (int)Math.Round(phone.Px(6));
         int size = (int)Math.Round(phone.Px(PhoneLedger.Text));
         Lay(rect, size, separation, (int)Math.Round(phone.Px(PhoneLedger.Row)) - 2 * separation, (int)Math.Round(phone.Px(PhoneLedger.ColumnGap)));

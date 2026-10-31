@@ -421,8 +421,8 @@ totals shared with `EnemyAttackView.Phone.cs`).
 Step P7 is split as L7 was (phone-build.md, "Step P7, where it stands"): P7a is built, awaiting the owner's look on the
 Poco — Harem and Treasure upright: the title band, the picture at the width, the details, (Treasure's tabs or a first
 pick's prompt and Back,) the picker's grid in rows of 7.3 / 6.7 mm scrolled by a finger with the reference scroll bar
-(since 2026-10-31 the owner's S2 from round P31, phone.md §40-§41: `Devices/PhoneScrollBar`, `UiPalette.DrawScrollBar`;
-the other screens' thin bars to follow), the red button |
+(since 2026-10-31 the owner's S2 from round P31, phone.md §40-§43: `Devices/PhoneScrollBar`, `UiPalette.DrawScrollBar`;
+every phone scroll bar takes it since, on the paper in PB's vermilion), the red button |
 End in the bar, Treasure's questions across the room over it (`Original.Content/Devices/PhonePickersUpright` with its
 `ScrolledGrid`; `HaremView.Upright.cs`, `TreasureView.Upright.cs`, `PickerGridScroll`); P7b is built, awaiting the
 owner's look on the Poco — Save/Load upright as PL2: the title band with Load | Save, the tabs, the list in one-line rows

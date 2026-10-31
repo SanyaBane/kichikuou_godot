@@ -1406,3 +1406,9 @@ On the paper the lacquer's gold reads weakly, so the round (`tools/ui/mock_scrol
 The log's groove stands 12 in from the paper's gold frame, its rules ending 10 before it; the options' 6 in from the
 sheet's right, the column 8 narrower; the ledger's Godot bars restyled as the reference both ways, at the paper's right
 and foot. The agent recommends PB: the vermilion is the paper's own accent, and the thumb reads at a glance on the beige.
+
+## 43. The owner's choice: PB (2026-10-31)
+
+The owner chose PB, the vermilion ink, for the reference on the paper. Built on the phone, both ways (docs/ui/phone-build.md,
+§5, "After the build: the reference scroll bar"): the save lists in the lacquer's gold, the message log, the options'
+sheet upright and the ledgers' Godot bars on the paper in the vermilion. The tablet waits for the owner's word (§42).
