@@ -23,7 +23,7 @@ Only the drawing changes: the rows, the columns' figures, the sort and the gestu
   (690,368) 574×416.
 - **How many rows:** the units at status 1 or 2, at most 50 (`Sﾌﾞﾀｲ`'s grid, `DeploymentTable.LastUnit`); the
   week-18 save has 9, a late game some thirty. Past ten rows the ledger scrolls, and the eye loses the row it compared.
-- **The first column** carries the party's place (a vermilion seal; deployment), the chosen row's diamond and the
+- **The first column** carries the party's place (a vermilion seal; deployment), the chosen row's diamond (§9: its bar alone since 2026-10-31) and the
   talks' marks (Subordinates, docs/ui/subordinates.md §7); the party's rows are gilt, the deployed ones grey.
 
 ## 2. The proposal
@@ -218,3 +218,14 @@ Checked: the screen gallery's `options-display` in the Lacquer and touch passes 
 ledgers at the defaults (the PC's dumps identical to the build before), and with 42 saved for the PC (written into
 `settings.cfg` for the run and put back): the PC's rows 42, the touch pass's still 36. Not tried by hand in a window
 (a tile's click, the change under the window), nor on the tablet.
+
+## 9. № as narrow as its figures, no diamond (owner, 2026-10-31)
+
+Looking at the gallery's phone passes, the owner asked for № no wider than its figures (fewer than a hundred units: two
+at most) and no diamond on Subordinates' chosen row, its tint and bar telling it; then the same on the PC and the
+tablet. Built on every device (`DeploymentTableView.Compact`; the phone's upright places docs/ui/phone-build.md, §5,
+"After the build: № as narrow as its figures"): with a tab given (our screens always give one) № is as wide as its
+widest figures, its title "№" with the sort's mark — wider than two figures in Cinzel, and the tree widened the column
+to its own title — drawn by `DrawTitles` ending at the column's right and reaching left past it; a chooser's first column
+holds the chosen row's bar alone, and the talks' bubbles while any unit has one. Checked in the screen gallery's
+Lacquer, Steel, touch and phone passes (`deployment…`, `subordinates…`).

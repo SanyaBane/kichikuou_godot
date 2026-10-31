@@ -151,7 +151,7 @@ bands, G3 G1 with the table as a paper ledger, G4 G1 after a replenish. The owne
 - **The ledger** (`DeploymentTableView` with `ledger: true`): paper with ink text, the headers in Cinzel in
   vermilion ink over a rule, the rows' rules, the type and the item in a quieter ink, the refill's price in
   vermilion, the deployed units in grey ink; under the troops a thin bar of their strength (green from three
-  quarters, amber from a third, else red — a look only); the chosen row tinted with a vermilion bar and diamond in
+  quarters, amber from a third, else red — a look only); the chosen row tinted with a vermilion bar (a diamond too until 2026-10-31, unit-ledger.md §9) in
   the first column; the last column reaches the paper's edge. Option → Palette does not touch it.
 - **The picture panel** as before (the original's gold frame), with a shadow.
 - **The orders' panel:** `Lacquer.DrawPanel`; its header "Orders" in Shojumaru with the budget in Cinzel ("Budget
@@ -229,7 +229,7 @@ which) — and the chosen unit's NEW or ??? pill at Talk's top right, none when 
 is spent (`CmdAvail_SubTalk` 0) nor in the view-only picker (the owner, 2026-10-22): `SubordinatesScreen.TalkOpen`,
 `SubordinatesScreen.TalkMarks`, `SubordinatePanel.TalkMark`. The marks are computed once each time `Sﾌﾞｶ` opens
 (`Original.Content/Strategy/PickerMarks`; not at all while the talk is spent); the bubbles sit in the ledger's first
-column, widened for them, after the chosen row's bar and diamond (`DeploymentTableView.TalkMarks`, a chooser only); the
+column, widened for them, after the chosen row's bar (`DeploymentTableView.TalkMarks`, a chooser only); the
 pill is `Lacquer.DrawPill`. Our interface only. Looked at from `saves-week18`: every unit NEW (the save predates the read
 lines).
 

@@ -1466,7 +1466,8 @@ The owner asked for the ledger's № no wider than its figures (two at most) and
 - **Upright** (`PhoneLedgerUpright.Places(seals)`): № two figures wide (46), 10 right of the party's seal on the deployment
   table, from the paper's left on Subordinates; the face, the name and the type follow, the fixed part 504 wide on the
   deployment table (518 before) and 434 on Subordinates; the chosen row's diamond is gone.
-- The PC's and the tablet's ledgers are unchanged.
+- Then the owner asked for the same on the PC and the tablet: `Compact` is now any table with a tab (docs/ui/unit-ledger.md,
+  §9).
 
 ## 6. The agent's own choices, for the owner to confirm
 

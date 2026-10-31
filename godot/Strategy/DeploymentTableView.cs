@@ -643,11 +643,12 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private int RefillColumn => _refillButtons ? _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Refill) + 1 is var c and > 0 ? c : -1 : -1;
 
     /// <summary>
-    /// Held landscape the first columns are as narrow as what they hold (owner, 2026-10-31): № as its figures (at most two),
-    /// its title drawn over it by <see cref="DrawTitles"/>, reaching left past it when wider; a chooser's first column the
-    /// chosen row's bar (no diamond: the row's tint tells it) and the talks' bubbles while any has one.
+    /// Whether № is as narrow as its figures (at most two; owner, 2026-10-31), its title drawn over it by
+    /// <see cref="DrawTitles"/>, reaching left past it when wider: while the table draws its titles itself, a
+    /// <see cref="Tab"/> given (our screens always give one). A chooser's first column holds the chosen row's bar alone (no
+    /// diamond: the row's tint tells it) and the talks' bubbles while any unit has one, whatever the tab.
     /// </summary>
-    private bool Compact => _landscape is not null;
+    private bool Compact => Tab is not null;
 
     /// <summary>№'s title with its sort mark while <see cref="Compact"/>, drawn by <see cref="DrawTitles"/>.</summary>
     private string _numberTitle = "";
@@ -745,8 +746,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 Fit(c + 1, row.Text(_columns[c].Column));
         }
         int separation = GetThemeConstant("h_separation");
-        widths[0] = Compact && _chooser ? _fontSize * 0.3f + (_talkMarks.Count > 0 ? BubbleRoom : 0)   // the chosen row's bar; the talk's bubble
-            : Math.Max(widths[0], _fontSize * 1.3f) + BubbleRoom;           // the chosen row's bar and diamond, a place's seal; the talk's bubble
+        widths[0] = _chooser ? _fontSize * 0.3f + (_talkMarks.Count > 0 ? BubbleRoom : 0)   // the chosen row's bar; the talks' bubbles
+            : Math.Max(widths[0], _fontSize * 1.3f);                        // a place's seal
         if (_upright is not null)
             widths[0] = _fixedWidth - separation - 3;                       // upright: the room the fixed part covers (DrawFixedRows)
         if (RefillColumn > 0)
@@ -761,9 +762,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>
-    /// A ledger's row: the chosen one tinted with a vermilion bar and diamond in the first column (on the phone the bar
-    /// alone), a member of the
-    /// party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
+    /// A ledger's row: the chosen one tinted with a vermilion bar in the first column (no diamond since 2026-10-31: the
+    /// tint tells it), a member of the party gilt with its place a vermilion seal there, the deployed ones in grey ink, the refill's price in
     /// vermilion (on the deployment screen a button in Troops' colour where the unit can be replenished, else greyed with
     /// its reason as the tooltip), the troops with a bar of their strength under them; held landscape the name with the face
     /// left of it and the bars of the troops and the HP under it (<see cref="DrawNameCell"/>).
@@ -851,8 +851,6 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             if (chosen)
             {
                 DrawRect(new Rect2(cell.Position.X, cell.Position.Y, Math.Max(2, rect.Size.Y * 0.14f), cell.Size.Y), Ui.Vermilion);
-                if (!Compact)                                       // held landscape the row's tint tells it (owner, 2026-10-31)
-                    Lacquer.DrawDiamond(this, mark.GetCenter() + new Vector2(rect.Size.Y * 0.1f, 0), rect.Size.Y * 0.2f, Ui.Vermilion);
             }
             if (talk is { } shown)
                 DrawBubble(this, new Vector2(mark.End.X + BubbleRoom / 2, rect.GetCenter().Y), rect.Size.Y, shown);
