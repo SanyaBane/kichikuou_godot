@@ -5,6 +5,7 @@ using Kichikuou.Content;
 using Kichikuou.Content.Scripts;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Strategy;
+using Kichikuou.Original.Content.Devices;
 using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.ScreenGallery;
@@ -72,6 +73,7 @@ public partial class GalleryScreen : Control
         _entries = CombatVfx ? GalleryEntries.CombatVfx()
             : ScreenshotDirectory is null ? [.. GalleryEntries.All(), .. GalleryEntries.CombatVfx()]
             : GalleryEntries.All();
+        TreeExiting += () => ScreenMarginsChoice.Show(null);   // the player's screen margins again after the gallery
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         var background = new ColorRect { Color = Colors.Black, MouseFilter = MouseFilterEnum.Ignore };
         background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
@@ -167,9 +169,13 @@ public partial class GalleryScreen : Control
             new ScenarioText(GameData.ScenarioDirectory), GameData.Cgs(), _glyphs, new ScenarioScripts(GameData.ScenarioDirectory)));
         string note = entry.Note;
         Device.PictureTop = null;                       // the picture in the room's middle unless the entry stands it elsewhere
+        ScreenMarginsChoice.Show(ScreenMargins.None);   // the player's screen margins not drawn, unless the entry holds its own
         try
         {
             _place = entry.Build(_stage);
+            var m = Device.Margins;                     // an entry holding screen margins: its screen inside them, as the game's room
+            (_host.OffsetLeft, _host.OffsetTop, _host.OffsetRight, _host.OffsetBottom) = (m.Left, m.Top, -m.Right, -m.Bottom);
+            _host.ClipContents = m != default;
             if (_place is null)
                 note = $"The kept save user://{string.Join(", ", _stage.Missing)} is missing (docs/ui/gallery.md, §2, makes it).";
         }
@@ -184,7 +190,7 @@ public partial class GalleryScreen : Control
     }
 
     /// <summary>The picture's area: the 1280×800 screen fitted into the stage and centred, or the phone's frame.</summary>
-    private Rect2 PictureArea() => ScreenFrame.In(new Rect2(Vector2.Zero, _area.Size)).Area;
+    private Rect2 PictureArea() => ScreenFrame.In(new Rect2(Vector2.Zero, _host?.Size ?? _area.Size)).Area;
 
     private void Place()
     {
@@ -295,7 +301,8 @@ public partial class GalleryScreen : Control
             if (!Device.Phone)
             {
                 float k = picture.GetWidth() / GetViewportRect().Size.X;        // the window's pixels a layout pixel
-                var area = PictureArea();
+                var area = Device.Margins == default ? PictureArea()                // the host is the stage itself then
+                    : new Rect2(Vector2.Zero, _area.Size);                          // an entry inside screen margins: them too
                 var at = _area.GlobalPosition + area.Position;
                 picture = picture.GetRegion(new Rect2I((int)(at.X * k), (int)(at.Y * k), (int)(area.Size.X * k), (int)(area.Size.Y * k)));
                 if (picture.GetWidth() != 1280 || picture.GetHeight() != 800)

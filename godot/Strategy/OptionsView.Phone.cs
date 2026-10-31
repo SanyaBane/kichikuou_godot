@@ -7,7 +7,8 @@ namespace Kichikuou.Game.Strategy;
 // sheet across the whole width between the hole's strips over the wave backdrop, its five paper tabs on top as on the PC,
 // the title at their right; each tab in two columns — Messages: the text speed (its preview the game's 121 at 2.7 mm) and
 // the read text's colours left, the message skip right; Display: the font left, the palette and the screen's orientation
-// (step P0) right, the thousands and the unit tables' row heights across (their tiles need the width); Battle: the effects
+// (step P0) right, the thousands and the unit tables' row heights across (their tiles need the width), the screen margins
+// at the left column's foot beside Defaults | Close (docs/ui/screen-margins.md); Battle: the effects
 // across, the timings in the two
 // columns; Game: the folder across; Tweaks: the line on what they are across, Battle left, Scenes right —, Defaults |
 // Close at the right column's foot, Close at the right thumb. The settings are the PC's parts drawn at PO1's type
@@ -218,6 +219,8 @@ internal sealed partial class OptionsView
         DrawColumnRule(f, Part(PhoneOptions.Sheet(f)).Position.Y + P(40), y + 106);
         ThousandsSection(across.Position.X, y + 116, across.Size.X);
         RowsSection(across.Position.X, y + 196, across.Size.X);
+        var defaults = Part(PhoneOptions.Defaults(f));          // the screen margins at the left column's foot, beside Defaults | Close
+        MarginsField(new Rect2(left.Position.X, defaults.Position.Y, left.Size.X, defaults.Size.Y), titled: true);
     }
 
     /// <summary>Battle: the effects across, the timings in the two columns (the left one's longer: the right one ends over Defaults).</summary>

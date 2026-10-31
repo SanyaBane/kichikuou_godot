@@ -208,6 +208,9 @@ or `--touch`; the PC's mouse interface does not change.
   2026-10-30; the PC's panel two columns past nine, E; docs/ui/command-screen.md, "Fifteen commands").
 - Controls sit where the thumb learns them (the drawer at the left edge, Commands bottom right), never over a face, a
   name plate or text; they hide under menus, dialogs and our screens, and their taps never reach the script.
+- **Screen margins** (docs/ui/screen-margins.md, 2026-10-31): on a touch device every screen of ours is laid out inside
+  the player's margins from the screen's edges (upright and landscape each their own, set in Option → Display over the
+  live screen), as if the screen were that much smaller; a layout needs nothing of its own for them.
 - **The phone held landscape** (docs/ui/phone-build.md, steps F and L1-L10, built 2026-10-28): the frame keeps the
   1280×800 layout, its picture fitted to the height; our controls go to the black sides, on rails (14.5 mm) between the
   camera's strip (6.3 mm, kept free on both sides) and the frame, the commands at the right thumb, Menu at the left, a

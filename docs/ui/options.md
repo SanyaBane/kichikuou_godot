@@ -167,6 +167,14 @@ says what it does, is kept between launches, and is gone from the touch mode.
   choice: a finger leaves no pointer to put back, and the script's position alone moves, as with the option off.
   Defaults on Messages leaves the PC's choice alone there.
 
+## Screen margins (2026-10-31)
+
+Owner's request: margins from the screen's edges on Android, upright and landscape each their own, for rounded corners
+and a film's opaque edge (docs/ui/screen-margins.md; the owner chose C). Display holds them in the touch layout only:
+upright a section under the orientation, held landscape a field at the left column's foot beside Defaults | Close, on
+the tablet a section right of the palette. A tap opens the calibration over the screen the window was opened from, the
+window hidden meanwhile and shown again after it. Defaults on Display resets both sets to none.
+
 ## The message skip's switches kept (2026-10-31)
 
 Owner's request: **Skip unseen text** and **MsgSkip speeds up fades** on the Messages tab, the last two settings of the

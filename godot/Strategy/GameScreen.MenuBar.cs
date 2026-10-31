@@ -32,7 +32,8 @@ public partial class GameScreen
     /// is followed: on a phone the menu bar is gone and <c>_content</c> takes the whole screen, its black sides ours to
     /// draw in; the picture stands in the phone's frame (<see cref="ScreenFrame.In"/>: held landscape between the sides,
     /// upright at the width in the room's middle, on the title's logo under a description, <see cref="TitlePictureTop"/>). On a PC and a
-    /// tablet the bar stays and the picture fills the room under it, fitted.
+    /// tablet the bar stays and the picture fills the room under it, fitted. In the touch layout both stand inside the
+    /// player's screen margins (<see cref="Device.Margins"/>, docs/ui/screen-margins.md), the black background round them.
     /// </summary>
     private void UpdateDevice()
     {
@@ -44,8 +45,17 @@ public partial class GameScreen
             _cardTouches++;
         }
         bool phone = Device.Phone;
+        var m = Device.Margins;
         _menuBar.Visible = !phone;
-        _content.OffsetTop = phone ? 0 : MenuBarHeight;
+        _menuBar.OffsetLeft = m.Left;
+        _menuBar.OffsetTop = m.Top;
+        _menuBar.OffsetRight = -m.Right;
+        _menuBar.OffsetBottom = m.Top + MenuBarHeight;
+        _content.OffsetLeft = m.Left;
+        _content.OffsetTop = (phone ? 0 : MenuBarHeight) + m.Top;
+        _content.OffsetRight = -m.Right;
+        _content.OffsetBottom = -m.Bottom;
+        _content.ClipContents = m != default;   // nothing spills into them (the wave backdrop's rings reach past its rect)
         if (phone)
         {
             Device.PictureTop = TitlePictureTop(TitleButtons());
@@ -346,6 +356,7 @@ public partial class GameScreen
         };
         view.GameFolderChosen += () => Screens.Open(this,
             new ImportScreen(GameData.SavedGameDirectory, start: false, next: Main.Title, back: Main.Title));
+        view.MarginsAdjust += () => OpenMargins(view);
         view.Closed += () =>
         {
             _optionsView = null;
@@ -356,6 +367,29 @@ public partial class GameScreen
         _content.AddChild(view);
         view.Place(PictureArea());
         return view;
+    }
+
+    private ScreenMarginsView? _marginsView;
+
+    /// <summary>
+    /// Option → Display → Screen margins (docs/ui/screen-margins.md, the owner's C): the options window hidden, the
+    /// calibration over the screen it was opened from, which lays itself out inside the margins as they change
+    /// (<see cref="UpdateDevice"/>); closed, the window shows again, laid out in the new room. The game still waits.
+    /// </summary>
+    private void OpenMargins(OptionsView options)
+    {
+        if (_marginsView is not null)
+            return;
+        options.Visible = false;
+        var view = new ScreenMarginsView();
+        view.Closed += () =>
+        {
+            _marginsView = null;
+            options.Visible = true;
+            options.QueueRedraw();
+        };
+        _marginsView = view;
+        AddChild(view);                                     // over the whole screen, not in the room inside the margins
     }
 
     /// <summary>

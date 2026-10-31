@@ -466,9 +466,11 @@ Tweaks → "Ninja follow-up", 33% (the original, the default), 67% or 100%, read
 (`Combat/NinjaChance` on `OriginalScriptContext.NinjaChance`, `Battle.NinjaRolled`; `godot/Battles/NinjaChanceChoice`;
 docs/tweaks.md).
 Then (owner, 2026-10-31) screen margins on Android, upright and landscape each their own, for rounded corners and a
-film's opaque edge, which the system's safe area does not report: the model and mock-up round 1 (A steppers in Option →
-Display, B a screen of its own, C the same over the live screen) are docs/ui/screen-margins.md
-(`tools/ui/mock_screen_margins.py`), awaiting the owner's choice.
+film's opaque edge, which the system's safe area does not report: the model and mock-up round 1 are
+docs/ui/screen-margins.md (`tools/ui/mock_screen_margins.py`); the owner chose C, built (its §5): `Devices/ScreenMargins`,
+`Devices/MarginsCalibration`, `PhoneFrame.Within`; `godot/Strategy/ScreenMarginsChoice` (`settings.cfg`), `Device.Margins`
+(`GameScreen.UpdateDevice` insets the room), Option → Display's field (`OptionsView.MarginsField`), the calibration over the
+screen `godot/Strategy/ScreenMarginsView` (`GameScreen.OpenMargins`); awaiting the owner's look on the Poco and the tablet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -859,7 +861,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
 - Look at the options window: `<Godot console exe> --path godot -- --options --shots <dir> --quit` opens it over the
-  title and saves each tab (a window; nothing moves the pointer).
+  title and saves each tab (a window; nothing moves the pointer); in the touch layout (`--touch`, `--phone …`) also the
+  screen margins' calibration (`options-margins`) and the window inside them (`options-margins-display`), 2.8 mm held
+  for the look, never saved.
 - Render our exchange effects' frames (Debug → Effects; docs/ui/battle-screen.md, "The exchange's effects"), in a
   window — the pointer is not moved: `<Godot console exe> --path godot -- --effects --shots <dir> --quit`. Sengoku
   Rance's reference frames come from `tools/sengoku/effect_frames.py`, into a folder outside the repository.

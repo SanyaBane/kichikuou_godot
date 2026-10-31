@@ -15,7 +15,8 @@ namespace Kichikuou.Game.Strategy;
 /// (<see cref="MouseMovementChoice"/>, not in the touch mode), the
 /// already-read text's colour, <see cref="ReadTextChoice"/>, docs/ui/read-text.md), Display
 /// (the font, the palette, the thousands, the unit tables' row height, <see cref="LedgerRowsChoice"/>; on a phone its
-/// orientation, <see cref="OrientationChoice"/>), Battle (our
+/// orientation, <see cref="OrientationChoice"/>; in the touch layout the screen margins, <see cref="ScreenMarginsChoice"/>,
+/// adjusted over the screen, <see cref="MarginsAdjust"/>), Battle (our
 /// battle screen's effects and timings, <see cref="BattleScreenSettings"/>), Game (the
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
 /// <see cref="DemonReachChoice"/>, "Ninja follow-up", <see cref="NinjaChanceChoice"/>, "New scenes first",
@@ -101,6 +102,9 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>The player asked for another game folder and confirmed it: the import screen follows.</summary>
     public event Action? GameFolderChosen;
+
+    /// <summary>The player asked to adjust the screen margins: the calibration opens over the screen, this window hidden meanwhile.</summary>
+    public event Action? MarginsAdjust;
 
     /// <summary>The window closed.</summary>
     public event Action? Closed;
@@ -284,6 +288,11 @@ internal sealed partial class OptionsView : Control
                 SetLedgerRows(LedgerRowsChoice.Default);     // the PC's or the touch mode's own
                 if (Device.Phone)
                     OrientationChoice.Chosen = OrientationChoice.Way.System;
+                if (Device.TouchLayout)
+                {
+                    ScreenMarginsChoice.Set(upright: true, ScreenMargins.None);
+                    ScreenMarginsChoice.Set(upright: false, ScreenMargins.None);
+                }
                 break;
             case Tab.Battle:
                 foreach (var setting in BattleScreenSettings.All.Where(s => s != BattleScreenSettings.Forecast))
@@ -373,7 +382,7 @@ internal sealed partial class OptionsView : Control
 
     public override void _Input(InputEvent e)
     {
-        if (e is not InputEventKey { Pressed: true, Keycode: Key.Escape })
+        if (e is not InputEventKey { Pressed: true, Keycode: Key.Escape } || !Visible)     // hidden under the margins' calibration
             return;
         Back();
         GetViewport().SetInputAsHandled();
@@ -568,7 +577,16 @@ internal sealed partial class OptionsView : Control
         float x = ContentX, y = ContentY, w = ContentW;
         FontSection(x, y, w);
         y += 132;
-        PaletteSection(x, y, w);
+        if (Device.TouchLayout)                     // the tablet: the screen margins beside the palette
+        {
+            PaletteSection(x, y, MarginsIn - 40);
+            SectionHead(x + MarginsIn, y, "Screen margins", w - MarginsIn);
+            MarginsField(new Rect2(x + MarginsIn, y + 36, w - MarginsIn, 40));
+        }
+        else
+        {
+            PaletteSection(x, y, w);
+        }
         y += 132;
         ThousandsSection(x, y, w);
         y += 104;
@@ -601,6 +619,44 @@ internal sealed partial class OptionsView : Control
         }
         string hint = Array.Find(all, o => o.Way == OrientationChoice.Chosen).Hint;
         Text(_gothic, new Vector2(x, y + 106), hint, fontSize: SideCells.Fit(_gothic, hint, 13, w), modulate: Ui.InkQuiet);
+    }
+
+    /// <summary>On the PC's sheet in the touch layout (the tablet), how far in the screen margins stand, right of the palette's swatches.</summary>
+    private const float MarginsIn = 340;
+
+    /// <summary>
+    /// The screen margins (docs/ui/screen-margins.md, the owner's C), in the touch layout only: a field with the sets in
+    /// words — on a phone the way it is held now and the other under it, on the tablet landscape's alone — and Adjust…; a
+    /// tap anywhere on it opens the calibration over the screen (<see cref="MarginsAdjust"/>). <paramref name="titled"/>:
+    /// with no section head over it (the phone held landscape, at the left column's foot), its name on its first line and
+    /// both sets on the second.
+    /// </summary>
+    private void MarginsField(Rect2 field, bool titled = false)
+    {
+        bool lit = _hover == "margins";
+        DrawRect(field, Field);
+        DrawRect(field, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1));
+        const string adjust = "Adjust…";
+        float adjustW = _gothic.GetStringSize(adjust, fontSize: 15).X;
+        float textX = field.Position.X + 12, textW = field.Size.X - adjustW - 40;
+        static string Set(bool upright) => (upright ? "Upright: " : "Landscape: ") + ScreenMarginsChoice.For(upright).Words;
+        bool upright = Device.HeldUpright;
+        if (Device.Phone)
+        {
+            string first = titled ? "Screen margins" : Set(upright), second = titled ? $"{Set(upright)} · {Set(!upright)}" : Set(!upright);
+            Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 17, field.Position.Y + field.Size.Y * 0.36f)),
+                Ellipsis(first, textW, 17), fontSize: 17, modulate: Ui.Ink);
+            Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 13, field.Position.Y + field.Size.Y * 0.72f)),
+                Ellipsis(second, textW, 13), fontSize: 13, modulate: Ui.InkQuiet);
+        }
+        else
+        {
+            Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 17, field.GetCenter().Y)),
+                Ellipsis(Set(false), textW, 17), fontSize: 17, modulate: Ui.Ink);
+        }
+        Text(_gothic, new Vector2(field.Position.X, PhonePickerParts.Middle(_gothic, 15, field.GetCenter().Y)), adjust,
+            HorizontalAlignment.Right, field.Size.X - 14, 15, lit ? Ui.Vermilion : Ui.VermilionInk);
+        _spots.Add(new Spot("margins", field, () => MarginsAdjust?.Invoke()));
     }
 
     private void PaletteSection(float x, float y, float w)

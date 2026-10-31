@@ -16,7 +16,34 @@ internal static class Device
     private static bool? _phone;
     private static DeviceLayout _layout;
     private static PhoneFrame.Insets? _insets;
+    private static PhoneFrame.Insets _margins;
+    private static float _perMillimetre = 1;
     private static Window? _root;
+
+    /// <summary>
+    /// The reference tablet's screen, its short side in millimetres (the Galaxy Tab S7 FE's): a PC in the touch mode plays it
+    /// when it turns millimetres into the canvas's units, as a PC with <c>--phone</c> plays the reference phone.
+    /// </summary>
+    private const float TabletShortSide = 167;
+
+    /// <summary>
+    /// The player's screen margins (docs/ui/screen-margins.md, <see cref="ScreenMarginsChoice"/>) in the canvas's units for
+    /// the way the device is held now; none on the PC with the mouse. A screen is laid out in <see cref="RoomIn"/>.
+    /// </summary>
+    public static PhoneFrame.Insets Margins => _margins;
+
+    /// <summary>
+    /// The canvas's units a millimetre of the screen: on Android by its reported density, on a PC playing a phone the
+    /// reference phone's, on a PC in the touch mode the reference tablet's.
+    /// </summary>
+    public static float PerMillimetre => _perMillimetre;
+
+    /// <summary>Whether the device is held upright: a phone's (the tablet and the PC are landscape).</summary>
+    public static bool HeldUpright => _layout == DeviceLayout.PhoneUpright;
+
+    /// <summary>The room inside the <see cref="Margins"/> of a screen of <paramref name="size"/>, in its coordinates.</summary>
+    public static Rect2 RoomIn(Vector2 size) => new(new Vector2(_margins.Left, _margins.Top),
+        new Vector2(Math.Max(0, size.X - _margins.Left - _margins.Right), Math.Max(0, size.Y - _margins.Top - _margins.Bottom)));
 
     /// <summary>The layout for the window as it is now.</summary>
     public static DeviceLayout Layout => _layout;
@@ -58,7 +85,9 @@ internal static class Device
         if (_root is not null)
             return;
         _root = root;
+        RenderingServer.SetDefaultClearColor(Colors.Black);    // outside the margins, under a screen laid out inside them
         root.SizeChanged += Read;
+        ScreenMarginsChoice.Changed += MarginsChanged;
         Read();
         GD.Print($"Kichikuou: device {_layout}{(OS.GetName() == "Android" ? $", screen {DisplayServer.ScreenGetSize()} at {DisplayServer.ScreenGetDpi()} dpi" : "")}.");
         if (OS.GetName() == "Android" && Phone)
@@ -67,12 +96,14 @@ internal static class Device
 
     /// <summary>
     /// The phone's frame as it is held over a room of <paramref name="size"/> (the canvas's units, its corner at the
-    /// screen's), with the system's safe area on Android and the reference phone's elsewhere; held upright the picture
-    /// where <see cref="PictureTop"/> puts it.
+    /// screen's, or at the <see cref="Margins"/>' inside a screen laid out in them), with the system's safe area on Android
+    /// and the reference phone's elsewhere, less what the margins keep free already; held upright the picture where
+    /// <see cref="PictureTop"/> puts it.
     /// </summary>
     public static PhoneFrame Frame(Vector2 size)
     {
-        var frame = PhoneFrame.For(size.X, size.Y, _insets);
+        var frame = PhoneFrame.For(size.X, size.Y, _insets, _margins,
+            _layout is DeviceLayout.PhoneUpright or DeviceLayout.PhoneLandscape ? HeldUpright : null);
         return frame.IsUpright && PictureTop?.Invoke(frame) is float top ? frame.WithPictureAt(top) : frame;
     }
 
@@ -97,6 +128,13 @@ internal static class Device
     /// phone layout serves both (its model's figures follow <see cref="PhoneFrame.IsUpright"/>); null on any other device.
     /// </summary>
     public static PhoneFrame? Held(Control view) => Landscape(view) ?? Upright(view);
+
+    /// <summary>
+    /// The phone's frame held either way over a room of <paramref name="room"/> inside the <see cref="Margins"/> (a screen of
+    /// its own at the root, <see cref="RoomIn"/>); null on any other device.
+    /// </summary>
+    public static PhoneFrame? HeldIn(Vector2 room) =>
+        _layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright ? Frame(room) : null;
 
     /// <summary>
     /// <c>--phone landscape</c> or <c>--phone upright</c> on a PC: the window at the reference phone's shape held so
@@ -172,10 +210,34 @@ internal static class Device
             Turns++;
         if (OS.GetName() != "Android" && _layout != was && Phone)
             GD.Print($"Kichikuou: {_layout}, window {window.X}×{window.Y}.");
+        ReadMargins(window);
         if (OS.GetName() != "Android" || window.X <= 0 || _root is null)
             return;
         _insets = SafeInsets(window, _root.GetVisibleRect().Size);
         GD.Print($"Kichikuou: {_layout}, window {window}, safe area {DisplayServer.GetDisplaySafeArea()}, insets {_insets}.");   // the Poco's own (phone-build.md, §7)
+    }
+
+    /// <summary>
+    /// The millimetre in the canvas's units and the player's margins for the layout as it is: none on the PC with the mouse,
+    /// else the set for the way the device is held (<see cref="ScreenMarginsChoice"/>).
+    /// </summary>
+    private static void ReadMargins(Vector2I window)
+    {
+        if (_root is null || window.X <= 0 || window.Y <= 0)
+            return;
+        var canvas = _root.GetVisibleRect().Size;
+        float shortSide = Math.Min(canvas.X, canvas.Y);
+        _perMillimetre = PlaysPhone ? shortSide / PhoneFrame.ReferenceShort * MarginsCalibration.ReferencePerMillimetre
+            : OS.GetName() == "Android" && DisplayServer.ScreenGetDpi() is > 0 and var dpi ? dpi / 25.4f * canvas.X / window.X
+            : shortSide / TabletShortSide;
+        _margins = TouchLayout ? ScreenMarginsChoice.For(HeldUpright).Insets(_perMillimetre) : default;
+    }
+
+    /// <summary>A set of margins changed: every screen lays itself out again, as after a turn (<see cref="Turns"/>).</summary>
+    private static void MarginsChanged()
+    {
+        ReadMargins(_root?.Size ?? DisplayServer.WindowGetSize());
+        Turns++;
     }
 
     /// <summary>

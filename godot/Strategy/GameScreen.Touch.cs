@@ -36,6 +36,11 @@ public partial class GameScreen
     /// </summary>
     private void BackAsRightClick()
     {
+        if (_marginsView is not null)
+        {
+            _marginsView.Close();                       // the screen margins' calibration: back to the options
+            return;
+        }
         if (_saveView.Visible && _saveView.Editing)
         {
             _saveView.CancelEdit();

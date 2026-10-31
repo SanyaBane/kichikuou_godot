@@ -131,9 +131,11 @@ public partial class ImportScreen : Control
 
     private void Layout()
     {
+        _turnSeen = Device.Turns;
+        ClipContents = Device.Margins != default;      // inside the screen margins nothing spills into them
         if (PlacePhone())
             return;
-        var frame = ScreenFrame.In(new Rect2(Vector2.Zero, Size));
+        var frame = ScreenFrame.In(Device.RoomIn(Size));       // inside the screen margins in the touch layout
         _k = frame.Scale <= 0 ? 1 : frame.Scale;
         _origin = frame.Scale <= 0 ? (Size - new Vector2(1280, 800)) / 2 : frame.Origin;
         QueueRedraw();
@@ -185,8 +187,12 @@ public partial class ImportScreen : Control
         return path;
     }
 
+    private int _turnSeen = -1;                     // the layout's changes laid out for (Device.Turns: a turn, the margins)
+
     public override void _Process(double delta)
     {
+        if (_turnSeen != Device.Turns && IsInsideTree())
+            Layout();
         if (_held)
             return;
         if (_phase == Phase.Done)

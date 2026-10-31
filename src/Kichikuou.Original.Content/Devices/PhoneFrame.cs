@@ -125,13 +125,19 @@ public sealed record PhoneFrame
     /// phone): the larger side's on both sides, so nothing moves when the phone is turned round, and at least the gesture
     /// zone at the foot, which the system's safe area does not count. The frame fills the height, unless the screen is too
     /// short a one for it between the hole's strips: then it fills the width between them, centred.
+    /// <para>
+    /// With the player's <paramref name="margins"/> (docs/ui/screen-margins.md) the size is the screen's less them — the
+    /// room our screens are laid out in, as if the screen were that much smaller — and <paramref name="reported"/> is still
+    /// the whole screen's: each edge keeps free what the margin has not already (<see cref="Within"/>).
+    /// </para>
     /// </summary>
-    public static PhoneFrame Landscape(float width, float height, Insets? reported = null)
+    public static PhoneFrame Landscape(float width, float height, Insets? reported = null, Insets? margins = null)
     {
         float unit = height / ReferenceShort;
-        float side = reported is { } r ? Math.Max(r.Left, r.Right) : Hole * unit;
-        var safe = new Insets(side, reported?.Top ?? 0, side, Math.Max(reported?.Bottom ?? 0, GestureZone * unit));
-        float scale = Math.Min(height / LayoutHeight, Math.Max(0, width - 2 * side) / LayoutWidth);
+        float whole = (height + (margins?.Top ?? 0) + (margins?.Bottom ?? 0)) / ReferenceShort;    // the hole and the zone are the screen's
+        float side = reported is { } r ? Math.Max(r.Left, r.Right) : Hole * whole;
+        var safe = Within(new Insets(side, reported?.Top ?? 0, side, Math.Max(reported?.Bottom ?? 0, GestureZone * whole)), margins);
+        float scale = Math.Min(height / LayoutHeight, Math.Max(0, width - safe.Left - safe.Right) / LayoutWidth);
         float w = LayoutWidth * scale, h = LayoutHeight * scale;
         return new PhoneFrame(unit, new Box(0, 0, width, height), new Box((width - w) / 2, (height - h) / 2, w, h), safe, upright: false);
     }
@@ -140,22 +146,37 @@ public sealed record PhoneFrame
     /// The frame of a screen of <paramref name="width"/> × <paramref name="height"/> held upright. Its safe insets are
     /// <paramref name="reported"/>, the system's, else the reference phone's (the camera's hole at the top, nothing at the
     /// sides), and at least the gesture zone at the foot. The picture's default place, <see cref="Frame"/>, is at the room's
-    /// width in the middle between the room's top and the bar.
+    /// width in the middle between the room's top and the bar. The player's <paramref name="margins"/> as
+    /// <see cref="Landscape"/>'s.
     /// </summary>
-    public static PhoneFrame Upright(float width, float height, Insets? reported = null)
+    public static PhoneFrame Upright(float width, float height, Insets? reported = null, Insets? margins = null)
     {
         float unit = width / ReferenceShort;
-        var safe = new Insets(reported?.Left ?? 0, reported?.Top ?? Hole * unit, reported?.Right ?? 0,
-            Math.Max(reported?.Bottom ?? 0, GestureZone * unit));
+        float whole = (width + (margins?.Left ?? 0) + (margins?.Right ?? 0)) / ReferenceShort;     // the hole and the zone are the screen's
+        var safe = Within(new Insets(reported?.Left ?? 0, reported?.Top ?? Hole * whole, reported?.Right ?? 0,
+            Math.Max(reported?.Bottom ?? 0, GestureZone * whole)), margins);
         var phone = new PhoneFrame(unit, new Box(0, 0, width, height), default, safe, upright: true);
         var room = phone.Room;
         float h = room.W * LayoutHeight / LayoutWidth;
         return new PhoneFrame(unit, phone.Screen, phone.PictureAt((room.Y + phone.Bar.Y - h) / 2), safe, upright: true);
     }
 
-    /// <summary>The frame of a screen of <paramref name="width"/> × <paramref name="height"/> as it is held: a square one is landscape.</summary>
-    public static PhoneFrame For(float width, float height, Insets? reported = null) =>
-        width >= height ? Landscape(width, height, reported) : Upright(width, height, reported);
+    /// <summary>
+    /// The frame of a screen of <paramref name="width"/> × <paramref name="height"/> as it is held: a square one is
+    /// landscape. With <paramref name="margins"/> the size is the room inside them, the screen's own shape telling how it is
+    /// held, so the caller passes the room's size and the device's turn alike (<see cref="Landscape"/>).
+    /// </summary>
+    public static PhoneFrame For(float width, float height, Insets? reported = null, Insets? margins = null, bool? upright = null) =>
+        upright ?? width < height ? Upright(width, height, reported, margins) : Landscape(width, height, reported, margins);
+
+    /// <summary>
+    /// The edges' safe insets of the whole screen, <paramref name="safe"/>, within a room inside the player's
+    /// <paramref name="margins"/>: what a margin keeps free already is not kept again, so a margin narrower than the camera's
+    /// strip moves nothing there, and a wider one leaves the room's edge at the margin.
+    /// </summary>
+    public static Insets Within(Insets safe, Insets? margins) => margins is not { } m ? safe
+        : new(Math.Max(0, safe.Left - m.Left), Math.Max(0, safe.Top - m.Top), Math.Max(0, safe.Right - m.Right),
+            Math.Max(0, safe.Bottom - m.Bottom));
 
     private Box SideRoom(float left, float right) =>
         new(left, Safe.Top, Math.Max(0, right - left), Math.Max(0, Screen.H - Safe.Bottom - Safe.Top));

@@ -87,7 +87,9 @@ Built in step F (landscape) and completed in step P0 (upright).
   on the PC and the tablet, and a phone view takes `PhoneFrame` too.
 - **The safe area.** `DisplayServer.GetDisplaySafeArea()` on Android; the reference's values — the camera's 110 px
   (6.3 mm) kept free on **both** short sides in landscape (either may hold the hole, phone.md, §12) and at the top
-  upright, the gesture bar's 50 px (3 mm) at the foot — as the fallback and under `--phone` on the PC.
+  upright, the gesture bar's 50 px (3 mm) at the foot — as the fallback and under `--phone` on the PC. Since 2026-10-31
+  the player's screen margins (docs/ui/screen-margins.md) are laid inside it: every screen in the room they leave, each
+  edge keeping free what its margin has not already (`PhoneFrame.Within`).
 - **The sides drawn.** On the phone the menu bar goes (the Menu cell opens the Menu sheet instead), `_content` takes the
   whole screen, and the black sides are ours to draw in (still black under our controls, as the frame's surround is
   today).

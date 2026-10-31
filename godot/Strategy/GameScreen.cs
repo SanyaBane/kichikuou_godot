@@ -1940,6 +1940,20 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 Shot("options-" + tab.ToString().ToLowerInvariant());
                 await FramesAsync(0.1);
             }
+            if (Device.TouchLayout)     // the screen margins' calibration over the title, 2.8 mm held for the look, never saved
+            {
+                view.ShowTab(OptionsView.Tab.Display);
+                ScreenMarginsChoice.Show(new ScreenMargins(28, 28, 28));
+                OpenMargins(view);
+                await FramesAsync(0.5);
+                Shot("options-margins");
+                await FramesAsync(0.1);                         // the shot is the next frame's
+                _marginsView?.Close();
+                await FramesAsync(0.3);
+                Shot("options-margins-display");                // the window again, laid out inside them
+                await FramesAsync(0.1);
+                ScreenMarginsChoice.Show(null);
+            }
             view.Close();
         }
         if (_options.QuitWhenDone)

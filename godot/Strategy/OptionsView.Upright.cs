@@ -139,6 +139,10 @@ internal sealed partial class OptionsView
     private float DrawDisplayUpright(float x, float y, float w)
     {
         y = OrientationRows(x, y, w) + UprightGap;
+        SectionHead(x, y, "Screen margins", w);                 // docs/ui/screen-margins.md: a row as the orientation's
+        y += P(PhoneOptionsUpright.OrientationRowsUnder);
+        MarginsField(new Rect2(x, y, w, P(PhoneOptionsUpright.OrientationRow)));
+        y += P(PhoneOptionsUpright.OrientationRow) + UprightGap;
         FontSection(x, y, w);
         y += 74 + 20 + UprightGap;
         PaletteSection(x, y, w);

@@ -157,4 +157,15 @@ internal sealed class GalleryStage(Control host, GameFont font, FacePictures fac
         host.AddChild(view);
         return view;
     }
+
+    /// <summary>
+    /// Adds <paramref name="view"/> over the whole stage, outside the room an entry's screen margins leave (the margins'
+    /// calibration, which the game puts over its whole screen); it goes with the entry.
+    /// </summary>
+    public T Over<T>(T view) where T : Control
+    {
+        host.GetParent().AddChild(view);
+        host.TreeExiting += view.QueueFree;
+        return view;
+    }
 }

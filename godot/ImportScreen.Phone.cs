@@ -21,18 +21,19 @@ public partial class ImportScreen
     private PhoneUnits Phone => new(_phone!);
 
     /// <summary>
-    /// On the phone held either way: the screen over its parent's whole area (the screen's room, the gallery's stage), drawn
-    /// from its corner in the frame's layout pixels; false on any other device.
+    /// On the phone held either way: the screen over its parent's whole area (the screen's room, the gallery's stage) inside
+    /// the player's screen margins (<see cref="Device.RoomIn"/>), drawn from its corner in the frame's layout pixels; false
+    /// on any other device.
     /// </summary>
     private bool PlacePhone()
     {
-        _phone = Device.Held(this);
+        var room = Device.RoomIn(GetParentAreaSize());
+        _phone = Device.HeldIn(room.Size);
         if (_phone is not { } phone)
             return false;
-        Position = Vector2.Zero;
-        var whole = GetParentAreaSize();
-        if (Size != whole)
-            Size = whole;                       // Resized lays it out again, the same
+        Position = room.Position;
+        if (Size != room.Size)
+            Size = room.Size;                   // Resized lays it out again, the same
         _k = phone.Scale;
         _origin = Vector2.Zero;
         QueueRedraw();
