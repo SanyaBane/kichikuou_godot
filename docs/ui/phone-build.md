@@ -1208,7 +1208,8 @@ P8c:
 
 P8d:
 
-- **The title** (PE2 as the owner changed it): the model `Original.Content/Devices/PhoneTitleUpright` (tested in
+- **The title** (PE2 as the owner changed it; since 2026-10-31 PE6 in its place, "After the build: the title upright as
+  PE6" below — what follows is PE2 as it was built): the model `Original.Content/Devices/PhoneTitleUpright` (tested in
   `PhoneTitleUprightTests`) — a row for each button the title draws (`MenuItems[n].MenuItem` 1, `ｽﾀMENU.ADV:87-96`: a
   first launch Alice, Load and Start; a clear Destiny, B.G.M and C.G; the rolls Please and Spy), top down Spy, Please,
   Destiny, B.G.M, C.G, Alice, Load, Start (`TITLE_ORDER`), each the picture's own word alone (the brush face, 52) in a row
@@ -1505,6 +1506,43 @@ took the reference, both ways:
 The tablet and the PC took the reference's look too, 8 layout pixels wide (round T's T2, the owner's choice of
 2026-10-31; docs/ui/touch.md, "Round T: the reference scroll bar"): the save lists, the message log and the ledgers'
 Godot bars, their figures `Original.Content/Devices/LayoutScrollBar`.
+
+### After the build: the title upright as PE6 (owner, 2026-10-31)
+
+The owner found the title upright as built (PE2, step P8d: the picture moved over the rows, black above and below) poor
+and chose PE6 from rounds P33-P34 (phone.md, §44-§46): our own screen over the engine's picture while `ｽﾀMENU` polls the
+mouse. Built:
+
+- **The pictures** (`Original.Content/Devices/PhoneTitleArt`, tested against the player's files in `PhoneTitleArtTests`):
+  cut at run time from the player's CGs, nothing shipped — each button's character from CG 302 (lit) where it differs from
+  CG 301, less its word's plate (a group of pixels of its own; Spy's box cut under her skirt first), its holes filled; the
+  logo from CG 301 by the palette entries the texture never uses (groups of 300 pixels or more), with a dark edge 2 wide;
+  the texture between the friezes (rows 16-379) with the logo's band (124-275) filled from rows 40-115 and 290-365, and the
+  two friezes.
+- **The layout** (`PhoneTitleUpright`, tested in `PhoneTitleUprightTests`): the texture at the screen's width (×1.91 on
+  the reference) down the whole screen, every second copy mirrored, the friezes at the screen's top and foot; the logo
+  at ×2.2 in the middle between the room's top + 40 and the rows' top − 40; the rows 208 high, 14 apart, 40 in, the
+  last 20 over the bar, the plates the row's colour at 88% (Start the red button); each character at most twice its CG
+  pixels in 230 × 186, in a column as wide as the widest of the eight (Alice's, 221) with their middles on its middle;
+  the words in the brush face (66) left-aligned 44 right of it; the column and the widest word centred on the screen,
+  the same at every count of rows. The panel round the rows and `PictureTop` (the picture over the rows) are gone.
+- **The view** (`godot/Strategy/TitleUprightView`, which `TitleRowsView` became; `GameScreen.Title.cs`): over the engine's
+  picture and under the message windows (`MoveChild` to `_messageView`'s place, as Treasure's); while the title polls the
+  mouse it shows the rows and takes every press — a tap on a row its button's click as before, a long press (0.5 s, as
+  `GameScreen.Touch`'s) or a right click its right click (`PointerScript.RightClick` through `_titlePointer`), the
+  button's description; a press off the rows does nothing, the picture under it being hidden. Under a description the
+  view stays without its rows and lets every press through to the key wait, and the picture stands centred on the logo
+  (`PhoneTitleUpright.DescriptionPictureTop`, `Device.PictureTop`), so window 113 comes under the logo as under a
+  scene's picture. At the requests slip (no window) the view hides and the slip stands in the room's middle as a
+  scene's picture. The pictures are cut once a library (the game's screen and the gallery's entries share them).
+- **The agent's choices**, for the owner to confirm: the rows hidden under a description, the window under the logo;
+  the slip in the room's middle on black (it is a picture of the original's, as the scenes'); a press off the rows does
+  nothing.
+- **The gallery**: on the upright pass `title`, `title-hover` (the same as `title`: no hover held upright), `title-clears`,
+  `title-description` and `title-requests` changed; the other passes same.
+- **Checks**: the core tests and the content tests' `PhoneTitle*`; unattended play headless with `--phone upright` from
+  the week-18 save to its deployment picker through the title's load, exit 0. A row's long press on the phone itself is
+  not checked yet (the gallery holds the description by the title's own right click).
 
 ## 6. The agent's own choices, for the owner to confirm
 

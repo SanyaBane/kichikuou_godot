@@ -445,9 +445,12 @@ the title band, the map in miniature cut from the engine's texture at the room's
 off it, `GamePresenter.DataGraphCovered`), a sheet with the graphs as finger rows or, over a graph, as tabs over the plot
 laid out again from the presenter's bars (`GamePresenter.DataBars`) and the scale as eight chips in a row, Back in the bar
 (`Original.Content/Devices/PhoneDataUpright`; `AllDataView.Upright.cs`). P8d is built, awaiting the owner's look on the
-Poco — the title upright as PE2: the picture moved over a finger row for each button it draws (`PhoneFrame.WithPictureAt`,
-`Device.PictureTop`; `Original.Content/Devices/PhoneTitleUpright`, `godot/Strategy/TitleRowsView`, `GameScreen.Title.cs`),
-a row a click in its button's box; the import screen as PI, PIp, PIr, a card in the middle with the steps one under
+Poco — the title upright, since 2026-10-31 as PE6 (owner, docs/ui/phone.md §44-§46): our screen over the picture, the
+stone of CG 301 over the whole screen, the logo whole, a finger row for each button it draws with its character cut
+without its word from the player's CG 302 at run time (`Original.Content/Devices/PhoneTitleArt`), the characters in one
+column, the words left-aligned right of it (`Original.Content/Devices/PhoneTitleUpright`, `godot/Strategy/TitleUprightView`,
+`GameScreen.Title.cs`), a row a click in its button's box, a long press its description under the logo
+(`Device.PictureTop`); the import screen as PI, PIp, PIr, a card in the middle with the steps one under
 another, the red button | Back in the bar (`Original.Content/Devices/PhoneImportUpright`; `godot/ImportScreen.Upright.cs`);
 the original's own screens as they are, a long press the right click upright too.
 Step P9 is done but the owner's play (phone-build.md, "Step P9, where it stands"): unattended play headless with

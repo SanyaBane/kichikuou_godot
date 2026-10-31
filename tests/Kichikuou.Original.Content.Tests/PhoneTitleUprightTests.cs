@@ -5,8 +5,8 @@ using Kichikuou.Original.State;
 namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>
-/// <see cref="PhoneTitleUpright"/>: the title's rows on the phone held upright (docs/ui/phone-build.md, step P8d), at the
-/// mock-up's figures on the reference phone (docs/ui/phone.md, §22: PE2 as the owner changed it).
+/// <see cref="PhoneTitleUpright"/>: the title's own screen on the phone held upright (docs/ui/phone-build.md, step P8d), at
+/// the mock-up's figures on the reference phone (docs/ui/phone.md, §44-§45: PE6, <c>tools/ui/mock_title_upright.py</c>).
 /// </summary>
 public class PhoneTitleUprightTests
 {
@@ -23,24 +23,54 @@ public class PhoneTitleUprightTests
     }
 
     [Fact]
-    public void Every_button_s_row_stands_over_the_bar_the_picture_in_the_middle_over_them()
+    public void Every_button_s_row_stands_over_the_bar_the_logo_in_the_middle_over_them()
     {
-        // pe2: rows 130 high, 12 apart, from 40 to PW − 40, the last 20 over the bar: top = 2504 − 20 − 8·130 − 7·12.
-        Equal(new(40, 1360, 1140, 130), PhoneTitleUpright.Row(Reference, 0, 8));
-        Equal(new(40, 2354, 1140, 130), PhoneTitleUpright.Row(Reference, 7, 8));
-        Equal(new(16, 1332, 1188, 2498 - 1332), PhoneTitleUpright.Panel(Reference, 8));
-        // py = (TOP + top − 30) // 2 − 381.
-        Assert.Equal((110 + 1360 - 30) / 2f - 762.5f / 2, PhoneTitleUpright.PictureTop(Reference, 8), Close);
+        // rows 208 high, 14 apart, from 40 to PW − 40, the last 20 over the bar: top = 2504 − 20 − 8·208 − 7·14.
+        Equal(new(40, 722, 1140, 208), PhoneTitleUpright.Row(Reference, 0, 8));
+        Equal(new(40, 2276, 1140, 208), PhoneTitleUpright.Row(Reference, 7, 8));
+        // lay_logo: ×2.2, in the middle of 110 + 40 to the rows' top − 40.
+        Equal(new((1220 - 416 * 2.2f) / 2, (150 + 682 - 139 * 2.2f) / 2, 416 * 2.2f, 139 * 2.2f), PhoneTitleUpright.Logo(Reference, 8, 416, 139));
     }
 
     [Fact]
-    public void A_first_launch_s_three_rows_stand_lower_and_the_picture_with_them()
+    public void A_first_launch_s_three_rows_stand_lower_and_the_logo_with_them()
     {
-        Equal(new(40, 2070, 1140, 130), PhoneTitleUpright.Row(Reference, 0, 3));
-        Assert.Equal((110 + 2070 - 30) / 2f - 762.5f / 2, PhoneTitleUpright.PictureTop(Reference, 3), Close);
-        var moved = Reference.WithPictureAt(PhoneTitleUpright.PictureTop(Reference, 3));
-        Assert.Equal(PhoneTitleUpright.PictureTop(Reference, 3), moved.Frame.Y, Close);
-        Assert.Equal(Reference.Frame.W, moved.Frame.W, Close);
+        Equal(new(40, 1832, 1140, 208), PhoneTitleUpright.Row(Reference, 0, 3));
+        Assert.Equal((150 + 1792 - 139 * 2.2f) / 2, PhoneTitleUpright.Logo(Reference, 3, 416, 139).Y, Close);
+    }
+
+    [Fact]
+    public void The_characters_stand_in_one_column_the_words_left_aligned_right_of_it()
+    {
+        // Alice's easel and ghost, 113 × 95: fitted to 186 high (×1.958), the widest of the eight.
+        var (w, h) = PhoneTitleUpright.IconSize(Reference, 113, 95);
+        Assert.Equal(113 * 186 / 95f, w, Close);
+        Assert.Equal(186, h, Close);
+        Assert.Equal((150, 170), PhoneTitleUpright.IconSize(Reference, 75, 85));     // Please: at most twice her pixels
+        var (left, words) = PhoneTitleUpright.Column(Reference, w, 300);
+        Assert.Equal(610 - (w + 44 + 300) / 2, left, Close);
+        Assert.Equal(left + w + 44, words, Close);
+        var row = PhoneTitleUpright.Row(Reference, 0, 3);
+        Equal(new(left + (w - 150) / 2, 1832 + (208 - 170) / 2f, 150, 170), PhoneTitleUpright.Icon(row, left, w, (150, 170)));
+    }
+
+    [Fact]
+    public void The_texture_runs_down_the_screen_every_second_copy_mirrored()
+    {
+        var tiles = PhoneTitleUpright.Tiles(Reference, 364).ToList();
+        float h = 364 * 1220 / 640f;                                          // the screen's width: ×1.906
+        Assert.Equal(4, tiles.Count);
+        Equal(new(0, 3 * h, 1220, h), tiles[3].Box);
+        Assert.Equal([false, true, false, true], tiles.Select(t => t.Flipped));
+        Equal(new(0, 0, 1220, 16 * 1220 / 640f), PhoneTitleUpright.FriezeTop(Reference, 16));
+        Equal(new(0, 2712 - 20 * 1220 / 640f, 1220, 20 * 1220 / 640f), PhoneTitleUpright.FriezeFoot(Reference, 20));
+    }
+
+    [Fact]
+    public void A_description_stands_the_picture_on_the_logo()
+    {
+        var logo = PhoneTitleUpright.Logo(Reference, 8, 416, 139);
+        Assert.Equal(logo.Y + logo.H / 2 - 762.5f / 2, PhoneTitleUpright.DescriptionPictureTop(Reference, 8, 139), Close);
     }
 
     [Fact]

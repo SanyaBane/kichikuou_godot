@@ -1479,3 +1479,10 @@ nothing moves when a button is unlocked. The background, the logo and the rows P
 
 Each after a clear and at a first launch (PE6n, PE7n). The agent recommends **PE6**: the characters read as one column
 down the screen, as a list's marks do; in PE7 their left edges wander.
+
+## 46. The owner's choice: PE6 (2026-10-31)
+
+The owner chose PE6, the characters' middles on one line. Built on the phone held upright (docs/ui/phone-build.md, §5,
+"After the build: the title upright as PE6"): the stone over the whole screen, the logo whole, the rows with the
+characters cut from the player's CG 302 at run time; a long press on a row shows the button's description under the
+logo. PE2 stays in round P18's sheets only.

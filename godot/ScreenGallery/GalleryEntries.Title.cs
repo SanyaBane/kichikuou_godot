@@ -127,23 +127,25 @@ internal static partial class GalleryEntries
     /// <summary>
     /// The title held at <paramref name="moment"/>: the presenter's screen, and at a key wait our message window if one is
     /// up and, in the touch mode, the Skip and Log drawer as <c>GameScreen.UpdateSkipButtons</c> shows it there (Log off:
-    /// nothing is logged at the title). Held upright the title's own (<paramref name="title"/>: not a screen it opens)
-    /// stands its picture over a row for each button it draws, the rows shown at its mouse poll (PE2, as
-    /// <c>GameScreen.Title.cs</c>).
+    /// nothing is logged at the title). Held upright the title's own (<paramref name="title"/>: not a screen it opens) is
+    /// our screen over its picture, a row for each button it draws at its mouse poll, none under a description, which
+    /// stands the picture on the logo (PE6, as <c>GameScreen.Title.cs</c>).
     /// </summary>
     private static Action<Rect2> Title(GalleryStage g, TitleMoment moment, bool title = true)
     {
         var p = GalleryTitle.HeldAt(g.Fresh, moment);
         var picture = g.Picture(p);
-        TitleRowsView? rows = null;
+        TitleUprightView? screen = null;
         if (title && Device.Layout == DeviceLayout.PhoneUpright && p.State is { } s)
         {
             var buttons = PhoneTitleUpright.Buttons(s);
-            Device.PictureTop = f => PhoneTitleUpright.PictureTop(f, buttons.Count);
-            if (!moment.AtKey && p.MessageWindow is null)
+            bool polls = !moment.AtKey && p.MessageWindow is null;
+            if (polls || p.MessageWindow is not null)
             {
-                rows = g.Add(new TitleRowsView());
-                rows.ShowRows(buttons);
+                screen = g.Add(new TitleUprightView(g.Faces.Cgs));
+                screen.ShowTitle(buttons, polls);
+                if (!polls && screen.LogoHeight is int logo)
+                    Device.PictureTop = f => PhoneTitleUpright.DescriptionPictureTop(f, buttons.Count, logo);
             }
         }
         MessageWindowView? window = null;
@@ -162,7 +164,7 @@ internal static partial class GalleryEntries
             GalleryStage.Fill(picture, area);
             window?.Place(area);
             drawer?.Place(area);
-            rows?.Place();
+            screen?.Place();
             menu?.Place();
         };
     }

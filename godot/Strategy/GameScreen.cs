@@ -381,7 +381,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _ladderView = new FloorLadderView(GodotGlyphRenderer.Chosen);
         _content.AddChild(_ladderView);
         ReadyData();
-        ReadyTitleRows();
+        ReadyTitleView(faces);
         _saveView = new SaveLoadView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_saveView);                           // over the message windows: they are not drawn under it
         ReadySubordinates(faces);
@@ -469,7 +469,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _ladderView.Place(PictureArea());
         }
         UpdateDataView();
-        UpdateTitleRows();
+        UpdateTitleView();
         _optionsView?.Place(PictureArea());                         // a phone turned lays it out again
         if (_provinceView.Visible)
             _provinceView.Place(PictureArea());

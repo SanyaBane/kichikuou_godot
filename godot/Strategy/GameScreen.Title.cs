@@ -4,22 +4,26 @@ using Kichikuou.Original.Content.Devices;
 
 namespace Kichikuou.Game.Strategy;
 
-// The title on the phone held upright (docs/ui/phone-build.md, step P8d; docs/ui/phone.md, §22, PE2): while ｽﾀMENU runs the
-// picture stands in the middle over a finger row for each button it draws (Device.PictureTop; so a button's description,
-// window 113, follows it), the rows shown while it polls the mouse (TitleRowsView), the picture's own targets kept; a row
-// is a click in the middle of its button's box, through the title's own mouse reads.
+// The title on the phone held upright (docs/ui/phone-build.md, step P8d; docs/ui/phone.md, §44-§45, PE6): while ｽﾀMENU polls
+// the mouse our own screen covers the engine's picture (TitleUprightView: the stone, the logo, a row for each button it
+// draws); a row is a click in the middle of its button's box, a long press there the right click, through the title's own
+// mouse reads. While it shows a button's description the screen stays, the rows hidden and the presses the key wait's, the
+// picture under it centred on the logo (Device.PictureTop), so window 113 comes under the logo; at the requests slip it
+// gives way to the picture in the room's middle.
 public partial class GameScreen
 {
     private const string TitleScene = "ｽﾀMENU.ADV";
 
-    private TitleRowsView _titleRows = null!;
+    private TitleUprightView _titleView = null!;
     private PointerScript _titlePointer = new();        // a row's click on its way to the title's poll
 
-    private void ReadyTitleRows()
+    private void ReadyTitleView(FacePictures faces)
     {
-        _titleRows = new TitleRowsView();
-        _titleRows.Chosen += TitleRowChosen;
-        _content.AddChild(_titleRows);                  // under the Menu sheet: the Menu cell stays its own
+        _titleView = new TitleUprightView(faces.Cgs);
+        _titleView.Chosen += TitleRowChosen;
+        _titleView.Described += TitleRowDescribed;
+        _content.AddChild(_titleView);
+        _content.MoveChild(_titleView, _messageView.GetIndex());     // under the message windows: a description over it
     }
 
     /// <summary>
@@ -31,21 +35,30 @@ public partial class GameScreen
             && s.Buttons[(Sys3Int)PhoneTitleUpright.Start].X2 != 0
             ? PhoneTitleUpright.Buttons(s) : [];
 
-    /// <summary>Where the title stands the picture held upright (over its rows), or null: the room's middle.</summary>
-    private static Func<PhoneFrame, float?>? TitlePictureTop(IReadOnlyList<int> buttons) =>
-        buttons.Count > 0 ? f => PhoneTitleUpright.PictureTop(f, buttons.Count) : null;
+    /// <summary>The title polls the mouse: not at a key wait, under a window or a menu.</summary>
+    private bool TitlePolls(IReadOnlyList<int> buttons) =>
+        buttons.Count > 0 && !_keyWaiting && !SkippingScene && _presenter.MessageWindow is null && _presenter.Menu is null;
 
-    /// <summary>Each frame: the rows while the title polls the mouse — not at a key wait, under a window or a menu.</summary>
-    private void UpdateTitleRows()
+    /// <summary>The title shows a button's description (window 113).</summary>
+    private bool TitleDescribes(IReadOnlyList<int> buttons) => buttons.Count > 0 && _presenter.MessageWindow is not null;
+
+    /// <summary>Where the title stands the picture held upright (on the logo, under a description), or null: the room's middle.</summary>
+    private Func<PhoneFrame, float?>? TitlePictureTop(IReadOnlyList<int> buttons) =>
+        TitleDescribes(buttons) && _titleView.LogoHeight is int logo
+            ? f => PhoneTitleUpright.DescriptionPictureTop(f, buttons.Count, logo) : null;
+
+    /// <summary>Each frame: our screen with its rows while the title polls the mouse, without them under a description.</summary>
+    private void UpdateTitleView()
     {
         var buttons = TitleButtons();
-        if (buttons.Count > 0 && !_keyWaiting && !SkippingScene && _presenter.MessageWindow is null && _presenter.Menu is null)
+        bool polls = TitlePolls(buttons);
+        if (polls || TitleDescribes(buttons))
         {
-            _titleRows.ShowRows(buttons);
-            _titleRows.Place();
+            _titleView.ShowTitle(buttons, polls);
+            _titleView.Place();
         }
         else
-            _titleRows.HideRows();
+            _titleView.HideTitle();
     }
 
     /// <summary>A row tapped: a click in the middle of its button's box, as the title loaded it.</summary>
@@ -55,5 +68,14 @@ public partial class GameScreen
             return;
         var (x, y) = PhoneTitleUpright.Centre(s, button);
         _titlePointer.Click(x, y);
+    }
+
+    /// <summary>A row held: the right click in the middle of its button's box, its description.</summary>
+    private void TitleRowDescribed(int button)
+    {
+        if (_titlePointer.Pending > 0 || _presenter.State is not { } s)
+            return;
+        var (x, y) = PhoneTitleUpright.Centre(s, button);
+        _titlePointer.RightClick(x, y);
     }
 }
