@@ -489,7 +489,7 @@ internal sealed partial class DeploymentPanels : Control
             DrawCard(c, place, party.Places[place - 1]);
         if (_dropOn != 0)
             DrawDrop(c, _dropOn);
-        DrawFacing(c);
+        DrawFacing(c, party.Places.Count);
 
         float left = PartyPanel.Position.X + 20;
         var totals = new Rect2(left, TotalsY - 14, PartyPanel.Size.X - 40, 28);
@@ -540,14 +540,15 @@ internal sealed partial class DeploymentPanels : Control
     /// <summary>
     /// The way the whole party faces (the owner's F5, 2026-10-24, tools/ui/mock_facing.py; in place of U5's triangle): a
     /// gold bracket holding the front row's two cards from the right — its ends short of the cards' edges, in the gap —,
-    /// its middle drawn out into a head pointing at the enemy's side.
+    /// its middle drawn out into a head pointing at the enemy's side. With one place (the dungeon search) it holds place 1's
+    /// card alone, as upright (PD2f2s).
     /// </summary>
-    private void DrawFacing(Control c)
+    private void DrawFacing(Control c, int places)
     {
         var top = CardRect(1);
-        var bottom = CardRect(2);
+        var bottom = places >= 2 ? CardRect(2) : top;
         float x = PartyPanel.End.X - 14 - FacingStrip + 1, ends = top.End.X + 2, tip = PartyPanel.End.X - 10;
-        float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (top.End.Y + bottom.Position.Y) / 2;
+        float y0 = top.Position.Y + 1, y1 = bottom.End.Y - 1, cy = (y0 + y1) / 2;
         float width = Line(2.5f);
         c.DrawPolyline([new(ends, y0), new(x, y0), new(x, cy - 16), new(x + 10, cy - 6)], Ui.Gold, width, true);
         c.DrawPolyline([new(ends, y1), new(x, y1), new(x, cy + 16), new(x + 10, cy + 6)], Ui.Gold, width, true);
