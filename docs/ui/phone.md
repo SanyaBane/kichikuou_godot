@@ -1378,3 +1378,31 @@ itself. The agent recommends S2: the gold thumb is seen at a glance at arm's len
 The owner chose S2, the bar 20 px wide, as the reference for every scroll bar of the phone and the tablet. Built on
 Treasure and the Harem upright (docs/ui/phone-build.md, §5, "After the build: the reference scroll bar"); the others
 follow.
+
+## 42. Round P32: the reference on the paper (2026-10-31)
+
+Going on through the gallery's touch and phone passes, the agent found these scroll bars besides the pickers':
+
+- **The save lists** (Save/Load, every device; lacquer): a groove 12 px wide (0.7 mm) with the gold thumb, held
+  landscape 14 in from the list's right, upright 18 in, the rows ending 30 / 32 short of it. The reference fits the same
+  room (20 and its gap of 10): it takes the groove's place, its right at the list's, and the rows keep their width. No
+  mock-up: it is drawn as on the pickers.
+- **The paper screens**: the message log (every device; a track 4 px wide in the paper's head, the thumb 6 px in the
+  vermilion ink at 70%), the options' sheet upright (6 px, the thumb in the grey ink; on the reference phone only
+  Display's column scrolls) and the ledgers of the deployment table and Subordinates (every device; Godot's own bars,
+  8 px, the thumb in the quiet ink; upright the week-18 save's ledger scrolls both ways, held landscape and on the tablet
+  it fits).
+- **The tablet**: a pixel of the 1280×800 layout is 0.2 mm on the owner's Galaxy Tab S7 FE (docs/ui/touch.md), so its
+  bars are already 0.8-1.6 mm wide, about the reference's 1.1 mm; only their look would change.
+
+On the paper the lacquer's gold reads weakly, so the round (`tools/ui/mock_scroll_bar_paper.py`, over the upright pass's
+`message-log`, `options-display` and `deployment`) draws the reference's size and shape in three inks:
+
+- **PA — the lacquer's gold**: the reference as it is, a dark groove in a dim gold rim, the gold thumb.
+- **PB — vermilion**: a groove of the paper's head in a faint ink rim, the thumb in the vermilion ink (the log's thumb
+  now, the chosen tab's top, the seals) with a lighter edge.
+- **PC — brown ink**: the same groove, the thumb in the quiet ink (the ledgers' bars now) with a grey edge.
+
+The log's groove stands 12 in from the paper's gold frame, its rules ending 10 before it; the options' 6 in from the
+sheet's right, the column 8 narrower; the ledger's Godot bars restyled as the reference both ways, at the paper's right
+and foot. The agent recommends PB: the vermilion is the paper's own accent, and the thumb reads at a glance on the beige.
