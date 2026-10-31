@@ -527,7 +527,8 @@ question, Abandon City | Ninja Scout over Intercept in the bar —, `-scouted` t
 Ninja Scout, `-abandon` the question above Abandon City. PA1 and PA1n left `GALLERY_ENTRIES`.
 
 Step P7a (2026-10-29) built Harem and Treasure: on this pass `harem` shows the title band, Anasel's picture at the width,
-her details, the grid in rows of 7.3 mm (nine of 17 in view, a thin scroll bar at the right) and Summon | End in the bar;
+her details, the grid in rows of 7.3 mm (nine of 17 in view, the scroll bar at the right — since 2026-10-31 the reference
+bar, docs/ui/phone.md §41) and Summon | End in the bar;
 `treasure…` the item's or the character's picture at the width, its details, Characters | Items (`-which-item` Rance's
 prompt and Back in their place), the grid in rows of 6.7 mm, the red button | End (`-refusal` greyed with its reason),
 `-question` and `-replace` the questions across the room over the button. PH2 and PT2 left `GALLERY_ENTRIES`.

@@ -180,6 +180,32 @@ internal sealed partial record UiPalette
         c.DrawString(font, new Vector2(rect.Position.X, Parts.Baseline(rect, font, size) + 0.5f), label, HorizontalAlignment.Center, w, size, PillInk);
     }
 
+    /// <summary>
+    /// The reference scroll bar (the owner's S2, docs/ui/phone.md §41; its places <c>PhoneScrollBar</c>'s): the groove a
+    /// rounded well (<see cref="Groove"/>) in a dim gold rim <paramref name="rim"/> wide, the thumb in gold inside it with a
+    /// lit edge down its left in the names' gold.
+    /// </summary>
+    public void DrawScrollBar(CanvasItem c, Rect2 groove, Rect2 thumb, float rim)
+    {
+        Capsule(c, groove, DimGold);
+        Capsule(c, groove.Grow(-rim), Groove);
+        Capsule(c, thumb, Gold);
+        float w = groove.Size.X, r = w / 2, x = thumb.Position.X + w / 6;
+        if (thumb.Size.Y > 2 * r)
+            c.DrawLine(new Vector2(x, thumb.Position.Y + r), new Vector2(x, thumb.End.Y - r), Name, w / 10);
+    }
+
+    /// <summary>A box with fully rounded ends in <paramref name="colour"/>.</summary>
+    private static void Capsule(CanvasItem c, Rect2 box, Color colour)
+    {
+        int r = (int)Math.Round(Math.Min(box.Size.X, box.Size.Y) / 2);
+        c.DrawStyleBox(new StyleBoxFlat
+        {
+            BgColor = colour, CornerRadiusTopLeft = r, CornerRadiusTopRight = r, CornerRadiusBottomLeft = r, CornerRadiusBottomRight = r,
+            AntiAliasing = true,
+        }, box);
+    }
+
     /// <summary>A divider: two dim rules with a gold diamond between them.</summary>
     public void DrawDivider(CanvasItem c, float x0, float x1, float y, float k)
     {

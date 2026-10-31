@@ -43,14 +43,13 @@ internal static class PhonePickerParts
             y + u.Px(PhonePickersUpright.Divider), u.K);
     }
 
-    /// <summary>Held upright: the grid's thin scroll bar in the room's right margin, while the grid scrolls.</summary>
+    /// <summary>Held upright: the reference scroll bar right of the grid, while the grid scrolls.</summary>
     public static void DrawScrollBar(CanvasItem c, PhoneUnits u, PhonePickersUpright.ScrolledGrid grid, int scroll)
     {
         if (grid.MaxScroll == 0)
             return;
         var (track, thumb) = PhonePickersUpright.ScrollBar(u.Frame, grid, scroll);
-        c.DrawRect(u.Rect(track), new Color(Ui.OffLine, 0.5f));
-        c.DrawRect(u.Rect(thumb), Ui.DimGold);
+        Ui.DrawScrollBar(c, u.Rect(track), u.Rect(thumb), u.Px(PhoneScrollBar.Rim));
     }
 
     /// <summary>A cell no entry holds: dimmed, as the PC's.</summary>

@@ -47,7 +47,7 @@ internal sealed class PickerGridScroll
     /// </summary>
     public bool Touch(InputEvent e, PhonePickersUpright.ScrolledGrid grid, Action started, Action changed)
     {
-        var area = new Rect2(grid.Area.X, grid.Area.Y, grid.Area.W, grid.Area.H);
+        var area = new Rect2(grid.Scrolled.X, grid.Scrolled.Y, grid.Scrolled.W, grid.Scrolled.H);
         switch (e)
         {
             case InputEventMouseMotion motion when _finger.Down:

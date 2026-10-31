@@ -1025,7 +1025,8 @@ the comment's editing (PY2). **Both are built, awaiting the owner's look on the 
   details 14 under it and 14 in (their insides held landscape's); the grid (`ScrolledGrid`: three cells a row, 8 apart,
   rows 6 apart, scrolled by whole rows — `Shown`, `MaxScroll`, `Cell` at a scroll or null out of view, `CellAt`, `Reveal`
   the least scroll that shows a cell), the harem's 190 under the details' top down to 20 over the bar in rows of 128
-  (7.3 mm): nine of the 17 rows in view on the reference; a thin scroll bar (6 wide) in the room's right margin; End (412)
+  (7.3 mm): nine of the 17 rows in view on the reference; a thin scroll bar (6 wide) in the room's right margin (since
+  2026-10-31 the reference bar, "After the build: the reference scroll bar"); End (412)
   | the red button (760) in the bar; the treasure's tabs (`pt2`, `lacquer_tabs`, `treasure_cell`) 180 under the details'
   top, 110 high, 12 apart, a first pick's prompt and Back (220) in their place, its grid 14 under them in rows of 118
   (6.7 mm), nine rows in view too; a wide cell's insides (an item's name 18 in, its holder at the right in one line); a
@@ -1468,6 +1469,21 @@ The owner asked for the ledger's № no wider than its figures (two at most) and
   deployment table (518 before) and 434 on Subordinates; the chosen row's diamond is gone.
 - Then the owner asked for the same on the PC and the tablet: `Compact` is now any table with a tab (docs/ui/unit-ledger.md,
   §9).
+
+### After the build: the reference scroll bar (owner, 2026-10-31)
+
+Going through the gallery's touch and phone screens, the owner found the scroll bars almost unseen and chose a larger
+one from round P31, S2 (phone.md, §40-§41), as the reference for all of them. Built first on Treasure and the Harem
+upright:
+
+- **The reference** (`Original.Content/Devices/PhoneScrollBar`): a groove 20 wide (1.1 mm) with a rim of 2, the thumb 3
+  in, at least 60 long, as long as the share in view; the list it scrolls stands 10 left of it (`Room`: 30). Drawn by
+  `UiPalette.DrawScrollBar`: the groove a capsule of `Groove` in a `DimGold` rim, the thumb a capsule of `Gold` with a
+  lit edge in `Name` down its left. A sign only: the finger scrolls the list anywhere.
+- **The pickers upright** (`PhonePickersUpright`): while the grid scrolls it is 30 narrower (1158 on the reference, each
+  cell 10), the groove's right at the picture's, the tabs' and End's (16 in from the screen's edge) and as tall as the
+  rows in view (the thin bar ran on to the grid area's foot); a grid with every row in view keeps the room's width.
+  `ScrolledGrid.Scrolled` is the grid and the bar's room: a finger or the wheel there scrolls it (`PickerGridScroll`).
 
 ## 6. The agent's own choices, for the owner to confirm
 

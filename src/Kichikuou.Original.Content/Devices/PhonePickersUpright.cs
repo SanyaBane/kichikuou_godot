@@ -5,8 +5,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// PT2, the owner's choice): the title band under the hole (<see cref="Band"/>: the title, the date at the right, a
 /// divider), the picture at the room's width in the PC's shape (<see cref="Picture"/>, its own words 2.4 mm), the details
 /// under it (<see cref="Details"/>), then the pickers' 3 × 17 grid in taller cells than held landscape's, as many rows in
-/// view as its room holds, the rest a drag away (<see cref="ScrolledGrid"/>: the harem's <see cref="HaremGrid"/>), a thin
-/// scroll bar in the room's right margin; the red button | End in the bar (<see cref="Action"/>, <see cref="End"/>). The
+/// view as its room holds, the rest a drag away (<see cref="ScrolledGrid"/>: the harem's <see cref="HaremGrid"/>), the
+/// reference scroll bar right of it (<see cref="ScrollBar"/>, the owner's S2); the red button | End in the bar
+/// (<see cref="Action"/>, <see cref="End"/>). The
 /// figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>: <c>plain_title</c>, <c>ph2</c>, <c>girl_details</c>,
 /// <c>picker_grid</c>, <c>harem_cell</c>, <c>end_and</c>) in the reference phone's pixels, from the room's top and the bar;
 /// the boxes in the canvas's units. A longer screen gives the grid more rows in view. Interface only. Engine-independent.
@@ -63,13 +64,17 @@ public static class PhonePickersUpright
     private const float GridFoot = 20;
 
     /// <summary>
-    /// A grid of the pickers' cells scrolled by whole rows: its area, its rows' height; how many rows its area shows, how far
-    /// it scrolls, where a cell stands at a scroll, and which cell is at a point.
+    /// A grid of the pickers' cells scrolled by whole rows: its area, its rows' height, the width it leaves at its right for
+    /// the scroll bar (none while every row is in view); how many rows its area shows, how far it scrolls, where a cell
+    /// stands at a scroll, and which cell is at a point.
     /// </summary>
-    public sealed record ScrolledGrid(PhoneFrame.Box Area, float RowHeight, float Gap, float CellGap)
+    public sealed record ScrolledGrid(PhoneFrame.Box Area, float RowHeight, float Gap, float CellGap, float BarRoom = 0)
     {
         /// <summary>A row and the gap under it.</summary>
         public float Pitch => RowHeight + Gap;
+
+        /// <summary>Where a finger or the wheel scrolls the grid: its area and the bar's room right of it.</summary>
+        public PhoneFrame.Box Scrolled => Area with { W = Area.W + BarRoom };
 
         /// <summary>The rows the area shows whole.</summary>
         public int Shown => Math.Clamp((int)Math.Floor((Area.H + Gap) / Pitch + 0.001f), 1, Rows);
@@ -113,11 +118,19 @@ public static class PhonePickersUpright
     private const float HaremDetails = 190, HaremRow = 128;
 
     /// <summary>The harem's grid under her details.</summary>
-    public static ScrolledGrid HaremGrid(PhoneFrame f)
+    public static ScrolledGrid HaremGrid(PhoneFrame f) => Grid(f, Details(f).Y + f.Px(HaremDetails), HaremRow);
+
+    /// <summary>
+    /// A grid from <paramref name="top"/> down to <see cref="GridFoot"/> over the bar, the room's width less its sides, in rows
+    /// <paramref name="row"/> high; while it scrolls, narrower by the scroll bar's room (the owner's S2, docs/ui/phone.md §41).
+    /// </summary>
+    private static ScrolledGrid Grid(PhoneFrame f, float top, float row)
     {
-        float top = Details(f).Y + f.Px(HaremDetails), foot = f.Bar.Y - f.Px(GridFoot);
-        var area = new PhoneFrame.Box(f.Room.X + f.Px(SideIn), top, f.Room.W - f.Px(2 * SideIn), Math.Max(0, foot - top));
-        return new ScrolledGrid(area, f.Px(HaremRow), f.Px(RowGap), f.Px(CellGap));
+        float foot = f.Bar.Y - f.Px(GridFoot), w = f.Room.W - f.Px(2 * SideIn);
+        var area = new PhoneFrame.Box(f.Room.X + f.Px(SideIn), top, w, Math.Max(0, foot - top));
+        var grid = new ScrolledGrid(area, f.Px(row), f.Px(RowGap), f.Px(CellGap));
+        float room = PhoneScrollBar.Room(f);
+        return grid.MaxScroll == 0 ? grid : grid with { Area = area with { W = w - room }, BarRoom = room };
     }
 
     /// <summary>A harem cell's insides in a wide cell (<c>harem_cell</c>): the heart's middle in from the left, the name's left.</summary>
@@ -154,12 +167,7 @@ public static class PhonePickersUpright
     }
 
     /// <summary>The treasure's grid under its tabs.</summary>
-    public static ScrolledGrid TreasureGrid(PhoneFrame f)
-    {
-        float top = TabsRow(f).Bottom + f.Px(TreasureGridUnder), foot = f.Bar.Y - f.Px(GridFoot);
-        var area = new PhoneFrame.Box(f.Room.X + f.Px(SideIn), top, f.Room.W - f.Px(2 * SideIn), Math.Max(0, foot - top));
-        return new ScrolledGrid(area, f.Px(TreasureRow), f.Px(RowGap), f.Px(CellGap));
-    }
+    public static ScrolledGrid TreasureGrid(PhoneFrame f) => Grid(f, TabsRow(f).Bottom + f.Px(TreasureGridUnder), TreasureRow);
 
     /// <summary>
     /// A treasure cell's insides in a wide cell (<c>treasure_cell</c>): the name 18 in, its type; a holder at the right, 14
@@ -177,16 +185,15 @@ public static class PhonePickersUpright
         return new PhoneFrame.Box(f.Room.X + f.Px(SideIn), top, f.Room.W - f.Px(2 * SideIn), f.Bar.Y - f.Px(BesideFoot) - top);
     }
 
-    /// <summary>The scroll bar: as wide as this in the room's right margin, this far in from the room's right; the thumb at least this long.</summary>
-    private const float BarWidth = 6, BarIn = 11, ThumbLeast = 60;
-
-    /// <summary>The scroll bar's track beside <paramref name="grid"/> and its thumb at <paramref name="scroll"/>.</summary>
+    /// <summary>
+    /// The scroll bar right of <paramref name="grid"/> (<see cref="PhoneScrollBar"/>, the owner's S2): its groove as tall as
+    /// the rows in view, its right at the picture's, the tabs' and End's; its thumb at <paramref name="scroll"/>.
+    /// </summary>
     public static (PhoneFrame.Box Track, PhoneFrame.Box Thumb) ScrollBar(PhoneFrame f, ScrolledGrid grid, int scroll)
     {
-        var track = new PhoneFrame.Box(f.Room.Right - f.Px(BarIn), grid.Area.Y, f.Px(BarWidth), grid.Area.H);
-        float h = Math.Max(f.Px(ThumbLeast), track.H * grid.Shown / Rows);
-        float y = grid.MaxScroll == 0 ? track.Y : track.Y + (track.H - h) * Math.Clamp(scroll, 0, grid.MaxScroll) / grid.MaxScroll;
-        return (track, new PhoneFrame.Box(track.X, y, track.W, h));
+        var track = PhoneScrollBar.Groove(f, f.Room.Right - f.Px(SideIn), grid.Area.Y, grid.Shown * grid.Pitch - grid.Gap);
+        float at = grid.MaxScroll == 0 ? 0 : (float)Math.Clamp(scroll, 0, grid.MaxScroll) / grid.MaxScroll;
+        return (track, PhoneScrollBar.Thumb(f, track, (float)grid.Shown / Rows, at));
     }
 
     // ------------------------------------------------------------------ the bar (end_and)

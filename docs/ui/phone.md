@@ -1372,3 +1372,9 @@ from its middle. The bar stays a sign only, as now: the finger scrolls the grid 
 
 Each is also drawn as the whole screen at the phone's pixels (`p31-<variant>-phone.png`), to be looked at on the phone
 itself. The agent recommends S2: the gold thumb is seen at a glance at arm's length, and the cells lose little.
+
+## 41. The owner's choice: S2 (2026-10-31)
+
+The owner chose S2, the bar 20 px wide, as the reference for every scroll bar of the phone and the tablet. Built on
+Treasure and the Harem upright (docs/ui/phone-build.md, §5, "After the build: the reference scroll bar"); the others
+follow.
