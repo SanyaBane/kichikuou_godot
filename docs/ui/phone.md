@@ -1271,3 +1271,17 @@ script, `tools/ui/mock_attack_facing.py`, over the upright pass's `deployment` a
 The agent recommends PD2f2: the same bracket as the enemy attack's, mirrored as the army is, at the same cost to the
 ledger as PD2f1. **The owner chose PD2f2**, built as drawn (docs/ui/phone-build.md, §5, "After the build: the party's
 bracket upright").
+
+## 33. Round P27: the scout report's facing upright (2026-10-31)
+
+The ninja's scout report upright (PB4s, `ScoutReportView.Upright.cs`) shows the enemy's cards as the enemy attack does,
+the front row on top facing up, with no mark of the facing at all: "FRONT ROW" alone. With PA1f2a and PD2f2 built the
+owner asked for the same there. The round (the same script, over the upright pass's `scout-report`) draws PA1f2a's
+bracket as built — its line 30 px over "FRONT ROW"'s middle, the head up:
+
+- **PB4sf1 — nothing moved**: the head stands beside Kanami's portrait, between her balloon's foot and the caption; the
+  line runs 28 px (1.6 mm) under her portrait.
+- **PB4sf2 — the cards 60 px (3.4 mm) lower**: the same, clear of her portrait; the screen has room to spare under the
+  cards (Rance's answer stands on the bar).
+
+The agent recommends PB4sf2: in PB4sf1 the line nearly touches the portrait's frame.

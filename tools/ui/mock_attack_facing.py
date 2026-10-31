@@ -25,8 +25,12 @@ deployment-search (the week-18 save): the party faces down as our army in the ba
 from below, its head down; the panel grows and the ledger loses as much at its foot. PD2f1 the bracket under the row,
 "Front row" over its cards as now, the totals beside the head; PD2f2 PA1f2a turned down, "Front row" under its cards
 inside the bracket (the agent's recommendation), and PD2f2s the same in the dungeon search, the bracket over its one
-card; PD2f3 as PD2f1 with the totals under the head. Rounds P24-P25 need the upright pass's dumps from before the build
-(the bracket now drawn on them).
+card; PD2f3 as PD2f1 with the totals under the head. Rounds P24-P26 need the upright pass's dumps from before their
+builds (the brackets now drawn on them).
+
+Round P27 (the owner chose PD2f2, built; then the scout report), over scout-report (PB4s: the rebels Kanami scouted, the
+front row on top facing up as the enemy attack's, no mark of it at all): PA1f2a's bracket as built over "FRONT ROW";
+PB4sf1 nothing moved, PB4sf2 the cards 60 px lower, clear of Kanami's portrait (the agent's recommendation).
 """
 import os
 import sys
@@ -156,9 +160,8 @@ def pa1f2(name):
                  'the row captions at the cards\' left; the cards 30 px lower']
 
 
-def bracket(img, top, line):
+def bracket(img, top, line, x0=CARDS[0] + 1, x1=CARDS[2] - 1, mid=MID):
     """The bracket's line at line from the front row's left end to its right, its ends down to the cards' top, its head up."""
-    x0, x1 = CARDS[0] + 1, CARDS[2] - 1
 
     def arms(dr, p, s):
         w = round(2.5 * S * s)
@@ -398,3 +401,35 @@ P26 = [('Now', party_now), ('PD2f1 — the bracket under the row', pd2f1),
        ('PD2f2s — PD2f2, the dungeon search', lambda _: pd2f2('deployment-search', one=True))]
 sheet('deployment', 'p26', 'Round P26 — the party\'s facing upright: the week-18 save\'s attack on Oaks (6), the dungeon search last', P26)
 detail('deployment', 'p26-detail', 'Round P26 — the party at the dump\'s pixels', P26, crop=(0, 240, PW, 1160))
+
+
+# --- Round P27: the scout report upright ------------------------------------------------------------------------------
+# The ninja's report before the field (PB4s, ScoutReportView.Upright.cs): the enemy's cards as the enemy attack's, the
+# front row on top facing up, "FRONT ROW" over it with no mark of the facing at all. PA1f2a's bracket as built.
+
+SCOUT_ROWS = (606, 1210)                # "FRONT ROW" down to the back row's cards
+SCOUT_TOP = 650                         # the front row's top (PhoneBattleStatesUpright: the room's top + 540)
+SCOUT_ENDS = (17, 1203)                 # the cards' outer sides, 1 in
+
+
+def scout(dy):
+    def draw(name):
+        img = base(name)
+        if dy:
+            rows = img.crop((0, SCOUT_ROWS[0], PW, SCOUT_ROWS[1]))
+            ImageDraw.Draw(img).rectangle((0, SCOUT_ROWS[0], PW, SCOUT_ROWS[1] + dy), fill=(0, 0, 0))
+            img.paste(rows, (0, SCOUT_ROWS[0] + dy))
+        top = SCOUT_TOP + dy
+        bracket(img, top, top - 22 - 30, *SCOUT_ENDS)
+        notes = ['PA1f2a as built: the line 30 px over "FRONT ROW"\'s middle from the cards\' outer sides, the head up '
+                 f'({mm(28 * S)} wide, {mm(27 * S)} deep)']
+        notes.append(f'the cards {dy} px ({mm(dy)}) lower, more room under Kanami\'s portrait' if dy else
+                     'nothing moves: the head stands beside Kanami\'s portrait, the line 28 px under it')
+        return img, notes
+    return draw
+
+
+P27 = [('Now', lambda name: (base(name), ['as built: "FRONT ROW" with no mark of the way the army faces'])),
+       ('PB4sf1 — the bracket, nothing moved', scout(0)), ('PB4sf2 — the cards 60 px lower (recommended)', scout(60))]
+sheet('scout-report', 'p27', 'Round P27 — the scout report upright: the rebels Kanami scouted before the battle on Ys (5)', P27)
+detail('scout-report', 'p27-detail', 'Round P27 — the report and the cards at the dump\'s pixels', P27, crop=(0, 100, PW, 1300))
