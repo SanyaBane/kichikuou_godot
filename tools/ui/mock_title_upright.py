@@ -28,6 +28,8 @@ Round P33: PE3 the owner's words as they stand — the whole picture scaled to c
 the logo cut); PE4 the texture alone covering the screen, the logo laid whole over it; PE5 the texture at the picture's
 own scale (the screen's width) continued over the whole screen, the logo laid whole. Each after a clear (every button,
 the rows' order PE2's) and at a first launch (Alice, Load, Start: PE3n, PE4n, PE5n). `cgs` shows the CGs and the cut.
+Round P34, PE5 as the owner changed it (the characters in one column nearer the middle, the words left-aligned right of
+it): PE6 the characters' middles on one line, PE7 their right edges on one line (PE6n, PE7n at a first launch).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 """
 import os
@@ -74,6 +76,7 @@ LOGO_LEAST = 300                        # the logo's letters are five groups of 
 ROW_H, ROW_GAP, ROW_IN, ROWS_OVER = 208, 14, 40, 20     # the rows: 11.8 mm, at PE2's places
 SLOT_W, ICON_MAX = 250, 2.0             # the character's slot at a row's left; at most twice its CG pixels
 LOGO_K = 2.2                            # the logo laid whole: 902 px wide, the screen's width less 159 each side
+WORD_SIZE, WORD_GAP = 66, 44            # a row's word, the brush face; round P34: its distance from the column
 
 
 def font(name, size):
@@ -237,9 +240,26 @@ def row_box(i, count):
     return ROW_IN, y, PW - ROW_IN, y + ROW_H
 
 
-def rows(img, buttons):
+def icon_scale(n):
+    ch = CHARACTERS[n]
+    return min(ICON_MAX, (SLOT_W - 20) / ch.width, (ROW_H - 22) / ch.height)
+
+
+def column():
+    """Round P34's column: the widest character, the gap, the widest word, centred in a row (the same for every count of
+    rows, so nothing moves when a button is unlocked). Its left edge and the words' left edge."""
+    widest = max(round(CHARACTERS[n].width * icon_scale(n)) for n in BOXES)
+    probe = ImageDraw.Draw(Image.new('RGB', (1, 1)))
+    word = max(probe.textlength(WORDS[n], font=BRUSH(WORD_SIZE)) for n in BOXES)
+    left = round(PW / 2 - (widest + WORD_GAP + word) / 2)
+    return left, widest, left + widest + WORD_GAP
+
+
+def rows(img, buttons, layout=None):
     """A lacquer plate for each button, the character at its left (lit, its word off), the button's word in the rest;
-    Start red. The plates let the texture through a little."""
+    Start red. The plates let the texture through a little. `layout`: None PE5's (the character in a slot at the row's
+    left, the word in the middle of the rest); 'axis' (PE6) the characters' middles on one line and 'flush' (PE7) their
+    right edges on one, in round P34's column nearer the middle, the words left-aligned right of it."""
     over = Image.new('RGBA', img.size, (0, 0, 0, 0))
     od = ImageDraw.Draw(over)
     for i, n in enumerate(buttons):
@@ -254,14 +274,21 @@ def rows(img, buttons):
             od.rectangle((x0, y0, x1, y1), outline=DIM_GOLD, width=3)
     img.paste(Image.alpha_composite(img.convert('RGBA'), over).convert('RGB'))
     d = ImageDraw.Draw(img)
+    left, widest, words = column()
     for i, n in enumerate(buttons):
         x0, y0, x1, y1 = row_box(i, len(buttons))
         ch = CHARACTERS[n]
-        k = min(ICON_MAX, (SLOT_W - 20) / ch.width, (ROW_H - 22) / ch.height)
+        k = icon_scale(n)
         icon = ch.resize((round(ch.width * k), round(ch.height * k)), Image.LANCZOS)
-        sx = x0 + 14 + (SLOT_W - icon.width) // 2
-        img.paste(icon, (sx, (y0 + y1 - icon.height) // 2), icon)
-        d.text(((x0 + 14 + SLOT_W + x1) / 2, (y0 + y1) / 2), WORDS[n], font=BRUSH(66), fill=NAME, anchor='mm')
+        iy = (y0 + y1 - icon.height) // 2
+        if layout is None:
+            img.paste(icon, (x0 + 14 + (SLOT_W - icon.width) // 2, iy), icon)
+            d.text(((x0 + 14 + SLOT_W + x1) / 2, (y0 + y1) / 2), WORDS[n], font=BRUSH(WORD_SIZE), fill=NAME,
+                   anchor='mm')
+            continue
+        sx = left + (widest - icon.width) // 2 if layout == 'axis' else left + widest - icon.width
+        img.paste(icon, (sx, iy), icon)
+        d.text((words, (y0 + y1) / 2), WORDS[n], font=BRUSH(WORD_SIZE), fill=NAME, anchor='lm')
 
 
 def lay_logo(img, count):
@@ -293,7 +320,7 @@ def reach(img):
     img.paste(Image.alpha_composite(img.convert('RGBA'), over).convert('RGB'))
 
 
-SHEETS = []
+SHEETS = {}                             # each phone drawn, by name: its title and its body
 
 
 def paras(*texts, width=36):
@@ -313,7 +340,7 @@ def phone_body(img):
     return body
 
 
-def save(img, name, title, side, overview=None):
+def save(img, name, title, side, rnd='P33'):
     chrome(ImageDraw.Draw(img))
     body = phone_body(img)
     head = 170
@@ -327,30 +354,38 @@ def save(img, name, title, side, overview=None):
     sd.text((40, 40), f'{name} — {title}', font=GOTHIC(54), fill=(30, 30, 30))
     sd.text((40, 112), 'Poco X6 Pro upright, 1220×2712 at 446 ppi (69.5 × 154.5 mm); the pink is the mock-up\'s notes',
             font=GOTHIC(30), fill=(110, 110, 110))
-    sheet.save(os.path.join(OUT, f'p33-{name}.png'))
-    if overview:
-        SHEETS.append((overview, name, title, body))
+    sheet.save(os.path.join(OUT, f'{rnd.lower()}-{name}.png'))
+    SHEETS[name] = (title, body)
 
 
 # --- the variants ----------------------------------------------------------------------------------------------------
 
-def variant(name, background, buttons, title, side, laid_logo=True):
+def variant(name, background, buttons, title, side, laid_logo=True, layout=None, rnd='P33'):
     img = background()
-    d = ImageDraw.Draw(img)
     if laid_logo:
         lay_logo(img, len(buttons))
-    rows(img, buttons)
+    rows(img, buttons, layout)
     menu_cell(ImageDraw.Draw(img))
     reach(img)
-    save(img, name, title, side, overview='clears' if buttons == ORDER else 'first')
+    save(img, name, title, side, rnd)
 
 
-def row_notes():
+def row_notes(layout=None):
     icon_mm = mm(ROW_H - 22)
-    return ('The rows at PE2\'s places, taller for the characters: '
-            f'{mm(ROW_H)} (PE2 {mm(130)}), {mm(ROW_GAP)} apart; the character in a slot at the row\'s left, at most '
-            f'{icon_mm} high (each at most twice its CG pixels), lit (CG 302) without its word; the button\'s word '
-            f'in the brush face, {mm(66)}, in the rest. Start red at the right thumb.',
+    if layout is None:
+        place = ('the character in a slot at the row\'s left, at most '
+                 f'{icon_mm} high (each at most twice its CG pixels), lit (CG 302) without its word; the button\'s word '
+                 f'in the brush face, {mm(WORD_SIZE)}, in the rest. Start red at the right thumb.')
+    else:
+        left, widest, words = column()
+        place = (f'the characters lit (CG 302), at most {icon_mm} high, as PE5\'s, in a column {mm(widest)} wide '
+                 f'({widest} px, the widest of the eight: Alice) — ' +
+                 ('their middles on one line' if layout == 'axis' else 'their right edges on one line') +
+                 f'; the words left-aligned {mm(WORD_GAP)} right of the column, in the brush face, {mm(WORD_SIZE)}. '
+                 f'The column and the words centred in a row as one (the column from {left} px, the words from '
+                 f'{words}; the same at every count of rows). Start red at the right thumb.')
+    return (f'The rows at PE2\'s places, taller for the characters: {mm(ROW_H)} (PE2 {mm(130)}), {mm(ROW_GAP)} apart; '
+            + place,
             'The plates let the background through a little (88%); no panel round them.',
             'A tap on a row is the click on its button as now; a long press the right click, its description '
             '(PEd): the picture no longer carries the characters, so their targets are the rows alone.')
@@ -387,14 +422,28 @@ def pe5(buttons, name):
         *row_notes()))
 
 
+def pe6(buttons, name, layout):
+    """Round P34: PE5 with the characters in one column nearer the row's middle, the words left-aligned right of it."""
+    title = ('PE5, the characters\' middles on one line, the words at their right' if layout == 'axis' else
+             'PE5, the characters\' right edges on one line, the words at their right')
+    variant(name, background_pe5, buttons, title, paras(
+        f'{name} — PE5 as the owner changed it: the characters in one column nearer the middle, the words left-aligned '
+        'right of them (not in the middle of the row). ' +
+        ('Each character centred on the column\'s middle, so the narrow ones (Please, Spy) leave a gap to their word.'
+         if layout == 'axis' else
+         'Each character\'s right edge at the column\'s, so every word stands the same distance from its character; '
+         'the narrow ones (Please, Spy) start further right.'),
+        'The background and the logo PE5\'s.',
+        *row_notes(layout)), layout=layout, rnd='P34')
+
+
 def gallery_dump(name):
     return Image.open(os.path.join(GALLERY, 'phone-upright', 'current', name + '.png')).convert('RGB').resize(
         (PW, PH), Image.LANCZOS)
 
 
-def now(name, buttons):
-    img = gallery_dump(name)
-    SHEETS.append(('clears' if buttons == ORDER else 'first', 'now', 'PE2 as built', phone_body(img)))
+def now(name, key):
+    SHEETS[key] = ('PE2 as built', phone_body(gallery_dump(name)))
 
 
 def cgs_sheet():
@@ -461,27 +510,31 @@ def cgs_sheet():
     sheet.save(os.path.join(OUT, 'p33-cgs.png'))
 
 
-def overviews():
-    for group in ('clears', 'first'):
-        items = [s for s in SHEETS if s[0] == group]
-        tw = items[0][3].width * 2 // 5
-        th = items[0][3].height * 2 // 5
-        o = Image.new('RGB', (len(items) * (tw + 30) + 30, th + 150), (232, 228, 220))
-        od = ImageDraw.Draw(o)
-        for i, (_, name, title, body) in enumerate(items):
-            x = 30 + i * (tw + 30)
-            o.paste(body.resize((tw, th), Image.LANCZOS), (x, 120))
-            od.text((x, 30), name, font=GOTHIC(40), fill=(30, 30, 30))
-            od.text((x, 80), textwrap.shorten(title, 44), font=GOTHIC(22), fill=(90, 90, 90))
-        o.save(os.path.join(OUT, f'p33-overview-{group}.png'))
+def overview(file, names, scale=0.4):
+    """The phones `names` side by side, each under its name and title."""
+    tw, th = (round(v * scale) for v in SHEETS[names[0]][1].size)
+    o = Image.new('RGB', (len(names) * (tw + 30) + 30, th + 150), (232, 228, 220))
+    od = ImageDraw.Draw(o)
+    for i, name in enumerate(names):
+        title, body = SHEETS[name]
+        x = 30 + i * (tw + 30)
+        o.paste(body.resize((tw, th), Image.LANCZOS), (x, 120))
+        od.text((x, 30), name.split(' ')[0], font=GOTHIC(40), fill=(30, 30, 30))
+        od.text((x, 80), textwrap.shorten(title, round(44 * scale / 0.4)), font=GOTHIC(22), fill=(90, 90, 90))
+    o.save(os.path.join(OUT, file))
 
 
-now('title-clears', ORDER)
-now('title', FIRST)
+now('title-clears', 'now')
+now('title', 'now (first launch)')
 for buttons, suffix in ((ORDER, ''), (FIRST, 'n')):
     pe3(buttons, 'PE3' + suffix)
     pe4(buttons, 'PE4' + suffix)
     pe5(buttons, 'PE5' + suffix)
+    pe6(buttons, 'PE6' + suffix, 'axis')
+    pe6(buttons, 'PE7' + suffix, 'flush')
 cgs_sheet()
-overviews()
+overview('p33-overview-clears.png', ['now', 'PE3', 'PE4', 'PE5'])
+overview('p33-overview-first.png', ['now (first launch)', 'PE3n', 'PE4n', 'PE5n'])
+overview('p34-overview-clears.png', ['PE5', 'PE6', 'PE7'], 0.5)
+overview('p34-overview-first.png', ['PE5n', 'PE6n', 'PE7n'], 0.5)
 print('sheets in', OUT)

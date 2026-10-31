@@ -1463,3 +1463,19 @@ The agent's own choices, for the owner to confirm: the characters lit (302) in e
 original's "not under the pointer", which a phone does not have; a long press on a row is the right click, the button's
 description (PEd), since the picture no longer carries the characters; the words kept in the rows (the characters alone
 would not tell Spy from Please or B.G.M from Destiny).
+
+## 45. Round P34: PE5 with the characters in one column (2026-10-31)
+
+The owner liked PE5 and changed it: the characters in one line nearer the middle, the words right of them, left-aligned,
+not in the middle of the row. Drawn by the same script: the characters as PE5's (lit, at most 10.6 mm high) in a column
+as wide as the widest of the eight (Alice's easel and ghost, 12.6 mm), the words left-aligned 2.5 mm right of it in the
+brush face (3.8 mm); the column and the words centred in a row as one, at the same places at every count of rows, so
+nothing moves when a button is unlocked. The background, the logo and the rows PE5's.
+
+- **PE6 — the characters' middles on one line.** Each centred on the column's middle; the narrow ones (Please, Spy) leave
+  a wider gap to their word.
+- **PE7 — the characters' right edges on one line.** Each flush with the column's right edge, so every word stands the
+  same distance from its character; the narrow ones start further right.
+
+Each after a clear and at a first launch (PE6n, PE7n). The agent recommends **PE6**: the characters read as one column
+down the screen, as a list's marks do; in PE7 their left edges wander.
