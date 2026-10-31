@@ -142,6 +142,5 @@ public class PhoneLedgerUprightTests
     {
         // pu1r1: x 16 to PW - 16, 800 high from ROOM_MID - 400, ROOM_MID = (TOP + BAR[0]) // 2 = 1307.
         Equal(new(16, 907, 1188, 800), PhoneLedgerUpright.ResultPlate(Reference));
-        Assert.Equal(0.65f, PhoneLedgerUpright.ResultDim);
     }
 }

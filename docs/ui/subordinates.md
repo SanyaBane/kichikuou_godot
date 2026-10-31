@@ -197,7 +197,8 @@ Round 5 of the mock-ups (`tools/ui/mock_subordinates_orders.py`, over the dumps 
 too**, in the same callout under its button. The report is **R2's look as a plate in the middle**, not over the whole width: round 6 of the same script,
 **R4** (after Replenish: the face, "Troops Replenished", the unit, the troops before and after with the men gained;
 cost and budget right of a rule) and **R5** (after Add New Troops: "New Troops", the troops and their maximum; the
-weekly recovery's +1 left out at the owner's word). The screen dimmed a little under it; it goes by itself after about two
+weekly recovery's +1 left out at the owner's word). The screen dimmed a little under it (65% since 2026-10-31, the
+owner, on every device: docs/ui/phone.md, §30); it goes by itself after about two
 seconds or at a click. These replace §2's "a click does the order at once" and its plate beside Talk. After the first
 build (owner, 2026-10-20) the question is only "Are you sure?" for both orders: the button it points at shows the men and
 the price.

@@ -1362,14 +1362,18 @@ The owner, looking at the gallery's `subordinates-result` upright: the plate aft
 the rest of the screen dimmed 65% (PU1r1d2). Built:
 
 - **The model**: `PhoneLedgerUpright.ResultPlate` — the room's width less 16 a side, 800 high, in the middle between the
-  room's top and the bar — and its lines (`Result…`, the mock-up's figures), `ResultDim` 0.65;
+  room's top and the bar — and its lines (`Result…`, the mock-up's figures);
   `SubordinateResult.Bar` (`TroopsBar`: the troops kept, the men gained or lost to CMD-20, a raised maximum ticked, the
   kept part's share for the ledger's colour) and `TroopsNow`; `SubordinateResult.AddPreview` for the gallery's R5.
 - **The view**: `OrderResultPlate.Upright.cs` draws the card in the frame's layout pixels over the whole screen — the
   title (fitted), the face (230), the name and troop type, the troops before → after with the gain (under them where a
   long R5 line leaves no room), the bar with the troops after under it, Cost | Budget in Cinzel 700, the click's triangle
-  at the mock-up's size. The PC's, the tablet's and the landscape phone's plates unchanged; the deployment screen's
-  Replenish shows the same card upright.
+  at the mock-up's size. The PC's, the tablet's and the landscape phone's plates keep their layout; the deployment
+  screen's Replenish shows the same card upright.
+- **The dim on every device** (owner, the same day): the screen under the plate 65% darker on the PC, the tablet and
+  the phone held landscape too (27% before) — one `OrderResultPlate.PlateDim` for all. Held landscape the layer now
+  covers the whole screen, the plate still in the frame: the sides are dimmed with the rest, and a tap on a side's button
+  closes the plate as any tap does instead of pressing the button (before, the layer was the frame's alone).
 - **The gallery**: `subordinates-new-troops` is the R5 plate (Add New Troops' third step, `AddPreview`) in every pass.
 
 ## 6. The agent's own choices, for the owner to confirm

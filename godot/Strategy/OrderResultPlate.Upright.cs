@@ -18,7 +18,7 @@ internal sealed partial class OrderResultPlate
     {
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
-        DrawRect(new Rect2(Vector2.Zero, Size / u.K), new Color(0, 0, 0, PhoneLedgerUpright.ResultDim));
+        DrawRect(new Rect2(Vector2.Zero, Size / u.K), PlateDim);
         var box = u.Rect(PhoneLedgerUpright.ResultPlate(f));
         Ui.DrawPanel(this, box, u.K, PlateFill);
         float x0 = box.Position.X, x1 = box.End.X, cx = box.GetCenter().X;

@@ -6,12 +6,11 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// The plate after a troop order (the owner's R4/R5, docs/ui/subordinates.md, §6), in the middle of the screen with the
-/// screen dimmed a little under it: the unit's face, the order's title, the unit and its troop type, the troops before
+/// screen dimmed under it: the unit's face, the order's title, the unit and its troop type, the troops before
 /// and after with the men gained; right of a rule the cost and the budget left, the click's triangle. It waits for a click,
 /// which closes it and which it takes (owner, 2026-10-24: gone by itself after a few seconds, it could be missed). Our
 /// Subordinates screen and our deployment screen's Replenish (owner's decision 27) show it. Laid out in the 1280×800
-/// screen's pixels, scaled with the picture; held upright a card of its own over the screen dimmed further (PU1r1,
-/// <c>OrderResultPlate.Upright.cs</c>).
+/// screen's pixels, scaled with the picture; held upright a card of its own (PU1r1, <c>OrderResultPlate.Upright.cs</c>).
 /// </summary>
 internal sealed partial class OrderResultPlate : Control
 {
@@ -20,7 +19,8 @@ internal sealed partial class OrderResultPlate : Control
     private static readonly Rect2 PlateArea = new(250, 315, 780, 150);
 
     private static Color PlateFill => Ui.Panel with { A = 248 / 255f };
-    private static readonly Color PlateDim = new(0, 0, 0, 0.27f);
+    /// <summary>The screen under the plate, on every device: 65% darker (owner, 2026-10-31; docs/ui/phone.md, §30, PU1r1d2).</summary>
+    private static readonly Color PlateDim = new(0, 0, 0, 0.65f);
 
     private readonly FacePictures _faces;
     private readonly FontFile _brush = Lacquer.Brush();
@@ -57,23 +57,33 @@ internal sealed partial class OrderResultPlate : Control
         _faceCg = -1;
     }
 
+    private Vector2 _origin;                            // where the layout's (0, 0) is drawn: held landscape the frame's place
+
     /// <summary>
     /// Lays the plate's layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone
-    /// held upright over the whole screen, drawn in the frame's layout pixels (PU1r1, <c>OrderResultPlate.Upright.cs</c>).
+    /// over the whole screen, so that its sides are dimmed and their buttons wait under it too: held landscape the plate in
+    /// the frame, held upright drawn in the frame's layout pixels (PU1r1, <c>OrderResultPlate.Upright.cs</c>).
     /// </summary>
     public void Place(Rect2 area)
     {
         float k = area.Size.X / 1280f;
+        var origin = Vector2.Zero;
         if (Device.Upright(this) is { } f)
         {
             k = f.Scale;
             area = new Rect2(0, 0, f.Screen.W, f.Screen.H);
         }
-        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
+        else if (Device.Landscape(this) is { } l)
+        {
+            origin = area.Position;
+            area = new Rect2(0, 0, l.Screen.W, l.Screen.H);
+        }
+        if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && origin == _origin)
             return;
         Position = area.Position;
         Size = area.Size;
         _k = k;
+        _origin = origin;
         QueueRedraw();
     }
 
@@ -111,8 +121,8 @@ internal sealed partial class OrderResultPlate : Control
             DrawUpright(r, f);
             return;
         }
-        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
-        DrawRect(new Rect2(Vector2.Zero, Size / _k), PlateDim);
+        DrawSetTransform(_origin, 0, new Vector2(_k, _k));
+        DrawRect(new Rect2(-_origin / _k, Size / _k), PlateDim);
         var box = PlateArea;
         Ui.DrawPanel(this, box, _k, PlateFill);
         float size = box.Size.Y - 52;

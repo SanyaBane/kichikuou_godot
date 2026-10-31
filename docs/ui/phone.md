@@ -1219,4 +1219,5 @@ shows at a glance how much of the unit the order filled.
 with the screen under the plate dimmed 50% (PU1r1d1), 65% (PU1r1d2) and 80% (PU1r1d3), beside the 27% it has now
 (`OrderResultPlate.PlateDim`). The agent recommends PU1r1d2: the paper ledger goes back behind the plate, and the
 screen under it is still there to see. **The owner chose PU1r1d2 (65%)**, built (docs/ui/phone-build.md, §5, "After
-the build: the result plate upright").
+the build: the result plate upright"), and then the same 65% on every device: the PC, the tablet and the phone held
+landscape keep their plate's layout over the screen dimmed as upright.

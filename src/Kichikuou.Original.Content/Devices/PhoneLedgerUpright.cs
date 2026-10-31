@@ -280,11 +280,8 @@ public static class PhoneLedgerUpright
 
     // ------------------------------------------------------------------ the result plate after a troop order (PU1r1d2)
 
-    /// <summary>The plate's height, its margin at the sides; the screen dimmed under it (the owner's 65%, docs/ui/phone.md, §30).</summary>
+    /// <summary>The plate's height, its margin at the sides.</summary>
     private const float ResultHeight = 800, ResultIn = 16;
-
-    /// <summary>How dark the screen under the plate is made.</summary>
-    public const float ResultDim = 0.65f;
 
     /// <summary>
     /// The plate's lines from its top and its left (<c>tools/ui/mock_result_plate.py</c>, <c>pu1r1</c>): the title (its
