@@ -1418,6 +1418,17 @@ the owner chose PB4sf2m2. Built:
 - **The view**: `ScoutReportView.Upright.cs` draws the bracket head up through `FacingBracket`. The PC's, the tablet's
   and the landscape phone's reports are unchanged.
 
+### After the build: a battle's windows upright (owner, 2026-10-31)
+
+The owner, playing upright: a battle's windows off the field showed twice — ours over or under the picture and the
+original's with its text inside it. The battle draws its windows on the stage itself, as the original does; on the PC,
+the tablet and the phone held landscape our panel lies over the original's frame and hid it, but upright it leaves the
+picture (P1). Fixed for every device: while our window shows a battle's window (not 131, whose frame is the whole screen
+and whose bar the upright view already covers), the composed screen has the screen under the frame as the window saved
+it on opening — what op 0 puts back — and the portraits and the centre picture shown now over it
+(`BattlePresenter.HideWindow`, called by `GamePresenter.Compose`; `MessageWindowTests`). The gallery's `battle-window`
+holds the captured battle at its narration before the field (docs/ui/gallery.md, §7).
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

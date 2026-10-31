@@ -376,7 +376,9 @@ shows the tablet's at the width between the hole and the bar. Step P1 is built, 
 its left (PK1), the picture between the hole and it, the left portrait's window above the picture while it shows and every
 other under it, the script's breaks at the phone's type (`PhoneScenes.Window`, `MessageWindow.TextRect`), a `]` menu's
 rows in the bar's place (since 2026-10-31 across the picture's middle, Menu in the bar), the Menu sheet in rows from the thumb up (PN1, PN1q), the log with the names over the lines
-(PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Upright(view)`.
+(PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Upright(view)`;
+a battle's windows off the field no longer leave the original's in the picture under ours (2026-10-31,
+`BattlePresenter.HideWindow`; phone-build.md, "After the build: a battle's windows upright").
 Step P2 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P2, where it stands"): the map upright —
 the status a band on top, the map's whole height at the width under it (`godot/Strategy/UprightMapView`, drawn from the
 state's tiles and markers, scrolled sideways by our own camera), Commands at the bar's right, the command panel and a

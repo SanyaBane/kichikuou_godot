@@ -379,6 +379,14 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      Entries `fortune-check` (made up: three fates seen, `GalleryStates.FatesSeen`; the first page with their stamps),
      `cg-gallery` (page 1; its sheets masked as every agent's dump masks them, so only the grey placeholder shows) and
      `music-room` (no track playing). The other entries stayed the same in both passes (now 110 and 111).
+   - **A battle's window** (2026-10-31; section Battle): `battle-window`, the board's capture held at the key wait of the
+     first window it opens off the field but 131 (its narration 113 before the field), our message window over the
+     screen the presenter composes, as `GameScreen.UpdateMessageWindow` shows them, the event CGs masked. It showed the
+     owner's bug of that day upright: the original's 113 with its text left in the picture under ours (fixed,
+     docs/ui/phone-build.md, "After the build: a battle's windows upright").
+   - **The message windows' picture** (owner, 2026-10-31: the black under the samples read as a CG hidden): the samples
+     and `touch-skip-on` stand on the picture's place filled grey with "CG (masked)", as the agent's dumps mask an event
+     CG (`GalleryEntries.MaskedPicture`); the portraits are still not drawn.
 
 ## 8. Questions for the owner
 

@@ -225,7 +225,7 @@ internal static partial class GalleryEntries
 
     // ---------------------------------------------------------------- the message windows (docs/ui/messages.md)
 
-    private const string WindowNote = "The lines are the gallery's own; the portraits and the scene under the window are not drawn.";
+    private const string WindowNote = "The lines are the gallery's own; the scene under the window is masked grey, the portraits are not drawn.";
 
     /// <summary>
     /// Each message window at a key wait; in the touch pass with the Skip and Log drawer the touch mode shows there, and
@@ -236,36 +236,55 @@ internal static partial class GalleryEntries
         foreach (var sample in GalleryStates.Messages)
         {
             yield return new(sample.Id, "Messages", $"Message window: {sample.Kind}{(sample.Read ? ", read before" : "")}",
-                null, WindowNote, g => MessageWindowOf(g, sample, skipOn: false));
+                null, WindowNote, g => MessageWindowOf(g, sample.Window(), skipOn: false, MaskedPicture(g)));
         }
         if (TouchMode.On)
         {
             var speech = GalleryStates.Messages.First(m => m is { Kind: MessageKind.SpeechRight, Read: false });
             yield return new("touch-skip-on", "Messages", "Message window: the drawer with MsgSkip on", null, WindowNote,
-                g => MessageWindowOf(g, speech, skipOn: true));
+                g => MessageWindowOf(g, speech.Window(), skipOn: true, MaskedPicture(g)));
         }
     }
 
     /// <summary>
-    /// <paramref name="sample"/>'s window at a key wait and, in the touch mode, Skip and Log at the screen's left edge, a
-    /// window that would cover them drawn smaller (131), as <c>GameScreen.UpdateSkipButtons</c> shows them; on the phone
-    /// held landscape in the left side, the Menu cell over them.
+    /// <paramref name="window"/> at a key wait over <paramref name="picture"/> (laid over the picture's area) and, in the
+    /// touch mode, Skip and Log at the screen's left edge, a window that would cover them drawn smaller (131), as
+    /// <c>GameScreen.UpdateSkipButtons</c> shows them; on the phone held landscape in the left side, the Menu cell over
+    /// them. <paramref name="portraits"/>: which portraits show, as <c>GameScreen.UpdateMessageWindow</c> tells the view.
     /// </summary>
-    private static Action<Rect2>? MessageWindowOf(GalleryStage g, MessageSample sample, bool skipOn)
+    private static Action<Rect2>? MessageWindowOf(GalleryStage g, MessageWindow window, bool skipOn, Control picture,
+        (bool Left, bool Right)? portraits = null)
     {
-        var window = sample.Window();
         var view = g.Add(new MessageWindowView(g.Font) { Docks = TouchMode.On });
+        if (portraits is { } shown)
+            view.Portraits = shown;
         view.Show(window, true, null, null);
         view.Complete();
-        if (!TouchMode.On)
-            return view.Place;
-        var drawer = g.Add(new SkipDrawer { Visible = true, SkipOn = skipOn });
-        var menu = MenuCell(g);
+        var drawer = TouchMode.On ? g.Add(new SkipDrawer { Visible = true, SkipOn = skipOn }) : null;
+        var menu = TouchMode.On ? MenuCell(g) : null;
         return area =>
         {
+            GalleryStage.Fill(picture, area);
             view.Place(area);
-            drawer.Place(area);
+            drawer?.Place(area);
             menu?.Place();
         };
+    }
+
+    /// <summary>The scene under a sample window: grey with its label, as the agent's dumps mask an event CG (<c>GamePresenter.MaskEventCgs</c>).</summary>
+    private static Control MaskedPicture(GalleryStage g)
+    {
+        var picture = g.Add(new ColorRect { Color = Color.Color8(96, 96, 96), MouseFilter = Control.MouseFilterEnum.Ignore });
+        var label = new Label { Text = "CG (masked)" };
+        label.AddThemeColorOverride("font_color", Colors.White);
+        picture.AddChild(label);
+        picture.Resized += () =>                                    // the mask's text at (16, 16) in script pixels, 24 high
+        {
+            float k = picture.Size.X / 1280;
+            label.Position = new Vector2(32, 32) * k;
+            label.AddThemeFontSizeOverride("font_size", Math.Max(8, (int)Math.Round(40 * k)));
+        };
+        picture.GetParent().MoveChild(picture, 0);                  // under the window
+        return picture;
     }
 }

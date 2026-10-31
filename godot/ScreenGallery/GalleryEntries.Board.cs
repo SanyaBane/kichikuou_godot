@@ -104,6 +104,29 @@ internal static partial class GalleryEntries
             g => Board(g, Results));
         yield return new("info-level-up", Battle, "Battle: a level-up on the results plate", null, CaptureNote + " The level-up's page after the tally.",
             g => Board(g, Results, nth: 2));
+        yield return new("battle-window", Battle, "Battle: a window after the field", null,
+            CaptureNote + " The first window the battle opens off the field, our message window over the screen the presenter composes.",
+            BattleWindow);
+    }
+
+    /// <summary>
+    /// The capture held at the key wait of the first window the battle opens off the field (not 131, whose frame is the
+    /// whole screen): our message window over the presenter's screen as <c>GameScreen.UpdateMessageWindow</c> shows them,
+    /// the event CGs masked as in the agent's dumps.
+    /// </summary>
+    private static Action<Rect2>? BattleWindow(GalleryStage g)
+    {
+        GamePresenter Fresh()
+        {
+            var presenter = g.Fresh();
+            presenter.CoverMessages = true;
+            presenter.MaskEventCgs = true;
+            return presenter;
+        }
+        var (p, _) = GalleryBattle.HeldAt(Fresh,
+            (p, m) => m.Kind == MomentKind.Key && !p.BattleSceneShows && p.MessageWindow is { Kind: not MessageKind.CgBar });
+        var s = p.State ?? throw new InvalidOperationException("The replay bound no state.");
+        return MessageWindowOf(g, p.MessageWindow!, skipOn: false, g.Picture(p), (s.Ui_PortraitL != 0, s.Ui_PortraitR != 0));
     }
 
     /// <summary>The results plate at its key wait: the tally, then each level-up's page.</summary>

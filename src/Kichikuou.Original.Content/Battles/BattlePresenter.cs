@@ -636,10 +636,45 @@ public sealed partial class BattlePresenter
             || Attack is not null || HidesLine ? null
         : WindowModel.Of(_winFrame, _windowText, Surface.Color);
 
+    /// <summary>
+    /// Draws onto <paramref name="screen"/>, the stage as composed from its view, what the open window's frame hides while our
+    /// interface draws the window itself (<see cref="MessageWindow"/>, not 131's, whose frame is the whole screen): the screen
+    /// under the frame as the window saved it on opening — what op 0 puts back (<see cref="CloseByType"/>) — and over it the
+    /// pictures of ops 311/321/331 shown now. On the PC our panel lies over the frame anyway; held upright it leaves the
+    /// picture (docs/ui/phone.md, §18), where the original's window and its text would stay.
+    /// </summary>
+    public void HideWindow(Surface screen)
+    {
+        if (_winType is 0 or (>= 31 and <= 39) || MessageWindow is null || _cgs.Get(_winFrame) is not { } frame)
+            return;
+        var (sx, sy, sw, sh, dx, dy) = _winSave;
+        int x0 = Math.Max(frame.X, sx), y0 = Math.Max(frame.Y, sy);
+        int x1 = Math.Min(frame.X + frame.Width, sx + sw), y1 = Math.Min(frame.Y + frame.Height, sy + sh);
+        if (x1 <= x0 || y1 <= y0)
+            return;
+        var (vx, vy) = Surface.View;
+        screen.CopyFrom(Surface, dx + x0 - sx, dy + y0 - sy, x1 - x0, y1 - y0, x0 - vx, y0 - vy);
+        void Over(int number, int px, int py, Pictures which, bool keyed)
+        {
+            if (number == 0 || _covered.HasFlag(which) || _cgs.Get(number) is not { } cg)
+                return;
+            int ax = Math.Max(px, x0), ay = Math.Max(py, y0), bx = Math.Min(px + cg.Width, x1), by = Math.Min(py + cg.Height, y1);
+            if (bx > ax && by > ay)
+                screen.DrawCgRegion(cg, ax - px, ay - py, bx - ax, by - ay, ax - vx, ay - vy, keyed ? Surface.SpriteKey : null);
+        }
+        Over(_centerCg, 176, 96, Pictures.Center, keyed: false);
+        Over(_portraitL, 0, 0, Pictures.PortraitL, keyed: true);
+        Over(_portraitR, 448, 144, Pictures.PortraitR, keyed: true);
+    }
+
+    /// <summary>Where the open window saved the screen under it (<see cref="OpenWindow"/>'s first copy).</summary>
+    private (int X, int Y, int W, int H, int DX, int DY) _winSave;
+
     private void OpenWindow((int X, int Y, int W, int H, int DX, int DY) save, (int X, int Y, int W, int H) text,
         int frame, int? color, int type)
     {
         Surface.Copy(save.X, save.Y, save.W, save.H, save.DX, save.DY);
+        _winSave = save;
         Writer.Open(text.X, text.Y, text.W, text.H);
         _windowText.Open(text);
         _boxTexts.Clear();

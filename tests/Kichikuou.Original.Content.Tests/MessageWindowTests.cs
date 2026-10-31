@@ -286,6 +286,46 @@ public class MessageWindowTests
     }
 
     /// <summary>
+    /// The battle draws its windows on the stage itself, so while ours shows one the presenter puts the screen under the
+    /// frame back as the window saved it on opening (held upright ours leaves the picture, docs/ui/phone.md, §18): the
+    /// narration 113 over a band of one colour leaves the band whole, but for the centre picture shown since over the
+    /// frame; without the cover the original's frame and text are there.
+    /// </summary>
+    [ScenarioFact]
+    public void A_battles_window_is_left_out_of_the_screen_ours_draws()
+    {
+        var presenter = new GamePresenter(new ScenarioText(LocalData.ScenarioDirectory), new CgLibrary(LocalData.CgDirectory), new BoxGlyphs());
+        presenter.Bind(new GameState());
+        presenter.Show(new BattleScreenEvent("FIGT_A.ADV", true));
+        (byte, byte, byte) band = (10, 20, 30);
+        presenter.Stage.FillColor(0, 250, 640, 150, band);
+        presenter.Show(new WindowEvent(113, 0));                                // saves the band (0, 250, 640, 150), draws frame 809
+        presenter.Show(new MessageEvent(new ScriptRef("FIGT_A.ADV", 128)));
+
+        int Unlike(int x0, int y0, int x1, int y1)
+        {
+            presenter.Invalidate();
+            presenter.Compose();
+            int count = 0;
+            for (int y = y0; y < y1; y++)
+                for (int x = x0; x < x1; x++)
+                    if (presenter.Screen.PixelAt(x, y) is var (r, g, b, _) && (r, g, b) != band)
+                        count++;
+            return count;
+        }
+
+        Assert.True(Unlike(0, 250, 640, 400) > 0);                              // the original's window
+        presenter.CoverMessages = true;
+        Assert.NotNull(presenter.MessageWindow);
+        Assert.Equal(0, Unlike(0, 250, 640, 400));                              // ours draws it: the band as it was
+
+        presenter.Show(new WindowEvent(331, 1032));                             // a centre picture over the frame: (176, 96), 288 × 192
+        Assert.True(Unlike(176, 250, 464, 288) > 0);
+        Assert.Equal(0, Unlike(0, 288, 640, 400));
+        Assert.Equal(0, Unlike(0, 250, 176, 288) + Unlike(464, 250, 640, 288));
+    }
+
+    /// <summary>
     /// 131: the speaker's name of <c>Name「…」</c> is split off, the closing bracket dropped and the line under it moved left by
     /// the name's cells, so both start at the bar's text edge (<c>Gｶﾅﾐ.ADV:330-334</c>); the text's own colour (190) is the bar's.
     /// </summary>

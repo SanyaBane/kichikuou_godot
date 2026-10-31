@@ -575,6 +575,8 @@ public sealed partial class GamePresenter
         Screen.CopyFrom(Stage, Stage.View.X, Stage.View.Y, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);
         if (BattleShows && MaskEventCgs && State is { Ui_WinType.Value: 31 })
             MaskStage();                                                // a scene the battle called; its window is on the stage too
+        if (BattleShows && CoverMessages)
+            Battle.HideWindow(Screen);                                  // ours draws it (MessageWindow), wherever it stands
         if (!BattleShows && State is { } s)
         {
             if (Data != DataView.Closed)
