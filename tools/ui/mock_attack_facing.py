@@ -19,6 +19,14 @@ PA1f4 the "VS" on an arrow rising from the army's panel at the province's. The a
 Round P25 (the owner chose PA1f2 with "FRONT ROW" under the bracket): the bracket's line over the caption, its ends down
 past it to the cards' corners; PA1f2a the caption in the middle under the head and "BACK ROW" in the middle as now (the
 agent's recommendation), PA1f2b both captions at the cards' left.
+
+Round P26 (the owner chose PA1f2a, built; the same for the deployment table's party), over deployment and
+deployment-search (the week-18 save): the party faces down as our army in the battle, so the bracket holds its front row
+from below, its head down; the panel grows and the ledger loses as much at its foot. PD2f1 the bracket under the row,
+"Front row" over its cards as now, the totals beside the head; PD2f2 PA1f2a turned down, "Front row" under its cards
+inside the bracket (the agent's recommendation), and PD2f2s the same in the dungeon search, the bracket over its one
+card; PD2f3 as PD2f1 with the totals under the head. Rounds P24-P25 need the upright pass's dumps from before the build
+(the bracket now drawn on them).
 """
 import os
 import sys
@@ -280,9 +288,8 @@ def sheet(dump, name, title, variants=VARIANTS):
     print(os.path.join(OUT, name + '.png'), out.size)
 
 
-def detail(dump, name, title, variants=VARIANTS):
-    """The middle of each variant at the phone's pixels halved: from Ys's panel's foot to the back row."""
-    crop = (0, 700, PW, 1520)
+def detail(dump, name, title, variants=VARIANTS, crop=(0, 700, PW, 1520)):
+    """A band of each variant at the phone's pixels halved (by default from Ys's panel's foot to the back row)."""
     drawn = [(label, f(dump)[0].crop(crop)) for label, f in variants]
     gap, head = 24, 110
     w, h = (crop[2] - crop[0]) // 2, (crop[3] - crop[1]) // 2
@@ -307,3 +314,87 @@ P25 = [('Now', now), ('PA1f2 — as round P24', pa1f2), ('PA1f2a — FRONT ROW u
 sheet('enemy-attack-scouted', 'p25-scouted', 'Round P25 — PA1f2 with "FRONT ROW" under the bracket: the rebels on Ys (5) after the scouting', P25)
 sheet('enemy-attack', 'p25-unknown', 'Round P25 — the same before the scouting (the places unknown)', P25)
 detail('enemy-attack-scouted', 'p25-detail', 'Round P25 — the middle of the screen at the dump\'s pixels', P25)
+
+
+# --- Round P26: the deployment table's party upright -----------------------------------------------------------------
+# The party (PhoneLedgerUpright.Party, its panel from 274 to 874) faces down, as our army in the battle upright (PB3): the
+# back row on top, the front row under it with "Front row ▼". Each variant holds the front row in PA1f2a's bracket turned
+# down; the panel grows, and the ledger under it loses as much at its foot.
+
+PARTY_TOP = 274
+CLEAN_ROW = 590                         # a row of the panel with nothing but its sides
+PARTY_CAPTION = (520, 598, 692, 627)    # "Front row" without its ▼ (696-720)
+PARTY_FRONT = (14, 630, 1206, 810)      # the front row's cards (634-806)
+PARTY_TOTALS = (14, 822, 1206, 860)     # Troops … War expenses, their middle 844
+PARTY_FOOT = (0, 862, PW, 875)          # the panel's foot with its corners
+LEDGER = (875, 2470)                    # the tabs and the ledger down to the paper's foot
+CARD_ENDS = (17, 603, 617, 1203)        # the cards' outer sides (1 in): place 1's left and right, place 2's
+LINE = PARTY_TOP + 546                  # the bracket's line: 16 under the front row, as the PC's
+
+
+def bracket_down(img, x0, x1, mid, cards, line):
+    """PA1f2a's bracket turned down: its line under the front row, its ends up to the cards' foot, its head down."""
+    def arms(dr, p, s):
+        w = round(2.5 * S * s)
+        for side, end in ((-1, x0), (1, x1)):
+            dr.line([p(end, cards + 2 * S), p(end, line), p(mid + side * 16 * S, line), p(mid + side * 6 * S, line + 10 * S)],
+                    fill=255, width=w, joint='curve')
+    smooth(img, (0, int(cards - 10), PW, int(line + 60)), GOLD, arms)
+    head_base, tip = line + 6 * S, line + 33 * S
+    smooth(img, (int(mid - 40), int(head_base - 6), int(mid + 40), int(tip + 6)), NAME,
+           lambda dr, p, s: dr.polygon([p(mid - 14 * S, head_base), p(mid, tip), p(mid + 14 * S, head_base)], fill=255))
+
+
+def party(name, grow, front_dy, caption_middle, totals_dy, one=False):
+    """The party's panel grown by grow, its front row moved by front_dy, "Front row" at caption_middle, the totals by totals_dy."""
+    src = base(name)
+    img = src.copy()
+    img.paste(src.crop((0, LEDGER[0], PW, LEDGER[1] - grow)), (0, LEDGER[0] + grow))
+    row = src.crop((0, CLEAN_ROW, PW, CLEAN_ROW + 1))
+    for y in range(586, PARTY_FOOT[1] + grow):
+        img.paste(row, (0, y))
+    foot = src.crop(PARTY_FOOT)
+    for y in range(5):                                  # the totals' commas reach into it: cleared inside the corners
+        foot.paste(row.crop((20, 0, PW - 20, 1)), (20, y))
+    img.paste(foot, (0, PARTY_FOOT[1] + grow))
+    img.paste(src.crop(PARTY_FRONT), (PARTY_FRONT[0], PARTY_FRONT[1] + front_dy))
+    img.paste(src.crop(PARTY_TOTALS), (PARTY_TOTALS[0], PARTY_TOTALS[1] + totals_dy))
+    x0, x1 = (CARD_ENDS[0], CARD_ENDS[1]) if one else (CARD_ENDS[0], CARD_ENDS[3])
+    mid = (x0 + x1) / 2
+    caption = src.crop(PARTY_CAPTION)                   # centred on the panel; inside the bracket, on the bracket's middle
+    x = PARTY_CAPTION[0] + (round(mid - MID) if caption_middle > 806 + front_dy else 0)
+    img.paste(caption, (x, round(caption_middle - caption.height / 2)))
+    bracket_down(img, x0, x1, mid, 806 + front_dy, LINE)
+    return img
+
+
+def party_now(name):
+    return base(name), ['as built: the front row\'s mark is the triangle right of "Front row", 18 px (1.0 mm)']
+
+
+def pd2f1(name):
+    return party(name, 45, 0, 612, 22), [
+        'the bracket under the front row, its head down (as our army faces in the battle); "Front row" over its cards as now',
+        'the totals beside the head; the panel 45 px (2.6 mm) taller, the ledger as much shorter at its foot']
+
+
+def pd2f2(name, one=False):
+    notes = ['PA1f2a turned down: "Front row" under its cards, inside the bracket, as "Back row" stands over its own',
+             'the front row 38 px higher (the rows 14 apart); the totals beside the head; the panel 45 px taller, the ledger '
+             'as much shorter']
+    if one:
+        notes = ['the dungeon search, one unit: the bracket holds its one card, its head under its middle'] + notes[:1]
+    return party(name, 45, -38, PARTY_TOP + 516, 22, one), notes
+
+
+def pd2f3(name):
+    return party(name, 96, 0, 612, 86), [
+        'as PD2f1, the totals under the head instead of beside it',
+        'the panel 96 px (5.5 mm) taller, the ledger as much shorter at its foot']
+
+
+P26 = [('Now', party_now), ('PD2f1 — the bracket under the row', pd2f1),
+       ('PD2f2 — PA1f2a turned down (recommended)', pd2f2), ('PD2f3 — the totals under the head', pd2f3),
+       ('PD2f2s — PD2f2, the dungeon search', lambda _: pd2f2('deployment-search', one=True))]
+sheet('deployment', 'p26', 'Round P26 — the party\'s facing upright: the week-18 save\'s attack on Oaks (6), the dungeon search last', P26)
+detail('deployment', 'p26-detail', 'Round P26 — the party at the dump\'s pixels', P26, crop=(0, 240, PW, 1160))

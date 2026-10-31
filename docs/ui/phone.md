@@ -1251,3 +1251,22 @@ cards' left. The agent recommends PA1f2a: the head, the caption and the row it n
 middle, and the back row's caption stays where it is. **The owner chose PA1f2a**, built with the cards 20 px lower than
 before instead of the mock-up's 40, so that Ninja Scout's list of all five ninjas stays clear of the back row
 (docs/ui/phone-build.md, §5, "After the build: the army's bracket upright").
+
+## 32. Round P26: the party's facing upright (2026-10-31)
+
+The deployment table upright (PD2) marks its party's front row as the enemy attack did: "Front row ▼", the triangle
+18 px (1.0 mm). With PA1f2a built the owner asked for the same there. The party stands as our army in the battle upright
+(PB3), the back row on top and the front row under it facing down, so the bracket holds the front row from below, its
+head pointing down. Under the front row there are only 40 px to the totals, so each variant makes the party's panel
+taller and the ledger as much shorter at its foot (its last row cut, as a scroll leaves it). The round (the same
+script, `tools/ui/mock_attack_facing.py`, over the upright pass's `deployment` and `deployment-search`):
+
+- **PD2f1 — the bracket under the row**: its line 16 under the front row (as the PC's), "Front row" over its cards as
+  now, the totals beside the head; the panel 45 px (2.6 mm) taller.
+- **PD2f2 — PA1f2a turned down**: "Front row" under its cards inside the bracket, as "Back row" stands over its own — each
+  row's caption at its outer side; the rows 14 apart (the front row 38 px higher); the totals beside the head; the panel
+  45 px taller. **PD2f2s**: the same in the dungeon search, the bracket over its one card, "Front row" under it.
+- **PD2f3 — the totals under the head**: PD2f1 with the totals under the head; the panel 96 px (5.5 mm) taller.
+
+The agent recommends PD2f2: the same bracket as the enemy attack's, mirrored as the army is, at the same cost to the
+ledger as PD2f1.
