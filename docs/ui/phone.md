@@ -1326,3 +1326,12 @@ red. Nobody is wounded on the week-18 save, so the HP are made up: Rance (unit 1
 The agent recommends H2: "6 of 8" reads at a glance from so few points, and pips never look like the troops' bar, where
 H1 is a second line of the same kind under the first. Upright the pips end 10 px over the row's foot; built, the name and
 the type would rise a little to centre the block.
+
+## 37. Round P30: the battle's colours (2026-10-31)
+
+The owner asked for one more: the troops' bar under the name in the battle's blue (a battle card's troops on our side,
+`BattleBoardView.PlayerColour`) and the HP under it in the battle's green (`HpColour`), a bar, no pips. The round (the
+same script, beside Now and H2) draws **H4**: both bars as thick as the troops' bar now (5 px held landscape, 8 upright),
+3 or 4 px apart, as long as each other, as a battle card stacks its two gauges; the Troops column keeps its green, amber
+and red. The battle's colours are made for the cards' dark lacquer: on the ledger's paper the green is lighter than the
+paper's inks.

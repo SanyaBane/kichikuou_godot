@@ -14,6 +14,10 @@ Round P29, over deployment and subordinates (the week-18 save's Overview tab, he
 wounded on the save, so the HP are made up — Rance (unit 1) 6/8, Rick (unit 7) 3/8, Kinkaid (unit 9) 5/7, Haurein
 (unit 12) 1/5, the rest full at the Commander tab's maximum. H1 a bar as long as the troops' under it, thinner; H2 a pip
 a point of HP, filled for the HP left (the agent's recommendation); H3 H2's pips only while the commander is wounded.
+
+Round P30 (the owner: the battle's colours, no pips): H4 the troops' bar under the name in the battle's blue (our side's,
+BattleBoardView.PlayerColour) and the HP's bar under it in the battle's green (HpColour), as thick as each other as on a
+battle card; the Troops column keeps its green, amber and red. Drawn beside Now and H2.
 """
 import os
 import sys
@@ -40,6 +44,14 @@ MAX_HP = {1: 8, 5: 5, 6: 5, 7: 8, 8: 9, 9: 7, 10: 4, 11: 1, 12: 5}
 HP = {**MAX_HP, 1: 6, 7: 3, 9: 5, 12: 1}
 MADE_UP = 'HP made up (nobody is wounded on the save): Rance 6/8, Rick 3/8, Kinkaid 5/7, Haurein 1/5, the rest full'
 
+# The troops as the dumps show them (the week-18 save), for the bar drawn again in H4.
+TROOPS = {1: (1000, 1000), 5: (800, 800), 6: (980, 1000), 7: (612, 800), 8: (1000, 1000), 9: (901, 1500), 10: (649, 1250),
+          11: (100, 100), 12: (209, 1400)}
+
+# The battle's gauges (godot/Battles/BattleBoardView.cs): our side's troops, the HP.
+BATTLE_TROOPS = (69, 117, 219)          # PlayerColour (0.27, 0.46, 0.86)
+BATTLE_HP = (107, 194, 107)             # HpColour (0.42, 0.76, 0.42)
+
 
 def font(name, size):
     return ImageFont.truetype(os.path.join(REPO, 'godot', 'fonts', name), max(1, round(size)))
@@ -55,17 +67,17 @@ def mm(px):
 class Held:
     """How the phone is held: the pass's folder, the reference size, the troops' bar's thickness, the HP's sizes."""
 
-    def __init__(self, folder, size, bar, search, gap, line, pip, pip_gap):
+    def __init__(self, folder, size, bar, search, gap, line, pip, pip_gap, battle_gap):
         self.folder, self.size, self.bar, self.search = folder, size, bar, search
-        self.gap, self.line, self.pip, self.pip_gap = gap, line, pip, pip_gap
+        self.gap, self.line, self.pip, self.pip_gap, self.battle_gap = gap, line, pip, pip_gap, battle_gap
 
 
 # Held landscape the dump is two thirds of the reference (2712 × 1220), upright half of it (1220 × 2712). The troops'
 # bar is the Troops cell's held landscape (about 5 px), PhoneLedgerUpright.BarHeight upright (8).
 LAND = Held('phone-landscape', (2712, 1220), bar=5, search={'deployment': (400, 560), 'subordinates': (730, 890)},
-            gap=4, line=6, pip=10, pip_gap=3)
+            gap=4, line=6, pip=10, pip_gap=3, battle_gap=3)
 UP = Held('phone-upright', (1220, 2712), bar=8, search={'deployment': (280, 530), 'subordinates': (280, 530)},
-          gap=4, line=6, pip=10, pip_gap=4)
+          gap=4, line=6, pip=10, pip_gap=4, battle_gap=4)
 
 
 def base(held, dump):
@@ -103,12 +115,23 @@ def blend(img, box, colour, alpha):
     img.paste(Image.blend(region, Image.new('RGB', region.size, colour), alpha), (x0, y0))
 
 
-def line(img, box, hp, max_hp):
+def line(img, box, hp, max_hp, ink=HP_INK):
     """H1: the paper's rule as long as the troops' bar, the HP left in the HP's ink from its left."""
     x0, y0, x1, y1 = box
     blend(img, box, RULE, RULE_ALPHA)
     w = max(1, round((x1 - x0) * hp / max_hp))
-    ImageDraw.Draw(img).rectangle((x0, y0, x0 + w - 1, y1 - 1), fill=HP_INK)
+    ImageDraw.Draw(img).rectangle((x0, y0, x0 + w - 1, y1 - 1), fill=ink)
+
+
+def battle_bars(img, held, unit, left, right, bottom):
+    """H4: the troops' bar under the name drawn again in the battle's blue, the HP's under it in the battle's green."""
+    top = bottom - held.bar
+    under = img.getpixel((right - 3, bottom + 3))                   # the row's paper or tint, clear of the bar
+    ImageDraw.Draw(img).rectangle((left - 2, top - 2, right + 1, bottom + 1), fill=under)
+    troops, max_troops = TROOPS[unit]
+    line(img, (left, top, right, bottom), troops, max_troops, BATTLE_TROOPS)
+    hp_top = bottom + held.battle_gap
+    line(img, (left, hp_top, right, hp_top + held.bar), HP[unit], MAX_HP[unit], BATTLE_HP)
 
 
 def pips(img, box, hp, max_hp, gap):
@@ -131,7 +154,9 @@ def variant(kind):
         for unit, (left, right, bottom) in zip(UNITS, troop_bars(img, held, dump)):
             hp, max_hp = HP[unit], MAX_HP[unit]
             top = bottom + held.gap
-            if kind == 'line':
+            if kind == 'battle':
+                battle_bars(img, held, unit, left, right, bottom)
+            elif kind == 'line':
                 line(img, (left, top, right, top + held.line), hp, max_hp)
             elif kind == 'pips' or (kind == 'wounded' and hp < max_hp):
                 pips(img, (left, top, right, top + held.pip), hp, max_hp, held.pip_gap)
@@ -149,6 +174,10 @@ def notes(held, kind):
               'and as long as it: a pip a point of HP, the HP left filled in an indigo ink')
     if kind == 'pips':
         return [common + '; "6 of 8" read at a glance, and the pips never look like the troops\' bar', MADE_UP]
+    if kind == 'battle':
+        return [f'the battle card\'s colours: the troops\' bar under the name in our side\'s blue, the HP\'s under it in the '
+                f'battle\'s green, both {held.bar} px ({mm(held.bar)}) high, {held.battle_gap} px apart, as long '
+                'as each other; the Troops column keeps its green, amber and red', MADE_UP]
     return [common + ', only while the commander is wounded: a whole commander\'s row stays as now', MADE_UP]
 
 
@@ -167,10 +196,10 @@ def wrapped(d, text, face, width):
     return lines
 
 
-def sheet(held, dump, name, title, cols, scale, crop=None):
+def sheet(held, dump, name, title, cols, scale, crop=None, variants=VARIANTS):
     """The variants in a grid of cols, each scaled (after crop, reference pixels), with their labels and notes."""
     drawn = []
-    for label, kind in VARIANTS:
+    for label, kind in variants:
         im = variant(kind)(held, dump)
         if crop:
             im = im.crop(crop)
@@ -206,3 +235,13 @@ sheet(UP, 'deployment', 'p29-up', 'Round P29 — the commander\'s HP in the Name
 sheet(UP, 'deployment', 'p29-up-detail', 'Round P29 — upright, the ledger at the phone\'s pixels: the fixed part and the '
       'Troops column', cols=4, scale=0.75, crop=(0, 1130, 900, 2480))
 sheet(UP, 'subordinates', 'p29-up-subordinates', 'Round P29 — upright: Subordinates, Rance chosen', cols=4, scale=0.5)
+
+P30 = [('Now', 'now'), ('H2 — a pip a point (round P29)', 'pips'), ('H4 — the battle\'s colours', 'battle')]
+sheet(LAND, 'deployment', 'p30-land-detail', 'Round P30 — held landscape, the ledger at the phone\'s pixels: the battle\'s '
+      'colours beside H2', cols=3, scale=0.8, crop=(117, 190, 1260, 1250), variants=P30)
+sheet(LAND, 'subordinates', 'p30-land-subordinates', 'Round P30 — held landscape: Subordinates, Rance chosen', cols=3,
+      scale=0.5, variants=P30)
+sheet(UP, 'deployment', 'p30-up-detail', 'Round P30 — upright, the ledger at the phone\'s pixels: the battle\'s colours '
+      'beside H2', cols=3, scale=0.75, crop=(0, 1130, 900, 2480), variants=P30)
+sheet(UP, 'subordinates', 'p30-up-subordinates', 'Round P30 — upright: Subordinates, Rance chosen', cols=3, scale=0.5,
+      variants=P30)
