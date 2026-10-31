@@ -42,7 +42,7 @@ public class PhoneSavesTests
         Assert.Equal(7, PhoneSaves.RowsShown(Reference, newRow: false));
         Equal(new(116, 320, 854, 104), PhoneSaves.Row(Reference, 0, newRow: false));
         Equal(new(116, 1004, 854, 104), PhoneSaves.Row(Reference, 6, newRow: false));
-        Equal(new(986, 320, 12, 788), PhoneSaves.ScrollBar(Reference, newRow: false));
+        Equal(new(980, 320, 20, 788), PhoneSaves.ScrollBar(Reference, newRow: false));        // the reference, S2
         Equal(new(116, 320, 884, 788), PhoneSaves.Scrolled(Reference, newRow: false));
     }
 

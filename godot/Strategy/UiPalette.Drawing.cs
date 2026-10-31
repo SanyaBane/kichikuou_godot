@@ -183,16 +183,28 @@ internal sealed partial record UiPalette
     /// <summary>
     /// The reference scroll bar (the owner's S2, docs/ui/phone.md §41; its places <c>PhoneScrollBar</c>'s): the groove a
     /// rounded well (<see cref="Groove"/>) in a dim gold rim <paramref name="rim"/> wide, the thumb in gold inside it with a
-    /// lit edge down its left in the names' gold.
+    /// lit edge down its left (along its top when the groove lies) in the names' gold; no thumb while the list fits. On the
+    /// ledger's paper (<paramref name="paper"/>, the owner's PB, §43) the groove is the paper's head in a faint ink rim, the
+    /// thumb the vermilion ink with a lighter edge.
     /// </summary>
-    public void DrawScrollBar(CanvasItem c, Rect2 groove, Rect2 thumb, float rim)
+    public void DrawScrollBar(CanvasItem c, Rect2 groove, Rect2? thumb, float rim, bool paper = false)
     {
-        Capsule(c, groove, DimGold);
-        Capsule(c, groove.Grow(-rim), Groove);
-        Capsule(c, thumb, Gold);
-        float w = groove.Size.X, r = w / 2, x = thumb.Position.X + w / 6;
-        if (thumb.Size.Y > 2 * r)
-            c.DrawLine(new Vector2(x, thumb.Position.Y + r), new Vector2(x, thumb.End.Y - r), Name, w / 10);
+        var (well, edge, fill, lit) = paper
+            ? (PaperHead, InkFaint, VermilionInk, VermilionInk.Lightened(0.3f))
+            : (Groove, DimGold, Gold, Name);
+        Capsule(c, groove, edge);
+        Capsule(c, groove.Grow(-rim), well);
+        if (thumb is not { } t)
+            return;
+        Capsule(c, t, fill);
+        bool upright = groove.Size.Y >= groove.Size.X;
+        float w = upright ? groove.Size.X : groove.Size.Y, r = w / 2;
+        if ((upright ? t.Size.Y : t.Size.X) <= 2 * r)
+            return;
+        if (upright)
+            c.DrawLine(new Vector2(t.Position.X + w / 6, t.Position.Y + r), new Vector2(t.Position.X + w / 6, t.End.Y - r), lit, w / 10);
+        else
+            c.DrawLine(new Vector2(t.Position.X + r, t.Position.Y + w / 6), new Vector2(t.End.X - r, t.Position.Y + w / 6), lit, w / 10);
     }
 
     /// <summary>A box with fully rounded ends in <paramref name="colour"/>.</summary>

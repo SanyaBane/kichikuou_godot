@@ -39,7 +39,7 @@ public class PhoneOptionsUprightTests
     {
         // po1: the sheet from 24 to PW - 24, from the tabs' foot to BAR[0] - 20; the column 30 in, 40 under its top.
         Equal(new(24, 332, 1172, 2152), PhoneOptionsUpright.Sheet(Reference));
-        Equal(new(54, 344, 1112, 2128), PhoneOptionsUpright.View(Reference));
+        Equal(new(54, 344, 1106, 2128), PhoneOptionsUpright.View(Reference));      // 36 from the right: the bar's room and 6
         Assert.Equal(372, PhoneOptionsUpright.ColumnTop(Reference, 0), Close);
         Assert.Equal(272, PhoneOptionsUpright.ColumnTop(Reference, 100), Close);
     }
@@ -54,10 +54,10 @@ public class PhoneOptionsUprightTests
         Assert.Null(PhoneOptionsUpright.ScrollBar(Reference, 2000, 0));
 
         var (track, thumb) = PhoneOptionsUpright.ScrollBar(Reference, 2500, 0)!.Value;
-        Equal(new(1178, 344, 6, 2128), track);
-        float length = 2128 * 2082f / 2500;
-        Equal(new(1178, 344, 6, length), thumb);
-        Equal(new(1178, 344 + 2128 - length, 6, length), PhoneOptionsUpright.ScrollBar(Reference, 2500, 418)!.Value.Thumb);
+        Equal(new(1170, 344, 20, 2128), track);                                   // the reference (S2), 6 in from the sheet's right
+        float length = 2122 * 2082f / 2500;
+        Equal(new(1173, 347, 14, length), thumb);
+        Equal(new(1173, 347 + 2122 - length, 14, length), PhoneOptionsUpright.ScrollBar(Reference, 2500, 418)!.Value.Thumb);
 
         // A longer screen shows more of it.
         var longer = PhoneFrame.Upright(1220, 3000);

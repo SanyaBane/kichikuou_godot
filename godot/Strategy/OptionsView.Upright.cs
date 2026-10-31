@@ -74,11 +74,8 @@ internal sealed partial class OptionsView
         ClipSpots(first, new Rect2(clip.Position / _k, clip.Size / _k));
         RenderingServer.CanvasItemAddClipIgnore(item, true);
 
-        if (PhoneOptionsUpright.ScrollBar(f, _columnHeight[_tab], _scroll) is { } bar)
-        {
-            DrawRect(Part(bar.Track), Ui.PaperRule);
-            DrawRect(Part(bar.Thumb), Ui.InkGrey);
-        }
+        if (PhoneOptionsUpright.ScrollBar(f, _columnHeight[_tab], _scroll) is { } bar)     // the reference on the paper, PB
+            Ui.DrawScrollBar(this, Part(bar.Track), Part(bar.Thumb), f.Px(PhoneScrollBar.Rim) / _k, paper: true);
         DrawUprightFoot(f);
         if (_question is not null)
             DrawQuestion(_question);

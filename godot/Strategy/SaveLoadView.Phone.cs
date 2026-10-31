@@ -175,15 +175,13 @@ internal sealed partial class SaveLoadView
             TextCentred(_cinzelLight, u.Size(PhoneSaves.EmptyText), column.GetCenter().X,
                 Places.Row(f, 0, NewRowShown).Y / u.K + u.Px(PhoneSaves.EmptyDown),
                 _autoSide ? "No auto-saves yet." : "No manual saves yet.", Ui.OffText);
-        var groove = u.Rect(Places.ScrollBar(f, NewRowShown));
-        DrawRect(groove, Ui.Groove);                                    // it stays when every save fits, as the PC's
+        // the reference bar (the owner's S2); its groove stays when every save fits, as the PC's
+        var groove = Places.ScrollBar(f, NewRowShown);
         int count = Shown.Count;
-        if (count > RowsShown)
-        {
-            float a = groove.Position.Y + groove.Size.Y * _scroll / count;
-            float b = groove.Position.Y + groove.Size.Y * Math.Min(count, _scroll + RowsShown) / count;
-            DrawRect(new Rect2(groove.Position.X, a, groove.Size.X, b - a), Ui.Gold);
-        }
+        Rect2? thumb = count > RowsShown
+            ? u.Rect(PhoneScrollBar.Thumb(f, groove, (float)RowsShown / count, (float)_scroll / (count - RowsShown)))
+            : null;
+        Ui.DrawScrollBar(this, u.Rect(groove), thumb, u.Px(PhoneScrollBar.Rim));
     }
 
     /// <summary>"Delete all without ★ (n)", off while every manual save has a comment.</summary>

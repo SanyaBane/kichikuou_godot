@@ -50,8 +50,14 @@ public static class PhoneOptionsUpright
             Math.Max(0, f.Bar.Y - f.Px(SheetFoot) - top));
     }
 
-    /// <summary>The column's distance from the sheet's sides; its top under the sheet's, unscrolled; the least room left under its foot.</summary>
+    /// <summary>The column's distance from the sheet's left; its top under the sheet's, unscrolled; the least room left under its foot.</summary>
     private const float ColumnIn = 30, ColumnStart = 40, ColumnFoot = 30;
+
+    /// <summary>The scroll bar's right in from the sheet's (the reference, <see cref="PhoneScrollBar"/>: the owner's S2 and PB, docs/ui/phone.md §43).</summary>
+    private const float BarIn = 6;
+
+    /// <summary>The column's distance from the sheet's right: the bar's room and its distance from the sheet's right, whether the tab scrolls or not.</summary>
+    private static float ColumnRight(PhoneFrame f) => f.Px(BarIn) + PhoneScrollBar.Room(f);
 
     /// <summary>The margin of paper over and under what the column shows: a setting scrolled past it is cut there.</summary>
     private const float ViewIn = 12;
@@ -60,7 +66,7 @@ public static class PhoneOptionsUpright
     public static PhoneFrame.Box View(PhoneFrame f)
     {
         var sheet = Sheet(f);
-        return new PhoneFrame.Box(sheet.X + f.Px(ColumnIn), sheet.Y + f.Px(ViewIn), Math.Max(0, sheet.W - f.Px(2 * ColumnIn)),
+        return new PhoneFrame.Box(sheet.X + f.Px(ColumnIn), sheet.Y + f.Px(ViewIn), Math.Max(0, sheet.W - f.Px(ColumnIn) - ColumnRight(f)),
             Math.Max(0, sheet.H - f.Px(2 * ViewIn)));
     }
 
@@ -71,25 +77,19 @@ public static class PhoneOptionsUpright
     public static float MaxScroll(PhoneFrame f, float height) =>
         Math.Max(0, ColumnTop(f, 0) + height - (Sheet(f).Bottom - f.Px(ColumnFoot)));
 
-    /// <summary>The scroll bar: its width, its distance in from the sheet's right; the thumb's least length.</summary>
-    private const float BarWidth = 6, BarIn = 12, ThumbLeast = 60;
-
     /// <summary>
-    /// The thin scroll bar at the sheet's right along <see cref="View"/> for a column <paramref name="height"/> high scrolled
-    /// by <paramref name="scroll"/>: its groove and its thumb (as long as the share of the column in view); null while the
-    /// column fits.
+    /// The reference scroll bar at the sheet's right along <see cref="View"/> for a column <paramref name="height"/> high
+    /// scrolled by <paramref name="scroll"/>: its groove and its thumb (as long as the share of the column in view); null
+    /// while the column fits.
     /// </summary>
     public static (PhoneFrame.Box Track, PhoneFrame.Box Thumb)? ScrollBar(PhoneFrame f, float height, float scroll)
     {
         float max = MaxScroll(f, height);
         if (max <= 0)
             return null;
-        var sheet = Sheet(f);
         var view = View(f);
-        var track = new PhoneFrame.Box(sheet.Right - f.Px(BarIn + BarWidth), view.Y, f.Px(BarWidth), view.H);
-        float thumb = Math.Clamp(track.H * (height - max) / height, Math.Min(f.Px(ThumbLeast), track.H), track.H);
-        float y = track.Y + (track.H - thumb) * Math.Clamp(scroll / max, 0, 1);
-        return (track, new PhoneFrame.Box(track.X, y, track.W, thumb));
+        var track = PhoneScrollBar.Groove(f, Sheet(f).Right - f.Px(BarIn), view.Y, view.H);
+        return (track, PhoneScrollBar.Thumb(f, track, (height - max) / height, scroll / max));
     }
 
     // ------------------------------------------------------------------ Display's orientation (po1o)

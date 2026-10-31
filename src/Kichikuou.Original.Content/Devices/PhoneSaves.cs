@@ -86,15 +86,15 @@ public static class PhoneSaves
         new(List(f).Right - f.Px(SweepWidth), f.Px(HeadTop), f.Px(SweepWidth), f.Px(HeadHeight));
 
     /// <summary>
-    /// The rows: from 20 under the heading, 104 high and 10 apart, ending 30 short of the list's right for the scroll bar
-    /// (12 wide, 14 in from the right); New save 88 high over them in Save's manual saves.
+    /// The rows: from 20 under the heading, 104 high and 10 apart, ending short of the list's right by the scroll bar's
+    /// room (the reference, <see cref="PhoneScrollBar"/>: its right at the list's); New save 88 high over them in Save's
+    /// manual saves.
     /// </summary>
-    private const float RowsTop = HeadTop + HeadHeight + 20, RowHeight = 104, RowGap = 10, NewHeight = 88, ScrollRoom = 30,
-        BarIn = 14, BarWidth = 12;
+    private const float RowsTop = HeadTop + HeadHeight + 20, RowHeight = 104, RowGap = 10, NewHeight = 88;
 
     private static float FirstRow(PhoneFrame f, bool newRow) => f.Px(RowsTop + (newRow ? NewHeight + RowGap : 0));
 
-    private static float RowWidth(PhoneFrame f) => f.Px(ListWidth - ScrollRoom);
+    private static float RowWidth(PhoneFrame f) => f.Px(ListWidth) - PhoneScrollBar.Room(f);
 
     /// <summary>New save over the rows (Save's manual saves).</summary>
     public static PhoneFrame.Box New(PhoneFrame f) => new(Left(f), f.Px(RowsTop), RowWidth(f), f.Px(NewHeight));
@@ -114,7 +114,7 @@ public static class PhoneSaves
     public static PhoneFrame.Box ScrollBar(PhoneFrame f, bool newRow)
     {
         float top = FirstRow(f, newRow);
-        return new PhoneFrame.Box(List(f).Right - f.Px(BarIn), top, f.Px(BarWidth), RowsShown(f, newRow) * Pitch(f) - f.Px(RowGap));
+        return PhoneScrollBar.Groove(f, List(f).Right, top, RowsShown(f, newRow) * Pitch(f) - f.Px(RowGap));
     }
 
     /// <summary>Where a finger scrolls the list: New save and the rows in view, the list's width.</summary>

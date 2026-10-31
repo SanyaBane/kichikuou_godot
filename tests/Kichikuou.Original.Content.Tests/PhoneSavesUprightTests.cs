@@ -43,13 +43,13 @@ public class PhoneSavesUprightTests
     public void Nine_rows_are_in_view_above_the_page()
     {
         // save_list: the heading 18 under the tabs, the sweep (PW - 16 - 470, y, PW - 16, y + 64); the rows 84 under its top,
-        // 104 high and 10 apart down to the page's top less 36: (foot - y + 10) // 114 = 9; the track at PW - 34, 12 wide.
+        // 104 high and 10 apart down to the page's top less 36: (foot - y + 10) // 114 = 9; the reference groove (S2) at its right.
         Equal(new(734, 366, 470, 64), PhoneSavesUpright.Sweep(Reference));
         Assert.Equal(398, PhoneSavesUpright.HeadMiddle(Reference), Close);
         Assert.Equal(9, PhoneSavesUpright.RowsShown(Reference, newRow: false));
-        Equal(new(16, 450, 1156, 104), PhoneSavesUpright.Row(Reference, 0, newRow: false));
-        Equal(new(16, 1362, 1156, 104), PhoneSavesUpright.Row(Reference, 8, newRow: false));
-        Equal(new(1186, 450, 12, 1016), PhoneSavesUpright.ScrollBar(Reference, newRow: false));
+        Equal(new(16, 450, 1158, 104), PhoneSavesUpright.Row(Reference, 0, newRow: false));
+        Equal(new(16, 1362, 1158, 104), PhoneSavesUpright.Row(Reference, 8, newRow: false));
+        Equal(new(1184, 450, 20, 1016), PhoneSavesUpright.ScrollBar(Reference, newRow: false));      // the reference, S2
         Equal(new(16, 450, 1188, 1016), PhoneSavesUpright.Scrolled(Reference, newRow: false));
         Equal(new(16, 110, 1188, PageY - 36 - 110), PhoneSavesUpright.List(Reference));
         Assert.Equal(PageY - 18, PhoneSavesUpright.PageDividerY(Reference), Close);
@@ -58,9 +58,9 @@ public class PhoneSavesUprightTests
     [Fact]
     public void New_save_heads_the_rows_and_takes_one_from_view()
     {
-        Equal(new(16, 450, 1156, 88), PhoneSavesUpright.New(Reference));
+        Equal(new(16, 450, 1158, 88), PhoneSavesUpright.New(Reference));
         Assert.Equal(8, PhoneSavesUpright.RowsShown(Reference, newRow: true));
-        Equal(new(16, 548, 1156, 104), PhoneSavesUpright.Row(Reference, 0, newRow: true));
+        Equal(new(16, 548, 1158, 104), PhoneSavesUpright.Row(Reference, 0, newRow: true));
         Equal(new(16, 450, 1188, 98 + 8 * 114 - 10), PhoneSavesUpright.Scrolled(Reference, newRow: true));
     }
 
