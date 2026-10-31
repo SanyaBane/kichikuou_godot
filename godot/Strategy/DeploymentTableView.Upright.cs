@@ -20,6 +20,9 @@ internal sealed partial class DeploymentTableView
     /// <summary>The fixed part's width in this control's pixels (0: none).</summary>
     private float _fixedWidth;
 
+    /// <summary>The fixed part's places: after the party's seals on the deployment table, from the paper's left on a chooser's.</summary>
+    private PhoneLedgerUpright.FixedPlaces Fixed => PhoneLedgerUpright.Places(seals: !_chooser);
+
     /// <summary>Over the rows under the header: the fixed part and the shadows (upright only).</summary>
     private readonly Overlay _fixedRows;
 
@@ -38,14 +41,14 @@ internal sealed partial class DeploymentTableView
     /// <summary>
     /// Covers <paramref name="rect"/> on the phone held upright (PD2s2): rows <see cref="PhoneLedgerUpright.Row"/> high, the
     /// figures <see cref="PhoneLedgerUpright.Text"/>, the columns <see cref="PhoneLedgerUpright.ColumnGap"/> apart, the
-    /// fixed part <see cref="PhoneLedgerUpright.Fixed"/> wide (reference pixels of <paramref name="phone"/>).
+    /// fixed part as wide as its <see cref="Fixed"/> places (reference pixels of <paramref name="phone"/>).
     /// </summary>
     public void PlaceUpright(Rect2 rect, PhoneFrame phone)
     {
         HoldLandscape(null);
         bool entering = _upright is null;
         _upright = phone;
-        _fixedWidth = phone.Px(PhoneLedgerUpright.Fixed);
+        _fixedWidth = phone.Px(Fixed.Width);
         if (entering)
             ShowColumns();
         int separation = (int)Math.Round(phone.Px(6));
@@ -157,7 +160,7 @@ internal sealed partial class DeploymentTableView
     {
         if (_upright is not { } f || x >= _fixedWidth)
             return -1;
-        float name = f.Px(PhoneLedgerUpright.HeadNameX);
+        float name = f.Px(Fixed.HeadNameX);
         if (x < name - f.Px(8))
             return FixedHeader;
         float split = name + TitleWidth(FixedTitle(1) + _down) + TitleWidth(" · ") / 2;
@@ -169,10 +172,10 @@ internal sealed partial class DeploymentTableView
     {
         if (_upright is not { } f)
             return null;
-        float name = f.Px(PhoneLedgerUpright.HeadNameX);
+        float name = f.Px(Fixed.HeadNameX);
         return column switch
         {
-            DeploymentColumn.Number => f.Px(PhoneLedgerUpright.HeadNumberRight) - TitleWidth(FixedTitle(0)) / 2,
+            DeploymentColumn.Number => f.Px(Fixed.HeadNumberRight) - TitleWidth(FixedTitle(0)) / 2,
             DeploymentColumn.Name => name + TitleWidth(FixedTitle(1)) / 2,
             DeploymentColumn.TroopType => name + TitleWidth($"{FixedTitle(1)} · ") + TitleWidth(FixedTitle(2)) / 2,
             _ => null,
@@ -201,9 +204,9 @@ internal sealed partial class DeploymentTableView
             c.DrawString(_titleFont, new Vector2(f.Px(PhoneLedgerUpright.DotX) - dot / 2, baseline), PartyMark, fontSize: TitleSize,
                 modulate: Ui.HeadInk);
         }
-        float number = f.Px(PhoneLedgerUpright.HeadNumberRight);
+        float number = f.Px(Fixed.HeadNumberRight);
         c.DrawString(_titleFont, new Vector2(number - TitleWidth(FixedTitle(0)), baseline), Marked(0), fontSize: TitleSize, modulate: Ui.HeadInk);
-        c.DrawString(_titleFont, new Vector2(f.Px(PhoneLedgerUpright.HeadNameX), baseline), $"{Marked(1)} · {Marked(2)}", fontSize: TitleSize,
+        c.DrawString(_titleFont, new Vector2(f.Px(Fixed.HeadNameX), baseline), $"{Marked(1)} · {Marked(2)}", fontSize: TitleSize,
             modulate: Ui.HeadInk);
         DrawShadows(c, f, 1, bottom);
         if (MoreBeyond)
@@ -266,9 +269,10 @@ internal sealed partial class DeploymentTableView
 
     /// <summary>
     /// A row's fixed part (PD2s2): the paper (gilt for the party, tinted for the chosen row), the party's seal or the chosen
-    /// row's bar and diamond, № and the name on the first line, the type under it, a talk's bubble at the name's right; the
-    /// unit's face between № and the name, under the name and the type a bar of the troops in a battle card's blue and one of
-    /// the commander's HP in its green, no figures (owner, 2026-10-31; the owner's H4, docs/ui/phone.md §37-§38).
+    /// row's bar (no diamond: the tint tells it — owner, 2026-10-31), № and the name on the first line, the type under it, a
+    /// talk's bubble at the name's right; the unit's face between № and the name, under the name and the type a bar of the
+    /// troops in a battle card's blue and one of the commander's HP in its green, no figures (owner, 2026-10-31; the owner's
+    /// H4, docs/ui/phone.md §37-§38).
     /// </summary>
     private void DrawFixedRow(Control c, PhoneFrame f, Rect2 cell, DeploymentRow row)
     {
@@ -280,10 +284,7 @@ internal sealed partial class DeploymentTableView
         float nameMid = y + h * PhoneLedgerUpright.NameMiddle / PhoneLedgerUpright.Row;
         float typeMid = y + h * PhoneLedgerUpright.TypeMiddle / PhoneLedgerUpright.Row;
         if (chosen)
-        {
             c.DrawRect(new Rect2(0, y, f.Px(PhoneLedgerUpright.ChosenBar), h), Ui.Vermilion);
-            Lacquer.DrawDiamond(c, new Vector2(f.Px(PhoneLedgerUpright.DiamondX), mid), f.Px(PhoneLedgerUpright.Diamond), Ui.Vermilion);
-        }
         if (place > 0)
         {
             float s = f.Px(PhoneLedgerUpright.Seal);
@@ -292,16 +293,16 @@ internal sealed partial class DeploymentTableView
         var ink = row.Grey ? Ui.InkGrey : Ui.Ink;
         int number = (int)Math.Round(f.Px(PhoneLedgerUpright.NumberText));
         string no = row.Text(DeploymentColumn.Number);
-        Middle(c, no, number, ink, f.Px(PhoneLedgerUpright.NumberRight) - _font.GetStringSize(no, fontSize: number).X, nameMid);
+        Middle(c, no, number, ink, f.Px(Fixed.NumberRight) - _font.GetStringSize(no, fontSize: number).X, nameMid);
         float side = f.Px(PhoneLedgerUpright.Face);
-        DrawFace(c, new Rect2(f.Px(PhoneLedgerUpright.FaceX), mid - side / 2, side, side), row.FaceCg, row.Grey);
+        DrawFace(c, new Rect2(f.Px(Fixed.FaceX), mid - side / 2, side, side), row.FaceCg, row.Grey);
         SceneMark? talk = _chooser && _talkMarks.TryGetValue(row.Unit, out var mark) ? mark : null;
         float bubble = talk is null ? 0 : f.Px(PhoneLedgerUpright.NameText) * 1.4f;
-        float nameX = f.Px(PhoneLedgerUpright.NameX), right = _fixedWidth - f.Px(PhoneLedgerUpright.NameRight);
+        float nameX = f.Px(Fixed.NameX), right = _fixedWidth - f.Px(PhoneLedgerUpright.NameRight);
         string name = row.Text(DeploymentColumn.Name);
         Middle(c, name, SideCells.Fit(_font, name, (int)Math.Round(f.Px(PhoneLedgerUpright.NameText)), right - bubble - nameX), ink, nameX, nameMid);
         string type = row.Text(DeploymentColumn.TroopType);
-        float typeX = f.Px(PhoneLedgerUpright.TypeX);
+        float typeX = f.Px(Fixed.TypeX);
         Middle(c, type, SideCells.Fit(_font, type, (int)Math.Round(f.Px(PhoneLedgerUpright.TypeText)), right - typeX),
             row.Grey ? Ui.InkGrey : Ui.InkQuiet, typeX, typeMid);
         float barTop = y + h * PhoneLedgerUpright.BarTop / PhoneLedgerUpright.Row;

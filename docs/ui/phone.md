@@ -1342,3 +1342,10 @@ The owner chose H4 with both colours a little darker, the battle's being too bri
 (52, 88, 168) for the battle's (69, 117, 219), the HP's green (76, 146, 76) for its (107, 194, 107) — the palette's
 `GaugeTroops` and `GaugeHp`. Built (docs/ui/phone-build.md, §5, "After the build: a face and a troops' bar in the
 ledger's Name cell").
+
+## 39. After the build: № as narrow as its figures (owner, 2026-10-31)
+
+Looking at the gallery's `deployment` and `subordinates` on the phone, the owner asked for № no wider than its figures
+(fewer than a hundred units: two at most) and, on Subordinates, no diamond on the chosen row, its tint telling it. Built
+as asked (docs/ui/phone-build.md, §5, "After the build: № as narrow as its figures"). The drawings here stay as they were
+drawn.

@@ -1453,6 +1453,21 @@ type upright (phone.md, §35). Built as asked, no mock-up round:
   HP in its green, both darker for the paper (`UiPalette.GaugeTroops`, `GaugeHp`; `DeploymentTableView.DrawGauge`); the
   Troops column keeps its green, amber and red (`DrawStrength`).
 
+### After the build: № as narrow as its figures (owner, 2026-10-31)
+
+The owner asked for the ledger's № no wider than its figures (two at most) and no diamond on Subordinates' chosen row
+(phone.md, §39). Built:
+
+- **Held landscape** (`DeploymentTableView.Compact`): № is as wide as its widest figures; its title ("№" with the sort's
+  mark, wider than two figures in Cinzel) is no longer the tree's, which widened the column to it, but drawn by
+  `DrawTitles` ending at the column's right and reaching left past it. Subordinates' first column holds the chosen row's
+  bar alone, and the talks' bubbles while any unit has one; the diamond is gone. On the deployment table № was about 90
+  reference pixels wide, now about 61; Subordinates' first two columns about 220, now about 96.
+- **Upright** (`PhoneLedgerUpright.Places(seals)`): № two figures wide (46), 10 right of the party's seal on the deployment
+  table, from the paper's left on Subordinates; the face, the name and the type follow, the fixed part 504 wide on the
+  deployment table (518 before) and 434 on Subordinates; the chosen row's diamond is gone.
+- The PC's and the tablet's ledgers are unchanged.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.
