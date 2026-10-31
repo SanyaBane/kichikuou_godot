@@ -1285,3 +1285,16 @@ bracket as built — its line 30 px over "FRONT ROW"'s middle, the head up:
   cards (Rance's answer stands on the bar).
 
 The agent recommends PB4sf2: in PB4sf1 the line nearly touches the portrait's frame.
+
+## 34. Round P28: the scout report in the screen's middle (2026-10-31)
+
+The owner chose PB4sf2, with the ninja and the enemy moved to the screen's middle. The round (the same script) moves
+Kanami's portrait and report, the bracket and the cards as one block (1137 px, 64.5 mm), Rance's answer standing on the
+bar as now:
+
+- **PB4sf2m1 — the room's middle** (under the hole, over the bar): 628 px over the block, 326 under it to Rance's
+  portrait. With Maris's comment Rance's row stands a row higher (324 px) and the cards end 2 px over it.
+- **PB4sf2m2 — the middle over Rance's answer**: 477 px over the block and under it; with Maris's comment the block
+  rises with his row, 315 px over and under.
+
+The agent recommends PB4sf2m2: the gaps stay even, and Maris's comment never meets the cards.

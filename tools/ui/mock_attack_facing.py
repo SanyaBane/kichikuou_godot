@@ -31,6 +31,10 @@ builds (the brackets now drawn on them).
 Round P27 (the owner chose PD2f2, built; then the scout report), over scout-report (PB4s: the rebels Kanami scouted, the
 front row on top facing up as the enemy attack's, no mark of it at all): PA1f2a's bracket as built over "FRONT ROW";
 PB4sf1 nothing moved, PB4sf2 the cards 60 px lower, clear of Kanami's portrait (the agent's recommendation).
+
+Round P28 (the owner chose PB4sf2 with the ninja and the enemy in the screen's middle): her portrait and report, the
+bracket and the cards as one block, Rance's answer on the bar; PB4sf2m1 in the room's middle, PB4sf2m2 in the middle of
+the room over Rance's answer, rising with his row when Maris comments (the agent's recommendation).
 """
 import os
 import sys
@@ -433,3 +437,46 @@ P27 = [('Now', lambda name: (base(name), ['as built: "FRONT ROW" with no mark of
        ('PB4sf1 — the bracket, nothing moved', scout(0)), ('PB4sf2 — the cards 60 px lower (recommended)', scout(60))]
 sheet('scout-report', 'p27', 'Round P27 — the scout report upright: the rebels Kanami scouted before the battle on Ys (5)', P27)
 detail('scout-report', 'p27-detail', 'Round P27 — the report and the cards at the dump\'s pixels', P27, crop=(0, 100, PW, 1300))
+
+
+# --- Round P28: PB4sf2 with the ninja and the enemy in the screen's middle ------------------------------------------------
+# The owner chose PB4sf2 with Kanami's report and the cards moved to the screen's middle. Rance's answer stays standing on
+# the bar; with Maris's comment (PhoneBattleStatesUpright.SpeakerPortrait) his row stands a row higher (324 px).
+
+SCOUT_BLOCK = (129, 1206 + 60)          # Kanami's portrait's top to the back row's foot, in PB4sf2
+ROOM = (110, 2504)                      # the room: under the hole, over the bar
+RANCE_TOP, RANCE_RAISED = 2201, 2201 - 324
+
+
+HEIGHT = SCOUT_BLOCK[1] - SCOUT_BLOCK[0]
+
+
+def centred(middle, why, rises):
+    def draw(name):
+        img, _ = scout(60)(name)
+        block = img.crop((0, SCOUT_BLOCK[0] - 4, PW, SCOUT_BLOCK[1] + 4))
+        ImageDraw.Draw(img).rectangle((0, SCOUT_BLOCK[0] - 4, PW, SCOUT_BLOCK[1] + 4), fill=(0, 0, 0))
+        top = round(middle(RANCE_TOP) - HEIGHT / 2)
+        img.paste(block, (0, top - 4))
+        notes = [why, f'{top - ROOM[0]} px over it, {RANCE_TOP - top - HEIGHT} px under it to Rance\'s portrait']
+        raised = round(middle(RANCE_RAISED) - HEIGHT / 2)
+        if rises:
+            notes.append(f'with Maris\'s comment (Rance a row higher) it rises with his row: {raised - ROOM[0]} px over '
+                         f'it, {RANCE_RAISED - raised - HEIGHT} px under it')
+        else:
+            d = ImageDraw.Draw(img)
+            for x in range(0, PW, 24):                    # where Rance's row stands with Maris's comment
+                d.line([(x, RANCE_RAISED), (x + 12, RANCE_RAISED)], fill=NOTE, width=3)
+            note(d, (PW - 24, RANCE_RAISED + 12), 'Rance\'s row with Maris\'s comment', anchor='ra')
+            notes.append(f'with Maris\'s comment (Rance a row higher, the pink line): {RANCE_RAISED - top - HEIGHT} px '
+                         'between the cards and his row')
+        return img, notes
+    return draw
+
+
+P28 = [('PB4sf2 — as round P27', lambda name: scout(60)(name)),
+       ('PB4sf2m1 — the screen\'s middle', centred(lambda rance: (ROOM[0] + ROOM[1]) / 2,
+            'the report and the cards in the room\'s middle (under the hole, over the bar)', rises=False)),
+       ('PB4sf2m2 — the middle over Rance (recommended)', centred(lambda rance: (ROOM[0] + rance) / 2,
+            'in the middle of the room over Rance\'s answer', rises=True))]
+sheet('scout-report', 'p28', 'Round P28 — PB4sf2 with Kanami\'s report and the rebels in the screen\'s middle', P28)
