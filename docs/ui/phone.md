@@ -1486,3 +1486,38 @@ The owner chose PE6, the characters' middles on one line. Built on the phone hel
 "After the build: the title upright as PE6"): the stone over the whole screen, the logo whole, the rows with the
 characters cut from the player's CG 302 at run time; a long press on a row shows the button's description under the
 logo. PE2 stays in round P18's sheets only.
+
+## 47. Round P35: the facing in the other modes (2026-10-31)
+
+With the brackets built upright (PD2f2, PA1f2a, PB4sf2m2) the owner asked to check the other modes. On the PC and the
+tablet the deployment table and the enemy attack hold their front row in the F5 bracket the upright one was turned from
+(docs/ui/deployment-table.md, "The facing mark"; docs/ui/enemy-attack.md, §8), a small triangle still beside "Front row";
+the scout report marks nothing ("front row" and "back row" under the cards). In the dungeon search the PC's bracket held
+place 1's card and the empty place under it, its head pointing at nothing: fixed at once, it holds the one card as PD2f2s
+does (`DeploymentPanels.DrawFacing`). Held landscape the deployment table marks its party with an 18 px triangle (1.0 mm)
+at the caption row's right end, the enemy attack its army with a lone pointer left of the cards (`PhoneAttack.Pointer`,
+30 × 68 px) and the triangle beside "FRONT ROW", the scout report (LB3s) nothing. The round
+(`tools/ui/mock_facing_modes.py`, over the lacquer and landscape passes' `deployment`, `deployment-search`,
+`enemy-attack`, `enemy-attack-scouted` and `scout-report`, the week-18 save) draws the upright bracket there, the small
+triangles gone:
+
+- **LD2f1 — the part wider into the ledger** (held landscape): the bracket needs 95 px (5.4 mm) right of the front row —
+  its line 16 off the cards, its head (3.6 mm wide, 3.5 mm deep, as upright) 4 px short of the hole's strip, which it
+  may not enter. The part grows 95 px to the left, the cards as now; the title band, the totals and the bar as wide as
+  the part; the ledger as much narrower at its right (it scrolls sideways). **LD2f1s**: the same in the dungeon search,
+  the bracket over its one card.
+- **LD2f2 — the cards smaller** (held landscape): the part as now, the cards 11% smaller (387 × 191) to leave the
+  bracket its room; the names' type 42 px → 37, the totals 47 px higher.
+- **LA2f1 — the pointer become the bracket** (held landscape): the head's tip where the pointer's is, its line 16 off the
+  cards; the cards 6% smaller (413 × 283) for the 51 px the head needs, centred on the rows' middle as now; "FRONT ROW"
+  centred over its cards. Before and after Kanami's scouting.
+- **LB3sf1 — the scout report's bracket** (held landscape): left of the front row (Ex (commander 1), Sakanaku
+  (commander 6)), its head pointing left as the enemy attack's; the black beside the cards has the room, nothing moves.
+- **Cf1 — the scout report's bracket** (the PC and the tablet): the PC's bracket (as the enemy attack's) left of the
+  front row; the cards and their captions 24 px further right, the head 24 px clear of Kanami's portrait.
+- **F5t — without the small triangle** (the PC and the tablet): the deployment table's "Front row ▸" and the enemy
+  attack's "◀ Front row" lose their triangle, as upright, the caption centred over its cards.
+
+The agent recommends LD2f1 (the cards keep their size, the names stay legible — Haurein's is already squeezed — and the
+ledger, scrolled sideways anyway, loses 3.5% of its width), LA2f1, LB3sf1, Cf1 and F5t, so that every mode marks the
+facing with the same bracket.
