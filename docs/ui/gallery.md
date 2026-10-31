@@ -262,7 +262,11 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    and Jibul (commander 7) — `GalleryStates.EnemyAttack` (`Prov_Cur`, string 8, `Ev_PhaseNation`, string 10 read from
    `TCﾘｰｻﾞｽ.ADV:3`) and `EnemyParty`; Maris's lines, Rance's reply and her comment read from `FIGT_B.ADV` as the presenter
    reads them (`GalleryStage.Text`, `Literal`). Entries `enemy-attack`, `-ninjas` (the list open), `-scouted` (the report
-   filled in), `scout-report`. The troops are the COMMAND save's, before the rebels' turn: Ex has none. Left for step 3:
+   filled in), `scout-report`. The troops are the COMMAND save's, before the rebels' turn: Ex has none. Maris comments on
+   a report only past 5000 troops (`FIGT_B.ADV:636-647`), which no rebel army reaches, so `scout-report-comment` (owner,
+   2026-10-31) is the Helman 3rd Army's attack on Micrograd (44) (`Tﾍﾙﾏﾝ.ADV:293-313`, string 10 read from `:276`):
+   Serges (commander 42), Booch (commander 43), Mineva (commander 39) and Tami (commander 40) with the save's troops,
+   8,500 together, Maris's line `:637` in her balloon. Left for step 3:
    the Abandon City question (asked by the view's own button, no way in from outside yet), deployment, Save/Load, the
    cut-in, the counters, the info boxes, the dialog and the commands.
    **Then deployment and Save/Load** (`GalleryEntries.Screens.cs`). The deployment picker is opened in the bound presenter
