@@ -1413,3 +1413,53 @@ The owner chose PB, the vermilion ink, for the reference on the paper. Built on 
 §5, "After the build: the reference scroll bar"): the save lists in the lacquer's gold, the message log, the options'
 sheet upright and the ledgers' Godot bars on the paper in the vermilion. The tablet and the PC took the same look,
 8 layout pixels wide (1.6 mm on the owner's tablet; round T's T2, docs/ui/touch.md, "Round T: the reference scroll bar").
+
+## 44. Round P33: the title upright again (2026-10-31)
+
+Going through the gallery's upright pass, the owner found the title (PE2 as built, step P8d: the picture at the screen's
+width in the middle, black above and below, a row for each button under it) poor, and asked: the picture over the whole
+screen, its proportions kept; the buttons' characters off the picture and into the rows; in the rows the characters
+without the words the picture prints by them (Start, Load...). And whether those words can be left out at all, or are part
+of the characters' CGs.
+
+**What the title's CGs hold** (`ｽﾀMENU.ADV:10-14`, `:62-75`, the boxes `:805`):
+
+- **CG 301** (loaded at 640,0) is the background alone: the stone texture, a frieze at its top (rows 0-15) and its foot
+  (380-399), and the logo. The texture is drawn in nine palette entries only (30, 31, 169-172, 191, 198, 206); the logo's
+  letters in others, so the logo is cut out exactly by its colours, and the texture can be shown without it.
+- **CG 303** (at 640,400) is every button unlit — each character and its word on the same background, faded; **CG 302**
+  (at 0,400) the same lit, in full colour. The title copies each unlocked button's box whole from 303 onto 301, and from
+  302 while the pointer is over it (`:62-75`): **the words are drawn into the same pictures, inside the same boxes** — not
+  text, not sprites of their own.
+- **But each word is a plate apart from its character.** Where 302 differs from 301 is a button's own pixels; in every box
+  the word is a speech-bubble plate of its own group of pixels: Alice, B.G.M, C.G, Load, Please and Start are two groups
+  each (the character, the word), Destiny three (the girl on her saucer, the small creature at her left, the word); only
+  Spy's plate touches her skirt, by its tail alone (rows 358-360), so her cut is the row under the skirt. So every
+  character is cut out exactly from the player's own CG at run time — no hand painting, nothing shipped: 302's pixels that
+  differ from 301, less the word's group, its holes filled.
+
+The round (`tools/ui/mock_title_upright.py`, over the upright pass's `title-clears` and `title`, the CGs from the extract)
+draws the rows at PE2's places, taller for the characters (208 px, 11.8 mm, 14 apart; PE2's 130): the character cut from
+302 in a slot at the row's left, at most 10.6 mm high and twice its CG pixels, the button's word in the brush face (66,
+3.8 mm) in the rest, Start red at the right thumb; plates of the lacquer's row at 88%, no panel round them. The rows'
+order and their places from the bar are PE2's. Three backgrounds, each after a clear (every button) and at a first launch
+(Alice, Load, Start: the `n` variants):
+
+- **PE3 — the owner's words as they stand.** CG 301 scaled to cover the screen, its proportions kept: ×6.78 of its
+  pixels, its middle 180 of 640 columns shown — the logo's middle letters alone, cut at the screen's sides, behind the
+  rows.
+- **PE4 — the texture covering the screen, the logo laid whole.** The texture alone (the logo's band filled from the
+  texture over and under it), scaled to cover the screen: ×7.45, smoothed, the grain coarse; the logo cut from 301 and laid
+  whole at ×2.2 (52 mm wide, a dark edge 2 px where the texture's ink was), in the middle of the room over the rows.
+- **PE5 — the texture at its own scale over the screen, the logo laid whole.** The texture at the picture's own scale
+  (×1.91, as PE2 shows it at the screen's width), continued over and under itself by its mirror image, the friezes at the
+  screen's top and foot; the grain as sharp as now; the logo as PE4's.
+
+`p33-cgs.png` shows the three CGs with the boxes and the words' plates marked and the eight characters cut.
+The agent recommends **PE5**: the screen is the title's own stone wherever one looks, as sharp as the original's, and the
+logo whole; PE3 keeps the picture as one piece but loses the logo, PE4 blows the grain up into a smear.
+
+The agent's own choices, for the owner to confirm: the characters lit (302) in every row — 303 is the same faded, the
+original's "not under the pointer", which a phone does not have; a long press on a row is the right click, the button's
+description (PEd), since the picture no longer carries the characters; the words kept in the rows (the characters alone
+would not tell Spy from Please or B.G.M from Destiny).
