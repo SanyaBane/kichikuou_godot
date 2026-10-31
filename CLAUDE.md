@@ -397,7 +397,9 @@ the scout report and the strategy's cut-in as screens of their own (`Original.Co
 the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Upright.cs`,
 `ScoutReportView.Upright.cs`, `StrategyCutInView.Upright.cs`).
 Step P5 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P5, where it stands"): the deployment table
-and Subordinates upright — the title band, the party on top as our army in the battle, the ledger at the thumb in two-line
+and Subordinates upright — the title band, the party on top as our army in the battle (since 2026-10-31 its front row held
+from below in the bracket, the owner's PD2f2, phone.md §32; `PhoneLedgerUpright.Bracket`, `Devices/PhoneBracket`,
+`godot/Strategy/FacingBracket`, shared with the enemy attack's), the ledger at the thumb in two-line
 rows (the seal, № and the name over the type fixed at the left, the tab's other columns scrolled sideways under them, each
 tab its own scroll), the sends | Stop in the bar; Subordinates' orders under the ledger, Replenish and Talk on one row, the
 budget at the bar's left and End at the right thumb, a question under its button; a unit's picture on a long press as a

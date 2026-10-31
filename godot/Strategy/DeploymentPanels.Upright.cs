@@ -5,8 +5,9 @@ using Kichikuou.Original.Content.Devices;
 namespace Kichikuou.Game.Strategy;
 
 // The deployment table on the phone held upright (docs/ui/phone-build.md, step P5; docs/ui/phone.md, §7 and §20, PD2): the
-// title band, the party under it as the battle shows our army (the back row on top, then the front row, facing down; each
-// card with its ✕), the troops and the war expenses under the cards, then the ledger's tabs and the ledger at the thumb
+// title band, the party under it as the battle shows our army (the back row on top, then the front row, facing down, held
+// from below in the bracket whose head points down — the owner's PD2f2, §32; each card with its ✕), the troops and the
+// war expenses beside the head, then the ledger's tabs and the ledger at the thumb
 // (GameScreen places it, two-line rows scrolled sideways), Attack | Stop in the bar. A unit's picture comes by a long press
 // on its row (UnitPictureView). Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places
 // PhoneLedgerUpright's.
@@ -33,13 +34,13 @@ internal sealed partial class DeploymentPanels
         RightAt(c, _cinzelLight, "Budget", label, Ui.Subtitle, x, mid);
 
         int caption = u.Size(PhoneLedgerUpright.CaptionText);
-        float centre = panel.GetCenter().X;
         float back = PhoneLedgerUpright.CaptionMiddle(f, front: false) / _k, front = PhoneLedgerUpright.CaptionMiddle(f, front: true) / _k;
         if (party.Places.Count > 2)                             // places 3 and 4 are the back row's
-            CentredMiddle(c, _cinzel, "Back row", caption, Ui.Label, centre, back);
-        float end = CentredMiddle(c, _cinzel, "Front row", caption, Ui.Label, centre, front);
-        float a = u.Px(9), ax = end + u.Px(22);                 // the way the party faces: down, as our army in the battle (PB3)
-        Lacquer.DrawSmoothPolygon(c, [new(ax - a, front - a * 0.7f), new(ax + a, front - a * 0.7f), new(ax, front + a)], Ui.Label, _k);
+            CentredMiddle(c, _cinzel, "Back row", caption, Ui.Label, panel.GetCenter().X, back);
+        // The way the party faces: down, as our army in the battle (PB3); "Front row" inside the bracket (PD2f2).
+        var (left, right, middle, line, cards) = PhoneLedgerUpright.Bracket(f, party.Places.Count);
+        CentredMiddle(c, _cinzel, "Front row", caption, Ui.Label, middle / _k, front);
+        FacingBracket.Draw(c, u, Ui, _k, left, right, middle, line, cards, down: true);
 
         for (int place = 1; place <= party.Places.Count; place++)
             DrawPhoneCard(c, u, place, party.Places[place - 1]);

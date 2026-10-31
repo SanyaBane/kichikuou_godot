@@ -7,7 +7,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// docs/ui/phone.md, §7 and §20: PD2, PD2d, PU1, PU1q with the owner's PD2s2 and PU1e3). Both open with a title band (the
 /// title, the date at the right, the subtitle under them, a divider; <see cref="Band"/>). The deployment table puts the party
 /// under it as the battle shows our army (PB3: the back row on top, then the front row, facing down; <see cref="Card"/>),
-/// the troops and the war expenses under the cards, then the ledger's tabs and the ledger at the thumb down to the bar,
+/// the front row held from below in the bracket whose head points down (<see cref="Bracket"/>, the owner's PD2f2, §32),
+/// the troops and the war expenses beside the head, then the ledger's tabs and the ledger at the thumb down to the bar,
 /// Attack | Stop in the bar (<see cref="Bar"/>). Subordinates puts the ledger under its tabs and the chosen unit's orders
 /// under it (<see cref="Orders"/>: Replenish and Talk on one row, Add New Troops three a row), the budget at the bar's left
 /// as text and End at the right thumb (<see cref="End"/>). The ledger's rows are two lines (PD2s2): the seal (or the chosen
@@ -50,18 +51,22 @@ public static class PhoneLedgerUpright
 
     // ------------------------------------------------------------------ the deployment table's party (pd2_base)
 
-    /// <summary>The party's panel: its distance under the band and its height.</summary>
-    private const float PartyGap = 4, PartyHeight = 600;
+    /// <summary>The party's panel: its distance under the band and its height (600 before the bracket, PD2f2's 45 more).</summary>
+    private const float PartyGap = 4, PartyHeight = 645;
 
     /// <summary>
     /// The panel's lines from its top: "Party" (its left, middle and type), the budget's (right, the figure's type and the
-    /// labels'), the rows' captions (their middles: the back row's, the front row's; their type), the totals' middle.
+    /// labels'), the rows' captions (their middles: the back row's over its cards, the front row's under its own, inside the
+    /// bracket — the owner's PD2f2, docs/ui/phone.md, §32; their type), the totals' middle, beside the bracket's head.
     /// </summary>
     public const float HeadingX = 32, HeadingMiddle = 50, HeadingText = 48, BudgetRight = 32, BudgetText = 40, LabelText = 24,
-        BackCaption = 116, FrontCaption = 338, CaptionText = 26, TotalsMiddle = 570;
+        BackCaption = 116, FrontCaption = 516, CaptionText = 26, TotalsMiddle = 592;
 
-    /// <summary>The cards: the first row's top, their height, the room between the rows' cards, the sides' margin and the room between the columns.</summary>
-    private const float CardsTop = 138, CardHeight = 170, RowStep = 222, CardsIn = 16, CardGap = 14;
+    /// <summary>The cards: the first row's top, their height, the room between the rows' cards (14 apart), the sides' margin and the room between the columns.</summary>
+    private const float CardsTop = 138, CardHeight = 170, RowStep = 184, CardsIn = 16, CardGap = 14;
+
+    /// <summary>The bracket's line (<see cref="PhoneBracket"/>): this far under "Front row"'s middle.</summary>
+    public const float BracketUnder = 30;
 
     /// <summary>The totals: the label's left, the troops' figure's left, the war expenses' right; their types.</summary>
     public const float TotalsX = 32, TotalsFigureX = 170, TotalsRight = 32, TotalsLabel = 26, TotalsText = 38;
@@ -86,8 +91,20 @@ public static class PhoneLedgerUpright
         return new PhoneFrame.Box(x, y, w, f.Px(CardHeight));
     }
 
-    /// <summary>A rows' caption's middle: the back row's over the first row of cards, the front row's over the second.</summary>
+    /// <summary>A rows' caption's middle: the back row's over the first row of cards, the front row's under the second.</summary>
     public static float CaptionMiddle(PhoneFrame f, bool front) => Party(f).Y + f.Px(front ? FrontCaption : BackCaption);
+
+    /// <summary>
+    /// The bracket under the front row (the owner's PD2f2): its ends at the outer sides (1 in) of place 1's card and of place
+    /// 2's — of place 1's alone when <paramref name="places"/> is 1, the dungeon search —, its middle theirs, where "Front row"
+    /// stands; its line <see cref="BracketUnder"/> under the caption's middle; the cards' foot its ends come up to.
+    /// </summary>
+    public static (float X0, float X1, float Middle, float Line, float CardsFoot) Bracket(PhoneFrame f, int places)
+    {
+        var left = Card(f, 1);
+        float x0 = left.X + f.Px(1), x1 = (places >= 2 ? Card(f, 2).Right : left.Right) - f.Px(1);
+        return (x0, x1, (x0 + x1) / 2, CaptionMiddle(f, front: true) + f.Px(BracketUnder), left.Bottom);
+    }
 
     /// <summary>
     /// A party card's insides upright (<c>party_card</c> with no troop type): the face 146, 12 in; the badge, the name, ✕,

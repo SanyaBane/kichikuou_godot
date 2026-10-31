@@ -117,20 +117,12 @@ internal sealed partial class EnemyAttackView
 
     /// <summary>
     /// The PC's bracket turned up (<see cref="DrawArmyBracket"/>; the owner's PA1f2a): a gold line over "FRONT ROW" from the
-    /// front row's left to its right, its ends down to the cards, its arms bending up to the head in the middle, which points
-    /// at the province.
+    /// front row's left to its right, its ends down to the cards, its head in the middle pointing at the province.
     /// </summary>
     private void UprightBracket(PhoneUnits u, PhoneFrame f)
     {
         var (left, right, middle, line, cards) = PhoneAttackUpright.Bracket(f);
-        float x0 = left / u.K, x1 = right / u.K, mid = middle / u.K, y = line / u.K, ends = cards / u.K - u.Px(PhoneAttackUpright.BracketEnds);
-        float arm = u.Px(PhoneAttackUpright.ArmEnd), bendIn = u.Px(PhoneAttackUpright.BendIn), bendUp = y - u.Px(PhoneAttackUpright.BendUp);
-        float width = Lacquer.Line(u.Px(PhoneAttackUpright.BracketWidth), _k);
-        _sheet.DrawPolyline([new(x0, ends), new(x0, y), new(mid - arm, y), new(mid - bendIn, bendUp)], Ui.Gold, width, true);
-        _sheet.DrawPolyline([new(x1, ends), new(x1, y), new(mid + arm, y), new(mid + bendIn, bendUp)], Ui.Gold, width, true);
-        float half = u.Px(PhoneAttackUpright.HeadHalf), headBase = y - u.Px(PhoneAttackUpright.HeadBase);
-        Lacquer.DrawSmoothPolygon(_sheet, [new(mid - half, headBase), new(mid, y - u.Px(PhoneAttackUpright.HeadTip)), new(mid + half, headBase)],
-            Ui.Name, _k);
+        FacingBracket.Draw(_sheet, u, Ui, _k, left, right, middle, line, cards, down: false);
     }
 
     /// <summary>Maris's face square and her question in her own lines, one size for all.</summary>

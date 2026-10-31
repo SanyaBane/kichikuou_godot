@@ -33,24 +33,38 @@ public class PhoneLedgerUprightTests
     [Fact]
     public void The_party_stands_on_top_as_the_battle_shows_our_army()
     {
-        // pd2_base: the panel from y + 4 (600 high); cw = (PW - 32 - 14) // 2, ch = 170; the back row (3, 4) on top from
-        // top + 96 + 42, the front row (1, 2) under it, 42 + 170 + 10 apart; places 3 and 1 at the left.
-        Equal(new(0, 274, 1220, 600), PhoneLedgerUpright.Party(Reference));
+        // pd2_base with round P26's PD2f2 (mock_attack_facing.py): the panel from y + 4 (645 high); cw = (PW - 32 - 14) // 2,
+        // ch = 170; the back row (3, 4) on top from top + 96 + 42, the front row (1, 2) under it, 14 apart; places 3 and 1 at
+        // the left; "Front row" 24 under its cards.
+        Equal(new(0, 274, 1220, 645), PhoneLedgerUpright.Party(Reference));
         Equal(new(16, 412, 587, 170), PhoneLedgerUpright.Card(Reference, 3));
         Equal(new(617, 412, 587, 170), PhoneLedgerUpright.Card(Reference, 4));
-        Equal(new(16, 634, 587, 170), PhoneLedgerUpright.Card(Reference, 1));
-        Equal(new(617, 634, 587, 170), PhoneLedgerUpright.Card(Reference, 2));
+        Equal(new(16, 596, 587, 170), PhoneLedgerUpright.Card(Reference, 1));
+        Equal(new(617, 596, 587, 170), PhoneLedgerUpright.Card(Reference, 2));
         Assert.Equal(390, PhoneLedgerUpright.CaptionMiddle(Reference, front: false), Close);
-        Assert.Equal(612, PhoneLedgerUpright.CaptionMiddle(Reference, front: true), Close);
+        Assert.Equal(790, PhoneLedgerUpright.CaptionMiddle(Reference, front: true), Close);
         Equal(new(1204 - 94, 422, 84, 84), PhoneLedgerUpright.Insides.RemoveBox(Reference, PhoneLedgerUpright.Card(Reference, 4)));
+    }
+
+    [Fact]
+    public void The_bracket_holds_the_front_row_from_below_its_head_beside_the_totals()
+    {
+        // PD2f2: the line 30 under "Front row"'s middle (P + 546), from the cards' outer sides (1 in), its ends up to their
+        // foot; the head's tip 75 under the line, over the panel's foot; the totals' middle beside the head.
+        Assert.Equal((17f, 1203f, 610f, 820f, 766f), PhoneLedgerUpright.Bracket(Reference, 4));
+        Assert.Equal((17f, 602f, 309.5f, 820f, 766f), PhoneLedgerUpright.Bracket(Reference, 1));  // the dungeon search
+        var (_, _, _, line, _) = PhoneLedgerUpright.Bracket(Reference, 4);
+        var party = PhoneLedgerUpright.Party(Reference);
+        Assert.True(line + PhoneBracket.HeadTip < party.Bottom - 20);
+        Assert.InRange(party.Y + PhoneLedgerUpright.TotalsMiddle, line + PhoneBracket.HeadBase, line + PhoneBracket.HeadTip);
     }
 
     [Fact]
     public void The_deployment_s_ledger_lies_at_the_thumb_under_its_tabs()
     {
-        // pd2_base: paper_tabs at top + 600 + 14, 116 high from x 24; the ledger from x 16 to PW - 16, down to BAR[0] - 20.
-        Equal(new(24, 888, 1180, 116), PhoneLedgerUpright.Tabs(Reference, deployment: true));
-        Equal(new(16, 1004, 1188, 1480), PhoneLedgerUpright.Ledger(Reference, deployment: true));
+        // pd2_base: paper_tabs at top + 645 + 14, 116 high from x 24; the ledger from x 16 to PW - 16, down to BAR[0] - 20.
+        Equal(new(24, 933, 1180, 116), PhoneLedgerUpright.Tabs(Reference, deployment: true));
+        Equal(new(16, 1049, 1188, 1435), PhoneLedgerUpright.Ledger(Reference, deployment: true));
     }
 
     [Fact]
@@ -109,7 +123,7 @@ public class PhoneLedgerUprightTests
     public void A_longer_screen_gives_the_ledgers_the_height()
     {
         var longer = PhoneFrame.Upright(1220, 2900);
-        Assert.Equal(1480 + 188, PhoneLedgerUpright.Ledger(longer, deployment: true).H, Close);
+        Assert.Equal(1435 + 188, PhoneLedgerUpright.Ledger(longer, deployment: true).H, Close);
         Assert.Equal(1462 + 188, PhoneLedgerUpright.Ledger(longer, deployment: false).H, Close);
         Equal(PhoneLedgerUpright.Card(Reference, 1), PhoneLedgerUpright.Card(longer, 1));
     }

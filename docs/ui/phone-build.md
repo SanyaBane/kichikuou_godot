@@ -1391,6 +1391,21 @@ chose the PC's bracket turned up with "FRONT ROW" under it, in the middle (PA1f2
 - **The view**: `EnemyAttackView.UprightBracket` draws the line in gold (5.7 wide) and the head in the name's gold, as
   the PC's; the small triangle beside "FRONT ROW" is gone. The PC's and the landscape phone's screens are unchanged.
 
+### After the build: the party's bracket upright (owner, 2026-10-31)
+
+The deployment table upright marked its party's front row as the enemy attack had: "Front row ▼", 1.0 mm. Round P26
+(phone.md, §32): the owner chose PD2f2, the same bracket turned down, as the party faces as our army in the battle.
+Built:
+
+- **The shared bracket**: its figures `Devices/PhoneBracket` (taken out of `PhoneAttackUpright`), its drawing
+  `godot/Strategy/FacingBracket` (the head up or down), both screens on them.
+- **The model**: `PhoneLedgerUpright` — the panel 645 high (600 before), the front row 14 under the back row (38 higher),
+  "Front row" 24 under its cards, the totals' middle 592, beside the head; `Bracket(f, places)` — the line 30 under the
+  caption's middle from the front row's outer sides (1 in), or over place 1's card alone when the party has one place
+  (the dungeon search), its middle where "Front row" stands. The tabs and the ledger 45 lower, the ledger as much shorter.
+- **The view**: `DeploymentPanels.Upright.cs` draws the bracket head down and "Front row" on its middle; the ▼ is gone.
+  The PC's, the tablet's and the landscape phone's deployment screens are unchanged.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

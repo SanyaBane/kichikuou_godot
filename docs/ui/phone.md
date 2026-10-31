@@ -1269,4 +1269,5 @@ script, `tools/ui/mock_attack_facing.py`, over the upright pass's `deployment` a
 - **PD2f3 — the totals under the head**: PD2f1 with the totals under the head; the panel 96 px (5.5 mm) taller.
 
 The agent recommends PD2f2: the same bracket as the enemy attack's, mirrored as the army is, at the same cost to the
-ledger as PD2f1.
+ledger as PD2f1. **The owner chose PD2f2**, built as drawn (docs/ui/phone-build.md, §5, "After the build: the party's
+bracket upright").

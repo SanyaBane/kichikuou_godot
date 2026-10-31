@@ -103,14 +103,8 @@ public static class PhoneAttackUpright
     /// <summary>A row's caption's middle over its cards.</summary>
     public const float RowCaptionAbove = 24;
 
-    /// <summary>
-    /// The bracket holding the front row from above (the PC's, docs/ui/enemy-attack.md, §8, turned up and scaled as the
-    /// cards are, 573 / 252: the owner's PA1f2a, docs/ui/phone.md, §31): its line this far over "FRONT ROW"'s middle, this
-    /// wide; its ends down to this far over the cards' top; each arm ending this far beside the middle, bending to this far
-    /// beside it and this far up; the head's base and tip over the line, its half width.
-    /// </summary>
-    public const float BracketOver = 30, BracketWidth = 5.7f, BracketEnds = 4.5f, ArmEnd = 36, BendIn = 14, BendUp = 23,
-        HeadBase = 14, HeadTip = 75, HeadHalf = 32;
+    /// <summary>The bracket's line (<see cref="PhoneBracket"/>, the owner's PA1f2a, docs/ui/phone.md, §31): this far over "FRONT ROW"'s middle.</summary>
+    public const float BracketOver = 30;
 
     /// <summary>A card's face: at most this large, as high as the card less 12 at the top and the foot.</summary>
     public const float CardFace = 200;
@@ -123,7 +117,7 @@ public static class PhoneAttackUpright
     }
 
     /// <summary>The front row's least distance under the panel's top: the head's tip, the head, the line and the caption over it.</summary>
-    private const float FrontLeast = TipUnder + HeadTip + BracketOver + RowCaptionAbove;
+    private const float FrontLeast = TipUnder + PhoneBracket.HeadTip + BracketOver + RowCaptionAbove;
 
     private static float CardsTop(PhoneFrame f)
     {
@@ -151,7 +145,7 @@ public static class PhoneAttackUpright
 
     /// <summary>
     /// The bracket over the front row: its ends at the front row's outer sides (1 in), its middle the panel's, its line
-    /// <see cref="BracketOver"/> over "FRONT ROW"'s middle, and the cards' top its ends come down to (less <see cref="BracketEnds"/>).
+    /// <see cref="BracketOver"/> over "FRONT ROW"'s middle, and the cards' top its ends come down to.
     /// </summary>
     public static (float X0, float X1, float Middle, float Line, float CardsTop) Bracket(PhoneFrame f)
     {

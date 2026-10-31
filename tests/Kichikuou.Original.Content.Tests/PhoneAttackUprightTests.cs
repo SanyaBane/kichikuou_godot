@@ -60,7 +60,7 @@ public class PhoneAttackUprightTests
         // tip 75 over it, 75 under the panel's top.
         Assert.Equal((33f, 1187f, 610f, 1072f, 1126f), PhoneAttackUpright.Bracket(Reference));
         var (_, _, _, line, _) = PhoneAttackUpright.Bracket(Reference);
-        Assert.Equal(997, line - PhoneAttackUpright.HeadTip, Close);
+        Assert.Equal(997, line - PhoneBracket.HeadTip, Close);
     }
 
     [Fact]
@@ -119,7 +119,7 @@ public class PhoneAttackUprightTests
         Assert.True(top + shorter.Px(106) <= PhoneAttackUpright.Army(shorter).Bottom);
         // The bracket's head stays in the panel, its line under the panel's caption.
         var (_, _, _, line, _) = PhoneAttackUpright.Bracket(shorter);
-        Assert.True(line - shorter.Px(PhoneAttackUpright.HeadTip) >= PhoneAttackUpright.Army(shorter).Y + shorter.Px(20) - Close);
+        Assert.True(line - shorter.Px(PhoneBracket.HeadTip) >= PhoneAttackUpright.Army(shorter).Y + shorter.Px(20) - Close);
         Assert.True(line >= PhoneAttackUpright.Army(shorter).Y + shorter.Px(84) - Close);
     }
 }
