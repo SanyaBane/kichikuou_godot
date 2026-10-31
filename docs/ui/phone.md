@@ -1308,3 +1308,21 @@ of its name, in every tab, and a bar of its troops without figures: held landsca
 under the name and the type (PD2s2). Built as asked (docs/ui/phone-build.md, §5, "After the build: a face and a troops'
 bar in the ledger's Name cell"); upright the fixed part is 6.5 mm wider for the face. The drawings here stay as they
 were drawn.
+
+## 36. Round P29: the commander's HP in the Name cell (2026-10-31)
+
+A commander's HP comes back only 2 a week from stage 1 (`MAIN.ADV:134-167`; the Doping Drug's (item 48) holder none) and
+a commander at 0 falls, but the ledger shows HP only in the Commander tab. The owner asked whether the Name cell should
+show it too, under the troops' bar. The round (`tools/ui/mock_hp_bar.py`, over both phone passes' `deployment` and
+`subordinates`, the Overview tab) draws it in a colour of its own, an indigo ink, apart from the troops' green, amber and
+red. Nobody is wounded on the week-18 save, so the HP are made up: Rance (unit 1) 6/8, Rick (unit 7) 3/8, Kinkaid (unit 9)
+5/7, Haurein (unit 12) 1/5, the rest full at the Commander tab's maximum (1 to 9).
+
+- **H1 — a bar of the HP**: 6 px (0.3 mm) high, 4 under the troops' bar and as long, the HP left from its left.
+- **H2 — a pip a point of HP**: pips 10 px (0.6 mm) high, 3 (held landscape) or 4 (upright) apart, across the troops'
+  bar's length, those of the HP left filled.
+- **H3 — H2's pips only while the commander is wounded**: a whole commander's row stays as now.
+
+The agent recommends H2: "6 of 8" reads at a glance from so few points, and pips never look like the troops' bar, where
+H1 is a second line of the same kind under the first. Upright the pips end 10 px over the row's foot; built, the name and
+the type would rise a little to centre the block.
