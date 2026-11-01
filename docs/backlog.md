@@ -66,6 +66,8 @@ The owner aims at a public release (decision 28, 2026-10-20).
   battle and the map"); the screen turning with the device (sensor landscape, 2026-10-24), not yet seen on the
   tablet; the touch mode's later parts, each marked "Not yet on the tablet" in ui/touch.md, and the damage
   forecast's touch rail ([ui/damage-forecast.md](ui/damage-forecast.md)), awaiting the owner's look there.
+  A freeze on the Poco in a battle, seen once (owner, 2026-11-01), cause open: the main thread never left its frame; the
+  build now reports the next one — [hang-watch.md](hang-watch.md), *agent* when a report comes.
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

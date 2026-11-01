@@ -471,6 +471,8 @@ docs/ui/screen-margins.md (`tools/ui/mock_screen_margins.py`); the owner chose C
 `Devices/MarginsCalibration`, `PhoneFrame.Within`; `godot/Strategy/ScreenMarginsChoice` (`settings.cfg`), `Device.Margins`
 (`GameScreen.UpdateDevice` insets the room), Option → Display's field (`OptionsView.MarginsField`), the calibration over the
 screen `godot/Strategy/ScreenMarginsView` (`GameScreen.OpenMargins`); awaiting the owner's look on the Poco and the tablet.
+Then (owner, 2026-11-01) a freeze on the Poco, cause open (the main thread never left its frame): the build now watches its
+frames and keeps its log in a file — docs/hang-watch.md (`Engine/Diagnostics/FrameWatch`, `godot/Strategy/HangWatch`).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -501,7 +503,8 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   decompile line for line (`ScriptProgram`, one statement per engine command, jumps resolved,
   no idiom rewritten); `RunAsync` runs the straight-line `SET_*` data files and `SceneRunner`
   runs scene programs (`ISceneInput` adds menus, mouse and clock to the inputs).
-  `Golden/` is the harness's capture format (`GoldenCapture`, `MemoryDump`).
+  `Golden/` is the harness's capture format (`GoldenCapture`, `MemoryDump`). `Diagnostics/` is the frame watch
+  (`FrameWatch`, `ProcThreads`; docs/hang-watch.md).
 - `src/Kichikuou.Original` — the original game's rules (references the engine only).
   `State/GameState` is the typed view over the memory: `GameState.g.cs` is **generated** by
   `python tools/codegen/gen_state.py` from `docs/variables.tsv` — never edit it by hand;
@@ -742,6 +745,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   — the PC's side the development runs' `user://saves` unless `-Release` or `-PcSaves`; the source's saves replace
   the destination's, which move first into a backup on the destination, `save-backups/<time>` next to its saves
   folder (never pruned); adb in any USB mode.
+- Collect what the Android device knows after a freeze (the threads and their stacks while the game is open, the frame
+  watch's reports, Godot's log files, the logcat, how the process ended, the audio's events): `pull-android-logs.cmd` at
+  the root, or `powershell -ExecutionPolicy Bypass -File tools/android-logs.ps1 [-Out <folder>] [-NoStack]` (the stacks take
+  a bug report, ~3 minutes); reading them: docs/hang-watch.md.
 - Run the game headless (smoke test): `<Godot console exe> --headless --path godot --quit-after 30`;
   `<Godot console exe>` is `KICHIKUOU_GODOT_EXE` in `local.env` (the editor's exe is next to it).
   Commit the `*.uid` files Godot creates: a new script's `.uid` is not made by the smoke run above nor by unattended

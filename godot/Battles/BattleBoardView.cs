@@ -646,13 +646,16 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             return;
         _armiesInstant = _metersInstant = slidesInstant;
         presenter.Scene.Numbers = false;                // ours are the exchange's counters and the cards (owner, 2026-10-15, -16)
+        HangWatch.At("board: scene");
         if (presenter.Scene.Version != _sceneVersion)
         {
             _sceneVersion = presenter.Scene.Version;
             UploadScene(presenter.Scene);
         }
+        HangWatch.At("board: effect");
         PlayEffect(presenter, slidesInstant && !effectStepped, effectStepped);
         _counters.Show(presenter.Battle.ExchangeCounters, presenter.Battle.EffectsStarted, slidesInstant);
+        HangWatch.At("board: windows");
         if (screenChanged || _windowsTexture is null)
         {
             var mask = presenter.BattleWindows(inputWindows);
@@ -667,10 +670,13 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 _windows.Texture = _windowsTexture;
             }
         }
+        HangWatch.At("board: speaker");
         RefreshSpeaker(s);
         _balloon.Show(presenter.Battle.Speech);
         _info.Speaking = _speaker.Visible || presenter.Battle.Speech is not null;     // the defence's caption gives way
+        HangWatch.At("board: cards");
         RefreshCards(s, presenter.Order, presenter.Battle.Strike, hovered);
+        HangWatch.At("board: spotlight and strip");
         RefreshSpotlight(s, presenter.Scene);
         RefreshStrip(s, presenter.Order);
         var gauge = (Math.Max(presenter.Order.Rounds, s.Bt_RoundsLeft.Value), s.Bt_RoundsLeft.Value);
@@ -1303,6 +1309,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
 
     public override void _Process(double delta)
     {
+        HangWatch.At("board: its process");
         StepCards(delta);
         if (GaugeMoves && _gauge.IsVisibleInTree())
             _gauge.QueueRedraw();

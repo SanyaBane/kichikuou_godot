@@ -11,6 +11,12 @@ config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/use_custom_user_dir.template=true
 config/custom_user_dir_name.template="KichikuouGodot"
 config/quit_on_go_back=false
+run/flush_stdout_on_print=true
+
+[debug]
+
+file_logging/enable_file_logging=true
+file_logging/max_log_files=10
 
 [display]
 

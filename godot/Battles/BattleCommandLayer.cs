@@ -176,7 +176,10 @@ internal sealed partial class BattleCommandLayer : Control
     {
         _forecastShown = ForecastOn;
         if (_forecastShown && _forecasts is null && _commands is { } commands && _state is { } state)
+        {
+            HangWatch.Note("the damage forecasts start, off this thread");
             _forecasts = DamageForecasts.Start(state, commands, Touch ? _target : null, DemonReachChoice.Chosen);
+        }
     }
 
     public override void _Process(double delta)

@@ -78,6 +78,9 @@ public static class GameData
     /// <summary>Where the Android build keeps its saves (<see cref="DefaultSaveDirectory"/>).</summary>
     public const string AndroidSaveFolder = "/storage/emulated/0/Android/data/" + AndroidPackage + "/files/saves";
 
+    /// <summary>Where the Android build keeps the frame watch's reports (<see cref="Strategy.HangWatch"/>).</summary>
+    public const string AndroidHangReports = "/storage/emulated/0/Android/data/" + AndroidPackage + "/files/hang-reports";
+
     /// <summary>The files of <paramref name="from"/> into <paramref name="to"/> when that has none yet; <paramref name="from"/> is removed once empty.</summary>
     private static void MoveSaves(string from, string to)
     {

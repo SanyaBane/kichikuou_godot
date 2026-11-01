@@ -20,6 +20,7 @@ public partial class Main : Control
 
     public override void _Ready()
     {
+        HangWatch.Start(GetTree());
         Device.Follow(GetTree().Root);
         if (!_commandLineRead && !Device.OpenPhoneWindow())
         {
@@ -148,6 +149,7 @@ public partial class Main : Control
     /// (docs/ui/gallery.md; with <c>--shots DIR</c> in a window it dumps the entries there, compared with <c>--previous DIR</c>'s,
     /// the window at <c>--window WxH</c>, else 1280×800; <c>--combat-vfx</c>: the Combat VFX tab's entries alone). With any of them <c>--phone landscape</c> plays a phone held
     /// landscape (docs/ui/phone-build.md, §3: the touch mode, the window at the reference phone's shape, <see cref="Device"/>).
+    /// <c>--hang-watch</c>, <c>--hang-test N</c> and <c>--hang-spin N</c>: the frame watch (<see cref="HangWatch"/>).
     /// Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()

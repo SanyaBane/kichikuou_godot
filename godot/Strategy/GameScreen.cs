@@ -300,6 +300,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public override void _Ready()
     {
         _tree = GetTree();
+        _screensOpened++;
+        HangWatch.Describe(DescribeForWatch);
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         MouseFilter = MouseFilterEnum.Stop;
 
@@ -431,14 +433,30 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     public override void _ExitTree()
     {
         _closing = true;
+        HangWatch.Describe(null);
         _answered?.TrySetCanceled();
         if (_skip is not null)
             _skip.Changed -= UpdateSkipItem;
         _glyphs?.Dispose();
     }
 
+    /// <summary>How many game screens this launch has opened: more than one, a Restart went before.</summary>
+    private static int _screensOpened;
+
+    /// <summary>The game's state for a hang report (docs/hang-watch.md), read from the watch's thread while this one stands: plain fields alone.</summary>
+    private string DescribeForWatch()
+    {
+        string game = _presenter.State is { } s
+            ? $"week {s.Week.Value}, stage {s.StoryStage.Value}, battle kind {s.Bt_Kind.Value}, rounds left {s.Bt_RoundsLeft.Value}, unit {s.Unit_Cur.Value}, commander {s.Cmdr_Cur.Value}"
+            : "no state yet";
+        string scenes = _scenes is { } running ? string.Join(", ", running.RunningScenes) : "";
+        return $"{game}; game screen {_screensOpened} of the launch, message skip {(_skip?.IsSkipping == true ? "on" : "off")}, "
+            + $"key wait {_keyWaiting}, modal {_modal}, closing {_closing}, scenes [{scenes}]";
+    }
+
     public override void _Process(double delta)
     {
+        HangWatch.At("game screen");
         Device.TurnWhenDue();
         UpdateDevice();
         if (FrameTimes.On)
@@ -485,7 +503,11 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _optionsView?.Place(PictureArea());
         _logView?.Place(PictureArea());
         _presenter.CoverMessages = InterfaceChoice.New;                  // also when the interface changed with a window open
-        UpdateBattleScreen(Present());
+        HangWatch.At("present");
+        bool screenChanged = Present();
+        HangWatch.At("battle screen");
+        UpdateBattleScreen(screenChanged);
+        HangWatch.At("game screen, after the battle screen");
         if (UpdateHeadroom())
         {
             UpdateStatusStrip();                                        // the map composed now: its room in this frame
@@ -516,6 +538,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         // fade still stops it at the next wait (STOP_ON_CLICK).
         if (_skip?.IsSkipping != true)
             _input.EndFrame();
+        HangWatch.At("game screen done");
     }
 
     public override void _Notification(int what)
@@ -715,6 +738,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         do
         {
+            HangWatch.At("script waits");
             await ToSignal(_tree, SceneTree.SignalName.ProcessFrame);
             if (_closing)
                 throw new OperationCanceledException();
@@ -742,6 +766,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task ShowAsync(ScriptEvent scriptEvent)
     {
+        HangWatch.Note(scriptEvent);
         ObserveMapLeft(scriptEvent);
         if (SkippingScene)
         {
@@ -1203,6 +1228,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task<Sys3Int> WaitForKeyAsync()
     {
+        HangWatch.Note("key wait");
         InterruptPointers();
         _presenter.Flush();
         _presenter.EndCityLeadIn();                                     // whatever the script drew is shown at a key wait
@@ -1626,6 +1652,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         // Y 3 (cmdy.c): 0 reads the input once; the core keeps Y3waitFlags (Y 3, 10000 / 10001
         // never come here) and passes it as cancelable.
+        HangWatch.Note("pause");
         InterruptPointers();
         _presenter.Flush();
         _presenter.EndCityLeadIn();                                     // and at a pause
@@ -1701,6 +1728,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task<int> SelectAsync(IReadOnlyList<SceneMenuItem> items)
     {
+        HangWatch.Note("menu");
         InterruptPointers();
         if (SubordinatesChoice(items) is { } ordered)
             return ordered;                                     // an order of our Subordinates screen answers it, unseen
