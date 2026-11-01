@@ -274,33 +274,42 @@ internal sealed partial class FloorLadderView : Control
     {
         Ui.DrawPanel(this, PanelRect, _k);
         var back = RectOf(Part.Return);
-        bool hover = _hovered == Part.Return;
-        Ui.DrawRowBox(this, back, hover, _k);
-        float bw = _gothic.GetStringSize(entry.ReturnText, fontSize: 19).X;
-        DrawString(_gothic, new Vector2(back.GetCenter().X - bw / 2, Lacquer.Baseline(back, _gothic, 19)), entry.ReturnText,
-            fontSize: 19, modulate: hover ? Ui.Text : Ui.Quiet);
+        var start = RectOf(Part.Start);
+        float tx = start.Position.X + 66;
+        int size = EntrySize(entry, 22, start.End.X - 8 - tx, back.Size.X - 24);
+        Ui.DrawRowBox(this, back, _hovered == Part.Return, _k);
+        float bw = _gothic.GetStringSize(entry.ReturnText, fontSize: size).X;
+        DrawString(_gothic, new Vector2(back.GetCenter().X - bw / 2, Lacquer.Baseline(back, _gothic, size)), entry.ReturnText,
+            fontSize: size, modulate: Ui.Text);
         for (int i = 0; i < entry.Others.Count; i++)
         {
             var part = Part.Other0 + i;
             var rect = RectOf(part);
             Ui.DrawRowBox(this, rect, _hovered == part, _k);
-            DrawString(_gothic, new Vector2(rect.Position.X + 16, Lacquer.Baseline(rect, _gothic, 19)), entry.Others[i].Text,
-                HorizontalAlignment.Left, rect.Size.X - 24, 19, Ui.Text);
+            DrawString(_gothic, new Vector2(rect.Position.X + 16, Lacquer.Baseline(rect, _gothic, size)), entry.Others[i].Text,
+                HorizontalAlignment.Left, rect.Size.X - 24, size, Ui.Text);
         }
-        var start = RectOf(Part.Start);
         Ui.DrawRowBox(this, start, _hovered == Part.Start, _k);
         if (_hovered != Part.Start)
             DrawRect(start, Ui.Gold, false, Lacquer.Line(2, _k));
         float cy = start.GetCenter().Y, cx = start.Position.X + 34;
         Lacquer.DrawSmoothPolygon(this, [new(cx - 18, cy - 15), new(cx + 18, cy - 15), new(cx, cy + 15)], Ui.Gold, _k);
-        float tx = start.Position.X + 66, room = start.End.X - 8 - tx;
-        int size = 22;
-        while (size > 14 && _gothic.GetStringSize(entry.StartText, fontSize: size).X > room)
-            size--;
         DrawString(_gothic, new Vector2(tx, cy - 12 + (_gothic.GetAscent(size) - _gothic.GetDescent(size)) / 2), entry.StartText,
             fontSize: size, modulate: Ui.Text);
         DrawString(_gothic, new Vector2(tx + 1, cy + 19 + (_gothic.GetAscent(14) - _gothic.GetDescent(14)) / 2), "a unit goes down",
             fontSize: 14, modulate: Ui.Name);
+    }
+
+    /// <summary>
+    /// The one size of the words of the menu before a search (owner, 2026-11-01): <paramref name="most"/>, or as much less as
+    /// Start Search needs in <paramref name="startRoom"/> and any other word in <paramref name="rowRoom"/>.
+    /// </summary>
+    private int EntrySize(DungeonEntryMenu entry, int most, float startRoom, float rowRoom)
+    {
+        int size = SideCells.Fit(_gothic, entry.StartText, most, startRoom);
+        foreach (string word in entry.Others.Select(o => o.Text).Append(entry.ReturnText))
+            size = SideCells.Fit(_gothic, word, size, rowRoom);
+        return size;
     }
 
     private void DrawWay(Part part, FloorWay way, bool up, bool large)

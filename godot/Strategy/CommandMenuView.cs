@@ -341,7 +341,7 @@ internal sealed partial class CommandMenuView : Control
             Ui.DrawRowBox(this, rect, hover, _k);
         int size = Touch ? 18 : Rows.Text - 1;
         DrawString(_gothic, new Vector2(rect.Position.X + (Touch ? 14 : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
-            fontSize: size, modulate: hover ? Ui.Text : Ui.Quiet);
+            fontSize: size, modulate: Ui.Text);
     }
 
     private void DrawTurnEnd()

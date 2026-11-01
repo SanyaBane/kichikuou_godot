@@ -72,22 +72,23 @@ internal sealed partial class FloorLadderView
 
     private static string Caption(FloorWay way) => $"{(way.Deeper ? "deeper" : "back")} · to {way.To}F";
 
-    /// <summary>Before a search: Return on top, the other items under it, Start Search in the corner framed in gold.</summary>
+    /// <summary>Before a search: Return on top, the other items under it, Start Search in the corner framed in gold, their words one size.</summary>
     private void DrawPhoneEntry(PhoneUnits u, DungeonEntryMenu entry)
     {
         if (!u.Frame.IsUpright)
             Ui.DrawPanel(this, PanelRect, _k);
-        PhoneRow(u, Part.Return, entry.ReturnText, _hovered == Part.Return ? Ui.Text : Ui.Quiet);
-        for (int i = 0; i < entry.Others.Count; i++)
-            PhoneRow(u, Part.Other0 + i, entry.Others[i].Text, Ui.Text);
         var start = RectOf(Part.Start);
-        PhoneRung(u, Part.Start, entry.StartText, "a unit goes down", false, true);
+        int size = EntrySize(entry, u.Size(PhoneLadder.WordText), start.Size.X - u.Px(PhoneLadder.WordRoom), RectOf(Part.Return).Size.X - u.Px(40));
+        PhoneRow(Part.Return, entry.ReturnText, size);
+        for (int i = 0; i < entry.Others.Count; i++)
+            PhoneRow(Part.Other0 + i, entry.Others[i].Text, size);
+        PhoneRung(u, Part.Start, entry.StartText, "a unit goes down", false, true, size);
         if (_hovered != Part.Start)
             DrawRect(start, Ui.Gold, false, Lacquer.Frame(2, _k));
     }
 
-    /// <summary>A rung (ladder_rung): its arrow at the left, its word in one line over its sub-line; the way deeper in gold.</summary>
-    private void PhoneRung(PhoneUnits u, Part part, string word, string sub, bool up, bool deeper)
+    /// <summary>A rung (ladder_rung): its arrow at the left, its word in one line over its sub-line (<paramref name="wordSize"/>, else as it fits); the way deeper in gold.</summary>
+    private void PhoneRung(PhoneUnits u, Part part, string word, string sub, bool up, bool deeper, int? wordSize = null)
     {
         var box = RectOf(part);
         Ui.DrawRowBox(this, box, _hovered == part, _k);
@@ -96,19 +97,18 @@ internal sealed partial class FloorLadderView
             ? [new(ax - s, cy + s), new(ax + s, cy + s), new(ax, cy - s)]
             : [new(ax - s, cy - s), new(ax + s, cy - s), new(ax, cy + s)];
         Lacquer.DrawSmoothPolygon(this, arrow, deeper ? Ui.Gold : Ui.Quiet, _k);
-        int size = SideCells.Fit(_gothic, word, u.Size(PhoneLadder.WordText), box.Size.X - u.Px(PhoneLadder.WordRoom));
+        int size = wordSize ?? SideCells.Fit(_gothic, word, u.Size(PhoneLadder.WordText), box.Size.X - u.Px(PhoneLadder.WordRoom));
         LeftAt(_gothic, size, box.Position.X + u.Px(PhoneLadder.WordIn), cy - u.Px(PhoneLadder.WordUp), word, Ui.Text);
         LeftAt(_gothic, u.Size(PhoneLadder.SubText), box.Position.X + u.Px(PhoneLadder.SubIn), cy + u.Px(PhoneLadder.SubDown), sub,
             deeper ? Ui.Name : Ui.Quiet);
     }
 
     /// <summary>A plain row (Return, the dungeon's other items): its word centred.</summary>
-    private void PhoneRow(PhoneUnits u, Part part, string word, Color ink)
+    private void PhoneRow(Part part, string word, int size)
     {
         var box = RectOf(part);
         Ui.DrawRowBox(this, box, _hovered == part, _k);
-        int size = SideCells.Fit(_gothic, word, u.Size(PhoneLadder.RowText), box.Size.X - u.Px(40));
-        Centred(_gothic, size, box.GetCenter().X, box.GetCenter().Y, word, ink);
+        Centred(_gothic, size, box.GetCenter().X, box.GetCenter().Y, word, Ui.Text);
     }
 
     private void Centred(Font font, int size, float x, float middle, string text, Color ink)

@@ -437,12 +437,11 @@ internal sealed partial class ProvinceMenuView : Control
         bool on = Enabled(r), hover = r == _hovered && on;
         Ui.DrawRowBox(this, rect, hover, _k);
         float baseline(int size, Font font) => rect.Position.Y + rect.Size.Y / 2 + (font.GetAscent(size) - font.GetDescent(size)) / 2;
+        int size = Touch ? TouchTextSize : Rows.Text;
         if (r == RowCount - 1)
         {
-            int returnSize = Touch ? 18 : Rows.Text - 2;
-            float w = _gothic.GetStringSize("Return", fontSize: returnSize).X;
-            DrawString(_gothic, new Vector2(rect.GetCenter().X - w / 2, baseline(returnSize, _gothic)), "Return", fontSize: returnSize,
-                modulate: hover ? Ui.Text : Ui.Quiet);
+            float w = _gothic.GetStringSize("Return", fontSize: size).X;
+            DrawString(_gothic, new Vector2(rect.GetCenter().X - w / 2, baseline(size, _gothic)), "Return", fontSize: size, modulate: Ui.Text);
             return;
         }
         var item = m.Items[r];
@@ -451,7 +450,6 @@ internal sealed partial class ProvinceMenuView : Control
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, TouchTagW, rect.Size.Y - 16)
             : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
         Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, Touch ? 12 : Rows.TagText);
-        int size = Touch ? TouchTextSize : Rows.Text;
         DrawString(_gothic, new Vector2(rect.Position.X + (Touch ? TouchTextLeft : Rows.TextLeft), baseline(size, _gothic)), item.Text, fontSize: size,
             modulate: on ? Ui.Text : Ui.OffText);
         if (!on && !Touch)                                             // the rail has no room for the note: only dimmed

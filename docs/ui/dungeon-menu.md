@@ -158,3 +158,7 @@ where the thumb rests, the menu's least wanted item; C splits the hands for a me
   window dumps it once as `dungeon-entry` (the dungeon look, CLAUDE.md, "A dungeon battle").
 - Looked at by the agent (2026-10-26) in the gallery's both passes and in the dungeon look with `--touch`. Not yet on the
   tablet.
+- Return's word is in the palette's ordinary text (`Ui.Text`), as Start Search's, in every mode (owner, 2026-11-01): in
+  the quiet ink it looked unavailable. A press still shows on its row's box. All the menu's words are one size, the largest
+  at which each fits (`FloorLadderView.EntrySize`): 22 on the tablet, where Return and the other items had 19; on the phone
+  Start Search's room sets it.

@@ -166,7 +166,8 @@ narration, place title, 131) in docs/ui/messages.md.
   the click with the click's triangle.
 - **Dimmed or hidden by meaning** (owner, 2026-10-25): an action that exists but cannot be taken now and will be
   again (spent, too dear) is dimmed — the player should know it is there. One that does not exist here at all (up from
-  the top floor) is hidden, keeping its room (the dungeon's ladder).
+  the top floor) is hidden, keeping its room (the dungeon's ladder). A button that can be pressed has its word in the
+  ordinary text colour (`Text`), never the quiet ink, which reads as unavailable (owner, 2026-11-01).
 - **A stable layout:** a mark that goes, a way not offered or a sort arrow leaves its room, so nothing else moves
   (the dungeon's ladder, the ledger's columns).
 - **Marks for new content** (decision 30): NEW green, ??? amber, nothing once read; a pill on the action, tooltips in

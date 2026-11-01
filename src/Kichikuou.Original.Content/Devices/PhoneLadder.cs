@@ -74,8 +74,8 @@ public static class PhoneLadder
     public const float ArrowIn = 50, ArrowSize = 20, WordIn = 96, WordUp = 20, WordText = 46, WordRoom = 110, SubIn = 98,
         SubDown = 30, SubText = 28;
 
-    /// <summary>Retreat's word (the brush face); Return's and the other items' (centred, the game's font).</summary>
-    public const float RetreatText = 52, RowText = 46;
+    /// <summary>Retreat's word (the brush face).</summary>
+    public const float RetreatText = 52;
 
     /// <summary>The floor's block: "FLOOR"'s middle under its top and type (Cinzel), the number's middle and type (the brush face).</summary>
     public const float FloorLabelMiddle = 26, FloorLabelText = 24, FloorMiddle = 74, FloorText = 56;
