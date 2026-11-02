@@ -68,6 +68,10 @@ The owner aims at a public release (decision 28, 2026-10-20).
   forecast's touch rail ([ui/damage-forecast.md](ui/damage-forecast.md)), awaiting the owner's look there.
   A freeze on the Poco in a battle, seen once (owner, 2026-11-01), cause open: the main thread never left its frame; the
   build now reports the next one — [hang-watch.md](hang-watch.md), *agent* when a report comes.
+  Memory on the Poco (owner, 2026-11-01/02): 1.9 GB after a battle, 2.9 GB in a long session, an empty Godot project 355 MB;
+  measured, no leak, mostly ours: the findings and the ranked reduction plan are [memory.md](memory.md). Cuts 1–4 are built
+  (~1.2 GB and ~1.3 GB), the backdrop looked at by the owner on the Poco, no seam; *owner* picks from cuts 5–10, then *agent*.
+  The probe's patches and the adb scripts stay outside the repository (its "How it was measured").
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

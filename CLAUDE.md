@@ -473,6 +473,10 @@ docs/ui/screen-margins.md (`tools/ui/mock_screen_margins.py`); the owner chose C
 screen `godot/Strategy/ScreenMarginsView` (`GameScreen.OpenMargins`); awaiting the owner's look on the Poco and the tablet.
 Then (owner, 2026-11-01) a freeze on the Poco, cause open (the main thread never left its frame): the build now watches its
 frames and keeps its log in a file — docs/hang-watch.md (`Engine/Diagnostics/FrameWatch`, `godot/Strategy/HangWatch`).
+Then (owner, 2026-11-02) the memory on Android: docs/memory.md, the findings and the plan. Cuts 1-4 are built (the wave backdrop
+baked, `godot/Strategy/WaveTile`; the staging buffers' cap; one `FontFile` per path, `Lacquer.LoadFont`; the uploads' images
+disposed): ~1.2 GB after a battle, ~1.3 GB in a long session, the backdrop looked at by the owner on the Poco, no seam; the GPU's
+memory goes in steps of 256 MB past `video` ~222 MB (its "The GPU's memory goes in steps"), and the owner picks from cuts 5-10.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
