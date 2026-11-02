@@ -36,19 +36,7 @@ internal sealed partial record UiPalette
         var lacquer = Backdrop;
         float width = size?.X ?? 1280, height = size?.Y ?? 800;
         c.DrawRect(new Rect2(0, 0, width, height), lacquer);
-        const float R = 34;
-        var wave = Gold with { A = 0.05f };
-        for (int row = -1; row * R / 2 < height + R; row++)
-        {
-            float y = row * R / 2, off = row % 2 == 0 ? 0 : R;
-            for (float x = -2 * R + off; x < width + 2 * R; x += 2 * R)
-            {
-                var at = new Vector2(x, y);
-                c.DrawCircle(at, R, lacquer);
-                foreach (float r in (float[])[R, R * 0.72f, R * 0.44f])
-                    c.DrawArc(at, r, 0, Mathf.Tau, 40, wave, Parts.Line(1, k), true);
-            }
-        }
+        WaveTile.Draw(c, new Rect2(0, 0, width, height), lacquer, Gold with { A = 0.05f }, Parts.Line(1, k), k);
         const float Inset = 220;
         var edge = new Color(0, 0, 0, 0.7f);
         var clear = new Color(0, 0, 0, 0);
