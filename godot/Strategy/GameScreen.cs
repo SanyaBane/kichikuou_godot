@@ -593,6 +593,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             _texture.Update(image);
         }
+        image.Dispose();                                                       // 4 MB in Godot's memory, which the collector does not see
         return true;
     }
 

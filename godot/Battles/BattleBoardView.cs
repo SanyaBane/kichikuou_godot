@@ -757,6 +757,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             texture = ImageTexture.CreateFromImage(image);
         else
             texture.Update(image);
+        image.Dispose();                                                       // up to 4 MB in Godot's memory, which the collector does not see
     }
 
     /// <summary>While a bubble speaks (<see cref="BattleBoard.Speaker"/>): the speaker's whole portrait on its side (its frame and name are in the picture).</summary>
@@ -839,13 +840,20 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             if (army.Arrival == _shown.Arrival)
             {
                 _shown = army;
-                _pending = null;
+                Hold(null);
                 Show(picture);
             }
             else
             {
-                _pending = picture;
+                Hold(picture);
             }
+        }
+
+        /// <summary>The picture to show once the shown army has left; the one held before never shows.</summary>
+        private void Hold(Image? picture)
+        {
+            _pending?.Dispose();
+            _pending = picture;
         }
 
         /// <summary>Moves by <paramref name="amount"/> of a whole slide.</summary>
@@ -883,6 +891,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 _texture = ImageTexture.CreateFromImage(picture);
             else
                 _texture.Update(picture);
+            picture.Dispose();                                      // up to 4 MB in Godot's memory, which the collector does not see
             rect.Texture = _texture;
         }
     }
