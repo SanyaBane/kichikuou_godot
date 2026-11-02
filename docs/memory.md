@@ -5,8 +5,9 @@ expects at most. Is that Godot's price or ours? **Mostly ours.** An empty Godot 
 as a release build); the game cost 1.9 GB after one battle and 2.9 GB after a few minutes of play, and most of that came
 from a handful of things in our own code. No old game stays alive after a Restart.
 
-Cuts 1–4 of [the plan](#the-reduction-plan) are built: **~1.2 GB after a battle, ~1.3 GB in a long session, 584 MB at the
-title** ([as built](#the-cuts-as-built)). What is left the owner picks from the plan. The sections from "Where the memory
+Cuts 1–4 and 10 of [the plan](#the-reduction-plan) are built: **~940–960 MB after a battle through the title, ~1.0 GB in a
+long session, 585 MB at the title** ([cuts 1–4](#the-cuts-as-built), [cut 10](#cut-10-under-the-gpus-block)). What is left
+the owner picks from the plan. The sections from "Where the memory
 goes" to "Growth" describe the game before the cuts unless they say otherwise.
 
 ## How it was measured
@@ -57,6 +58,66 @@ same game opened from the title in one launch (`restarts.ps1`), which is what a 
 The 292 MB between the two upright battles is mostly the GPU's next block (graphics +256), which the title's textures push
 them across: the next section.
 
+## Cut 10: under the GPU's block
+
+Built 2026-11-03 (owner's choice of 2026-11-02): no pinned run takes [the 256 MB block](#the-gpus-memory-goes-in-steps-of-up-to-256-mb)
+any more. Measured as above, pinned, in MB; *other* is `video` less `tex` and `buf`, *peak* the run's highest `video`.
+
+| Point on the phone | Cuts 1–4 | With cut 10 | Graphics | tex | other | video (peak) | Left to the edge |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| A battle's round 2, loaded directly, upright | 912–915 | **910** | 302 | 135 | 28.6 | 170 (170) | 52 |
+| The same, landscape | 911–922 | **905** | 306 | 131 | 24.4 | 161 (161) | 61 |
+| A battle's round 2, through the title, upright | 1204–1210 | **938–959** | 302–304 | 141–148 | 28.6 | 176–183 (183) | 39 |
+| Long session, upright | 1279–1285 | **1005** (1008 with the stones alone) | 318 | 171 | 28.5 | 205 (205; 213 with the stones alone) | 17 |
+| Long session, landscape | 1256 | **996** | 319 | 170 | 28.6 | 205 (205) | 17 |
+| Turned to landscape in the battle (`rotated.ps1 -After 40`) | 1153 | **889** | 303 | 112 | 28.5 | 146 (164) | 58 |
+| The title after a Restart, after a forced collection | 1112–1114 | **852–857** | 302–303 | 96 | 28.5 | 130 | |
+
+- **The stones** (`BoardStones`) are drawn at twice the layout's pixels as before and kept at them, each four pixels averaged,
+  which is what the GPU showed of the old texture where a layout pixel is a screen pixel: the PC's battle board in the screen
+  gallery differs by at most 1 of 255. On the phone, whose board is drawn at 0.95 of the layout upright and ~1.5 landscape,
+  the stones' edges are a little softer (up to 13 of 255). The same stones, the same seed. `tex` −27 MB (36 → 9).
+- **The upright map's picture is updated in place** (`UprightMapView.Load`): made anew each time its markers changed, the new
+  6 MB texture lived beside the old one until a collection (the long session's +6.7 MB, −6.7 five seconds later).
+- **The Save/Load screen lets its saves' maps go when it closes** (`SaveLoadView.Close`): 2.7 MB on the GPU for each save
+  looked at, kept for the launch.
+
+### What the ~50 MB not traced was: Godot's upload buffers
+
+`video` is every allocation of Godot's Vulkan allocator (`get_total_memory_used`, VMA's heap budgets); `tex` and `buf` count
+only the textures and buffers Godot makes for us. The rest is staging memory for the uploads (read in Godot 4.7.2's
+`rendering_device.cpp`), and none of it is ever given back:
+
+- **A transfer worker's buffer.** A texture made with its pixels (`ImageTexture.CreateFromImage`) is copied through one,
+  whose buffer is the next power of two of the largest texture it ever carried. The landscape stones (2560×1016, 10.4 MB:
+  Godot widens RGB8 to RGBA8) made it 16 MiB at the launch's first layout, the upright ones (2560×2656, 27.2 MB) 32 MiB
+  when the battle came: the +16 MB of *other* in the old runs' battle. The largest texture made now is under 8 MiB (the
+  stones upright, 1280×1328; the upright map, 1920×800), so the buffer stays at 8 MiB.
+- **The upload ring.** An update (`ImageTexture.Update`) goes through blocks of 256 kB that grow up to
+  `staging_buffer/max_size_mb` (16 since cut 2): 16 MiB, which the 4 MB pictures the screen updates every frame of a fade
+  earn. A lower cap would stall those frames; left as it is.
+- **~4.5 MB** of smaller ones (6 in the empty project).
+
+*Other* was 52.6 MB upright and 36.4 landscape; it is 28.5 now wherever a texture of 4–8 MiB is made (+22.5 at the launch's
+first frame, +2, then +4 at the upright map's texture, nothing at the battle) and 24.4 in the landscape battle, whose largest
+is under 4 MiB.
+
+### What is left to the edge
+
+The long sessions leave the least, 17 MB either way held; a screen added later must stay within it, or take one of these (put off,
+[backlog](backlog.md), "Android"):
+
+- **The launch's first layout is landscape** even held upright: the activity starts in the project's sensor landscape and
+  turns only after the boot, ~5 s later, so every screen is laid out once landscape. What that layout made stays: the stones
+  (2.6 MB now) and its font sizes — the upright run's BIZ UDGothic, Shojumaru and Cinzel begin with the landscape run's first
+  11, 5 and 6 sizes. Not measured apart; a few MB.
+- **`FacePictures` keeps every picture panel** (628×392, ~1 MB on the GPU) for the launch: the deployment table makes every
+  unit's ahead (`DeploymentPanels.WarmPictures`), the harem and Treasure each one looked at. A long game reaches more of them
+  than the long session.
+- **The atlases** (cut 6): 45 MB upright, 36 landscape. The fits that try size after size are `BattleOpeningLayer`'s names
+  (Shojumaru: 18 sizes, 14.6 MB, ~800 kB a size) and `BattleCommandLayer.LabelFit` on the touch rails (BIZ UDGothic 52 to
+  46); every size measured is a size rendered.
+
 ## The GPU's memory goes in steps of up to 256 MB
 
 Graphics does not follow Godot's `video`: at `video` 222 it is 302 MB, at 223 it is 575 MB. With `dumpsys` once a second over a
@@ -73,7 +134,9 @@ Restart keeps graphics at 557 MB with `video` at 181.
 Godot 4.7.2 has no setting for the block size (`ProjectSettings`, `rendering/rendering_device/`), so the way out is using less.
 The largest parts of `video` in the held battle, upright: the glyph atlases 45 MB, `BoardStones` 36, `UprightMapView` 17 (its
 pictures 11, its texture 6), the screen's and the battle's seven pictures ~20, ~14 of the empty project's textures, and ~50 that
-is neither `tex` nor `buf` and not traced (~36 landscape; 6 in the empty project).
+is neither `tex` nor `buf` (~36 landscape; 6 in the empty project): Godot's upload buffers, found and cut with
+[cut 10](#cut-10-under-the-gpus-block). (The walker's "`UprightMapView._pictures`" is `FacePictures`, which every screen
+shares: the faces' squares and the units' picture panels, ~1 MB each on the GPU.)
 
 **A turn of the phone** adds to it. Turned to landscape on the map: 913 MB, nothing paid (`video` 182). Turned in the battle: 1153
 MB (graphics 558, `video` 209 afterwards, at least 219 at the turn), since the old layout's textures and the new one's live
@@ -187,8 +250,8 @@ Cuts 1–4 are built (owner, 2026-11-02; `godot/Strategy/WaveTile`, `Lacquer.Loa
 `GameScreen`, `BattleBoardView.Upload` and `ArmySlide`). On the PC they change the backdrop's pixels by at most 4 of 255 and text
 not at all; on the Poco the owner saw no seam in the tile (Subordinates, Harem).
 
-Each line was measured on the phone unless it says "by size", cuts 1–4 against 1874 MB. Cut 10 is new: the savings of 5–9
-below are what they free on their own, and any of them that brings `video` under the edge adds the block's 256 MB.
+Each line was measured on the phone unless it says "by size", cuts 1–4 against 1874 MB. The savings of 5–9 below are what
+they free on their own; with cut 10 built they also widen the room left to the edge.
 
 | # | Cut | Saves | Effort | Risk |
 | --- | --- | --- | --- | --- |
@@ -199,12 +262,13 @@ below are what they free on their own, and any of them that brings `video` under
 | | **1–4 together, as built** | **912–915 MB in a battle loaded directly, 1204–1210 through the title, 1279–1285 in the long session, 584 at the title** | | |
 | 5 | The surfaces stored at 1× where nothing draws at 2× | ~70 MB, by size | Large | Medium: the engine's drawing, its own survey first |
 | 6 | Fewer font sizes: fit by one measure and scale | ~60 MB, by size | Medium | Low |
-| 7 | `BoardStones` at half size, no CPU copy of `UprightMapView`'s pictures | ~35 MB, by size (27 of it on the GPU) | Small | Low: the stones a little softer |
+| 7 | `BoardStones` at half size (built with cut 10), no CPU copy of `UprightMapView`'s pictures | ~35 MB, by size (27 of it on the GPU) | Small | Low: the stones a little softer |
 | 8 | The GL Compatibility renderer | 45 MB (910 → 865), before the block | Small to try, large to verify | Medium: every screen's look to check |
 | 9 | The release export instead of the debug one | 27 MB, measured on the empty project | Comes with a release | None |
-| 10 | Keep `video` under the edge of ~222 MB, so [the 256 MB block](#the-gpus-memory-goes-in-steps-of-up-to-256-mb) is never taken: −12 MB for a battle through the title, −2 for a long session in landscape, −38 for one upright, more for a margin and a turn of the phone | 256 MB, by the steps seen, not yet tried | Small to medium: cut 7's stones give 27 MB; the rest from cut 6's atlases, `UprightMapView`'s pictures or the ~50 MB not traced | Low |
+| 10 | Keep `video` under the edge of ~222 MB, so [the 256 MB block](#the-gpus-memory-goes-in-steps-of-up-to-256-mb) is never taken (built): the stones kept at the layout's pixels, which also shrinks the upload's worker buffer 32 → 8 MiB, the upright map updated in place, the Save/Load maps let go | 256 MB as the steps promised: 1204–1210 → 938–959 through the title, 1279–1285 → 1005 in the long session; `video` −51 to −55 | Small | Low: the stones' edges a little softer on the phone |
+| | **1–4 and 10 together, as built** | **910 MB in a battle loaded directly, 938–959 through the title, 1005 in the long session upright, 585 at the title** | | |
 
-**Is 500 MB reachable?** Not in a battle with these cuts: through the title 1–4 give ~1205 MB, cut 10 would bring that to ~950,
-and 5–9 to ~700 if all their savings add up. The floor leaves 145–170 MB for everything of ours, and the two surfaces alone are
+**Is 500 MB reachable?** Not in a battle with these cuts: through the title 1–4 and 10 give 938–959 MB, as cut 10 promised,
+and 5, 6, 8 and 9 would bring that to ~750 if all their savings add up. The floor leaves 145–170 MB for everything of ours, and the two surfaces alone are
 100 MB. The title, at 584 MB with 1–4, could come close. Getting a battle to 500 MB needs more than this list: a redesign of the
 surfaces and far fewer textures and font sizes.

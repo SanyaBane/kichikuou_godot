@@ -200,7 +200,8 @@ internal sealed partial class UprightMapView : Control
     /// <summary>
     /// The map's picture for <paramref name="state"/>: the six tiles at their places and every marker over them as
     /// <c>WAO_MAP.ADV</c> op 3 draws them (a CG over 10000 is that CG less 10000, 18 pixels higher), palette index 40 clear;
-    /// made again only when the tiles or the markers changed.
+    /// made again only when the tiles or the markers changed, into the same texture (docs/memory.md, cut 10: a new one
+    /// each time held both until the collector came).
     /// </summary>
     private void Load(GameState state)
     {
@@ -228,7 +229,7 @@ internal sealed partial class UprightMapView : Control
         if (_texture is not null && key == _key)
             return;
         _key = key;
-        var full = Image.CreateEmpty(PhoneMapUpright.MapWidth, PhoneMapUpright.MapHeight, false, Image.Format.Rgba8);
+        using var full = Image.CreateEmpty(PhoneMapUpright.MapWidth, PhoneMapUpright.MapHeight, false, Image.Format.Rgba8);
         full.Fill(Colors.Black);
         for (int i = 0; i < tiles.Length; i++)
             if (_pictures.Picture(tiles[i]) is { } tile)
@@ -237,7 +238,10 @@ internal sealed partial class UprightMapView : Control
         foreach (var (cg, x, y) in marks)
             if (_pictures.Picture(cg) is { } picture)
                 full.BlendRect(picture, new Rect2I(Vector2I.Zero, picture.GetSize()), new Vector2I(x, y));
-        _texture = ImageTexture.CreateFromImage(full);
+        if (_texture is null)
+            _texture = ImageTexture.CreateFromImage(full);
+        else
+            _texture.Update(full);
         QueueRedraw();
     }
 }

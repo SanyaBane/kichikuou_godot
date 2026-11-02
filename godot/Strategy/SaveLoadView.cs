@@ -189,7 +189,10 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         QueueRedraw();
     }
 
-    /// <summary>The save screen closed: hidden, the choice forgotten.</summary>
+    /// <summary>
+    /// The save screen closed: hidden, the choice forgotten, the saves' maps let go (docs/memory.md, cut 10: kept for the
+    /// launch, each save looked at held 2.7 MB on the GPU).
+    /// </summary>
     public void Close()
     {
         Release();
@@ -198,6 +201,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         _chosenNew = false;
         _library = null;
         Visible = false;
+        foreach (var map in _maps.Values)
+            map?.Dispose();
+        _maps.Clear();
     }
 
     /// <summary>
@@ -1165,7 +1171,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (_maps.TryGetValue(key, out var cached))
             return cached;
         ImageTexture? texture = null;
-        var full = Image.CreateEmpty(1920, 800, false, Image.Format.Rgba8);
+        using var full = Image.CreateEmpty(1920, 800, false, Image.Format.Rgba8);
         bool any = false;
         for (int i = 0; i < slot.Tiles.Count; i++)
         {
@@ -1181,7 +1187,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             {
                 if (_pictures.Picture(mark.Cg) is not { } picture)
                     continue;
-                var big = (Image)picture.Duplicate();
+                using var big = (Image)picture.Duplicate();
                 big.Resize(picture.GetWidth() * 2, picture.GetHeight() * 2, Image.Interpolation.Nearest);
                 full.BlendRect(big, new Rect2I(Vector2I.Zero, big.GetSize()), new Vector2I(mark.X * 2, mark.Y * 2));
             }

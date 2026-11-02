@@ -9,7 +9,8 @@ namespace Kichikuou.Game.Battles;
 /// ones first and small ones in what is left, dark gaps between, each lit from the top left with a shaded rim, the
 /// whole softened and grained; darker under the armies' names along the top and under the gauge's caption, so they
 /// read. In the palette's <see cref="UiPalette.Stone"/> and <see cref="UiPalette.StoneGap"/>; the same stones every
-/// time (a fixed seed). Made at twice the layout's pixels, once a palette.
+/// time (a fixed seed). Drawn at twice the layout's pixels and kept at them, each four pixels averaged, once a palette
+/// (docs/memory.md, cut 10: kept at twice them, the phone's two pictures took 36 MB on the GPU).
 /// </summary>
 internal static class BoardStones
 {
@@ -37,19 +38,20 @@ internal static class BoardStones
         if (!Made.TryGetValue(key, out var texture))
         {
             var picture = new Picture(area);
-            var image = Image.CreateFromData(picture.Width, picture.Height, false, Image.Format.Rgb8, picture.Build(ui.Stone, ui.StoneGap, caption));
+            using var image = Image.CreateFromData(picture.Width / Scale, picture.Height / Scale, false, Image.Format.Rgb8,
+                picture.Build(ui.Stone, ui.StoneGap, caption));
             Made[key] = texture = ImageTexture.CreateFromImage(image);
         }
         return texture;
     }
 
-    /// <summary>One picture of the stones over <paramref name="area"/>, at <see cref="Scale"/> times its layout pixels.</summary>
+    /// <summary>One picture of the stones over <paramref name="area"/>, drawn at <see cref="Scale"/> times its layout pixels.</summary>
     private sealed class Picture(Rect2 area)
     {
         public readonly int Width = (int)area.Size.X * Scale, Height = (int)area.Size.Y * Scale;
         private Rect2 Area => area;
 
-        /// <summary>The picture as RGB bytes, <see cref="Width"/> × <see cref="Height"/>.</summary>
+        /// <summary>The picture as RGB bytes at the layout's pixels, <see cref="Width"/> × <see cref="Height"/> drawn and averaged down.</summary>
         public byte[] Build(Color stone, Color gap, Rect2 caption)
         {
             var rgb = new float[Width * Height * 3];
@@ -97,9 +99,24 @@ internal static class BoardStones
             }
             rgb = Soften(rgb);
             Shade(rgb, rnd, caption);
-            var bytes = new byte[rgb.Length];
-            for (int i = 0; i < rgb.Length; i++)
-                bytes[i] = (byte)Math.Clamp((int)Math.Round(rgb[i]), 0, 255);
+            return Kept(rgb);
+        }
+
+        /// <summary>Each <see cref="Scale"/> × <see cref="Scale"/> pixels averaged into one: what the GPU showed of the drawn picture at 1:1.</summary>
+        private byte[] Kept(float[] rgb)
+        {
+            int across = Width / Scale, down = Height / Scale;
+            var bytes = new byte[across * down * 3];
+            for (int y = 0; y < down; y++)
+                for (int x = 0; x < across; x++)
+                    for (int k = 0; k < 3; k++)
+                    {
+                        float sum = 0;
+                        for (int dy = 0; dy < Scale; dy++)
+                            for (int dx = 0; dx < Scale; dx++)
+                                sum += rgb[((y * Scale + dy) * Width + x * Scale + dx) * 3 + k];
+                        bytes[(y * across + x) * 3 + k] = (byte)Math.Clamp((int)Math.Round(sum / (Scale * Scale)), 0, 255);
+                    }
             return bytes;
         }
 
