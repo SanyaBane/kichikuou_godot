@@ -34,4 +34,5 @@ project/solution_directory="../"
 
 [rendering]
 
+rendering_device/staging_buffer/max_size_mb=16
 textures/vram_compression/import_etc2_astc=true
