@@ -70,7 +70,7 @@ internal sealed partial class BattleOpeningLayer : Control
         AddChild(_top);
     }
 
-    private static FontFile Load(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
+    private static FontFile Load(string path) => Lacquer.LoadFont(path);
 
     /// <summary>The plate's font, Cinzel Bold (the rounds gauge's number shares it).</summary>
     public Font CinzelBold => _plate;

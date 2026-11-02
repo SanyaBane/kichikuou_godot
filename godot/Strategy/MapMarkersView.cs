@@ -28,7 +28,7 @@ internal sealed partial class MapMarkersView : Control
     private static readonly Color HoverBack = new("575b63");    // a hovered plate
     private readonly List<Plate> _plates = [];
     private FontFile _font;
-    private readonly FontVariation _badgeFont = new() { BaseFont = new FontFile { Data = Godot.FileAccess.GetFileAsBytes("res://fonts/Cinzel-VariableFont_wght.ttf") } };
+    private readonly FontVariation _badgeFont = new() { BaseFont = Lacquer.LoadFont("res://fonts/Cinzel-VariableFont_wght.ttf") };
     private float _pixels = 2;
     private float _plateScale = 1;                      // the plates' size against the map's: larger on the phone
     private bool _phonePlates;                          // the phone's tighter plates

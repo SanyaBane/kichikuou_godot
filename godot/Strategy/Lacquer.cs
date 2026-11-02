@@ -11,7 +11,21 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal static class Lacquer
 {
-    public static FontFile LoadFont(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
+    /// <summary>
+    /// The font file at <paramref name="path"/>, one for the whole launch whoever asks (docs/memory.md): a file's data is
+    /// 4.5 MB for BIZ UDGothic, and its glyph atlases are kept per file, on the CPU and on the GPU.
+    /// </summary>
+    public static FontFile LoadFont(string path)
+    {
+        if (!FontFiles.TryGetValue(path, out var font))
+        {
+            byte[] data = path.StartsWith("res://", StringComparison.Ordinal) ? Godot.FileAccess.GetFileAsBytes(path) : System.IO.File.ReadAllBytes(path);
+            FontFiles[path] = font = new FontFile { Data = data };
+        }
+        return font;
+    }
+
+    private static readonly Dictionary<string, FontFile> FontFiles = [];
 
     /// <summary>Shojumaru, the names' brush face.</summary>
     public static FontFile Brush() => LoadFont("res://fonts/Shojumaru-Regular.ttf");

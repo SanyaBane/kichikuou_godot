@@ -82,7 +82,7 @@ internal sealed partial class ExchangeCountersView : Control
     {
         MouseFilter = MouseFilterEnum.Ignore;
         Visible = false;
-        var oswald = new FontFile { Data = Godot.FileAccess.GetFileAsBytes("res://fonts/Oswald-VariableFont_wght.ttf") };
+        var oswald = Kichikuou.Game.Strategy.Lacquer.LoadFont("res://fonts/Oswald-VariableFont_wght.ttf");
         _digitsFont = Weight(oswald, 700);
         _labelFont = Weight(oswald, 600, spacing: 3);
         _labels = new Control { MouseFilter = MouseFilterEnum.Ignore };

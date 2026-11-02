@@ -453,12 +453,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>The font of our own screens: the Option → Display face, regular (MS Gothic where installed, else BIZ UDGothic).</summary>
-    public static FontFile LoadFont(GameFont font) => new()
-    {
-        Data = font == GameFont.MsGothic && GodotGlyphRenderer.MsGothicInstalled
-            ? System.IO.File.ReadAllBytes(GodotGlyphRenderer.MsGothicPath)
-            : Godot.FileAccess.GetFileAsBytes(GodotGlyphRenderer.BizUdGothicPath),
-    };
+    public static FontFile LoadFont(GameFont font) => Lacquer.LoadFont(
+        font == GameFont.MsGothic && GodotGlyphRenderer.MsGothicInstalled ? GodotGlyphRenderer.MsGothicPath : GodotGlyphRenderer.BizUdGothicPath);
 
     /// <summary>
     /// Covers <paramref name="rect"/> (in its parent's coordinates) with the text scaled by

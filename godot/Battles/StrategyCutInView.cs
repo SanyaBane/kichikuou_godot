@@ -85,7 +85,7 @@ internal sealed partial class StrategyCutInView : Control
         SetFont(font);
     }
 
-    private static FontFile Load(string path) => new() { Data = Godot.FileAccess.GetFileAsBytes(path) };
+    private static FontFile Load(string path) => Lacquer.LoadFont(path);
 
     /// <summary>Option → Display: the strategist's line in the chosen font, bold.</summary>
     public void SetFont(GameFont font)
