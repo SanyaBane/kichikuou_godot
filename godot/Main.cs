@@ -30,6 +30,7 @@ public partial class Main : Control
         ThousandsChoice.Apply();
         ScreenModeChoice.Apply(this);
         SoundChoice.Apply();
+        FrameRateChoice.Apply();
         var background = new ColorRect { Color = Colors.Black };
         background.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         AddChild(background);

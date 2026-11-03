@@ -5,26 +5,21 @@ namespace Kichikuou.Game.Strategy;
 
 // The options window on the phone held landscape (docs/ui/phone-build.md, step L8; docs/ui/phone.md, §16, LO1): the paper
 // sheet across the whole width between the hole's strips over the wave backdrop, its five paper tabs on top as on the PC,
-// the title at their right; each tab in two columns — Messages: the text speed (its preview the game's 121 at 2.7 mm) and
-// the read text's colours left, the message skip right; Display: the font left, the palette and the screen's orientation
-// (step P0) right, the thousands and the unit tables' row heights across (their tiles need the width), the screen margins
-// at the left column's foot beside Defaults | Close (docs/ui/screen-margins.md); Battle: the effects
-// across, the timings in the two
-// columns; Game: the folder across; Tweaks: the line on what they are across, Battle left, Scenes right —, Defaults |
-// Close at the right column's foot, Close at the right thumb. The settings are the PC's parts drawn at PO1's type
-// (PhoneOptions.PartScale: the drawing's scale, _k), their text at the canvas's own size (Text) so it stays sharp; the
-// places PhoneOptions'.
+// the title at their right; each tab in one column across the sheet, scrolled between its top and Defaults | Close (owner,
+// 2026-11-03; docs/ui/options.md, "Frame rate"; OptionsView.Scroll.cs) — Messages: the text speed (its preview the game's
+// 121 at 2.7 mm) left and the message skip right in one row, the read text's colours in one row under them; Display: the
+// screen's orientation (step P0) with its four ways across, the screen margins (docs/ui/screen-margins.md), the frame rate,
+// then the PC's font, palette, thousands and unit tables' row heights; Battle: the effects, the timings one under another;
+// Game: the folder; Tweaks: the PC's —, Defaults | Close at the right column's foot, Close at the right thumb. The settings
+// are the PC's parts drawn at PO1's type (PhoneOptions.PartScale: the drawing's scale, _k), their text at the canvas's own
+// size (Text) so it stays sharp; the places PhoneOptions'.
 internal sealed partial class OptionsView
 {
     private PhoneFrame? _phone;
-    private readonly Layer _backdrop;
 
     // Messages' left column on the phone, in the parts' units from its top: the speed's slider, the preview under it; the
-    // note 17 under the preview, the read text's head 31 under the preview, its tiles 30 under the head.
+    // note 17 under the preview, the read text's head 31 under the preview (upright), its tiles 30 under the head.
     private const float PhoneSpeedSlider = 48, PhonePreviewTop = 66, PhoneNoteUnder = 17, PhoneReadUnder = 31, PhoneTilesUnder = 30;
-
-    // Display's right column on the phone, in the parts' units: the orientation this far in, right of the palette's two swatches.
-    private const float PhoneOrientationIn = 200;
 
     /// <summary>A box of the canvas's units in the parts' units.</summary>
     private Rect2 Part(PhoneFrame.Box box) => new(box.X / _k, box.Y / _k, box.W / _k, box.H / _k);
@@ -53,15 +48,28 @@ internal sealed partial class OptionsView
     }
 
     /// <summary>
-    /// The preview on the phone: the game's 121 at the reference phone's own pixels — its text at PO1's 2.7 mm —, centred in
-    /// the left column under the speed's slider.
+    /// The preview on the phone: the game's 121 at the reference phone's own pixels — its text at PO1's 2.7 mm —, centred
+    /// under the speed's slider in the column (upright) or in Messages' left column (held landscape), scrolled with it.
     /// </summary>
     private Rect2 PhonePreviewRect(PhoneFrame f)
     {
-        var column = f.IsUpright ? UprightColumn(f) : Part(PhoneOptions.Column(f, 0));
+        var (x, top, w) = ColumnPlace();
+        if (!f.IsUpright)
+        {
+            var left = Part(PhoneOptions.Column(f, 0));
+            (x, w) = (left.Position.X, left.Size.X);
+        }
         var panel = _sample.Panel;
-        float w = P(panel.W), h = P(panel.H);
-        return new Rect2(column.Position.X + (column.Size.X - w) / 2, column.Position.Y + PhonePreviewTop, w, h);
+        float pw = P(panel.W), ph = P(panel.H);
+        return new Rect2(x + (w - pw) / 2, top + PhonePreviewTop, pw, ph);
+    }
+
+    /// <summary>The wave backdrop over the whole screen, outside the column's clip.</summary>
+    private void DrawPhoneBackdrop(PhoneFrame f)
+    {
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(f.Scale, f.Scale));
+        Ui.DrawWaveBackdrop(this, f.Scale, new Vector2(f.Screen.W, f.Screen.H) / f.Scale);
+        DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
     }
 
     private void DrawPhone(PhoneFrame f)
@@ -71,30 +79,21 @@ internal sealed partial class OptionsView
             DrawUpright(f);
             return;
         }
+        BeginClip();
+        DrawPhoneBackdrop(f);
         DrawPhoneTabs(f);
         int titleSize = Ref(PhoneOptions.TitleText);
         float titleWidth = _brush.GetStringSize("Options", fontSize: titleSize).X;
         Text(_brush, new Vector2(PhoneOptions.TitleRight(f) / _k - titleWidth, P(PhoneOptions.TitleTop) + _brush.GetAscent(titleSize)),
             "Options", fontSize: titleSize, modulate: Ui.Name);
-        Rect2 left = Part(PhoneOptions.Column(f, 0)), right = Part(PhoneOptions.Column(f, 1)), across = Part(PhoneOptions.Across(f));
-        switch (_tab)
+        DrawColumn((x, top, w) => _tab switch
         {
-            case Tab.Messages:
-                DrawMessagesPhone(f, left, right);
-                break;
-            case Tab.Display:
-                DrawDisplayPhone(f, left, right, across);
-                break;
-            case Tab.Battle:
-                DrawBattlePhone(f, left, right, across);
-                break;
-            case Tab.Game:
-                GameSection(across.Position.X, across.Position.Y, across.Size.X);
-                break;
-            case Tab.Tweaks:
-                DrawTweaksPhone(f, left, right, across);
-                break;
-        }
+            Tab.Messages => DrawMessagesPhone(f, top),
+            Tab.Display => DrawDisplayPhone(x, top, w),
+            Tab.Battle => DrawBattleColumn(x, top, w),
+            Tab.Game => GameSection(x, top, w),
+            _ => DrawTweaks(x, top, w),
+        });
         DrawPhoneFoot(f);
         if (_question is not null)
             DrawQuestion(_question);
@@ -133,13 +132,6 @@ internal sealed partial class OptionsView
             P(upright ? PhoneOptionsUpright.TabEdge : PhoneOptions.TabEdge)), Ui.Vermilion);
     }
 
-    /// <summary>The rule between the columns from <paramref name="top"/> (the parts' units) to its foot, at most <paramref name="bottom"/>.</summary>
-    private void DrawColumnRule(PhoneFrame f, float top, float bottom = float.MaxValue)
-    {
-        var (x, _, foot) = PhoneOptions.Divider(f);
-        DrawLine(new Vector2(x / _k, top), new Vector2(x / _k, Math.Min(foot / _k, bottom)), Ui.PaperRule, Line(1));
-    }
-
     /// <summary>Defaults, a paper button (deaf on Game, whose folder has no default), and Close, red, at the right thumb.</summary>
     private void DrawPhoneFoot(PhoneFrame f)
     {
@@ -161,44 +153,55 @@ internal sealed partial class OptionsView
         _spots.Add(new Spot("close", close, Close));
     }
 
-    /// <summary>
-    /// Messages (lo1, <c>messages_columns</c>): the text speed, its preview and the read text's tiles in two rows ("Don't
-    /// change" and four colours, then five) at the left, its words wrapped into the column; the message skip at the right.
-    /// </summary>
-    private void DrawMessagesPhone(PhoneFrame f, Rect2 left, Rect2 right)
-    {
-        float x = left.Position.X, y = left.Position.Y, w = left.Size.X;
-        SectionHead(x, y, "Text speed", w);
-        SpeedSlider(x, y + PhoneSpeedSlider, w);
-        MessageSkipColumn(right.Position.X, right.Position.Y, right.Size.X);
-        DrawColumnRule(f, Part(PhoneOptions.Sheet(f)).Position.Y + P(40));
+    // ---------------------------------------------------------------- the tabs' columns (the parts' units; each returns its last line)
 
-        int chosen = ReadTextChoice.Index;
-        y = PreviewRect.End.Y + PhoneNoteUnder;
-        Text(_gothic, new Vector2(x, y), chosen == ReadTextChoice.None ? "Read text keeps the window's colour." : "The preview counts as read.",
-            fontSize: 13, modulate: Ui.InkQuiet);
-        ReadTextSection(x, PreviewRect.End.Y + PhoneReadUnder, w);
+    /// <summary>
+    /// Messages (lo1, <c>messages_columns</c>; the owner, 2026-11-03): the text speed and its preview at the left and the
+    /// message skip at the right in one row, the rule between them; under them across the column the read text, its tiles
+    /// ("Don't change" and the nine colours) in one row at their two-row width.
+    /// </summary>
+    private float DrawMessagesPhone(PhoneFrame f, float top)
+    {
+        var (cx, _, cw) = ColumnPlace();
+        Rect2 left = Part(PhoneOptions.Column(f, 0)), right = Part(PhoneOptions.Column(f, 1));
+        float x = left.Position.X, w = left.Size.X;
+        SectionHead(x, top, "Text speed", w);
+        SpeedSlider(x, top + PhoneSpeedSlider, w);
+        float skip = MessageSkipColumn(right.Position.X, top, right.Size.X);
+        float note = PreviewRect.End.Y + PhoneNoteUnder;
+        Text(_gothic, new Vector2(x, note), ReadTextChoice.Index == ReadTextChoice.None ? "Read text keeps the window's colour."
+            : "The preview counts as read.", fontSize: 13, modulate: Ui.InkQuiet);
+        float row = Math.Max(note, skip);
+        var (ruleX, _, _) = PhoneOptions.Divider(f);
+        DrawLine(new Vector2(ruleX / _k, top + P(4)), new Vector2(ruleX / _k, row + 6), Ui.PaperRule, Line(1));
+        return ReadTextSection(cx, row + 32, cw, ReadTileWidth(w));
     }
 
+    /// <summary>The read text's colour tiles' width in a column <paramref name="w"/> wide: four in the first row, five in each after it.</summary>
+    private static float ReadTileWidth(float w) => (w - P(320) - 4 * P(14)) / 5;
+
     /// <summary>
-    /// The read text's head at <paramref name="y"/>, its tiles in two rows ("Don't change" and four colours, then five), the
-    /// chosen one's name and its words wrapped into <paramref name="w"/>; returns their last baseline.
+    /// The read text's head at <paramref name="y"/>, its tiles ("Don't change" and the colours: in a column
+    /// <paramref name="w"/> wide four colours in the first row and five in each after it; with <paramref name="tileWidth"/>
+    /// all in one row, that wide), the chosen one's name and its words wrapped into <paramref name="w"/>; returns their last
+    /// baseline.
     /// </summary>
-    private float ReadTextSection(float x, float y, float w)
+    private float ReadTextSection(float x, float y, float w, float tileWidth = 0)
     {
-        int chosen = ReadTextChoice.Index;
+        int chosen = ReadTextChoice.Index, count = ReadTextChoice.Colours.Length;
         SectionHead(x, y, "Already-read text", w);
         // read_text: "Don't change" 300 wide, the colours from 320 in, 14 apart, 100 high, the second row 16 under the first.
         float tileH = P(100), gap = P(14), first = P(300), after = P(320), rowGap = P(16);
-        float sw = (w - after - 4 * gap) / 5, top = y + PhoneTilesUnder;
+        float sw = tileWidth > 0 ? tileWidth : ReadTileWidth(w), top = y + PhoneTilesUnder;
+        int firstRow = tileWidth > 0 ? count : 4;
         ReadTile("read-none", new Rect2(x, top, first, tileH), chosen == ReadTextChoice.None, null, ReadTextChoice.None);
-        for (int i = 0; i < ReadTextChoice.Colours.Length; i++)
+        for (int i = 0; i < count; i++)
         {
-            int row = i < 4 ? 0 : 1 + (i - 4) / 5, place = i < 4 ? i : (i - 4) % 5;
+            int row = i < firstRow ? 0 : 1 + (i - firstRow) / 5, place = i < firstRow ? i : (i - firstRow) % 5;
             float tx = (row == 0 ? x + after : x) + place * (sw + gap);
             ReadTile("read-" + i, new Rect2(tx, top + row * (tileH + rowGap), sw, tileH), chosen == i, ReadTextChoice.Colours[i].Colour, i);
         }
-        int rows = 1 + ReadTextChoice.Colours.Length / 5;          // four colours in the first row, five in each after it
+        int rows = firstRow >= count ? 1 : 1 + (count - firstRow + 4) / 5;
         y = top + rows * tileH + (rows - 1) * rowGap + 23;
         Text(_gothic, new Vector2(x, y), chosen == ReadTextChoice.None ? "Don't change" : ReadTextChoice.Colours[chosen].Name,
             fontSize: 17, modulate: Ui.Ink);
@@ -207,86 +210,36 @@ internal sealed partial class OptionsView
     }
 
     /// <summary>
-    /// Display: the font left, the palette right and the screen's orientation right of it (step P0, the owner's PO1o, two
-    /// ways a row); the thousands and the unit tables' row heights across.
+    /// Display (the upright's order across the sheet): the screen's orientation, its four ways across; the screen margins, a
+    /// field across with the way the phone is held first; the frame rate; then the PC's font, palette, thousands and unit
+    /// tables' row heights.
     /// </summary>
-    private void DrawDisplayPhone(PhoneFrame f, Rect2 left, Rect2 right, Rect2 across)
+    private float DrawDisplayPhone(float x, float y, float w)
     {
-        float y = left.Position.Y;
-        FontSection(left.Position.X, y, left.Size.X);
-        PaletteSection(right.Position.X, y, PhoneOrientationIn - 30);
-        OrientationSection(right.Position.X + PhoneOrientationIn, y, right.Size.X - PhoneOrientationIn);
-        DrawColumnRule(f, Part(PhoneOptions.Sheet(f)).Position.Y + P(40), y + 106);
-        ThousandsSection(across.Position.X, y + 116, across.Size.X);
-        RowsSection(across.Position.X, y + 196, across.Size.X);
-        var defaults = Part(PhoneOptions.Defaults(f));          // the screen margins at the left column's foot, beside Defaults | Close
-        MarginsField(new Rect2(left.Position.X, defaults.Position.Y, left.Size.X, defaults.Size.Y), titled: true);
-    }
-
-    /// <summary>Battle: the effects across, the timings in the two columns (the left one's longer: the right one ends over Defaults).</summary>
-    private void DrawBattlePhone(PhoneFrame f, Rect2 left, Rect2 right, Rect2 across)
-    {
-        float y = across.Position.Y;
-        EffectsSection(across.Position.X, y, across.Size.X);
-        y += 96;
-        SectionHead(across.Position.X, y, "Timings", across.Size.X);
-        y += 36;
-        DrawColumnRule(f, y - 6);
-        int i = 0;
-        foreach (var setting in Timings)
-        {
-            var column = i % 2 == 0 ? left : right;
-            TimingRow(setting, column.Position.X, y + i / 2 * 46, column.Size.X);
-            i++;
-        }
+        OrientationSection(x, y, w);
+        y += 118;
+        SectionHead(x, y, "Screen margins", w);
+        float field = P(PhoneOptionsUpright.OrientationRow);
+        MarginsField(new Rect2(x, y + 36, w, field));
+        y += 36 + field + 40;
+        return DisplaySections(x, y, w);
     }
 
     /// <summary>
-    /// Tweaks: what they are across; Battle across both columns — at the left the damage forecast and "Chaos and Nikkou
-    /// reach demons" with its three choices one under another (a row has no room for them side by side), at the right the
-    /// ninja follow-up's chances in a row in short words, in thirds of the column (the owner's NP) —, Scenes at the right
-    /// under it; the hints wrapped into their column.
+    /// The phone's screen orientation (the owner's PO1o, <see cref="OrientationChoice"/>), a phone's only: its four ways as
+    /// radios across from 38 under the head, the chosen way's line under them.
     /// </summary>
-    private void DrawTweaksPhone(PhoneFrame f, Rect2 left, Rect2 right, Rect2 across)
+    private void OrientationSection(float x, float y, float w)
     {
-        float y = across.Position.Y;
-        Wrap(TweaksIntro, across.Position.X, y + 14, across.Size.X, 14, Ui.InkQuiet);
-        y += 44;
-        SectionHead(across.Position.X, y, "Battle", across.Size.X);
-        DrawColumnRule(f, y + 30);
-        float x = left.Position.X, w = left.Size.X;
-        float foot = ForecastBox(x, y + 38, w);
-        float tx = x + 32, tw = w - 32;
-        Text(_gothic, new Vector2(tx, foot + 24), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
-        int lines = Wrap(ReachHint, tx, foot + 43, tw, 13, Ui.InkQuiet);
-        float ry = foot + 43 + (lines - 1) * WrapPitch(13) + 14;
-        for (int i = 0; i < Reaches.Length; i++)
-            ReachRadio(i, tx, ry + i * 36);
-        Wrap(ReachNote, tx, ry + Reaches.Length * 36 + 14, tw, 13, Ui.InkQuiet);
-
-        float nx = right.Position.X + 32, nw = right.Size.X - 32;
-        Text(_gothic, new Vector2(nx, y + 54), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
-        lines = Wrap(NinjaHint, nx, y + 73, nw, 13, Ui.InkQuiet);
-        ry = y + 73 + (lines - 1) * WrapPitch(13) + 14;
-        for (int i = 0; i < PhoneNinjas.Length; i++)
-            NinjaRadio(PhoneNinjas[i], nx + i * (nw / PhoneNinjas.Length), ry);
-        Text(_gothic, new Vector2(nx, ry + 50), "33% is the original's.", fontSize: 13, modulate: Ui.InkQuiet);
-        float scenes = ry + 50 + 32;
-        SectionHead(right.Position.X, scenes, "Scenes", right.Size.X);
-        NewScenesBox(right.Position.X, scenes + 38, right.Size.X);
-    }
-
-    /// <summary>A layer of the window drawn by its view (the phone's wave backdrop behind it).</summary>
-    private sealed partial class Layer : Control
-    {
-        private readonly Action<Control> _paint;
-
-        public Layer(Action<Control> paint)
+        SectionHead(x, y, "Screen orientation", w);
+        var all = OrientationChoice.All;
+        for (int i = 0; i < all.Length; i++)
         {
-            _paint = paint;
-            MouseFilter = MouseFilterEnum.Ignore;
+            var way = all[i].Way;
+            Radio("orientation-" + way, x + i * (w / all.Length), y + 38, OrientationChoice.Chosen == way, all[i].Name, _gothic,
+                () => OrientationChoice.Chosen = way);
         }
-
-        public override void _Draw() => _paint(this);
+        string hint = Array.Find(all, o => o.Way == OrientationChoice.Chosen).Hint;
+        Text(_gothic, new Vector2(x, y + 76), hint, fontSize: SideCells.Fit(_gothic, hint, 13, w), modulate: Ui.InkQuiet);
     }
 }

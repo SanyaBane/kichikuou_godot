@@ -44,6 +44,22 @@ public class PhoneOptionsTests
     }
 
     [Fact]
+    public void The_one_column_scrolls_between_the_sheet_s_top_and_Defaults()
+    {
+        // owner, 2026-11-03: the view (across.x, y0 + 12, across.w, Defaults.y - 20 - its top), the column from y0 + 36; it
+        // scrolls until its foot stands 20 over the view's; the bar's groove 20 wide, 10 in from the sheet's right.
+        Equal(new(156, 138, 2400, 842), PhoneOptions.View(Reference));
+        Assert.Equal(162, PhoneOptions.ColumnTop(Reference, 0), Close);
+        Assert.Equal(62, PhoneOptions.ColumnTop(Reference, 100), Close);
+        Assert.Equal(0, PhoneOptions.MaxScroll(Reference, 798), Close);
+        Assert.Equal(402, PhoneOptions.MaxScroll(Reference, 1200), Close);
+        Assert.Null(PhoneOptions.ScrollBar(Reference, 798, 0));
+        var (track, thumb) = PhoneOptions.ScrollBar(Reference, 1200, 402)!.Value;
+        Equal(new(2566, 138, 20, 842), track);
+        Assert.Equal(track.Bottom - 3, thumb.Bottom, Close);                                 // at its end
+    }
+
+    [Fact]
     public void Defaults_and_Close_stand_at_the_right_column_s_foot()
     {
         // lo1: foot = (FOOT - 10 - 30 - 130, FOOT - 10 - 30); Defaults (mid + 30, …, mid + 30 + 380), Close (mid + 430, …, LX1 - 40).

@@ -1176,7 +1176,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// the message skip is on: while it is, it takes one frame and returns what is held, which
     /// turns the skip off (<c>STOP_ON_CLICK</c>). Ours (owner, 2026-10-29): while the skip steps the
     /// exchange's effect (<see cref="SkippedEffectOn"/>), each of its waits lasts a tick at least, whatever the
-    /// screen's rate, and steps it (<see cref="BattleBoardView.StepSkippedEffect"/>).
+    /// screen's rate, and steps it (<see cref="BattleBoardView.StepSkippedEffect"/>). Under a frame-rate limit
+    /// (<see cref="FrameRateChoice"/>, 2026-11-03) a skipped wait ends in its frame while the frame has room for
+    /// another (<see cref="AnotherSkipInFrame"/>), and a timed wait at the frame nearest its end
+    /// (<see cref="HalfFrame"/>), not always at the first after it.
     /// </summary>
     private async Task<ushort> KeyWaitAsync(double seconds, bool cancelable, bool skippable = false)
     {
@@ -1189,9 +1192,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (skippable && _skip.IsSkipping)
         {
             var tick = Stopwatch.StartNew();
-            do
-                await NextFrameAsync();
-            while (SkippedEffectOn && tick.Elapsed.TotalSeconds < SkippedTickSeconds);
+            if (SkippedEffectOn || !AnotherSkipInFrame())
+                do
+                    await NextFrameAsync();
+                while (SkippedEffectOn && tick.Elapsed.TotalSeconds < SkippedTickSeconds);
             if (SkippedEffectOn)
                 _battleView.StepSkippedEffect();
             key = _input.ReadInput();
@@ -1209,8 +1213,36 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             if (cancelable && key != 0)
                 break;
         }
-        while (watch.Elapsed.TotalSeconds < seconds);
+        while (watch.Elapsed.TotalSeconds < seconds - HalfFrame);
         return key;
+    }
+
+    /// <summary>
+    /// Half the last frame (seconds): a timed wait ends at the frame nearest its end — under a frame-rate limit the map
+    /// drag's 32 ms step is one frame at 30 fps, not two when its wait started a little into a frame.
+    /// </summary>
+    private double HalfFrame => GetProcessDeltaTime() / 2;
+
+    /// <summary>
+    /// The message skip's pace before the frame-rate limit (<see cref="FrameRateChoice"/>): a wait a frame on the reference
+    /// phone, which drew ~100 frames a second.
+    /// </summary>
+    private const int SkippedWaitsPerSecond = 100;
+
+    private ulong _skipFrame;
+    private int _skipsInFrame;
+
+    /// <summary>
+    /// Whether a skipped wait may end in the frame it started in: under a frame-rate limit as many a frame as keep the skip
+    /// at <see cref="SkippedWaitsPerSecond"/> (three at 30 fps, two at 60), else one — each takes a frame, as before.
+    /// </summary>
+    private bool AnotherSkipInFrame()
+    {
+        ulong frame = Godot.Engine.GetProcessFrames();
+        if (frame != _skipFrame)
+            (_skipFrame, _skipsInFrame) = (frame, 0);
+        int limit = Godot.Engine.MaxFps, perFrame = limit > 0 ? Math.Max(1, (int)Math.Round(SkippedWaitsPerSecond / (double)limit)) : 1;
+        return ++_skipsInFrame < perFrame;
     }
 
     /// <summary>

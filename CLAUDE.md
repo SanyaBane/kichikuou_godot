@@ -477,6 +477,10 @@ Then (owner, 2026-11-02) the memory on Android: docs/memory.md, the findings and
 baked, `godot/Strategy/WaveTile`; the staging buffers' cap; one `FontFile` per path, `Lacquer.LoadFont`; the uploads' images
 disposed): ~1.2 GB after a battle, ~1.3 GB in a long session, the backdrop looked at by the owner on the Poco, no seam; the GPU's
 memory goes in steps of 256 MB past `video` ~222 MB (its "The GPU's memory goes in steps"), and the owner picks from cuts 5-10.
+Then (owner, 2026-11-03) a frame-rate limit for the battery, Option → Display → Frame rate (30, 60 or the screen's; 30 on
+Android, 60 elsewhere; `godot/Strategy/FrameRateChoice`), every options tab one column scrolled on every device
+(`OptionsView.Scroll.cs`) — docs/ui/options.md, "Frame rate" (mock-ups `tools/ui/mock_frame_rate.py`, the owner's A2);
+built, not measured on the Poco yet (docs/backlog.md).
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

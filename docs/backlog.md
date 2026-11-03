@@ -76,6 +76,12 @@ The owner aims at a public release (decision 28, 2026-10-20).
   "What is left to the edge"): the launch lays every screen out landscape before it turns upright, whose font sizes and
   stones stay; `FacePictures` keeps every unit's and girl's picture panel (~1 MB on the GPU each) for the launch; the upload
   ring's cap stays at 16 MB. The probe's patches and the adb scripts stay outside the repository (its "How it was measured").
+  Energy (owner, 2026-11-03): the frame-rate limit is built (docs/ui/options.md, "Frame rate"; 30 by default on Android);
+  **not yet measured on the Poco** — *agent*: frame rate and the process's CPU time a second on a still map and in the held
+  battle, before (3fe8803) and after, recorded in docs/memory.md as an energy section. Next candidates (owner's list):
+  drawing nothing while nothing changes (Godot's low-processor mode; our endless animations — the waiting triangle, the
+  pulsing gauge, the breathing target frame — stopped after a few idle seconds), and a garbage collection at quiet moments
+  (the title after a battle 1042 → 857 MB after a forced one).
 - **CI** — *owner* (a remote first), then *agent*: build, core tests, export. Without the game data
   the content tests no longer fail (2026-10-23): a test that reads the scenario, the CGs or a capture group
   is `[ScenarioFact]`/`[ScenarioTheory]`, `[LocalFolderFact]` or `[CaptureGroupFact]`/`[CaptureGroupTheory]`

@@ -20,11 +20,12 @@ namespace Kichikuou.Game.Strategy;
 /// battle screen's effects and timings, <see cref="BattleScreenSettings"/>), Game (the
 /// game folder), Tweaks (what changes the original's play: the damage forecast, "Chaos and Nikkou reach demons",
 /// <see cref="DemonReachChoice"/>, "Ninja follow-up", <see cref="NinjaChanceChoice"/>, "New scenes first",
-/// <see cref="NewScenesChoice"/>; owner, 2026-10-27). Every change applies
+/// <see cref="NewScenesChoice"/>; owner, 2026-10-27). Display also holds the frame rate (<see cref="FrameRateChoice"/>).
+/// Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Defaults, Forget and the game folder ask first, in a box over the sheet. Laid out
-/// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen, each tab
-/// in two columns (LO1, <c>OptionsView.Phone.cs</c>); held upright in one column scrolled by a finger (PO1 with PO1o,
-/// <c>OptionsView.Upright.cs</c>).
+/// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen (LO1,
+/// <c>OptionsView.Phone.cs</c>); held upright under the hole down to the bar (PO1 with PO1o, <c>OptionsView.Upright.cs</c>).
+/// On every device each tab is one column scrolled within the sheet (owner, 2026-11-03; <c>OptionsView.Scroll.cs</c>).
 /// </summary>
 internal sealed partial class OptionsView : Control
 {
@@ -72,7 +73,7 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>Where the preview's 121 sits on the Messages tab: under the speed's slider, as wide as its column (the phone's, <see cref="PhonePreviewRect"/>).</summary>
     private Rect2 PreviewRect => _phone is { } f ? PhonePreviewRect(f)
-        : new(ContentX, ContentY + 96, SpeedColumn, SpeedColumn * _sample.Panel.H / _sample.Panel.W);
+        : new(ContentX, ColumnPlace().Top + 96, SpeedColumn, SpeedColumn * _sample.Panel.H / _sample.Panel.W);
 
     private sealed record Question(string Title, string Text, string Confirm, Action Confirmed);
 
@@ -117,13 +118,6 @@ internal sealed partial class OptionsView : Control
         _gothic = DeploymentTableView.LoadFont(GodotGlyphRenderer.Chosen);
         MouseFilter = MouseFilterEnum.Stop;
         ZIndex = 1000;                                      // over everything, the battle screen's layers (up to 20) included; Godot's limit is 4096
-        _backdrop = new Layer(c =>
-        {
-            float k = _phone?.Scale ?? 1;
-            c.DrawSetTransform(Vector2.Zero, 0, new Vector2(k, k));
-            Ui.DrawWaveBackdrop(c, k, c.Size / k);
-        }) { ShowBehindParent = true, Visible = false };
-        AddChild(_backdrop);
         _preview = new MessageWindowView(GodotGlyphRenderer.Chosen) { Tail = false, Leaves = false, MouseFilter = MouseFilterEnum.Ignore };
         AddChild(_preview);
         _preview.Show(_sample, true, null, null);
@@ -152,9 +146,6 @@ internal sealed partial class OptionsView : Control
         if (phone != _phone)
             (_dragging, _pressed) = (null, null);                   // a turn: a slider's drag and a press were the old layout's
         _phone = phone;
-        _backdrop.Visible = phone is { IsUpright: false };        // upright the view draws it, out of its column's clip
-        _backdrop.Size = area.Size;
-        _backdrop.QueueRedraw();
         PlaceChildren();
         QueueRedraw();
     }
@@ -164,7 +155,8 @@ internal sealed partial class OptionsView : Control
         _tab = tab;
         _question = null;
         _dragging = null;
-        _scroll = 0;                                        // held upright each tab's column from its top
+        _scroll = 0;                                        // each tab's column from its top
+        _thumbGrab = null;
         _finger.Cancel();
         _preview.Visible = tab == Tab.Messages;
         if (tab == Tab.Messages)
@@ -297,6 +289,7 @@ internal sealed partial class OptionsView : Control
                 SetPalette(UiPalette.Lacquer);
                 SetThousands(ThousandsSeparator.Comma);
                 SetLedgerRows(LedgerRowsChoice.Default);     // the PC's or the touch mode's own
+                FrameRateChoice.Chosen = FrameRateChoice.Default;   // the device's own
                 if (Device.Phone)
                     OrientationChoice.Chosen = OrientationChoice.Way.System;
                 if (Device.TouchLayout)
@@ -339,7 +332,7 @@ internal sealed partial class OptionsView : Control
 
     public override void _GuiInput(InputEvent e)
     {
-        if (_phone is { IsUpright: true } upright && _question is null && FingerTouch(e, upright))
+        if (_question is null && ScrollInput(e))
         {
             AcceptEvent();
             return;
@@ -449,29 +442,20 @@ internal sealed partial class OptionsView : Control
             DrawPhone(phone);
             return;
         }
+        BeginClip();
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, 0.55f));
         Ui.DrawPanel(this, Frame, _k);
         DrawTabs();
         Text(_brush, new Vector2(1150 - _brush.GetStringSize("Options", fontSize: 28).X, 116), "Options", fontSize: 28,
             modulate: Ui.Name);
-        switch (_tab)
+        DrawColumn((x, top, w) => _tab switch
         {
-            case Tab.Messages:
-                DrawMessages();
-                break;
-            case Tab.Display:
-                DrawDisplay();
-                break;
-            case Tab.Battle:
-                DrawBattle();
-                break;
-            case Tab.Game:
-                DrawGame();
-                break;
-            case Tab.Tweaks:
-                DrawTweaks();
-                break;
-        }
+            Tab.Messages => DrawMessages(x, top, w),
+            Tab.Display => DrawDisplay(x, top, w),
+            Tab.Battle => DrawBattleColumn(x, top, w),
+            Tab.Game => GameSection(x, top, w),
+            _ => DrawTweaks(x, top, w),
+        });
         DrawLink("defaults", "Defaults", new Vector2(150, 706), AskDefaults, enabled: _tab != Tab.Game);   // the game folder has no default
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
@@ -508,18 +492,31 @@ internal sealed partial class OptionsView : Control
         DrawRect(new Rect2(current.Position.X, TabTop, current.Size.X, 4), Ui.Vermilion);
     }
 
-    private void DrawMessages()
+    // ---------------------------------------------------------------- the tabs' columns (the parts' units; each returns its last line)
+
+    /// <summary>
+    /// Messages on the PC and the tablet: the text speed and its preview at the left and the message skip at the right in
+    /// one row (the owner, 2026-11-03); under them across the column the mouse (not in the touch mode) and the read text.
+    /// </summary>
+    private float DrawMessages(float x, float y, float w)
     {
-        float x = ContentX, y = ContentY, lw = SpeedColumn;
+        float lw = SpeedColumn;
         SectionHead(x, y, "Text speed", lw);
         SpeedSlider(x, y + 66, lw);
-        MessageSkipColumn(x + lw + 50, y, ContentW - lw - 50);
+        MessageSkipColumn(x + lw + 50, y, w - lw - 50);
 
         int chosen = ReadTextChoice.Index;
         Text(_gothic, new Vector2(x + 14, y + 281), chosen == ReadTextChoice.None ? "Read text keeps the window's colour."
             : "The preview counts as read.", fontSize: 13, modulate: Ui.InkQuiet);
         y += 330;
-        SectionHead(x, y, "Already-read text", ContentW);
+        if (!TouchMode.On)                                  // off there, MouseMovementChoice
+        {
+            SectionHead(x, y, "Mouse", w);
+            CheckBox("mouse", x, y + 38, MouseMovementChoice.On, "Mouse movement", "After a menu, the pointer glides back where it was.",
+                () => MouseMovementChoice.On = !MouseMovementChoice.On);
+            y += 110;
+        }
+        SectionHead(x, y, "Already-read text", w);
         float tx = x;
         ReadTile("read-none", new Rect2(tx, y + 40, 150, 44), chosen == ReadTextChoice.None, null, ReadTextChoice.None);
         tx += 160;
@@ -529,6 +526,7 @@ internal sealed partial class OptionsView : Control
             fontSize: 17, modulate: Ui.Ink);
         Text(_gothic, new Vector2(x, y + 150), ReadTextLines[0], fontSize: 13, modulate: Ui.InkQuiet);
         Text(_gothic, new Vector2(x, y + 170), ReadTextLines[1], fontSize: 13, modulate: Ui.InkQuiet);
+        return y + 170;
     }
 
     /// <summary>What the already-read text's colour does, in two lines.</summary>
@@ -549,8 +547,8 @@ internal sealed partial class OptionsView : Control
         Text(_gothic, new Vector2(x, y + 5), "Instant", HorizontalAlignment.Right, width, 14, Ui.InkQuiet);
     }
 
-    /// <summary>Messages' second column: the message skip's switches, the seen messages and Forget, the mouse (not in the touch mode).</summary>
-    private void MessageSkipColumn(float rx, float y, float rw)
+    /// <summary>Messages' second column: the message skip's switches, the seen messages and Forget; returns the last line's baseline.</summary>
+    private float MessageSkipColumn(float rx, float y, float rw)
     {
         SectionHead(rx, y, "Message skip", rw);
         CheckBox("skip-unseen", rx, y + 38, _skip.SkipUnseen, "Skip unseen text", "MsgSkip and Ctrl skip unread ones too.",
@@ -561,12 +559,7 @@ internal sealed partial class OptionsView : Control
         DrawLink("forget", "Forget them…", new Vector2(rx + rw, y + 160),
             () => Ask("Forget seen messages?", $"All {_skip.SeenCount} messages seen so far will count as unseen again.", "Forget",
                 () => _skip.ForgetSeen()), right: true, enabled: _skip.SeenCount > 0);
-        if (!TouchMode.On)                                  // off there, MouseMovementChoice
-        {
-            SectionHead(rx, y + 220, "Mouse", rw);
-            CheckBox("mouse", rx, y + 258, MouseMovementChoice.On, "Mouse movement", "After a menu, the pointer glides back where it was.",
-                () => MouseMovementChoice.On = !MouseMovementChoice.On);
-        }
+        return y + 165;
     }
 
     /// <summary>
@@ -590,25 +583,57 @@ internal sealed partial class OptionsView : Control
         _spots.Add(new Spot(id, rect.Grow(4), () => { SetReadColour(index); QueueRedraw(); }));
     }
 
-    private void DrawDisplay()
+    /// <summary>
+    /// Display on the PC and the tablet: in the touch layout (the tablet) the screen margins first, as the phone's order
+    /// has them; then the frame rate and the rest (<see cref="DisplaySections"/>).
+    /// </summary>
+    private float DrawDisplay(float x, float y, float w)
     {
-        float x = ContentX, y = ContentY, w = ContentW;
+        if (Device.TouchLayout)
+        {
+            SectionHead(x, y, "Screen margins", w);
+            MarginsField(new Rect2(x, y + 36, w, 40));
+            y += 132;
+        }
+        return DisplaySections(x, y, w);
+    }
+
+    /// <summary>
+    /// Display's sections after the device's own (the phone's orientation and the screen margins), one under another on every
+    /// device but upright: the frame rate (owner, 2026-11-03), the font, the palette, the thousands, the unit tables' row
+    /// heights. Returns the tiles' foot.
+    /// </summary>
+    private float DisplaySections(float x, float y, float w)
+    {
+        FrameRateSection(x, y, w);
+        y += 132;
         FontSection(x, y, w);
         y += 132;
-        if (Device.TouchLayout)                     // the tablet: the screen margins beside the palette
-        {
-            PaletteSection(x, y, MarginsIn - 40);
-            SectionHead(x + MarginsIn, y, "Screen margins", w - MarginsIn);
-            MarginsField(new Rect2(x + MarginsIn, y + 36, w - MarginsIn, 40));
-        }
-        else
-        {
-            PaletteSection(x, y, w);
-        }
+        PaletteSection(x, y, w);
         y += 132;
         ThousandsSection(x, y, w);
         y += 104;
-        RowsSection(x, y, w);
+        return RowsSection(x, y, w);
+    }
+
+    /// <summary>
+    /// The frame rate (owner, 2026-11-03; <see cref="FrameRateChoice"/>): its three rates as radios across from 38 under the
+    /// head — the screen's own rate named in hertz —, each with its line under it.
+    /// </summary>
+    private void FrameRateSection(float x, float y, float w)
+    {
+        SectionHead(x, y, "Frame rate", w);
+        var rates = FrameRateChoice.Rates;
+        float third = w / rates.Length;
+        for (int i = 0; i < rates.Length; i++)
+        {
+            int rate = rates[i];
+            float rx = x + i * third;
+            Radio("frame-rate-" + rate, rx, y + 38, FrameRateChoice.Chosen == rate, FrameRateChoice.Name(rate), _gothic,
+                () => FrameRateChoice.Chosen = rate);
+            string hint = FrameRateChoice.Hint(rate);
+            Text(_gothic, new Vector2(rx + 30, y + 80), hint, fontSize: SideCells.Fit(_gothic, hint, 13, third - 40), modulate: Ui.InkQuiet);
+        }
     }
 
     private void FontSection(float x, float y, float w)
@@ -622,34 +647,11 @@ internal sealed partial class OptionsView : Control
     }
 
     /// <summary>
-    /// The phone's screen orientation (the owner's PO1o, <see cref="OrientationChoice"/>), a phone's only: its four ways as
-    /// radios two a row from 38 under the head, the chosen way's line under them, shrunk to <paramref name="w"/>.
-    /// </summary>
-    private void OrientationSection(float x, float y, float w)
-    {
-        SectionHead(x, y, "Screen orientation", w);
-        var all = OrientationChoice.All;
-        for (int i = 0; i < all.Length; i++)
-        {
-            var way = all[i].Way;
-            Radio("orientation-" + way, x + i % 2 * (w / 2), y + 38 + i / 2 * 36, OrientationChoice.Chosen == way, all[i].Name,
-                _gothic, () => OrientationChoice.Chosen = way);
-        }
-        string hint = Array.Find(all, o => o.Way == OrientationChoice.Chosen).Hint;
-        Text(_gothic, new Vector2(x, y + 106), hint, fontSize: SideCells.Fit(_gothic, hint, 13, w), modulate: Ui.InkQuiet);
-    }
-
-    /// <summary>On the PC's sheet in the touch layout (the tablet), how far in the screen margins stand, right of the palette's swatches.</summary>
-    private const float MarginsIn = 340;
-
-    /// <summary>
     /// The screen margins (docs/ui/screen-margins.md, the owner's C), in the touch layout only: a field with the sets in
     /// words — on a phone the way it is held now and the other under it, on the tablet landscape's alone — and Adjust…; a
-    /// tap anywhere on it opens the calibration over the screen (<see cref="MarginsAdjust"/>). <paramref name="titled"/>:
-    /// with no section head over it (the phone held landscape, at the left column's foot), its name on its first line and
-    /// both sets on the second.
+    /// tap anywhere on it opens the calibration over the screen (<see cref="MarginsAdjust"/>).
     /// </summary>
-    private void MarginsField(Rect2 field, bool titled = false)
+    private void MarginsField(Rect2 field)
     {
         bool lit = _hover == "margins";
         DrawRect(field, Field);
@@ -661,7 +663,7 @@ internal sealed partial class OptionsView : Control
         bool upright = Device.HeldUpright;
         if (Device.Phone)
         {
-            string first = titled ? "Screen margins" : Set(upright), second = titled ? $"{Set(upright)} · {Set(!upright)}" : Set(!upright);
+            string first = Set(upright), second = Set(!upright);
             Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 17, field.Position.Y + field.Size.Y * 0.36f)),
                 Ellipsis(first, textW, 17), fontSize: 17, modulate: Ui.Ink);
             Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 13, field.Position.Y + field.Size.Y * 0.72f)),
@@ -695,8 +697,8 @@ internal sealed partial class OptionsView : Control
         }
     }
 
-    /// <summary>The unit tables' row heights: a tile each across <paramref name="w"/>, the tiles from 58 under the head.</summary>
-    private void RowsSection(float x, float y, float w)
+    /// <summary>The unit tables' row heights: a tile each across <paramref name="w"/>, the tiles from 58 under the head; returns the tallest's foot.</summary>
+    private float RowsSection(float x, float y, float w)
     {
         SectionHead(x, y, "Unit tables: row height", w);
         Text(_gothic, new Vector2(x, y + 14), "Subordinates and deployment. Each device keeps its own.",
@@ -705,6 +707,7 @@ internal sealed partial class OptionsView : Control
         float tile = (w - (count - 1) * RowTileGap) / count;
         for (int i = 0; i < count; i++)
             RowTile(x + i * (tile + RowTileGap), y + 58, tile, LedgerRowsChoice.Heights[i]);
+        return y + 58 + 2 * LedgerRowsChoice.Heights.Max() + 2;
     }
 
     private const float RowTileGap = 17;
@@ -748,26 +751,24 @@ internal sealed partial class OptionsView : Control
         _spots.Add(new Spot(id, new Rect2(x - 4, y - 28, w + 8, 2 * tallest + 34), () => { SetLedgerRows(height); QueueRedraw(); }));
     }
 
-    private void DrawBattle()
+    /// <summary>Battle on every device: the effects, the timings one under another, each across the column (owner, 2026-11-03).</summary>
+    private float DrawBattleColumn(float x, float y, float w)
     {
-        float x = ContentX, y = ContentY, w = ContentW;
-        EffectsSection(x, y, w);
-        y += 96;
+        y = EffectsSection(x, y, w, wrap: true) + UprightGap;
         SectionHead(x, y, "Timings", w);
         y += 36;
-        float colW = (w - 40) / 2;
-        int i = 0;
         foreach (var setting in Timings)
         {
-            TimingRow(setting, x + i % 2 * (colW + 40), y + i / 2 * 46, colW);
-            i++;
+            TimingRow(setting, x, y, w);
+            y += 46;
         }
+        return y - 6;
     }
 
     private static IEnumerable<BattleScreenSettings.Setting> Timings =>
         BattleScreenSettings.All.Where(s => s.Unit != BattleScreenSettings.Toggle);
 
-    /// <summary>The effects' switch; with <paramref name="wrap"/> (upright's column) its hint wraps into the width. Returns its foot.</summary>
+    /// <summary>The effects' switch; with <paramref name="wrap"/> its hint wraps into the width. Returns its foot.</summary>
     private float EffectsSection(float x, float y, float w, bool wrap = false)
     {
         SectionHead(x, y, "Effects", w);
@@ -786,8 +787,6 @@ internal sealed partial class OptionsView : Control
                 v => BattleScreenSettings.Set(setting, v)));
         Text(_gothic, new Vector2(cx, cy + 34), Format(setting, value), HorizontalAlignment.Right, colW, 14, Ui.Ink);
     }
-
-    private void DrawGame() => GameSection(ContentX, ContentY, ContentW);
 
     /// <summary>The game folder's field and its note; returns the note's last baseline.</summary>
     private float GameSection(float x, float y, float w)
@@ -817,11 +816,11 @@ internal sealed partial class OptionsView : Control
     /// <summary>
     /// What changes the original's play (owner, 2026-10-27; docs/tweaks.md): the battle's damage forecast, BRS-24's fix
     /// (decision 32: off, the owner's A or B, as radios) and the ninja follow-up's chance (decision 33, the owner's N1
-    /// without Never: the thirds from low to high, in the reach radios' columns), the scenes' order.
+    /// without Never: the thirds from low to high, in the reach radios' columns), the scenes' order — on the PC and the
+    /// tablet, and held landscape at the phone's type (owner, 2026-11-03). Returns the last line's foot.
     /// </summary>
-    private void DrawTweaks()
+    private float DrawTweaks(float x, float y, float w)
     {
-        float x = ContentX, y = ContentY, w = ContentW;
         Wrap(TweaksIntro, x, y + 14, w, 14, Ui.InkQuiet);
         y += 44;
         SectionHead(x, y, "Battle", w);
@@ -838,7 +837,7 @@ internal sealed partial class OptionsView : Control
             NinjaRadio(Ninjas[i], tx + i * (tw / Ninjas.Length), y + 281);
         y += 338;
         SectionHead(x, y, "Scenes", w);
-        NewScenesBox(x, y + 38);
+        return NewScenesBox(x, y + 38);
     }
 
     private const string TweaksIntro = "Each setting here changes how the original game plays. Everything else keeps the original's rules.";

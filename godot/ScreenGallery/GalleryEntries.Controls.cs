@@ -18,6 +18,12 @@ internal static partial class GalleryEntries
             yield return new($"options-{tab.ToString().ToLowerInvariant()}", "Settings", $"Options: {tab}", Week18,
                 "The player's settings as they are; nothing is written unless a control is used.", g => Options(g, tab));
         }
+        foreach (var tab in new[] { OptionsView.Tab.Messages, OptionsView.Tab.Display, OptionsView.Tab.Battle, OptionsView.Tab.Tweaks })
+        {
+            yield return new($"options-{tab.ToString().ToLowerInvariant()}-end", "Settings", $"Options: {tab} at its end", Week18,
+                "Every tab one column, scrolled (owner, 2026-11-03): this one scrolled to its end, where it scrolls; nothing is "
+                + "written unless a control is used.", g => Options(g, tab, end: true));
+        }
         yield return new("options-defaults", "Settings", "Options: Defaults asking", Week18,
             "Defaults asks first, the same words on every tab (owner, 2026-10-31), here over Messages, whose preview hides "
             + "under it; nothing is reset unless Reset is used.", g => Options(g, OptionsView.Tab.Messages, askDefaults: true));
@@ -45,9 +51,9 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// The options window on <paramref name="tab"/> over the map, with a message skip of its own that records nothing;
-    /// with <paramref name="askDefaults"/> Defaults' question over it.
+    /// with <paramref name="askDefaults"/> Defaults' question over it, with <paramref name="end"/> the tab scrolled to its end.
     /// </summary>
-    private static Action<Rect2>? Options(GalleryStage g, OptionsView.Tab tab, bool askDefaults = false)
+    private static Action<Rect2>? Options(GalleryStage g, OptionsView.Tab tab, bool askDefaults = false, bool end = false)
     {
         if (g.State(Week18) is not { } s)
             return null;
@@ -55,6 +61,8 @@ internal static partial class GalleryEntries
         var view = g.Add(new OptionsView(new MessageSkip([]), folderLocked: GameData.UsesExtract, tab));
         if (askDefaults)
             view.AskDefaults();
+        if (end)
+            view.ScrollToEnd();
         return area =>
         {
             GalleryStage.Fill(backdrop, area);

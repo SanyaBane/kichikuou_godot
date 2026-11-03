@@ -203,3 +203,54 @@ the order 21 times, every time during an exchange. So the preview is gone, and w
 places a new order at once) and its three timings, "Order strip: move", "hurry" and "drop and rise" (`strip_seconds`,
 `strip_hurry_seconds`, `strip_drop_share`, `--strip-seconds`); the tab keeps Effects and nine timings, the strip's fly-in
 among them. Their lines left in a player's `settings.cfg` are not read any more.
+
+## Frame rate (2026-11-03)
+
+Owner's request, for the phone's battery (docs/memory.md): a limit on the frame rate, on every device, with three
+choices — 30, 60, and the screen's own rate (none: Godot's vsync alone, 120 Hz on the Poco, a monitor's 144 on a PC) —
+30 by default on Android and 60 on the PC. Today nothing limits it: the Poco draws ~100 frames a second on a still
+screen. On Android Godot 4.7.2 hands `Engine.MaxFps` to the system's frame pacer (Swappy, `swap_chain_set_max_fps`), so
+30 and 60 come every fourth or second refresh of a 120 Hz screen, evenly.
+
+Mock-ups, round 1 (`tools/ui/mock_frame_rate.py`, over the gallery's `options-display` and `options-game`): **A** in
+Display, which is full to its buttons on the PC and held landscape — on the PC the palette's row shared with the frame
+rate's radios, held landscape the margins' field halved and three tiles beside it (the palette's and the row height's
+kind, the chosen framed in vermilion), held upright a section after the margins in the orientation's rows; **B** a section
+of its own in Game, nearly empty on every device (radios on the PC and held landscape, the orientation's rows upright),
+whose Defaults then has something to reset.
+
+**The owner chose A** (2026-11-03), with one change: nothing squeezed to save room — on the PC and held landscape **every
+tab in one column, scrolled** (held upright already is). Round 2 (**A2**, the same script; each tab at its top and its
+end) drew it, the owner accepted it with one change of their own on Messages:
+
+- **Display** in the upright's order: held landscape the orientation (its four radios across, its line under them), the
+  margins (a field across, the way the phone is held first), the frame rate, then the font, the palette, the thousands
+  and the row heights as now; on the PC the frame rate on top, the rest as now. The frame rate's three radios across,
+  each with its line under it ("Saves the battery." / "Smoother effects and scrolling." / "As fast as the screen: the most
+  power." on Android; the PC's own first line), the screen's rate in the third one's name ("Screen: 144 Hz").
+- **Messages**: the text speed (with its preview) and the message skip side by side in one row of two columns, as now
+  (the owner's change); under them across the column the mouse (the PC's) and the read text, its tiles in one row.
+- **Battle**: the effects, then the nine timings one under another, each across the column.
+- **Tweaks** held landscape as the PC's one column at the phone's type (the choices across, the hints on one line); the
+  PC's Tweaks and Game, and Game held landscape, are one column already.
+- The sheet scrolls between the tabs and the foot (the wheel on the PC, a finger held landscape), the reference scroll bar
+  at its right (the layout's 8 px on the PC, the phone's on the paper held landscape); **Defaults | Close stay at the foot**
+  — held landscape at the right thumb as now, the margins' field gone from the foot.
+- **Held upright**: A as drawn, the frame rate a section after the margins in the orientation's rows.
+
+**Built** (2026-11-03): `FrameRateChoice` (`[display] frame_rate` in `settings.cfg`: 30, 60 or 0 for the screen's; else
+30 on Android, 60 elsewhere; `Engine.MaxFps`, applied at the launch by `Main` and at each change; not headless nor with
+`--fast`, so unattended runs keep the machine's speed); Defaults on Display resets it to the device's own. Every tab is one
+column scrolled in the sheet on every device (`OptionsView.Scroll.cs`: the view, the clip, the reference scroll bar, the
+wheel everywhere, a finger in the touch mode, the PC's thumb dragged by the mouse; held landscape's geometry
+`PhoneOptions.View`, `ColumnTop`, `MaxScroll`, `ScrollBar`); the tablet's Display has the margins first, as the phone's
+order. The screen gallery shows each tab at its top and, as `options-<tab>-end`, at its end (`OptionsView.ScrollToEnd`).
+
+**What a limit changes elsewhere** (an audit of the code, 2026-11-03): the animations (`UiClock`, the typing, the cards'
+and the armies' slides, the opening, the counters, the strip, the exchange effects), the input (`InputLatch` keeps a
+click until it is read), the finger's flicks (`FingerScroll`) and the engine's clock are time-based and keep their pace.
+Two did not, and are fixed in `GameScreen.KeyWaitAsync`: the message skip took a frame for each skipped wait (about 30 a
+second at 30 fps, against ~100 on the phone before) — now as many a frame as keep ~100 a second (`AnotherSkipInFrame`:
+three at 30 fps, two at 60; uncapped one, as before; not while it steps the exchange's effect); and a timed wait (`Y 3`)
+ended at the first frame after its time, so the map drag's 32 ms step took two frames at 30 fps when its wait started
+a little into one — now at the frame nearest its end (`HalfFrame`). Not yet measured on the Poco (docs/backlog.md).
