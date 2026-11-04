@@ -323,10 +323,7 @@ internal sealed partial class SaveLoadView
             DrawString(_gothic, new Vector2(x, y + u.Px(Places.ValueDown(f)) + _gothic.GetAscent(value)), stats[i].Item2, fontSize: value,
                 modulate: Ui.Value);
         }
-        if (_chosenNew)
-            Text(_gothic, u.Size(30), page.Position.X + u.Px(PhoneSaves.FigureIn), u.Rect(Places.Comment(f, false)).GetCenter().Y,
-                "A new manual save. Its comment can be written once it is saved.", Ui.Text);
-        else
+        if (!_chosenNew)                                                // a new save: nothing under its figures (owner, 2026-11-04)
         {
             PhoneComment(u, held!, lines);
             if (lines)

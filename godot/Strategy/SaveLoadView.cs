@@ -1033,9 +1033,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             DrawString(_gothic, new Vector2(sx, sy + 18 + _gothic.GetAscent(17)), stats[i].Item2, fontSize: 17, modulate: Ui.Value);
         }
         float cy = MapRect.End.Y + 114;
-        if (_chosenNew)
-            Text(_gothic, 15, PageX, cy + 10, "A new manual save. Its comment can be written once it is saved.", Ui.Text);
-        else
+        if (!_chosenNew)                                                // a new save: nothing under its figures (owner, 2026-11-04)
         {
             DrawComment(held!, cy);
             if (held!.IsAuto && !_editing)                              // what its load does, under the comment
