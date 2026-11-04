@@ -26,11 +26,22 @@ public sealed class LedgerNameCellTests
     [Fact]
     public void For_ScalesTheUprightRowToTheLedgersText()
     {
-        var upright = LedgerNameCell.For(PhoneLedgerUpright.Text);
+        var upright = LedgerNameCell.For(PhoneLedgerUpright.Text, deployment: true);
         Assert.Equal(PhoneLedgerUpright.DeploymentRows.Row, upright.Row, 3);
         Assert.Equal(PhoneLedgerUpright.DeploymentRows.Face, upright.Face, 3);
-        var pc = LedgerNameCell.For(17);
+        var pc = LedgerNameCell.For(17, deployment: true);
         Assert.Equal(166 * 17 / 46f, pc.Row, 3);                                // ~61 px on the PC
         Assert.Equal(pc.HpTop + pc.BarHeight, pc.FaceTop + pc.Face, 3);         // the face down to the HP bar's foot
+    }
+
+    [Fact]
+    public void Subordinates_HaveNoRowsLine_TheFaceStillDownToTheHpBarsFoot()
+    {
+        var merged = LedgerNameCell.Merge(LedgerTabs.Of(SubordinatesScreen.Columns, LedgerTab.Overview));
+        Assert.Equal(["№", "Name · Type", "Troops", "Refill", "Cost", "Item"], merged.Columns.Select(c => c.Header));
+        var pc = LedgerNameCell.For(17, deployment: false);
+        Assert.Equal(0, pc.RowsMiddle);
+        Assert.Equal(pc.HpTop + pc.BarHeight, pc.FaceTop + pc.Face, 3);
+        Assert.True(pc.Row < LedgerNameCell.For(17, deployment: true).Row);     // a line shorter
     }
 }

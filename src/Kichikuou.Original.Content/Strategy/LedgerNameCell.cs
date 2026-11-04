@@ -3,10 +3,11 @@ using Kichikuou.Original.Content.Devices;
 namespace Kichikuou.Original.Content.Strategy;
 
 /// <summary>
-/// The deployment table's Name · Type cell off the upright phone (owner, 2026-11-04: "the same design" as upright, the
-/// mock-ups of <c>tools/ui/mock_name_cell.py</c>): one cell in place of the Name, Type and Rows columns — the unit's face
-/// from the name's top to the HP bar's foot, the name, the type and the rows under it from one left edge, the troops' and
-/// the HP bars under them. Its places are the upright row's (<see cref="PhoneLedgerUpright.DeploymentRows"/>) scaled so
+/// The ledger's Name · Type cell off the upright phone (owner, 2026-11-04: "the same design" as upright, the mock-ups of
+/// <c>tools/ui/mock_name_cell.py</c>; Subordinates the same day, without the rows): one cell in place of the Name, Type and
+/// Rows columns — the unit's face from the name's top to the HP bar's foot, the name, the type and on the deployment table
+/// the rows under it from one left edge, the troops' and the HP bars under them. Its places are the upright row's
+/// (<see cref="PhoneLedgerUpright.DeploymentRows"/>, <see cref="PhoneLedgerUpright.SubordinatesRows"/>) scaled so
 /// the ledger's text (<paramref name="Text"/>) stands for upright's (<see cref="PhoneLedgerUpright.Text"/>): every value
 /// in the window's pixels, from the row's top or the cell's left.
 /// </summary>
@@ -19,10 +20,13 @@ public sealed record LedgerNameCell(float Text, float Row, float NameText, float
     /// <summary>The columns the cell takes the place of (Name stays, drawn as the cell).</summary>
     public static IReadOnlyList<DeploymentColumn> Merged { get; } = [DeploymentColumn.TroopType, DeploymentColumn.Rows];
 
-    /// <summary>The cell's places for a ledger whose text is <paramref name="text"/> pixels.</summary>
-    public static LedgerNameCell For(float text)
+    /// <summary>
+    /// The cell's places for a ledger whose text is <paramref name="text"/> pixels: the deployment table's
+    /// (<paramref name="deployment"/>, with the rows' line) or Subordinates' (<see cref="RowsMiddle"/> 0).
+    /// </summary>
+    public static LedgerNameCell For(float text, bool deployment)
     {
-        var r = PhoneLedgerUpright.DeploymentRows;
+        var r = PhoneLedgerUpright.Rows(deployment);
         float s = text / PhoneLedgerUpright.Text;
         return new(text, r.Row * s, r.NameText * s, r.NameMiddle * s, PhoneLedgerUpright.TypeText * s, r.TypeMiddle * s,
             r.RowsMiddle * s, r.FaceTop * s, r.Face * s, PhoneLedgerUpright.NameGap * s, r.BarTop * s, r.HpTop * s,

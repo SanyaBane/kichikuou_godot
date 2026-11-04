@@ -170,10 +170,11 @@ public static class PhoneLedgerUpright
         float Face, float BarTop, float HpTop);
 
     /// <summary>
-    /// Subordinates' rows (8.5 mm): the name (2.8 mm, smaller when it would not fit), the type under it (1.9 mm), the face
-    /// (6.2 mm) in the row's middle, the bars under the type.
+    /// Subordinates' rows (owner, 2026-11-04: the deployment table's A2 without the rows' line): the name 12 % smaller than
+    /// before, the type under it, the bars under the type, the face from the name's top to the HP bar's foot, the row 7.5 mm
+    /// (was 8.5, the face 6.2 mm in its middle).
     /// </summary>
-    public static RowLayout SubordinatesRows { get; } = new(150, 50, 44, 92, 0, 21, 108, 118, 130);
+    public static RowLayout SubordinatesRows { get; } = new(132, 44, 38, 78, 0, 16, 102, 98, 110);
 
     /// <summary>
     /// The deployment table's rows (owner, 2026-11-04, mock-up A2 — <c>tools/ui/mock_rows_under_type.py</c>): the rows a

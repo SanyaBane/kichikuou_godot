@@ -235,7 +235,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         var shown = Tab is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
         if (_upright is not null)
             shown = PhoneLedgerUpright.Scrolled(shown);
-        else if (!_chooser)
+        else
             shown = LedgerNameCell.Merge(shown);                    // the Name · Type cell (Stacked)
         (_columns, _groups) = (shown.Columns, shown.Groups);
         _refillHovered = 0;
@@ -496,17 +496,17 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     }
 
     /// <summary>
-    /// The deployment table's Name · Type cell (<see cref="LedgerNameCell"/>; owner, 2026-11-04) off the upright phone, which
-    /// has its own in the fixed part: the type and the rows under the name, the face beside them, the bars under them.
+    /// The Name · Type cell (<see cref="LedgerNameCell"/>; owner, 2026-11-04) off the upright phone, which has its own in
+    /// the fixed part: the type (and on the deployment table the rows) under the name, the face beside them, the bars under them.
     /// </summary>
-    private bool Stacked => !_chooser && _upright is null;
+    private bool Stacked => _upright is null;
 
-    /// <summary>The cell's places at the text's size.</summary>
-    private LedgerNameCell Cell => LedgerNameCell.For(_fontSize);
+    /// <summary>The cell's places at the text's size: the deployment table's, or Subordinates' without the rows.</summary>
+    private LedgerNameCell Cell => LedgerNameCell.For(_fontSize, deployment: !_chooser);
 
     /// <summary>A row's least height for the cell at text <paramref name="size"/> (the tree adds the separation twice), else 0.</summary>
     private int StackedMinimum(int size, int separation) =>
-        Stacked ? (int)Math.Round(LedgerNameCell.For(size).Row) - 2 * separation : 0;
+        Stacked ? (int)Math.Round(LedgerNameCell.For(size, deployment: !_chooser).Row) - 2 * separation : 0;
 
     /// <summary>The phone's frame held landscape while the table is laid out so (<see cref="PlacePhone"/>), else null.</summary>
     private PhoneFrame? _landscape;
@@ -915,7 +915,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             return;
         if (chosen)
             for (int c = talk is null ? 0 : 1; c < Columns; c++)
-                if (c != nameColumn)
+                if (c != nameColumn && c != numberColumn)
                     item.SetCustomBgColor(c, Ui.ChosenRow);    // the tree tints over a custom cell: the bubble's cell tinted below
         item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
         item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
@@ -1092,7 +1092,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         var quiet = row.Grey ? Ui.InkGrey : Ui.InkQuiet;
         CellLine(row.Text(DeploymentColumn.Name), nameSize, row.Grey ? Ui.InkGrey : Ui.Ink, tx, top + k.NameMiddle, room);
         CellLine(row.Text(DeploymentColumn.TroopType), typeSize, quiet, tx, top + k.TypeMiddle, room);
-        CellLine(row.Text(DeploymentColumn.Rows), typeSize, quiet, tx, top + k.RowsMiddle, room);
+        if (k.RowsMiddle > 0)
+            CellLine(row.Text(DeploymentColumn.Rows), typeSize, quiet, tx, top + k.RowsMiddle, room);
         float h = Math.Max(2, k.BarHeight);
         DrawGauge(this, new Rect2(tx, top + k.BarTop, room, h), row.Troops, row.MaxTroops, Ui.GaugeTroops, row.Grey);
         DrawGauge(this, new Rect2(tx, top + k.HpTop, room, h), row.Hp, row.MaxHp, Ui.GaugeHp, row.Grey);
@@ -1117,7 +1118,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         DrawString(_font, new Vector2(x, middle + (_font.GetAscent(size) - _font.GetDescent(size)) / 2), text,
             HorizontalAlignment.Left, room, size, colour);
 
-    /// <summary>The cell's width: its widest line's, and room for its heading over the names.</summary>
+    /// <summary>The cell's width: its widest line's (the rows' on the deployment table), and room for its heading over the names.</summary>
     private float StackedWidth()
     {
         var k = Cell;
@@ -1126,7 +1127,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         foreach (var row in _rows)
             widest = Math.Max(widest, Math.Max(_font.GetStringSize(row.Text(DeploymentColumn.Name), fontSize: nameSize).X,
                 Math.Max(_font.GetStringSize(row.Text(DeploymentColumn.TroopType), fontSize: typeSize).X,
-                    _font.GetStringSize(row.Text(DeploymentColumn.Rows), fontSize: typeSize).X)));
+                    k.RowsMiddle > 0 ? _font.GetStringSize(row.Text(DeploymentColumn.Rows), fontSize: typeSize).X : 0)));
         return Math.Max(k.Width(widest), _titleFont.GetStringSize(LedgerNameCell.Header + _down, fontSize: TitleSize).X + k.TextX);
     }
 

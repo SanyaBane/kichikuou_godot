@@ -1606,7 +1606,8 @@ gains Rows' width (Refill and Cost come into view); the heading "Name · Type" s
 
 - **The rows' layout** (`PhoneLedgerUpright.RowLayout`, `DeploymentRows` beside `SubordinatesRows`): the row 166 high
   (9.4 mm, was 150), the name 44 (12 % smaller), the face from the name's top to the HP bar's foot (136, was 108; the
-  fixed part 30.3 mm wide), the bars under the rows' line. Subordinates' rows stay as they were (no Rows there).
+  fixed part 30.3 mm wide), the bars under the rows' line. Subordinates took the same the same day without the rows'
+  line (`SubordinatesRows`: the row 132, 7.5 mm, the face 102); the other modes too (docs/ui/unit-ledger.md, §10).
 - **One left edge**: the type and the rows from the name's left (`Places`' `TypeX`; the type stood 2 further), on
   Subordinates too.
 - **Every tab**: the fixed part is the same in each, so the rows stand under the type in Troops and Commander too;
