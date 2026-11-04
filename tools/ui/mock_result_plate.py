@@ -342,22 +342,23 @@ def sheet(r, name, title, variants=VARIANTS):
     print(os.path.join(OUT, name + '.png'), out.size)
 
 
-for r, key in ((R4, 'r4'), (R5, 'r5')):
-    for label, f in VARIANTS[1:]:
-        f(r)[0].save(os.path.join(OUT, f'{label.split()[0].lower()}-{key}.png'))
-sheet(R4, 'p22-r4', 'Round P22 — the result plate upright, after Replenish (R4): Haurein (unit 12), the week-18 save')
-sheet(R5, 'p22-r5', 'Round P22 — after Add New Troops (R5): +100 for 48,600K (the troops and maximum after it made up)')
+if __name__ == '__main__':
+    for r, key in ((R4, 'r4'), (R5, 'r5')):
+        for label, f in VARIANTS[1:]:
+            f(r)[0].save(os.path.join(OUT, f'{label.split()[0].lower()}-{key}.png'))
+    sheet(R4, 'p22-r4', 'Round P22 — the result plate upright, after Replenish (R4): Haurein (unit 12), the week-18 save')
+    sheet(R5, 'p22-r5', 'Round P22 — after Add New Troops (R5): +100 for 48,600K (the troops and maximum after it made up)')
 
 
-def darker(dim):
-    def draw(r):
-        img, notes = pu1r1(r, dim)
-        return img, [f'the screen under the plate dimmed {round(dim * 100)}% (now {round(DIM * 100)}%)'] + notes[1:]
-    return draw
+    def darker(dim):
+        def draw(r):
+            img, notes = pu1r1(r, dim)
+            return img, [f'the screen under the plate dimmed {round(dim * 100)}% (now {round(DIM * 100)}%)'] + notes[1:]
+        return draw
 
 
-P23 = [('PU1r1 — as round P22, 27%', darker(DIM)), ('PU1r1d1 — 50%', darker(0.5)),
-       ('PU1r1d2 — 65% (recommended)', darker(0.65)), ('PU1r1d3 — 80%', darker(0.8))]
-for label, f in P23[1:]:
-    f(R4)[0].save(os.path.join(OUT, f'{label.split()[0].lower()}-r4.png'))
-sheet(R4, 'p23-r4', 'Round P23 — PU1r1 with the rest of the screen darker, after Replenish (R4)', P23)
+    P23 = [('PU1r1 — as round P22, 27%', darker(DIM)), ('PU1r1d1 — 50%', darker(0.5)),
+           ('PU1r1d2 — 65% (recommended)', darker(0.65)), ('PU1r1d3 — 80%', darker(0.8))]
+    for label, f in P23[1:]:
+        f(R4)[0].save(os.path.join(OUT, f'{label.split()[0].lower()}-r4.png'))
+    sheet(R4, 'p23-r4', 'Round P23 — PU1r1 with the rest of the screen darker, after Replenish (R4)', P23)

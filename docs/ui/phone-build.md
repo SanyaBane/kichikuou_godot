@@ -1616,6 +1616,17 @@ gains Rows' width (Refill and Cost come into view); the heading "Name · Type" s
 - **Checks**: the build, the ledger and phone tests; the gallery's upright pass for the deployment and Subordinates entries.
   The look on the Poco is the owner's.
 
+### After the build: the result plate held landscape (owner, 2026-11-04)
+
+The owner's LU1r1 (docs/ui/phone.md, §49-§50, `tools/ui/mock_result_plate_land.py`): held landscape the plate after a
+troop order — Subordinates' Replenish and Add New Troops, the deployment table's Refill — is the upright card PU1r1 at
+the same size, 1188 × 800 reference pixels (67.7 × 45.6 mm), in the room's middle, over the screen dimmed 65%
+(`PhoneLedgerPortrait.ResultPlate` for both ways; `OrderResultPlate.DrawCard` on `Device.Held`). The PC and the tablet
+keep the 780×150 plate.
+
+- **Checks**: the build, `PhoneLedgerPortraitTests`; the gallery's landscape pass for `subordinates-result`,
+  `subordinates-new-troops` and `deployment-refill-done`. The look on the Poco is the owner's.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

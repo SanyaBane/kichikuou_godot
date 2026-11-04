@@ -412,7 +412,8 @@ budget at the bar's left and End at the right thumb, a question under its button
 sheet over the foot (`Original.Content/Devices/PhoneLedgerPortrait`; `DeploymentTableView.Portrait.cs`,
 `DeploymentPanels.Portrait.cs`, `SubordinatesView.Portrait.cs`, `UnitPictureView`, `OrderResultPlate`); since 2026-10-31 the
 plate after a troop order a card of its own in the middle over the screen dimmed 65% (the owner's PU1r1d2, phone.md §30;
-`OrderResultPlate.Portrait.cs`, `SubordinateResult.Bar`; the 65% on every device).
+`OrderResultPlate.Portrait.cs`, `SubordinateResult.Bar`; the 65% on every device; held landscape the same card since
+2026-11-04, the owner's LU1r1, phone.md §49-§50).
 Step P6 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P6, where it stands"): the enemy attack
 upright — the PC's screen stacked, the head with the news, the province's picture with its figures beside it, "VS", the
 army's cards two a row with the front row on top facing up at the province (since 2026-10-31 held from above in the PC's

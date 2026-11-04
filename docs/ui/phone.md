@@ -1527,3 +1527,24 @@ facing with the same bracket.
 The owner took LD2f1, LA2f1, LB3sf1, Cf1 and F5t, so every mode marks the facing with the same bracket. Built
 (docs/ui/phone-build.md, §5, "After the build: the facing in the other modes"); the enemy attack's cards held landscape
 are only narrower (412.5 × 300), not 6% smaller both ways as drawn, their insides as before.
+
+## 49. Round P36: the result plate held landscape (2026-11-04)
+
+Held landscape the plate after a troop order — Subordinates' Replenish and Add New Troops, the deployment table's Refill
+(decision 27) — is still the PC's 780×150 in the frame (`OrderResultPlate`), its lines 1.1-2.4 mm. The owner asked for it
+larger, after the upright card (PU1r1, §30). `tools/ui/mock_result_plate_land.py` draws it over the gallery's landscape
+pass (`subordinates-result`, `subordinates-new-troops`, `deployment-refill-done`), the screen under it dimmed 65% as now:
+
+- **LU1r1 — the upright card as it is** (1188×800 reference px, 67.7 × 45.6 mm) in the screen's middle: the title over a
+  divider, the face (13.1 mm), the name, the troop type, the troops before → after with the gain, their bar, Cost |
+  Budget in two columns under a divider. Two thirds of the room's height.
+- **LU1r2 — the same type laid out wide** (1720×560, 98 × 31.9 mm): the title across, the face, the unit, the troops and
+  their bar at the left; right of a rule Cost over Budget. It reaches into the sides, the ledger's rows above and below
+  it stay in view.
+
+The agent recommends LU1r2: the upright card's sizes, laid out for the landscape room, the screen less covered.
+
+## 50. The owner's choice: LU1r1 (2026-11-04)
+
+The owner took LU1r1: held landscape the plate is the upright card at its size in the screen's middle. Built
+(docs/ui/phone-build.md, §5, "After the build: the result plate held landscape").

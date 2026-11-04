@@ -9,12 +9,13 @@ namespace Kichikuou.Game.Strategy;
 // type beside it and the troops before → after with the men gained; a bar of the troops (the troops kept in the ledger's
 // colour, the gain green, the men lost to CMD-20 red, a raised maximum ticked) with the troops after under it; Cost | Budget
 // in two columns under a divider; the click's triangle. Drawn in the frame's layout pixels over the whole screen
-// (PhoneUnits), the places PhoneLedgerPortrait's.
+// (PhoneUnits), the places PhoneLedgerPortrait's. Held landscape the same card at the same size, in the screen's middle
+// (§49, LU1r1).
 internal sealed partial class OrderResultPlate
 {
     private readonly FontVariation _cinzelLight = Lacquer.Cinzel(600);
 
-    private void DrawPortrait(SubordinateResult r, PhoneFrame f)
+    private void DrawCard(SubordinateResult r, PhoneFrame f)
     {
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));

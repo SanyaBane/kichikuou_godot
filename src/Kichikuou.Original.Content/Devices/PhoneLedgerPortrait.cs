@@ -375,10 +375,21 @@ public static class PhoneLedgerPortrait
         ResultNowLabel = 28, ResultNowText = 30, ResultColumnsTop = 626, ResultColumnsIn = 40, ResultLabelText = 32,
         ResultLabelGap = 24, ResultFigureText = 56, ResultTriangleRight = 46, ResultTriangleFoot = 40;
 
-    /// <summary>The result plate (PU1r1): the room's width less 16 a side, 800 high, in the middle between the room's top and the bar.</summary>
+    /// <summary>The card's width held landscape: the reference phone's upright room less 16 a side (docs/ui/phone.md, §49, LU1r1).</summary>
+    private const float ResultLandscapeWidth = 1188;
+
+    /// <summary>
+    /// The result plate (PU1r1): upright the room's width less 16 a side, 800 high, in the middle between the room's top and
+    /// the bar; held landscape the same card as upright on the reference phone, in the room's middle (LU1r1, §49).
+    /// </summary>
     public static PhoneFrame.Box ResultPlate(PhoneFrame f)
     {
         float h = f.Px(ResultHeight);
+        if (!f.IsPortrait)
+        {
+            float w = f.Px(ResultLandscapeWidth);
+            return new PhoneFrame.Box(f.Room.X + (f.Room.W - w) / 2, f.Room.Y + (f.Room.H - h) / 2, w, h);
+        }
         return new PhoneFrame.Box(f.Room.X + f.Px(ResultIn), f.Room.Y + (f.Bar.Y - f.Room.Y - h) / 2, f.Room.W - 2 * f.Px(ResultIn), h);
     }
 

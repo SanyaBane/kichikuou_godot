@@ -159,4 +159,16 @@ public class PhoneLedgerPortraitTests
         // pu1r1: x 16 to PW - 16, 800 high from ROOM_MID - 400, ROOM_MID = (TOP + BAR[0]) // 2 = 1307.
         Equal(new(16, 907, 1188, 800), PhoneLedgerPortrait.ResultPlate(Reference));
     }
+
+    [Fact]
+    public void Held_landscape_the_result_plate_is_the_upright_card_in_the_room_s_middle()
+    {
+        // mock_result_plate_land.py, lu1r1: 1188 × 800 in the middle.
+        var land = PhoneFrame.Landscape(2712, 1220);
+        var plate = PhoneLedgerPortrait.ResultPlate(land);
+        Assert.Equal(1188, plate.W, 0.01f);
+        Assert.Equal(800, plate.H, 0.01f);
+        Assert.Equal(land.Room.X + land.Room.W / 2, plate.X + plate.W / 2, 0.01f);
+        Assert.Equal(land.Room.Y + land.Room.H / 2, plate.Y + plate.H / 2, 0.01f);
+    }
 }

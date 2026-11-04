@@ -10,7 +10,8 @@ namespace Kichikuou.Game.Strategy;
 /// and after with the men gained; right of a rule the cost and the budget left, the click's triangle. It waits for a click,
 /// which closes it and which it takes (owner, 2026-10-24: gone by itself after a few seconds, it could be missed). Our
 /// Subordinates screen and our deployment screen's Replenish (owner's decision 27) show it. Laid out in the 1280×800
-/// screen's pixels, scaled with the picture; held upright a card of its own (PU1r1, <c>OrderResultPlate.Portrait.cs</c>).
+/// screen's pixels, scaled with the picture; on the phone, either way, a card of its own (PU1r1 and LU1r1,
+/// <c>OrderResultPlate.Portrait.cs</c>).
 /// </summary>
 internal sealed partial class OrderResultPlate : Control
 {
@@ -116,9 +117,9 @@ internal sealed partial class OrderResultPlate : Control
     {
         if (_result is not { } r)
             return;
-        if (Device.Portrait(this) is { } f)
+        if (Device.Held(this) is { } f)
         {
-            DrawPortrait(r, f);
+            DrawCard(r, f);
             return;
         }
         DrawSetTransform(_origin, 0, new Vector2(_k, _k));
