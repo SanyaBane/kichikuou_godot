@@ -378,6 +378,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         {
             ExchangeEffectKind.Bow => BowEffect.Build(_effectsSeen),
             ExchangeEffectKind.Cannon => CannonEffect.Build(_effectsSeen),
+            ExchangeEffectKind.Phantoms => PhantomEffect.Build(_effectsSeen),
             ExchangeEffectKind.IceMagic => IceEffect.Build(_effectsSeen),
             ExchangeEffectKind.LightningMagic => LightningEffect.Build(_effectsSeen),
             ExchangeEffectKind.DarkMagic => DarkEffect.Build(_effectsSeen),

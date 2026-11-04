@@ -11,6 +11,8 @@ public enum ExchangeEffectKind
     Bow,
     /// <summary>Action 1 by Maria (unit 16), her portable cannons (after Sengoku Rance's Cannoneer effect 40330).</summary>
     Cannon,
+    /// <summary>Action 1 by Mill (unit 25), her Phantom Beasts: little phantoms flying at the enemy (ours).</summary>
+    Phantoms,
     /// <summary>Action 2, the Magic attack of fire or of a caster without an element (after the Mage's Fire Blast 40360).</summary>
     Magic,
     /// <summary>A Magic attack of ice (docs/ui/mage-lines.md, "The plan: magic effects by element").</summary>
@@ -111,9 +113,15 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
 
     /// <summary>
     /// The player's Indirect attack by <paramref name="unit"/>: the cannon for Maria's (unit 16) portable cannons (owner,
-    /// 2026-11-04; after Sengoku Rance's Cannoneer effect 40330, which her Tulip plays there), else the bow.
+    /// 2026-11-04; after Sengoku Rance's Cannoneer effect 40330, which her Tulip plays there), Mill's (unit 25) Phantom
+    /// Beasts' little phantoms (owner, 2026-11-04: ours), else the bow.
     /// </summary>
-    public static ExchangeEffectKind IndirectOf(int unit) => unit == 16 ? ExchangeEffectKind.Cannon : ExchangeEffectKind.Bow;
+    public static ExchangeEffectKind IndirectOf(int unit) => unit switch
+    {
+        16 => ExchangeEffectKind.Cannon,
+        25 => ExchangeEffectKind.Phantoms,
+        _ => ExchangeEffectKind.Bow,
+    };
 
     /// <summary>The magic effect of <paramref name="element"/>.</summary>
     public static ExchangeEffectKind MagicKindOf(MagicElement element) => element switch

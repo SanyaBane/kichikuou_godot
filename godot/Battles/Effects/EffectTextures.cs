@@ -275,6 +275,33 @@ internal static class EffectTextures
     private static readonly Mask BladeEdgeMask = new(128, BladeEdgeShape);
 
     /// <summary>
+    /// A little phantom's body, flying toward +x (Mill's shots, ours: owner, 2026-11-04, mock-up B): a jelly disc, faint
+    /// at its heart and brightening to a rim, with two upright eyes toward its front cut out of it — the light is added
+    /// over the scene, so the eyes are the scene showing through, dark on the pastel body.
+    /// </summary>
+    public static Texture2D PhantomSpirit => PhantomSpiritMask.Texture;
+
+    private static readonly Mask PhantomSpiritMask = new(128, (x, y) => PhantomShape(x, y, smile: false));
+
+    /// <summary>The jelly drop's body (mock-up C): the same with a small smile cut out under the eyes.</summary>
+    public static Texture2D PhantomDrop => PhantomDropMask.Texture;
+
+    private static readonly Mask PhantomDropMask = new(128, (x, y) => PhantomShape(x, y, smile: true));
+
+    /// <summary>A phantom's shine: a soft oval highlight at the body's upper front and a small dot beside it.</summary>
+    public static Texture2D PhantomShine => PhantomShineMask.Texture;
+
+    private static readonly Mask PhantomShineMask = new(128, PhantomShineShape);
+
+    /// <summary>
+    /// A wisp tail streaming behind a phantom: full at its head (+x end), tapering and fading toward −x, a little wavy;
+    /// twice as wide as high.
+    /// </summary>
+    public static Texture2D Wisp => WispMask.Texture;
+
+    private static readonly Mask WispMask = new(128, WispShape, 64);
+
+    /// <summary>
     /// A clump of poison gas, one of <see cref="GasVariants"/>: a lumpy blob, its outline frayed, its body marbled with
     /// dark creases between brighter folds, a few highlights on the folds.
     /// </summary>
@@ -517,6 +544,46 @@ internal static class EffectTextures
         float fill = 0.3f + 0.6f * MathF.Pow(Fbm(x * 3.5f + 21, y * 3.5f + 9), 3) + 0.2f * r * r;
         float rim = 0.35f * Gauss(r - 0.92f, 0.06f) * (1 - 0.4f * Math.Max(0, x));      // softer on the right
         return (fill + rim) * (1 - SmoothStep(0.9f, 1f, r));
+    }
+
+    /// <summary>The phantom's body: <see cref="PhantomSpirit"/>, with a smile for <see cref="PhantomDrop"/>.</summary>
+    private static float PhantomShape(float x, float y, bool smile)
+    {
+        float r = MathF.Sqrt(x * x + y * y);
+        float body = (0.55f + 0.25f * r * r + 0.35f * Gauss(r - 0.88f, 0.06f)) * (1 - SmoothStep(0.9f, 1f, r));
+        // The eyes: two upright ovals toward the front, cut out with a soft edge.
+        float hole = 0;
+        foreach (float ex in (float[])[0.42f, 0.06f])
+        {
+            float d = MathF.Sqrt((x - ex) * (x - ex) / (0.13f * 0.13f) + y * y / (0.17f * 0.17f));
+            hole = Math.Max(hole, 1 - SmoothStep(0.8f, 1.05f, d));
+        }
+        if (smile)
+        {
+            // The smile: the lower half of a small oval's outline under the eyes.
+            float sx = (x - 0.24f) / 0.15f, sy = (y - 0.3f) / 0.11f, d = MathF.Sqrt(sx * sx + sy * sy);
+            if (sy > 0)
+                hole = Math.Max(hole, Gauss(d - 1, 0.28f));
+        }
+        return body * (1 - hole);
+    }
+
+    private static float PhantomShineShape(float x, float y)
+    {
+        float ox = (x - 0.18f) / 0.28f, oy = (y + 0.45f) / 0.17f;
+        float oval = 1 - SmoothStep(0.7f, 1f, MathF.Sqrt(ox * ox + oy * oy));
+        float dx = (x - 0.6f) / 0.07f, dy = (y + 0.3f) / 0.07f;
+        float dot = 1 - SmoothStep(0.7f, 1f, MathF.Sqrt(dx * dx + dy * dy));
+        return Math.Max(0.8f * oval, dot);
+    }
+
+    private static float WispShape(float x, float y)
+    {
+        float along = (x + 1) / 2;                                   // 0 at the tail's end, 1 at its head
+        float half = 0.15f + 0.8f * MathF.Pow(along, 1.4f);
+        float centre = 0.12f * MathF.Sin(along * 7) * (1 - along);
+        float across = 1 - SmoothStep(0.4f, 1f, Math.Abs(y - centre) / half);
+        return across * MathF.Pow(along, 1.8f) * (1 - SmoothStep(0.92f, 1f, along));
     }
 
     private static float HazeShape(float x, float y) => MathF.Pow(Math.Max(0, 1 - MathF.Sqrt(x * x + y * y)), 1.6f);

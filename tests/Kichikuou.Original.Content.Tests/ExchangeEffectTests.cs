@@ -34,9 +34,10 @@ public class ExchangeEffectTests
         Assert.Equal(new ExchangeEffect(kind, side), ExchangeEffect.Of(s));
     }
 
-    /// <summary>Maria's (unit 16) Indirect attack fires her cannons; Isoroku's (unit 27) and the enemy's shoot the bow.</summary>
+    /// <summary>Maria's (unit 16) Indirect attack fires her cannons, Mill's (unit 25) sends phantoms; Isoroku's (unit 27) and the enemy's shoot the bow.</summary>
     [Theory]
     [InlineData(16, 1, 99, 3, ExchangeEffectKind.Cannon)]
+    [InlineData(25, 1, 99, 3, ExchangeEffectKind.Phantoms)]
     [InlineData(27, 1, 99, 3, ExchangeEffectKind.Bow)]
     [InlineData(16, 99, 1, 4, ExchangeEffectKind.Bow)]
     public void Marias_shots_are_cannon_fire(int unit, int player, int enemy, int msgMode, ExchangeEffectKind kind)

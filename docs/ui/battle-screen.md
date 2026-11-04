@@ -840,12 +840,20 @@ picture, the slot panels) is not shown. How it is built:
   blending but for the wall's peak (frames 9-11).
   **The cannon** (owner, 2026-11-04): Maria's (unit 16) troops carry portable cannons, not bows, so her Indirect attack
   plays its own effect (`ExchangeEffect.IndirectOf`, `ExchangeEffectKind.Cannon`; any other Indirect attack, Isoroku's
-  (unit 27) included, the bow; Mill's (unit 25) Phantom Beasts later, an effect of our own), ours after Sengoku Rance's
+  (unit 27) included, the bow; Mill's (unit 25) the phantoms below), ours after Sengoku Rance's
   Cannoneer effect 40330 — her Tulip has no entry of its own there and plays its troop type's (`T_EFFDAT.JAF.jam`,
   `add3(40330, 30, …, 12)`) — not traced (`CannonEffect`): on the actor's half a flash at each barrel's mouth where her
   sprites hold them (frames 0-2) and pale gunsmoke swelling back and up, thinning by ~22, shells streaking right
   (1-6); on the target's half the main burst (from 5) and a smaller one beside it (8) — a white flash, fire billows
   burning from white to soot until ~24, spark streaks thrown up and falling, embers.
+  **The phantoms** (owner, 2026-11-04): Mill's (unit 25) troops are Phantom Beasts, so her Indirect attack sends little
+  phantoms of their manner instead of arrows (`ExchangeEffectKind.Phantoms`, `PhantomEffect`; our own, the owner's
+  mock-ups B and C in turn, `tools/ui/mock_mill_shots.py`): 20 of them leave her hand over frames 0-13, each crossing
+  level in ~7 frames on a lane of its own, a little larger than her head (40-52 of the design space), in her troop's
+  pastels in turn — a little spirit (two dot eyes, a wisp tail, `EffectTextures.PhantomSpirit`, `Wisp`) and a jelly
+  drop (squashed by its speed, eyes and a smile, sparkles left behind, bobbing on a low wave, `PhantomDrop`), each with
+  a shine (`PhantomShine`) — and burst on the enemy into a pastel puff and sparkles, gone by ~28. The eyes and the smile
+  are cut out of the body's mask: the effect only adds light, so they are the scene showing through.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
   (commander 1) army, CG 1131) or black, in a window over the game's whole screen with the scene scaled to its width
   (owner, 2026-10-29; until then the scene at its own 1024×410, the controls' right end cut off): the effect and its

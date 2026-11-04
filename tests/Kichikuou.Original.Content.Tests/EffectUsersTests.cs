@@ -17,6 +17,8 @@ public class EffectUsersTests(ITestOutputHelper output)
         var bow = EffectUsers.Of(s, ExchangeEffectKind.Bow).Select(u => u.Unit).ToList();
         Assert.Contains(16, EffectUsers.Of(s, ExchangeEffectKind.Cannon).Select(u => u.Unit));
         Assert.DoesNotContain(16, bow);
+        Assert.Equal([25], EffectUsers.Of(s, ExchangeEffectKind.Phantoms).Select(u => u.Unit));
+        Assert.Equal([27], bow);
         Assert.Contains(27, bow);
         Assert.Contains(13, EffectUsers.Of(s, ExchangeEffectKind.IceMagic).Select(u => u.Unit));
         Assert.Contains(1, EffectUsers.Of(s, ExchangeEffectKind.Melee).Select(u => u.Unit));
