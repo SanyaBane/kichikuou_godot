@@ -416,4 +416,20 @@ Mock-ups (`tools/ui/mock_level_ups.py`, over the gallery's PC, landscape and upr
 - **B — our shorter words**, one line a row as now: "Leader Atk +1 · Troops +250", "· Dungeon Def +1", "· Beasts +50"
   (the modifier rises by 1); the gains closer (" · "), on the PC the name right after LEVEL UP as on the phones.
 
+**The owner's choice: A, redesigned** (2026-11-04), round 2's **A2**: each row in two columns — the left one LEVEL UP
+over the name, the name wrapped at its spaces (never inside a word); the right one the gains whole, wrapped at their
+spaces, every line at the column's left. A row is as tall as its taller column. The name column is as wide as LEVEL UP
+or the widest single word of the units' names (Aristoles), whichever is wider; held landscape the row is so wide that
+the column takes the widest whole name and no name wraps, and the plate's head gives up its empty bands so that four
+rows fit the screen (774 px high of 813; the PC's 566 from its top down, over the cards' top row; upright 712, its foot
+kept, up over the scene).
+
+Round 3: LEVEL UP ran into the name (the owner): the label smaller, in another colour or face (the same script's
+`LABELS`, a sheet a device of the four rows in each):
+
+- **L1** — at 3/4 of the word type, its letters spaced (0.18 of the type), the accent gold, Cinzel bold.
+- **L2** — the same size and spacing, muted (`Ui.Quiet`), Cinzel semibold.
+- **L3** — a small gold badge (the order toggle's lit gradient) with the dark ink in it, at 2/3 of the type.
+- **L4** — another face: Oswald (condensed) at 0.85 of the type, spaced, the accent gold.
+
 Awaiting the owner's choice.
