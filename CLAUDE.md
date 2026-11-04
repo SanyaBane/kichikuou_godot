@@ -482,6 +482,9 @@ Then (owner, 2026-11-03) a frame-rate limit for the battery, Option → Display 
 Android, 60 elsewhere; `godot/Strategy/FrameRateChoice`), every options tab one column scrolled on every device
 (`OptionsView.Scroll.cs`) — docs/ui/options.md, "Frame rate" (mock-ups `tools/ui/mock_frame_rate.py`, the owner's A2);
 built, not measured on the Poco yet (docs/backlog.md).
+Then (owner, 2026-11-04) the units' descriptions as text, drawn in our font over the status CG's panel: the reading is
+built — `Original.Content/Strategy/UnitDescription` reads the patch's pixel font exactly from the player's CG, its pieces
+by hash (`UnitDescriptionGlyphs`), 57 panels (docs/ui/unit-descriptions.md); the drawing comes after its mock-ups.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
