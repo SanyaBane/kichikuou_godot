@@ -110,7 +110,7 @@ internal sealed partial class HaremView
                 PhonePickerParts.DrawEmptyCell(c, r, _k);
                 continue;
             }
-            DrawGirlCell(c, u, r, girl, PhonePickers.CellHeartIn, PhonePickers.CellNameIn);
+            DrawGirlCell(c, u, r, girl, PhonePickers.CellHeartIn, PhonePickers.CellNameIn, twoLines: true);
         }
         PhonePickerParts.DrawRule(c, u);
     }
@@ -118,18 +118,34 @@ internal sealed partial class HaremView
     /// <summary>
     /// A girl's cell at the phone's sizes: her heart <paramref name="heartIn"/> and her name <paramref name="nameIn"/>
     /// reference pixels in from its left (Cinzel, shrunk where long), her visit's mark at its top right, lit in gold when chosen.
+    /// With <paramref name="twoLines"/> (held landscape) a name too long for the line breaks at a space into two smaller lines
+    /// (the owner's C, 2026-11-04).
     /// </summary>
-    private void DrawGirlCell(Control c, PhoneUnits u, Rect2 r, HaremGirl girl, float heartIn, float nameIn)
+    private void DrawGirlCell(Control c, PhoneUnits u, Rect2 r, HaremGirl girl, float heartIn, float nameIn, bool twoLines = false)
     {
         bool chosen = girl.Number == _chosen, hover = girl.Number == _hovered;
         c.DrawRect(r, chosen || hover ? Ui.RowHover : Ui.Row);
         c.DrawRect(r, chosen ? Ui.HoverLine : hover ? Ui.Gold : Ui.DimGold, false, Line(chosen ? 2 : 1));
         float mid = r.GetCenter().Y, heart = u.Px(PhonePickers.CellHeart);
         DrawHeart(c, new Vector2(r.Position.X + u.Px(heartIn), mid - heart * 0.22f), heart, girl.Visits > 0 ? Plum : PlumDim);
-        float nx = r.Position.X + u.Px(nameIn);
-        int size = SideCells.Fit(_cinzel, girl.Name, u.Size(PhonePickers.CellNameText), r.End.X - u.Px(PhonePickers.CellRight) - nx);
-        c.DrawString(_cinzel, new Vector2(nx, PhonePickerParts.Middle(_cinzel, size, mid)), girl.Name, fontSize: size,
-            modulate: chosen || hover ? Ui.Name : Ui.Text);
+        float nx = r.Position.X + u.Px(nameIn), room = r.End.X - u.Px(PhonePickers.CellRight) - nx;
+        var ink = chosen || hover ? Ui.Name : Ui.Text;
+        int full = u.Size(PhonePickers.CellNameText);
+        int space = girl.Name.LastIndexOf(' ');
+        if (twoLines && space > 0 && _cinzel.GetStringSize(girl.Name, fontSize: full).X > room)
+        {
+            string[] lines = [girl.Name[..space], girl.Name[(space + 1)..]];
+            int two = lines.Min(line => SideCells.Fit(_cinzel, line, u.Size(PhonePickers.CellTwoLineText), room));
+            float pitch = two * PhonePickers.CellTwoLinePitch;
+            for (int i = 0; i < 2; i++)
+                c.DrawString(_cinzel, new Vector2(nx, PhonePickerParts.Middle(_cinzel, two, mid + (i - 0.5f) * pitch)), lines[i],
+                    fontSize: two, modulate: ink);
+        }
+        else
+        {
+            int size = SideCells.Fit(_cinzel, girl.Name, full, room);
+            c.DrawString(_cinzel, new Vector2(nx, PhonePickerParts.Middle(_cinzel, size, mid)), girl.Name, fontSize: size, modulate: ink);
+        }
         if (PickerMarks.Label(girl.Mark) is { } mark)
         {
             int markSize = u.Size(PhonePickers.CellMarkText);

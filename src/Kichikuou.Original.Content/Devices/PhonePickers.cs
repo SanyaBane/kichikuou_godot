@@ -212,6 +212,12 @@ public static class PhonePickers
         CellMarkMiddle = 26, CellMarkText = 22;
 
     /// <summary>
+    /// A harem name too long for its cell's line breaks at a space into two lines of this type (the owner's C, 2026-11-04,
+    /// <c>tools/ui/mock_harem_name_lines.py</c>: Royal Guards (13)), their middles this part of it apart, the heart at their middle.
+    /// </summary>
+    public const float CellTwoLineText = 30, CellTwoLinePitch = 1.05f;
+
+    /// <summary>
     /// A treasure cell's insides (<c>treasure_cell_two</c>): the name over the holder, the cells being narrow — the name 14 in,
     /// its room ending 12 short of the right, its middle (of the height) and type; the holder at the right, its middle and type.
     /// </summary>
