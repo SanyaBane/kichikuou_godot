@@ -482,11 +482,17 @@ public partial class ImportScreen : Control
         }
     }
 
+    /// <summary>The refusal's hash lines' spacing.</summary>
+    private const float HashLine = 16;
+
     private void DrawRefused()
     {
         float y = Step(262, 0, "Game folder", _refusal, StepState.Failed);
-        if (_hashes.Length > 0)
-            DrawString(_gothic, new Vector2(TextX, y + 12), _hashes, fontSize: 12, modulate: Ui.InkGrey);
+        // the hashes on lines of their own, the file's over the expected one (as the phone's)
+        var hashes = PhoneImport.HashLines(_hashes);
+        for (int i = 0; i < hashes.Count; i++)
+            DrawString(_gothic, new Vector2(TextX, y + 12 + i * HashLine), hashes[i], fontSize: 12, modulate: Ui.InkGrey);
+        y += Math.Max(0, hashes.Count - 1) * HashLine;
         // the stamp
         var centre = new Vector2(880, 520);
         DrawArc(centre, 62, 0, Mathf.Tau, 72, Ui.Vermilion, Lacquer.Line(4, _k), true);
