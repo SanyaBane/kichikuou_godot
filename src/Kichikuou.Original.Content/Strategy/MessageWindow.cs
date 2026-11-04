@@ -63,7 +63,10 @@ public sealed class MessageWindow
     private static readonly (int X, int Y, int W, int H) LeftPanel = (436, 4, 834, 254);
     private static readonly (int X, int Y, int W, int H) RightPanel = (58, 512, 822, 254);
     private static readonly (int X, int Y, int W, int H) NarrationPanel = (248, 536, 784, 258);
-    private static readonly (int X, int Y, int W, int H) CgBarPanel = (0, 588, 1280, 212);
+    private static readonly (int X, int Y, int W, int H) CgBarPanel = (0, CgBarTop, 1280, 800 - CgBarTop);
+
+    /// <summary>The top of 131's bar on the screen, where the CG over it ends (screen pixels).</summary>
+    public const int CgBarTop = 588;
 
     /// <summary>
     /// A speaker's name at the start of 131's text, before <c>「</c> (<c>｢</c> from a string variable, <c>Hankaku</c>) or <c>（</c>: words of letters, digits and signs, each

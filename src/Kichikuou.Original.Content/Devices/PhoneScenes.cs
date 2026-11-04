@@ -190,7 +190,9 @@ public static class PhoneScenes
         bool above = left && portrait;
         bool bar = kind == MessageKind.CgBar;
         float h = f.Px(bar ? CgBarHeight : WindowHeight);
-        var panel = new PhoneFrame.Box(f.Room.X + f.Px(WindowSide), above ? f.Frame.Y - f.Px(WindowGap) - h : f.Frame.Bottom + f.Px(WindowGap),
+        // 131 stands under its CG, which ends where the original's bar begins (the bar itself is hidden), not under the picture.
+        float foot = bar ? f.Frame.Y + MessageWindow.CgBarTop * f.Scale : f.Frame.Bottom;
+        var panel = new PhoneFrame.Box(f.Room.X + f.Px(WindowSide), above ? f.Frame.Y - f.Px(WindowGap) - h : foot + f.Px(WindowGap),
             f.Room.W - 2 * f.Px(WindowSide), h);
         float side = f.Px(bar ? CgBarSide : TextSide);
         float scale = Math.Min(f.Px(bar ? CgBarType : SpeechType) / ScriptType, (panel.W - 2 * side) / Math.Max(1, text.W));

@@ -73,10 +73,11 @@ public class PhoneScenesUprightTests
     {
         var w = PhoneScenes.Window(Reference, MessageKind.CgBar, (16, 610, 1252, 280), (false, false));
         Assert.False(w.Above);
-        Equal(new(16, SceneFoot + 64, 1188, 330), w.Panel);
+        const float cgFoot = SceneTop + 588 * 762.5f / 800;                           // the CG's foot, where the hidden bar begins
+        Equal(new(16, cgFoot + 64, 1188, 330), w.Panel);
         Assert.Equal((1188 - 48) / 1252f, w.Scale, Close);                             // 2.5 mm, under its own 2.6
         Assert.Equal(16 + 24, w.TextX, Close);
-        Assert.Equal(SceneFoot + 64 + 56, w.TextY, Close);                             // under its speaker's plate
+        Assert.Equal(cgFoot + 64 + 56, w.TextY, Close);                                // under its speaker's plate
         Assert.Null(w.PointerX);
     }
 
