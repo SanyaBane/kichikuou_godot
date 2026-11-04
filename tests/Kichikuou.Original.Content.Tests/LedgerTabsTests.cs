@@ -10,7 +10,7 @@ public class LedgerTabsTests
     [Fact]
     public void Deployment_TabsAreTheOwnersPresets_RowsInOverview()
     {
-        Assert.Equal(["№", "Name", "Type", "Rows", "Troops", "Refill", "Cost"],
+        Assert.Equal(["№", "Name", "Type", "Rows", "Troops", "Refill", "Cost", "Item"],
             Headers(LedgerTabs.Of(DeploymentTable.Columns, LedgerTab.Overview)));
         Assert.Equal(["№", "Name", "T.Atk", "T.Def", "Strikes", "Mag", "Atk", "Def", "Atk", "Def", "Atk", "Def"],
             Headers(LedgerTabs.Of(DeploymentTable.Columns, LedgerTab.Troops)));
@@ -22,7 +22,7 @@ public class LedgerTabsTests
     public void Subordinates_Overview_HasNoRows_AndKeepsTheScreensOwnFullNames()
     {
         var overview = LedgerTabs.Of(SubordinatesScreen.Columns, LedgerTab.Overview);
-        Assert.Equal(["№", "Name", "Type", "Troops", "Refill", "Cost"], Headers(overview));
+        Assert.Equal(["№", "Name", "Type", "Troops", "Refill", "Cost", "Item"], Headers(overview));
         Assert.Equal("Replenish's price (GOLD)", overview.Columns.Single(c => c.Column == DeploymentColumn.Refill).FullName);
         Assert.Equal("Replenish's price (GOLD): a click replenishes",
             LedgerTabs.Of(DeploymentTable.Columns, LedgerTab.Overview).Columns.Single(c => c.Column == DeploymentColumn.Refill).FullName);

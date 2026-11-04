@@ -3,7 +3,7 @@ namespace Kichikuou.Original.Content.Strategy;
 /// <summary>A tab of the unit ledger (docs/ui/unit-ledger.md): which part of its columns it shows.</summary>
 public enum LedgerTab
 {
-    /// <summary>The unit's troops and what they cost (the owner's first preset).</summary>
+    /// <summary>The unit's troops, what they cost and the item (the owner's first preset).</summary>
     Overview,
 
     /// <summary>The troops' attack and defense, the strikes, magic and the six situational modifiers.</summary>
@@ -33,14 +33,15 @@ public static class LedgerTabs
 
     /// <summary>
     /// The columns of each tab, the owner's presets: No. and Name in every one; Rows after Type in Overview (the details
-    /// the original shows for a hovered unit on the deployment screen, <c>Sﾌﾞﾀｲ.ADV:524-569</c>).
+    /// the original shows for a hovered unit on the deployment screen, <c>Sﾌﾞﾀｲ.ADV:524-569</c>); the Item in Overview too,
+    /// after Cost, as well as in Commander (owner, 2026-11-04).
     /// </summary>
     private static readonly IReadOnlyDictionary<LedgerTab, DeploymentColumn[]> Presets = new Dictionary<LedgerTab, DeploymentColumn[]>
     {
         [LedgerTab.Overview] =
         [
             DeploymentColumn.Number, DeploymentColumn.Name, DeploymentColumn.TroopType, DeploymentColumn.Rows,
-            DeploymentColumn.Troops, DeploymentColumn.Refill, DeploymentColumn.Cost,
+            DeploymentColumn.Troops, DeploymentColumn.Refill, DeploymentColumn.Cost, DeploymentColumn.Item,
         ],
         [LedgerTab.Troops] =
         [

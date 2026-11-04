@@ -38,6 +38,8 @@ Only the drawing changes: the rows, the columns' figures, the sort and the gestu
   - **Overview** — the owner's first preset. The deployment's adds **Rows** after Type (the agent's proposal): the rows
     a unit fights from are what the original shows for a hovered unit on this screen (`Sﾌﾞﾀｲ.ADV:524-569`), and a
     melee unit cannot attack from the back row. Refill is a button here as now (owner's decision 27).
+    **Item** after Cost (owner, 2026-11-04), as in Commander too; on the PC the deployment's Overview scrolls sideways
+    to reach it.
   - **Troops** — the owner's second preset. Its twelve columns do not fit the paper with the headers as they are
     (Off.A … Dng.D: 684 pixels for 652); the six modifiers go under three group headers, **Offense**, **Defense**,
     **Dungeon**, each over ATK and DEF (613 pixels). Strikes and Mag are the commander's in the battle (`Unit_Attacks`,
