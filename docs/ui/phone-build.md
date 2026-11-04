@@ -898,6 +898,10 @@ and System's rotation lock).
   the info boxes, the scout report and the strategy's cut-in at the phone's type.
 - **The gallery**: the PC, touch and landscape passes same (110, 111 and 114 entries); the upright pass's 16 battle entries
   changed (the board's six of P3 and the ten states P4 lays out). PB3, PB3r and PB3x left `GALLERY_ENTRIES`.
+- **After the build: the retreat question in the middle** (owner, 2026-11-04): upright the question no longer stands over
+  the deck's right column beside Retreat: it is centred on the screen across the board (40 in from its sides, 330 high,
+  the answers 544 × 138), without its tip, over the whole screen dimmed 65% (Retreat under the dim, not lit)
+  (`PhoneBattleUpright.RetreatQuestion`, `BattleDialogLayer.Phone.cs`). Held landscape keeps LB2r1.
 
 **Step P4, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
 

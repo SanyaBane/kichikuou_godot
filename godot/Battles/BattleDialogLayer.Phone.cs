@@ -9,9 +9,9 @@ namespace Kichikuou.Game.Battles;
 // note over a rule, the answers side by side a thumb's height, Retreat red and last. The screen dimmed, the left rail's
 // panel with Retreat alone over it (the other commands are gone once Retreat is chosen). A tap off the callout is a cancel
 // (Cease Retreat), as on the tablet. In the layer's layout pixels (the frame's); the places are PhoneBattle's.
-// Held upright (docs/ui/phone-build.md, step P3; docs/ui/phone.md, §6, PB3r) the same callout over the deck's right column,
-// its top level with the left column's Retreat, its tip at it; the screen dimmed, the deck's panel under the dim. In the
-// board's layout pixels; the places are PhoneBattleUpright's.
+// Held upright (docs/ui/phone-build.md, step P3; docs/ui/phone.md, §6, PB3r) the same callout without its tip in the
+// screen's middle across the board, the whole screen dimmed 65% under it, Retreat too (owner, 2026-11-04; it stood over
+// the deck's right column beside Retreat). In the board's layout pixels; the places are PhoneBattleUpright's.
 internal sealed partial class BattleDialogLayer
 {
     private PhoneFrame? _phone;                         // the phone held either way: the question beside Retreat
@@ -43,12 +43,15 @@ internal sealed partial class BattleDialogLayer
     /// <summary>A box of the board's layout pixels as a rectangle (upright).</summary>
     private static Rect2 B(PhoneFrame.Box b) => new(b.X, b.Y, b.W, b.H);
 
-    /// <summary>Retreat's button upright: the deck's, or the top of five commands' when none was laid out (layout pixels).</summary>
-    private PhoneFrame.Box UprightRetreat() => RetreatAt?.Invoke() is { } r
-        ? new PhoneFrame.Box(r.Position.X, r.Position.Y, r.Size.X, r.Size.Y)
-        : PhoneBattleUpright.CommandRows(_height, 5)[4];
+    /// <summary>The question upright: in the screen's middle (the screen in the board's layout pixels, as the dim covers it).</summary>
+    private PhoneFrame.Box UprightQuestion()
+    {
+        var f = _phone!;
+        return PhoneBattleUpright.RetreatQuestion(-f.Room.Y / f.Scale, (f.Screen.H - f.Room.Y) / f.Scale);
+    }
 
-    private PhoneFrame.Box UprightQuestion() => PhoneBattleUpright.RetreatQuestion(_height, UprightRetreat());
+    /// <summary>The dim upright, stronger than beside the button: the question stands alone in the middle (owner, 2026-11-04).</summary>
+    private static readonly Color UprightDim = new(0, 0, 0, 0.65f);
 
     /// <summary>The callout's type and insides in layout pixels, held landscape (LB2r1) or upright (PB3r).</summary>
     private readonly record struct Callout(float OnButton, float TipHalf, float TipLength, float TextIn, float TextOut, float QuestionTop,
@@ -58,14 +61,14 @@ internal sealed partial class BattleDialogLayer
     {
         float s = _scale;
         DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));               // in layout pixels below
-        Rect2 retreat;
+        Rect2? retreat;
         Callout c;
         if (f.IsUpright)
         {
             static float U(float reference) => PhoneBattleUpright.Layout(reference);
-            DrawRect(new Rect2(0, -f.Room.Y / f.Scale, PhoneBattleUpright.Width, f.Screen.H / f.Scale), Dim);   // the whole screen
-            retreat = B(UprightRetreat());
-            c = new Callout(U(PhoneBattleUpright.RetreatText), U(PhoneBattleUpright.TipHalf), U(PhoneBattleUpright.TipLength),
+            DrawRect(new Rect2(0, -f.Room.Y / f.Scale, PhoneBattleUpright.Width, f.Screen.H / f.Scale), UprightDim);   // the whole screen
+            retreat = null;                                                 // the question alone in the middle, Retreat under the dim
+            c = new Callout(U(PhoneBattleUpright.RetreatText), 0, 0,
                 U(PhoneBattleUpright.QuestionIn), U(PhoneBattleUpright.QuestionIn + 20), U(PhoneBattleUpright.QuestionTop),
                 U(PhoneBattleUpright.QuestionText), U(PhoneBattleUpright.NoteTop), U(PhoneBattleUpright.NoteText),
                 U(PhoneBattleUpright.QuestionRule), U(24), U(PhoneBattleUpright.AnswerText), U(PhoneBattleUpright.RetreatText));
@@ -79,22 +82,28 @@ internal sealed partial class BattleDialogLayer
                 P(PhoneBattle.QuestionTop), P(PhoneBattle.QuestionText), P(PhoneBattle.NoteTop), P(PhoneBattle.NoteText),
                 P(PhoneBattle.QuestionRule), P(30), P(PhoneBattle.AnswerText), P(PhoneBattle.RetreatText));
         }
-        Ui.DrawRedButton(this, retreat, true, false, s);                    // lit while it asks
-        DrawRect(retreat.Grow(P(5)), Ui.HoverLine, false, Lacquer.Line(P(5), s));
-        int warning = Enumerable.Range(0, _dialog!.Items.Count).FirstOrDefault(i => _dialog.Items[i].Warning, -1);
-        if (warning >= 0)
-            PhoneCentred(_brush, _labels[warning], c.OnButton, retreat, Color.Color8(250, 226, 160));
         var box = Box;
-        float cy = retreat.GetCenter().Y;
-        Vector2[] tip = [new(box.Position.X + 2, cy - c.TipHalf), new(box.Position.X - c.TipLength, cy), new(box.Position.X + 2, cy + c.TipHalf)];
+        if (retreat is { } button)
+        {
+            Ui.DrawRedButton(this, button, true, false, s);                 // lit while it asks
+            DrawRect(button.Grow(P(5)), Ui.HoverLine, false, Lacquer.Line(P(5), s));
+            int warning = Enumerable.Range(0, _dialog!.Items.Count).FirstOrDefault(i => _dialog.Items[i].Warning, -1);
+            if (warning >= 0)
+                PhoneCentred(_brush, _labels[warning], c.OnButton, button, Color.Color8(250, 226, 160));
+        }
         DrawRect(new Rect2(box.Position + new Vector2(P(6), P(8)), box.Size), new Color(0, 0, 0, 0.3f));
         Ui.DrawPanel(this, box, s);
-        DrawColoredPolygon(tip, Ui.Gold);
+        if (retreat is { } at)                                              // the tip at the button it stands beside
+        {
+            float cy = at.GetCenter().Y;
+            DrawColoredPolygon([new(box.Position.X + 2, cy - c.TipHalf), new(box.Position.X - c.TipLength, cy), new(box.Position.X + 2, cy + c.TipHalf)],
+                Ui.Gold);
+        }
         if (GetThemeDefaultFont() is { } font)
         {
             float left = box.Position.X + c.TextIn;
             int question = (int)Math.Round(c.QuestionText), note = (int)Math.Round(c.NoteText);
-            DrawString(font, new Vector2(left, box.Position.Y + c.QuestionTop + font.GetAscent(question)), _dialog.Question,
+            DrawString(font, new Vector2(left, box.Position.Y + c.QuestionTop + font.GetAscent(question)), _dialog!.Question,
                 HorizontalAlignment.Left, box.Size.X - c.TextOut, question, Ui.Text);
             DrawString(font, new Vector2(left, box.Position.Y + c.NoteTop + font.GetAscent(note)), _dialog.Note,
                 HorizontalAlignment.Left, box.Size.X - c.TextOut, note, Ui.Quiet);

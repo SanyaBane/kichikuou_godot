@@ -82,15 +82,14 @@ public class PhoneBattleUprightTests
     }
 
     [Fact]
-    public void TheRetreatQuestionStandsOverTheRightColumnLevelWithRetreat()
+    public void TheRetreatQuestionStandsInTheScreensMiddle()
     {
-        var retreat = PhoneBattleUpright.CommandRows(Height, 5)[4];
-        var question = PhoneBattleUpright.RetreatQuestion(Height, retreat);
-        Equal(Board(612, Scene + 1380, 592, 330), question);
+        var question = PhoneBattleUpright.RetreatQuestion(-100, Height + 300);
+        Assert.Equal((Height + 200) / 2, question.Y + question.H / 2, Close);          // the screen's middle, not the board's
+        Equal(Board(40, 0, 1140, 330) with { Y = question.Y }, question);
         var answers = PhoneBattleUpright.RetreatAnswers(question, 2);
-        Equal(Board(632, Scene + 1380 + 168, 270, 138), answers[0]);
-        Equal(Board(914, Scene + 1380 + 168, 270, 138), answers[1]);
-        var low = PhoneBattleUpright.RetreatQuestion(Height, retreat with { Y = Height - 10 });
-        Assert.Equal(Height - PhoneBattleUpright.Layout(20), low.Bottom, Close);
+        float top = question.Y + PhoneBattleUpright.Layout(168);
+        Equal(Board(60, 0, 544, 138) with { Y = top }, answers[0]);
+        Equal(Board(616, 0, 544, 138) with { Y = top }, answers[1]);
     }
 }

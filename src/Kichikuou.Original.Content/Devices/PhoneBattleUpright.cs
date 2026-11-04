@@ -148,31 +148,27 @@ public static class PhoneBattleUpright
     // ------------------------------------------------------------------ the retreat question (PB3r)
 
     /// <summary>
-    /// The question's box over the deck's right column (<c>pb3r</c>), reference pixels: 6 left of the column, 16 short of the
-    /// board's edge, 330 high, its top level with Retreat's; its tip at its left edge, 22 each way and 24 long, at Retreat's
-    /// middle.
+    /// The question's box in the screen's middle over the dimmed screen (owner, 2026-11-04; it stood over the deck's right
+    /// column beside Retreat, <c>pb3r</c>), reference pixels: 40 in from the board's sides, 330 high.
     /// </summary>
-    private const float QuestionOut = 6, QuestionHeight = 330;
+    private const float QuestionSide = 40, QuestionHeight = 330;
 
     /// <summary>
     /// Its insides, reference pixels from its corner: the question's line (36 in, its top and type) and the note's, the
     /// rule, the answers' row (its top, height, the room at its sides and between the answers), the answers' type and
-    /// Retreat's, the tip's half height and length.
+    /// Retreat's.
     /// </summary>
     public const float QuestionIn = 36, QuestionTop = 36, QuestionText = 38, NoteTop = 90, NoteText = 32, QuestionRule = 146,
-        AnswersTop = 168, AnswerHeight = 138, AnswersSide = 20, AnswerGap = 12, AnswerText = 34, RetreatText = 40, TipHalf = 22,
-        TipLength = 24;
+        AnswersTop = 168, AnswerHeight = 138, AnswersSide = 20, AnswerGap = 12, AnswerText = 34, RetreatText = 40;
 
     /// <summary>
-    /// The retreat question beside <paramref name="retreat"/>, the left column's button: over the right column, its top level
-    /// with the button's, kept over the board's foot (<paramref name="height"/>).
+    /// The retreat question centred on the screen, which runs from <paramref name="screenTop"/> to
+    /// <paramref name="screenBottom"/> (layout pixels, the board's: the screen reaches over and under the board).
     /// </summary>
-    public static PhoneFrame.Box RetreatQuestion(float height, PhoneFrame.Box retreat)
+    public static PhoneFrame.Box RetreatQuestion(float screenTop, float screenBottom)
     {
-        var (x, _) = Column(true);
-        float left = x - Layout(QuestionOut), h = Layout(QuestionHeight);
-        float y = Math.Min(retreat.Y, height - Layout(DeckFoot) - h);
-        return new PhoneFrame.Box(left, Math.Max(DeckTopY, y), Width - Layout(Edge) - left, h);
+        float side = Layout(QuestionSide), h = Layout(QuestionHeight);
+        return new PhoneFrame.Box(side, (screenTop + screenBottom - h) / 2, Width - 2 * side, h);
     }
 
     /// <summary>The question's answers in one row (<paramref name="count"/> of them, left to right), the warning one last.</summary>
