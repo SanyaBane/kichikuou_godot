@@ -4,8 +4,8 @@ namespace Kichikuou.Original.Content.Strategy;
 /// The pieces of the English patch's description font (<see cref="UnitDescription"/>) by the hash of their pixels:
 /// each a letter, or letters that touch with no empty column between them ("rn", "tt", a quotation mark's half
 /// on its word's first letter). Read once from the player's status CGs 601-653 and 695-699 and checked against the
-/// pictures (docs/ui/unit-descriptions.md, "How the table was made"); the hash keeps the font's pictures out of the
-/// repository.
+/// pictures, and the harem's 701-750 and the items' 751-800 after them (docs/ui/unit-descriptions.md, "How the table
+/// was made"); the hash keeps the font's pictures out of the repository.
 /// </summary>
 public static class UnitDescriptionGlyphs
 {
@@ -156,5 +156,42 @@ public static class UnitDescriptionGlyphs
         [0x127EF4628E6E0F99] = "!",
         [0x5A63AA6C7D9FA3BD] = "My",
         [0xC000BE99647DD796] = "We",
+        // The harem's (700-750) and the items' (751-800) panels.
+        [0x03D9E1E0BD2BE564] = "Eq",
+        [0x5855EF2FE7AD0F77] = "Att",
+        [0x44B4C270C87CE7A6] = "+",
+        [0x0B0C895FEF37E81A] = "+2",
+        [0xDAEF17A272C3A887] = "?",
+        [0xFBC529860E1E944C] = "Ap",
+        [0xE0AA8F10351CBBC9] = "ott",
+        [0xFE86224194576DBC] = "To",
+        [0x000FBD991B6B82A7] = "?",
+        [0xF9FEB04C59F84A67] = "Ab",
+        [0xE3AE5C3F7C991EDA] = "utt",
+        [0x49564667F7FB65F9] = "Tro",
+        [0x66D0EE128C08F1C0] = "Mm",
+        [0x89AEAFA857F2AE5E] = "rru",
+        [0x41D9F8382BF3BC64] = "ritt",
+        [0x2225D4EF62107F5E] = "Ku",
+        [0x6C7C2EAA4B7EBEFC] = "Am",
+        [0xBAF3E827DDC8CF17] = "'g",
+        [0x5478BE9BDA76F3E9] = "??",
+        [0xCCF7593485855730] = "M",
+        [0x50BB7B394BE59D06] = "X",
+        [0xB3278F976152135B] = "???",
+        [0x4E73D5A713A95C14] = "Em",
+        [0xCD531962A60B24E8] = "'st",
+        [0x1AC5F3F9E84B093E] = "Lu",
+        [0xF2BCBCC186DA24F2] = "Ta",
+        [0x17890A047C655C5F] = "K",
+        [0x8089011C8892959A] = "St",
+        [0xB41C9FB8A0D71B70] = "%",
+        [0x3BF71FE74FE88C72] = "3",
+        [0x7B69AD3C9A6582AC] = "ryt",
+        [0x12E8684B51AFB548] = "Ex",
+        [0xA3C72F0DEA465DAB] = "Ki",
+        [0x720E95F4DA3C534E] = "Azt",
+        [0x1F63DABAC7FF982D] = "+0",
+        [0xFF818BD92987B437] = "+3",
     };
 }

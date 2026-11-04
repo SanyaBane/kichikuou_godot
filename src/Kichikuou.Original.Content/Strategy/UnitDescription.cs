@@ -5,8 +5,9 @@ using Kichikuou.Content.Graphics;
 namespace Kichikuou.Original.Content.Strategy;
 
 /// <summary>
-/// A unit's description as text, read from the panel at the right of its status CG (600 + n), where the
-/// English patch drew it in a pixel font of its own (docs/ui/unit-descriptions.md). The text is not in the
+/// A description as text, read from the panel at the right of a unit's status CG (600 + n), a harem girl's picture
+/// (700 + n) or an item's (750 + n), where the English patch drew it in a pixel font of its own
+/// (docs/ui/unit-descriptions.md). The text is not in the
 /// scenario: it is only these pixels, so it is read from the player's CG each time, never kept in the
 /// repository. The font has no anti-aliasing — its letters are pure white on the panel's greys — so the
 /// reading is exact: every piece of white between empty columns of a line is looked up whole by its
@@ -27,9 +28,9 @@ public static partial class UnitDescription
     public const int Width = 304;
 
     /// <summary>
-    /// The description in the panel of status CG <paramref name="number"/> as paragraphs, the lines of each
-    /// joined (a word broken at a line's end joined again); <c>null</c> when the CG is not a status CG, its
-    /// panel is empty (600, 692, 696) or not in the font the table knows (654's Japanese).
+    /// The description in the panel of CG <paramref name="number"/> as paragraphs, the lines of each joined (a word
+    /// broken at a line's end joined again); <c>null</c> when the CG has no such panel, its panel is empty (600, 692,
+    /// 696, 700) or not in the font the table knows (654's Japanese).
     /// </summary>
     public static IReadOnlyList<string>? Read(CgImage cg, int number)
     {
@@ -61,7 +62,7 @@ public static partial class UnitDescription
                 paragraphs[^1].Add((line, text));
             }
         }
-        var result = paragraphs.Select(p => Join(number, p)).Where(p => p.Length > 0).ToList();
+        var result = paragraphs.SelectMany(p => Join(number, p)).Where(p => p.Length > 0).ToList();
         return result.Count == 0 ? null : result;
     }
 
@@ -162,14 +163,27 @@ public static partial class UnitDescription
                 : UnitDescriptionGlyphs.Lookup(Hash(start, x, y, white));
             if (letters is null)
                 return null;
-            if (last >= 0 && start - last >= 2 && letters[0] is not ('.' or ',' or '!' or '?')
-                && (text.Length == 0 || text[^1] != '-'))
+            if (last >= 0 && Spaced(text, start - last, letters))
                 text.Append(' ');
             text.Append(letters);
             last = x;
             piece++;
         }
         return text.ToString().Replace("''", "\"");
+    }
+
+    /// <summary>
+    /// Whether a space parts <paramref name="text"/> so far from the next piece, <paramref name="gap"/> empty columns
+    /// on: two or more part words but before a stop, a comma, a mark or a per cent, after a hyphen and between digits
+    /// ("+10", "100"); and a capital A alone stands one column from a t only as a word of its own ("A talented", "A
+    /// tea lady" — the patch kerned that pair: no word of the panels starts with "At" but on a piece of its own).
+    /// </summary>
+    private static bool Spaced(StringBuilder text, int gap, string next)
+    {
+        if (gap == 1)
+            return next[0] == 't' && text.Length > 0 && text[^1] == 'A' && (text.Length == 1 || text[^2] == ' ');
+        return next[0] is not ('.' or ',' or '!' or '?' or '%') && text[^1] != '-'
+            && !(char.IsAsciiDigit(text[^1]) && char.IsAsciiDigit(next[0]));
     }
 
     private static bool Column(int x, int y, Func<int, int, bool> white)
@@ -204,12 +218,20 @@ public static partial class UnitDescription
     /// it, but for the hyphens of <see cref="KeptHyphens"/>; the font's capital I is its small l, read as I where a
     /// word starts with it and no English word could (alone, before an apostrophe or a consonant but l and y).
     /// </summary>
-    private static string Join(int number, List<(int Line, string Text)> lines)
+    private static IEnumerable<string> Join(int number, List<(int Line, string Text)> lines)
     {
         var text = new StringBuilder();
         int previous = -1;
         foreach (var (line, part) in lines)
         {
+            if (part == Equippable)
+            {
+                if (text.Length > 0)
+                    yield return Words(text.ToString());
+                yield return part;
+                text.Clear();
+                continue;
+            }
             if (text.Length > 0 && text[^1] == '-')
             {
                 if (!KeptHyphens.Contains((number, previous)))
@@ -220,23 +242,32 @@ public static partial class UnitDescription
             text.Append(part);
             previous = line;
         }
-        return string.Join(' ', text.ToString().Split(' ').Select(w => CapitalI().IsMatch(w) ? "I" + w[1..] : w));
+        if (text.Length > 0)
+            yield return Words(text.ToString());
     }
+
+    private static string Words(string text) =>
+        string.Join(' ', text.Split(' ').Select(w => CapitalI().IsMatch(w) ? "I" + w[1..] : w));
+
+    /// <summary>An item's first line, its own paragraph: the item's figures follow it, often with no blank line between.</summary>
+    private const string Equippable = "Equippable";
 
     [GeneratedRegex("^l($|['nstfmcdrpgkbvz])")]
     private static partial Regex CapitalI();
 
     /// <summary>
     /// Pieces the pixels alone read wrong, by CG, line (from 0, the panel's lines counted across its paragraphs) and
-    /// piece within the line (from 0): the touching r and n are the font's m to the pixel, and two capitals A stand
-    /// as close to the next word as to a letter.
+    /// piece within the line (from 0): the touching r and n are the font's m to the pixel — "turn", "returned",
+    /// "taciturn", "modern", "horn".
     /// </summary>
     private static readonly Dictionary<(int Cg, int Line, int Piece), string> Overrides = new()
     {
-        [(603, 0, 0)] = "A ",
-        [(624, 0, 0)] = "A ",
         [(634, 10, 12)] = "rn",
         [(636, 3, 5)] = "rn",
+        [(704, 0, 13)] = "rn",
+        [(739, 7, 2)] = "rn",
+        [(790, 3, 4)] = "rn",
+        [(799, 3, 7)] = "rn",
     };
 
     /// <summary>Lines (CG, line) whose closing hyphen is a word's own, kept when the next line joins it.</summary>
