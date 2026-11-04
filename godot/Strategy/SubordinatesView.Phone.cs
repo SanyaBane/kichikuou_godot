@@ -58,7 +58,11 @@ internal sealed partial class SubordinatesView
         if (panel.AddOffered)
         {
             bool any = panel.Steps.Any(s => s.Enabled) && !Busy;
-            Top(c, _cinzel, "Add New Troops", u.Size(PhoneLedger.AddText), any ? Ui.Label : Ui.OffText, lx, u.Px(PhoneLedger.AddTop), lw);
+            // The caption over the steps it heads (owner, 2026-11-04), StepsUnder over the highest: at AddTop when they fill the side.
+            var steps = PhoneLedger.Steps(f, panel.Steps.Count);
+            float addTop = steps.Count == 0 ? u.Px(PhoneLedger.AddTop)
+                : steps.Min(s => Box(s).Position.Y) - u.Px(PhoneLedger.StepsUnder);
+            Top(c, _cinzel, "Add New Troops", u.Size(PhoneLedger.AddText), any ? Ui.Label : Ui.OffText, lx, addTop, lw);
             for (int i = 0; i < panel.Steps.Count; i++)
                 DrawPhoneStep(c, u, i, panel.Steps[i]);
         }
