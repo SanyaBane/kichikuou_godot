@@ -84,9 +84,54 @@ internal sealed partial class BattleOpeningLayer : Control
         _scale = scale;
         Size = AreaSize * scale;
         _top.Size = Size;
+        SplitTitle();                               // the device may have changed: the plate's type and width with it
         _player.Layout(scale);
         _enemy.Layout(scale);
         Step(0);
+    }
+
+    // The title's lines on the plate and how much taller the plate stands for its second (layout pixels; owner, 2026-11-04:
+    // "Great Wall of Helman A — Offensive Battle" is wider than every device's plate, so a battle's title is always its
+    // place over its kind, a duel's and a dungeon's one line; the plate one line taller, the limit and turns under it and, on a phone, what stands under the
+    // plate lowered — VS and, upright, the names' room, its foot kept over the advantage).
+    private string[] _title = [];
+    private float _taller;
+
+    /// <summary>The title's type and middle on the plate (layout pixels), the plate and its bar's inset.</summary>
+    private static float TitleSize => Phone ? P(PhoneBattleStates.PlaceText) : Upright ? U(PhoneBattleStatesUpright.PlaceText) : 30;
+    private static float TitleMiddle => Phone ? P(PhoneBattleStates.PlaceMiddle) : Upright ? U(PhoneBattleStatesUpright.PlaceMiddle) : 33;
+    private static Rect2 PlateArea => Phone ? R(PhoneBattleStates.OpeningPlate) : Upright ? R(PhoneBattleStatesUpright.OpeningPlate) : Plate;
+    private static float BarInset => Phone ? P(PhoneBattleStates.BarInset) : Upright ? U(PhoneBattleStatesUpright.BarInset) : 8;
+
+    /// <summary>The title as its place over its kind ("Oaks" / "Offensive Battle"); a duel's and a dungeon's on one line.</summary>
+    private void SplitTitle()
+    {
+        _title = [];
+        _taller = 0;
+        if (_opening is not { } o)
+            return;
+        int at = o.Title.IndexOf(" — ", StringComparison.Ordinal);
+        if (at < 0)                                                         // "Duel", "Dungeon Battle": one line
+        {
+            _title = [o.Title];
+            return;
+        }
+        _title = [o.Title[..at], o.Title[(at + 3)..]];
+        _taller = TitlePitch;
+    }
+
+    /// <summary>The distance between the title's two lines' middles (layout pixels).</summary>
+    private static float TitlePitch => TitleSize * 1.1f;
+
+    private float TitleWidth(string text, float size) => _plate.GetStringSize(text, HorizontalAlignment.Left, -1, Math.Max(1, (int)Math.Round(size))).X;
+
+    /// <summary>The largest type up to the title's that fits <paramref name="text"/> in the bar, in window pixels.</summary>
+    private int TitlePx(string text)
+    {
+        float room = PlateArea.Size.X - 4 * BarInset, size = TitleSize;
+        while (size > 8 && TitleWidth(text, size) > room)
+            size -= 1;
+        return Px(size);
     }
 
     /// <summary>
@@ -104,6 +149,7 @@ internal sealed partial class BattleOpeningLayer : Control
                 Visible = true;
                 _appearing = instant ? double.MaxValue : 0;     // the field alone first, then the opening fades in (owner, 2026-10-14)
                 Appear();
+                SplitTitle();
                 _player.Show(opening.PlayerArmy, opening.PlayerEffects.Text);
                 _enemy.Show(opening.EnemyArmy, opening.EnemyEffects.Text);
                 Step(0);
@@ -173,7 +219,7 @@ internal sealed partial class BattleOpeningLayer : Control
         _left = t;
         _player.Leave(-Leave * ease, 1 - t);
         _enemy.Leave(Leave * ease, 1 - t);
-        _rise = PlateRise * ease;
+        _rise = (PlateRise + _taller) * ease;                                // a taller plate rises as much farther
         _top.QueueRedraw();
     }
 
@@ -190,10 +236,15 @@ internal sealed partial class BattleOpeningLayer : Control
         _top.DrawLine(new Vector2(Seam.Top, 0) * s, new Vector2(Seam.Foot, Height) * s, new Color(Colors.White, shown), width, true);
         var vs = Phone ? new Vector2(PhoneBattleStates.OpeningVs.X, PhoneBattleStates.OpeningVs.Y)
             : Upright ? new Vector2(PhoneBattleStatesUpright.OpeningVs.X, PhoneBattleStatesUpright.OpeningVs.Y) : new Vector2(640, VsY);
+        if (Phone)
+            vs.Y += _taller;                                                // under the plate there: lowered with it
+        else if (Upright)
+            vs.Y += _taller / 2;                                            // between the names, whose room lost its top
         Outlined(_top, _names, vs * s, "VS", Px(Phone ? P(PhoneBattleStates.VsText) : Upright ? U(PhoneBattleStatesUpright.VsText) : VsSize),
             new Color(Ui.HoverLine, shown), new Color(VsInk, shown), Px(Phone || Upright ? 10 : 8), HorizontalAlignment.Center, centreY: true);
 
-        var area = Phone ? R(PhoneBattleStates.OpeningPlate) : Upright ? R(PhoneBattleStatesUpright.OpeningPlate) : Plate;
+        var area = PlateArea;
+        area.Size += new Vector2(0, _taller);
         var plate = new Rect2((area.Position - new Vector2(0, _rise)) * s, area.Size * s);
         var box = new StyleBoxFlat
         {
@@ -209,33 +260,33 @@ internal sealed partial class BattleOpeningLayer : Control
         _top.DrawStyleBox(box, plate);
         var bar = new StyleBoxFlat { BgColor = Ui.Row.Darkened(0.2f) };
         bar.SetCornerRadiusAll(Px(6));
-        float inset = Phone ? P(PhoneBattleStates.BarInset) : Upright ? U(PhoneBattleStatesUpright.BarInset) : 8;
-        float barHeight = Phone ? P(PhoneBattleStates.BarHeight) : Upright ? U(PhoneBattleStatesUpright.BarHeight) : 50;
+        float inset = BarInset;
+        float barHeight = (Phone ? P(PhoneBattleStates.BarHeight) : Upright ? U(PhoneBattleStatesUpright.BarHeight) : 50) + _taller;
         _top.DrawStyleBox(bar, new Rect2(plate.Position + new Vector2(inset, inset) * s, new Vector2(area.Size.X - 2 * inset, barHeight) * s));
         void Line(string text, float y, int size, Color colour) =>
             _top.DrawString(_plate, new Vector2(plate.Position.X, plate.Position.Y + y * s + Centred(_plate, size)), text,
                 HorizontalAlignment.Center, plate.Size.X, size, colour);
         string? turnsText = o.Turns is { } turns ? turns == 1 ? "1 turn" : $"{turns} turns" : null;
+        for (int i = 0; i < _title.Length; i++)                            // one line, or the place over the kind
+            Line(_title[i], TitleMiddle + i * TitlePitch, TitlePx(_title[i]), Ui.Text);
+        float down = _taller;                                               // the limit and the turns under a second line
         if (Phone)
         {
-            Line(o.Title, P(PhoneBattleStates.PlaceMiddle), Px(P(PhoneBattleStates.PlaceText)), Ui.Text);
-            Line(o.Limit, P(PhoneBattleStates.LimitMiddle), Px(P(PhoneBattleStates.LimitText)), Ui.Text);
+            Line(o.Limit, P(PhoneBattleStates.LimitMiddle) + down, Px(P(PhoneBattleStates.LimitText)), Ui.Text);
             if (turnsText is not null)
-                Line(turnsText, P(PhoneBattleStates.TurnsMiddle), Px(P(PhoneBattleStates.TurnsText)), Ui.Quiet);
+                Line(turnsText, P(PhoneBattleStates.TurnsMiddle) + down, Px(P(PhoneBattleStates.TurnsText)), Ui.Quiet);
             return;
         }
         if (Upright)
         {
-            Line(o.Title, U(PhoneBattleStatesUpright.PlaceMiddle), Px(U(PhoneBattleStatesUpright.PlaceText)), Ui.Text);
-            Line(o.Limit, U(PhoneBattleStatesUpright.LimitMiddle), Px(U(PhoneBattleStatesUpright.LimitText)), Ui.Text);
+            Line(o.Limit, U(PhoneBattleStatesUpright.LimitMiddle) + down, Px(U(PhoneBattleStatesUpright.LimitText)), Ui.Text);
             if (turnsText is not null)
-                Line(turnsText, U(PhoneBattleStatesUpright.TurnsMiddle), Px(U(PhoneBattleStatesUpright.TurnsText)), Ui.Quiet);
+                Line(turnsText, U(PhoneBattleStatesUpright.TurnsMiddle) + down, Px(U(PhoneBattleStatesUpright.TurnsText)), Ui.Quiet);
             return;
         }
-        Line(o.Title, 33, Px(30), Ui.Text);
-        Line(o.Limit, 84, Px(22), Ui.Text);
+        Line(o.Limit, 84 + down, Px(22), Ui.Text);
         if (turnsText is not null)
-            Line(turnsText, 115, Px(20), Ui.Quiet);
+            Line(turnsText, 115 + down, Px(20), Ui.Quiet);
     }
 
     /// <summary>A length of <paramref name="reference"/> reference pixels in layout pixels.</summary>
@@ -418,13 +469,16 @@ internal sealed partial class BattleOpeningLayer : Control
             var font = _layer._names;
             float s = _scale;
             var room = R(PhoneBattleStatesUpright.OpeningNames(_left));
+            // Under a taller plate the room starts lower and keeps its foot over the advantage: its lines fit its height too.
+            float taller = _layer._taller;
+            room = new Rect2(room.Position + new Vector2(0, taller), room.Size - new Vector2(0, taller));
             float size = U(PhoneBattleStatesUpright.NameText), least = U(PhoneBattleStatesUpright.NameMin);
             IReadOnlyList<string>? lines = null;
             for (; size >= least; size -= 2)
             {
                 int px = (int)Math.Round(size * s);
                 lines = BattleOpening.Wrap(_name, 3, line => font.GetStringSize(line, HorizontalAlignment.Left, -1, px).X / s, room.Size.X);
-                if (lines is not null)
+                if (lines is not null && (taller <= 0 || lines.Count * (size + U(PhoneBattleStatesUpright.NameGap)) <= room.Size.Y))
                     break;
             }
             lines ??= [_name];

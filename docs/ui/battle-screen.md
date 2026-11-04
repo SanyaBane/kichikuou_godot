@@ -380,8 +380,10 @@ picture, the slot panels) is not shown. How it is built:
   last line's baseline at y 330, kept 90 px off the seam — the fewest lines up to three that fit, balanced (the
   widest line the narrowest), at the largest size from 64 down; "Leazas Rebel Army" takes three lines, and so does
   the longest name of the scenario, "A Certain Country’s People" (`BattleOpening.Wrap`) — and its advantage below
-  it as what it does ("Walls +8%", nothing without one; "The limit and the advantages" below); "VS" between them; on top a plate (the cards' colours, the accent frame) in **Cinzel** Bold: "Oaks —
-  Offensive Battle" (or "Duel", "Dungeon Battle"), "City · Battle Limit: up to 232" (Plains / Duel / City /
+  it as what it does ("Walls +8%", nothing without one; "The limit and the advantages" below); "VS" between them; on top a plate (the cards' colours, the accent frame) in **Cinzel** Bold: the place over the
+  battle's kind on two lines, "Oaks" / "Offensive Battle" (owner, 2026-11-04: "Great Wall of Helman A — Offensive Battle"
+  fit no plate on one; the plate one line taller, on a phone VS and, upright, the names' room lowered under it), or "Duel" /
+  "Dungeon Battle" on one, "City · Battle Limit: up to 232" (Plains / Duel / City /
   Dungeon, as the header's conditions), "5 turns" (not in a duel). When our battle screen comes up with the first
   header, the scene shows the field alone and the opening — the halves' tints, the names, "VS", the plate — fades in
   over it from transparent (owner, 2026-10-14; Option → Battle Screen… → "Opening: appear", 0.35 s by default,
