@@ -1,5 +1,4 @@
 using System.Runtime.CompilerServices;
-using System.Text.RegularExpressions;
 using Godot;
 using Kichikuou.Content.Graphics;
 using Kichikuou.Original.Content.Strategy;
@@ -14,7 +13,7 @@ namespace Kichikuou.Game.Strategy;
 /// texture with <see cref="Draw"/>. A panel the reading does not know (654's Japanese, a CG without a panel) stays the
 /// original's.
 /// </summary>
-internal static partial class PanelDescriptions
+internal static class PanelDescriptions
 {
     private static UiPalette Ui => UiPalettes.For(UiPart.Screens);
 
@@ -70,14 +69,16 @@ internal static partial class PanelDescriptions
         int size = SizeFor(width, height, sx, shown.Cgs, paragraphs);
         float step = MathF.Round(size * 1.22f), gap = MathF.Round(size * 0.5f);
         float x = inside.Position.X + pad + sx, y = inside.Position.Y + pad + sx;
+        bool quoted = false;
         foreach (var row in Wrap(shown.Cg, paragraphs, size, width))
         {
             if (row is null)
             {
                 y += gap;
+                quoted = false;
                 continue;
             }
-            DrawRow(c, new Vector2(x, y + Oswald.GetAscent(size)), row, size);
+            quoted = DrawRow(c, new Vector2(x, y + Oswald.GetAscent(size)), row, size, quoted);
             y += step;
         }
     }
@@ -141,17 +142,24 @@ internal static partial class PanelDescriptions
         return rows;
     }
 
-    /// <summary>A row, a quoted name (a special attack's, a nickname) in the names' gold.</summary>
-    private static void DrawRow(CanvasItem c, Vector2 at, string row, int size)
+    /// <summary>
+    /// A row, a quoted name (a special attack's, a nickname) in the names' gold, its marks too; <paramref name="quoted"/>:
+    /// the row starts inside a name the row before broke ("By / la Way"). Returns whether the row ends inside one.
+    /// </summary>
+    private static bool DrawRow(CanvasItem c, Vector2 at, string row, int size, bool quoted)
     {
         int from = 0;
-        foreach (Match m in Quoted().Matches(row))
+        for (int i = 0; i < row.Length; i++)
         {
-            at = Part(c, at, row[from..m.Index], size, Ui.Text);
-            at = Part(c, at, m.Value, size, Ui.Name);
-            from = m.Index + m.Length;
+            if (row[i] != '"')
+                continue;
+            int end = quoted ? i + 1 : i;                           // the closing mark goes with the name, the opening one too
+            at = Part(c, at, row[from..end], size, quoted ? Ui.Name : Ui.Text);
+            from = end;
+            quoted = !quoted;
         }
-        Part(c, at, row[from..], size, Ui.Text);
+        Part(c, at, row[from..], size, quoted ? Ui.Name : Ui.Text);
+        return quoted;
     }
 
     private static Vector2 Part(CanvasItem c, Vector2 at, string text, int size, Color colour)
@@ -161,7 +169,4 @@ internal static partial class PanelDescriptions
         c.DrawString(Oswald, at, text, HorizontalAlignment.Left, -1, size, colour);
         return at + new Vector2(Oswald.GetStringSize(text, HorizontalAlignment.Left, -1, size).X, 0);
     }
-
-    [GeneratedRegex("\"[^\"]+\"")]
-    private static partial Regex Quoted();
 }
