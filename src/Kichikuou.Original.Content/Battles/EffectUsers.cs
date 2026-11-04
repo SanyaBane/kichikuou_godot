@@ -24,16 +24,20 @@ public readonly record struct EffectUser(int Unit, string Name, string TroopType
 /// (<c>FIGT.ADV:600-623</c>, <c>Bt_PlayerAtkType</c>): Archers (1) the Indirect attack, Mages (2), Magic Warriors (3) and
 /// Demon Magic (11) the Magic attack, any other the Direct attack — so <see cref="ExchangeEffect.Of"/> plays the bow, the
 /// caster's element (<see cref="MagicSpells.OfUnit"/>) or the melee for it. A spell its caster shouts may play another
-/// element (<see cref="MagicSpells.OfLine"/>); the list goes by the caster's own. Interface only. Engine-independent.
+/// element (<see cref="MagicSpells.OfLine"/>): the caster is listed under that element too. Interface only. Engine-independent.
 /// </summary>
 public static class EffectUsers
 {
-    /// <summary>The effect unit <paramref name="unit"/>'s plain attack plays, by its class in <paramref name="state"/>.</summary>
-    public static ExchangeEffectKind KindOf(GameState state, int unit) => state.Units[unit].Class.Value switch
+    /// <summary>
+    /// The effects unit <paramref name="unit"/>'s plain attack can play, by its class in <paramref name="state"/>: one, but
+    /// for a caster whose shouted spells name another element than its own (<see cref="MagicSpells.UnitElements"/>: Sill
+    /// (unit 2) fire and ice).
+    /// </summary>
+    public static IReadOnlyList<ExchangeEffectKind> KindsOf(GameState state, int unit) => state.Units[unit].Class.Value switch
     {
-        1 => ExchangeEffect.IndirectOf(unit),
-        2 or 3 or 11 => ExchangeEffect.MagicKindOf(MagicSpells.OfUnit(state, unit)),
-        _ => ExchangeEffectKind.Melee,
+        1 => [ExchangeEffect.IndirectOf(unit)],
+        2 or 3 or 11 => [.. MagicSpells.UnitElements(state, unit).Select(ExchangeEffect.MagicKindOf).Distinct()],
+        _ => [ExchangeEffectKind.Melee],
     };
 
     /// <summary>The named units (1-50) whose plain attack plays <paramref name="kind"/>, by record.</summary>
@@ -43,7 +47,7 @@ public static class EffectUsers
         for (int n = 1; n <= DeploymentTable.LastUnit; n++)
         {
             string name = DeploymentTable.UnitName(state, n).Trim();
-            if (name.Length == 0 || KindOf(state, n) != kind)
+            if (name.Length == 0 || !KindsOf(state, n).Contains(kind))
                 continue;
             var u = state.Units[n];
             int sprite = u.CgFull != 0 ? u.CgFull.Value : u.CgAlone.Value;

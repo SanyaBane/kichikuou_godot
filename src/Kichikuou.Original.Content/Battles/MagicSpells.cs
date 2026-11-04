@@ -67,6 +67,16 @@ public static class MagicSpells
         [6840] = MagicElement.Light,        // Redeye (commander 130): Miracle Straight Flash!!
     };
 
+    /// <summary>
+    /// The player's units whose lines are in <see cref="Lines"/>, by line (the commanders' are left out): which elements a
+    /// unit's spells can play, for Debug → Effects (<see cref="UnitElements"/>).
+    /// </summary>
+    private static readonly Dictionary<int, int> LineCasters = new()
+    {
+        [8893] = 2, [8901] = 2, [8423] = 11, [187] = 13, [425] = 17, [946] = 23, [1848] = 37,
+        [1976] = 38, [2005] = 38, [2173] = 39, [2239] = 40, [2341] = 42, [2541] = 46,
+    };
+
     /// <summary>The player's units with an element of their own (owner, 2026-10-21).</summary>
     private static readonly Dictionary<int, MagicElement> Units = new()
     {
@@ -127,6 +137,16 @@ public static class MagicSpells
             return MagicElement.Fire;
         return s.Cmdrs[s.Cmdr_Cur].Class.Value == DemonMagic ? MagicElement.Dark : MagicElement.Fire;
     }
+
+    /// <summary>
+    /// Every element unit <paramref name="unit"/>'s magic can play: its own (<see cref="OfUnit"/>) and those its shouted
+    /// spells name (<see cref="Lines"/>) — Sill (unit 2) fire and ice.
+    /// </summary>
+    public static IReadOnlyList<MagicElement> UnitElements(GameState s, int unit) =>
+        [.. LineCasters.Where(c => c.Value == unit).Select(c => Lines[c.Key]).Prepend(OfUnit(s, unit)).Distinct()];
+
+    /// <summary>The casters of the spell lines that are the player's units, for the tests.</summary>
+    public static IReadOnlyDictionary<int, int> SpellLineCasters => LineCasters;
 
     /// <summary>The player's unit <paramref name="unit"/>'s own element, as <see cref="OfCaster"/> reads it for the player.</summary>
     public static MagicElement OfUnit(GameState s, int unit)

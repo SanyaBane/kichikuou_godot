@@ -878,7 +878,7 @@ picture, the slot panels) is not shown. How it is built:
   The plain attacks and the magic elements list in the viewer every unit of the game that plays them instead (owner,
   2026-11-04: to check each unit's effect), from the game's state as it is (`Original.Content/Battles/EffectUsers`): a
   unit has one attack type, by its troop class (`FIGT.ADV:600-623`) — Archers the bow, Mages, Magic Warriors and Demon
-  Magic the magic of their caster's element (`MagicSpells.OfUnit`; a shouted spell may play another), any other melee —
+  Magic the magic of their caster's element (`MagicSpells.OfUnit`) and of every element their shouted spells name (`MagicSpells.UnitElements`: Sill (unit 2) under fire and, by her Ice Arrow, ice), any other melee —
   each over its own sprite (`Unit_CgFull`). At the boot the bow is Maria (unit 16), Mill (unit 25) and Isoroku
   (unit 27). The poison has no unit and keeps Papaya; the gallery and `--effects` keep the table's first users.
   Such a unit is shown by one of its three battle sprites (owner, 2026-11-04: the commander with the troops), the list

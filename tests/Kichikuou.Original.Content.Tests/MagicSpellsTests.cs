@@ -61,6 +61,18 @@ public class MagicSpellsTests
         Assert.Equal(new ExchangeEffect(kind, BattleSide.Player), ExchangeEffect.Of(PlayerMagic(unit)));
 
     /// <summary>
+    /// Every unit's spell line is a spell line, and a unit's elements are its own and its lines': Sill (unit 2) fire and
+    /// ice, Melfeis (unit 13) ice alone.
+    /// </summary>
+    [Fact]
+    public void A_units_elements_are_its_own_and_its_spells()
+    {
+        Assert.All(MagicSpells.SpellLineCasters.Keys, line => Assert.True(MagicSpells.SpellLines.ContainsKey(line), $"line {line}"));
+        Assert.Equal([MagicElement.Fire, MagicElement.Ice], MagicSpells.UnitElements(new GameState(), 2));
+        Assert.Equal([MagicElement.Ice], MagicSpells.UnitElements(new GameState(), 13));
+    }
+
+    /// <summary>
     /// The enemy's commanders by their own record: Melfeis (commander 4) lightning where her unit is ice, Magic
     /// (commander 110) lightning where her unit is fire, Papaya (commander 104) poison, Zeth's Mage Leader
     /// (commander 96) none.

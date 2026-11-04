@@ -8,7 +8,8 @@ public class EffectUsersTests(ITestOutputHelper output)
 {
     /// <summary>
     /// In the booted game (<c>SET_CHR</c>) Maria (unit 16) fires her cannons, Isoroku (unit 27) shoots, Melfeis (unit 13) casts
-    /// ice, Rance (unit 1) strikes; every named unit is in exactly one list.
+    /// ice, Rance (unit 1) strikes, Sill (unit 2) casts fire and, by her Ice Arrow, ice; every other named unit is in
+    /// exactly one list.
     /// </summary>
     [ScenarioFact]
     public async Task Each_unit_is_listed_under_its_attack()
@@ -21,8 +22,10 @@ public class EffectUsersTests(ITestOutputHelper output)
         Assert.Equal([27], bow);
         Assert.Contains(27, bow);
         Assert.Contains(13, EffectUsers.Of(s, ExchangeEffectKind.IceMagic).Select(u => u.Unit));
+        Assert.Contains(2, EffectUsers.Of(s, ExchangeEffectKind.IceMagic).Select(u => u.Unit));
+        Assert.Contains(2, EffectUsers.Of(s, ExchangeEffectKind.Magic).Select(u => u.Unit));
         Assert.Contains(1, EffectUsers.Of(s, ExchangeEffectKind.Melee).Select(u => u.Unit));
-        var all = Enum.GetValues<ExchangeEffectKind>().SelectMany(k => EffectUsers.Of(s, k)).Select(u => u.Unit).ToList();
+        var all = Enum.GetValues<ExchangeEffectKind>().SelectMany(k => EffectUsers.Of(s, k)).Select(u => u.Unit).Where(u => u != 2).ToList();
         Assert.Equal(all.Count, all.Distinct().Count());
         foreach (var kind in Enum.GetValues<ExchangeEffectKind>())
         {
