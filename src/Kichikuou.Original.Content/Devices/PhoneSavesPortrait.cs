@@ -39,9 +39,6 @@ public static class PhoneSavesPortrait
     /// <summary>Load | Save: 160 × 88, 10 apart, 8 under the room's top, the pair ending at the list's right.</summary>
     private const float ChipWidth = 160, ChipHeight = 88, ChipGap = 10, ChipTop = 8;
 
-    /// <summary>The chips' type (Cinzel).</summary>
-    public const float ChipText = 32;
-
     /// <summary>Load (<paramref name="save"/> false) or Save at the band's right, from <c>COMMAND</c>.</summary>
     public static PhoneFrame.Box Chip(PhoneFrame f, bool save)
     {
@@ -54,7 +51,10 @@ public static class PhoneSavesPortrait
     /// <summary>The lists' tabs: 104 high from 134 under the room's top, 12 apart, across the list.</summary>
     private const float TabsTop = 134, TabsHeight = 104, TabsGap = 12;
 
-    /// <summary>The tabs' type (Cinzel).</summary>
+    /// <summary>
+    /// The tabs' type, Load | Save's and the lists' alike (Cinzel 700; docs/ui/style.md, "Buttons side by side"), the four
+    /// shrunk together where a word is too long for its box.
+    /// </summary>
     public const float TabText = 34;
 
     /// <summary>The list: the band, the tabs, the heading and the rows, across the room down to 36 over the page.</summary>
@@ -80,8 +80,8 @@ public static class PhoneSavesPortrait
     /// <summary>The heading 18 under the tabs, 64 high; the sweep 470 wide at its right.</summary>
     private const float HeadTop = TabsTop + TabsHeight + 18, HeadHeight = 64, SweepWidth = 470;
 
-    /// <summary>The heading's words: in from the list's left, their type (Cinzel); the sweep's type and its star's radius.</summary>
-    public const float HeadIn = 8, HeadText = 26, SweepText = 28, SweepStar = 12;
+    /// <summary>The heading's words: in from the list's left, their type (Cinzel); the sweep's star's radius.</summary>
+    public const float HeadIn = 8, HeadText = 26, SweepStar = 12;
 
     /// <summary>The heading's middle ("NEWEST FIRST" at the left).</summary>
     public static float HeadMiddle(PhoneFrame f) => f.Room.Y + f.Px(HeadTop + HeadHeight / 2);
@@ -132,8 +132,8 @@ public static class PhoneSavesPortrait
     /// <summary>The page's title band (its title's middle in it, its type, the auto-save's tags'), Delete at its right (230 × 84, its type).</summary>
     private const float TitleBand = 100, DeleteWidth = 230, DeleteHeight = 84;
 
-    /// <summary>The page's title: its middle under the page's top, its type (Cinzel), the auto-save's tags' type, Delete's type.</summary>
-    public const float PageTitleMiddle = 40, PageTitleText = 34, TagText = 28, DeleteText = 30;
+    /// <summary>The page's title: its middle under the page's top, its type (Cinzel), the auto-save's tags' type.</summary>
+    public const float PageTitleMiddle = 40, PageTitleText = 34, TagText = 28;
 
     /// <summary>The page's foot over the bar.</summary>
     private const float PageOver = 24;
@@ -156,8 +156,8 @@ public static class PhoneSavesPortrait
     /// <summary>A figure: its label 8 in at its type (Cinzel), the value 34 under it at its type, shrunk to the column less 24.</summary>
     public const float FigureIn = 8, LabelText = 24, ValueDown = 34, ValueText = 38, ValueRoom = 24;
 
-    /// <summary>The comment's box: its words 24 in at their type; Edit 204 wide at the page's right, 16 right of the box (its type); an auto-save's lines' type.</summary>
-    public const float CommentIn = 24, CommentText = 38, EditText = 40, LineText = 28;
+    /// <summary>The comment's box: its words 24 in at their type; Edit 204 wide at the page's right, 16 right of the box (at <see cref="ButtonText"/>); an auto-save's lines' type.</summary>
+    public const float CommentIn = 24, CommentText = 38, LineText = 28;
 
     private const float EditWidth = 204, EditGap = 16;
 
@@ -229,8 +229,11 @@ public static class PhoneSavesPortrait
     /// <summary>Back's width at the bar's right, the gap between it and the red button.</summary>
     private const float BackWidth = 384, BarGap = 16;
 
-    /// <summary>Back's and the red button's type (the brush face), its word alone.</summary>
-    public const float BackText = 50, ButtonText = 58;
+    /// <summary>
+    /// The page's buttons' type — Delete, Edit, the red button (its word alone) and Back alike, Cinzel 700 (docs/ui/style.md,
+    /// "Buttons side by side"), shrunk together where a word is too long for its box.
+    /// </summary>
+    public const float ButtonText = 40;
 
     /// <summary>Back at the bar's right — the right thumb: a way back stands right of the action (owner, 2026-10-30).</summary>
     public static PhoneFrame.Box Back(PhoneFrame f) => new(f.Bar.Right - f.Px(BackWidth), f.Bar.Y, f.Px(BackWidth), f.Bar.H);
@@ -277,8 +280,11 @@ public static class PhoneSavesPortrait
     /// <summary>The card's words: "COMMENT" at the left and whose at the right, in this far, their middle and type (Cinzel).</summary>
     public const float CardLabelIn = 32, CardLabelMiddle = 56, CardLabelText = 28, CardTitleText = 30;
 
-    /// <summary>The field's type, its words in from its left, the lines' pitch in its type; the count's middle under the field, its type; the buttons' type.</summary>
-    public const float FieldText = 46, FieldTextIn = 26, FieldLeading = 1.3f, CountDown = 36, CountText = 32, CancelText = 48, KeepText = 56;
+    /// <summary>The field's type, its words in from its left, the lines' pitch in its type; the count's middle under the field, its type.</summary>
+    public const float FieldText = 46, FieldTextIn = 26, FieldLeading = 1.3f, CountDown = 36, CountText = 32;
+
+    /// <summary>Keep's and Cancel's type, Cinzel 700 both (docs/ui/style.md, "Buttons side by side").</summary>
+    public const float CardButtonText = 46;
 
     /// <summary>The field's lines: the words wrap into two in view.</summary>
     public const int FieldLines = 2;

@@ -36,7 +36,12 @@ internal sealed partial class OptionsView : Control
     private static readonly Tab[] Tabs = [Tab.Messages, Tab.Display, Tab.Battle, Tab.Game, Tab.Tweaks];
     private static readonly Rect2 Frame = new(100, 56, 1080, 704);
     private static readonly Rect2 Sheet = new(126, 126, 1028, 608);
-    private static readonly Rect2 CloseButton = new(1004, 686, 130, 40);
+    private static readonly Rect2 CloseButton = new(1004, 686, 130, 40), DefaultsButton = new(146, 686, 130, 40);
+    /// <summary>
+    /// The buttons' words, Cinzel 700 at one size a group (docs/ui/style.md, "Buttons side by side"): the foot's Defaults and
+    /// Close, the question's confirmation and Cancel.
+    /// </summary>
+    private const int FootText = 17, QuestionText = 16;
     private const float TabTop = 82, TabFoot = 127;
     private const float ContentX = 166, ContentY = 156, ContentW = 948;
     private static Color Field => Ui.Field;
@@ -49,6 +54,7 @@ internal sealed partial class OptionsView : Control
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private readonly FontVariation _cinzelBold = Lacquer.Cinzel(800);
     private FontFile _gothic;
+    private readonly FontVariation _buttonFont = Lacquer.Cinzel(700);
     private readonly FontVariation _sealFont = Lacquer.Cinzel(700);    // the row tiles' party seal, as the tables'
     private readonly FontFile _bizSample = DeploymentTableView.LoadFont(GameFont.BizUdGothic);
     private readonly FontFile? _msSample = GodotGlyphRenderer.MsGothicInstalled ? DeploymentTableView.LoadFont(GameFont.MsGothic) : null;
@@ -456,14 +462,26 @@ internal sealed partial class OptionsView : Control
             Tab.Game => GameSection(x, top, w),
             _ => DrawTweaks(x, top, w),
         });
-        DrawLink("defaults", "Defaults", new Vector2(150, 706), AskDefaults, enabled: _tab != Tab.Game);   // the game folder has no default
+        DrawDefaults();
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, CloseButton, closeLit, closeLit && _pressed == "close", _k);
-        Text(_cinzelBold, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _cinzelBold, 17)), "Close",
-            HorizontalAlignment.Center, CloseButton.Size.X, 17, Ui.SealText);
+        Text(_buttonFont, new Vector2(CloseButton.Position.X, Lacquer.Baseline(CloseButton, _buttonFont, FootText)), "Close",
+            HorizontalAlignment.Center, CloseButton.Size.X, FootText, Ui.SealText);
         _spots.Add(new Spot("close", CloseButton, Close));
         if (_question is not null)
             DrawQuestion(_question);
+    }
+
+    /// <summary>Defaults, a paper button as the phone's (deaf on Game, whose folder has no default), in Close's face and size.</summary>
+    private void DrawDefaults()
+    {
+        bool enabled = _tab != Tab.Game, lit = enabled && _hover == "defaults";
+        DrawRect(DefaultsButton, lit ? Field : Ui.PaperHead);
+        DrawRect(DefaultsButton, Ui.InkQuiet, false, Line(1));
+        Text(_buttonFont, new Vector2(DefaultsButton.Position.X, Lacquer.Baseline(DefaultsButton, _buttonFont, FootText)), "Defaults",
+            HorizontalAlignment.Center, DefaultsButton.Size.X, FootText, enabled ? Ui.HeadInk : Ui.InkGrey);
+        if (enabled)
+            _spots.Add(new Spot("defaults", DefaultsButton, AskDefaults));
     }
 
     /// <summary>Paper tabs: the current one joined to the sheet with a vermilion edge, the others darker paper.</summary>
@@ -1005,11 +1023,11 @@ internal sealed partial class OptionsView : Control
         var cancel = new Rect2(box.End.X - 150, box.End.Y - 58, 110, 38);
         bool confirmLit = _hover == "confirm";
         Ui.DrawRedButton(this, confirm, confirmLit, confirmLit && _pressed == "confirm", _k);
-        Text(_cinzelBold, new Vector2(confirm.Position.X, Lacquer.Baseline(confirm, _cinzelBold, 16)), question.Confirm,
-            HorizontalAlignment.Center, confirm.Size.X, 16, Ui.SealText);
+        Text(_buttonFont, new Vector2(confirm.Position.X, Lacquer.Baseline(confirm, _buttonFont, QuestionText)), question.Confirm,
+            HorizontalAlignment.Center, confirm.Size.X, QuestionText, Ui.SealText);
         Ui.DrawRowBox(this, cancel, _hover == "cancel", _k);
-        Text(_gothic, new Vector2(cancel.Position.X, Lacquer.Baseline(cancel, _gothic, 16)), "Cancel", HorizontalAlignment.Center,
-            cancel.Size.X, 16, _hover == "cancel" ? Ui.Name : Ui.Text);
+        Text(_buttonFont, new Vector2(cancel.Position.X, Lacquer.Baseline(cancel, _buttonFont, QuestionText)), "Cancel", HorizontalAlignment.Center,
+            cancel.Size.X, QuestionText, _hover == "cancel" ? Ui.Name : Ui.Text);
         _spots.Add(new Spot("confirm", confirm, () =>
         {
             SetQuestion(null);

@@ -55,19 +55,25 @@ internal sealed partial class FloorLadderView
             return;
         if (!u.Frame.IsPortrait)                                 // upright the rungs stand on the black (PF1)
             Ui.DrawPanel(this, PanelRect, _k);
+        var retreat = RectOf(Part.Retreat);
+        // The rungs and Retreat: a rail's rows, the game's font at one size (docs/ui/style.md, "Buttons side by side").
+        List<(string, float)> words = [(l.RetreatText, retreat.Size.X - u.Px(30))];
+        if (l.Up is { } u0)
+            words.Add((u0.Text, RectOf(Part.Up).Size.X - u.Px(PhoneLadder.WordRoom)));
+        if (l.Down is { } d0)
+            words.Add((d0.Text, RectOf(Part.Down).Size.X - u.Px(PhoneLadder.WordRoom)));
+        int size = SideCells.FitAll(_gothic, u.Size(PhoneLadder.WordText), [.. words]);
         if (l.Up is { } up)
-            PhoneRung(u, Part.Up, up.Text, Caption(up), true, up.Deeper);
+            PhoneRung(u, Part.Up, up.Text, Caption(up), true, up.Deeper, size);
         var floor = u.Rect(u.Frame.IsPortrait ? PhoneLadderPortrait.Floor(u.Frame) : PhoneLadder.Floor(u.Frame));
         float mid = floor.GetCenter().X;
         int labelSize = u.Size(PhoneLadder.FloorLabelText), floorSize = u.Size(PhoneLadder.FloorText);
         Centred(_cinzel, labelSize, mid, floor.Position.Y + u.Px(PhoneLadder.FloorLabelMiddle), "FLOOR", Ui.Subtitle);
         Centred(_brush, floorSize, mid, floor.Position.Y + u.Px(PhoneLadder.FloorMiddle), $"{l.Floor}F", Ui.Name);
         if (l.Down is { } down)
-            PhoneRung(u, Part.Down, down.Text, Caption(down), false, down.Deeper);
-        var retreat = RectOf(Part.Retreat);
+            PhoneRung(u, Part.Down, down.Text, Caption(down), false, down.Deeper, size);
         Ui.DrawRedButton(this, retreat, _hovered == Part.Retreat, _pressed == Part.Retreat && _hovered == Part.Retreat, _k);
-        int size = SideCells.Fit(_brush, l.RetreatText, u.Size(PhoneLadder.RetreatText), retreat.Size.X - u.Px(30));
-        Centred(_brush, size, retreat.GetCenter().X, retreat.GetCenter().Y, l.RetreatText, Color.Color8(250, 226, 160));
+        Centred(_gothic, size, retreat.GetCenter().X, retreat.GetCenter().Y, l.RetreatText, Color.Color8(250, 226, 160));
     }
 
     private static string Caption(FloorWay way) => $"{(way.Deeper ? "deeper" : "back")} · to {way.To}F";

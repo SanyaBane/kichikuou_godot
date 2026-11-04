@@ -28,7 +28,7 @@ public partial class ImportScreen : Control
     private static readonly Rect2 Paper = new(276, 136, 728, 528);
     private static readonly Rect2 WideButton = new(500, 588, 280, 48), NarrowButton = new(540, 588, 200, 48);
     // the way back right of the red button: a way back stands right of the action (owner, 2026-10-30)
-    private static readonly Rect2 BackLink = new(TextRight - 170, 600, 170, 24);
+    private static readonly Rect2 BackLink = new(TextRight - 180, 600, 180, 24);
     private const float StepX = 316, TextX = 364, TextRight = 964;
 
     private static Color FieldFill => Ui.Field;
@@ -37,6 +37,9 @@ public partial class ImportScreen : Control
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontVariation _cinzel = Lacquer.Cinzel(600);
     private readonly FontVariation _cinzelBold = Lacquer.Cinzel(800);
+    private readonly FontVariation _buttonFont = Lacquer.Cinzel(700);
+    /// <summary>The red button's word, whichever it is, and the way back's: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int ButtonText = 16;
     private readonly FontFile _gothic;
     private readonly Func<Node> _next;
     private readonly Func<Node>? _back;
@@ -438,8 +441,8 @@ public partial class ImportScreen : Control
                 break;
         }
         if (BackLive)
-            DrawString(_cinzel, new Vector2(BackLink.Position.X, Lacquer.Baseline(BackLink, _cinzel, 15)), "← Back to the title",
-                HorizontalAlignment.Right, BackLink.Size.X, 15, _hoverBack ? Ui.Vermilion : Ui.InkQuiet);
+            DrawString(_buttonFont, new Vector2(BackLink.Position.X, Lacquer.Baseline(BackLink, _buttonFont, ButtonText)), "← Back to the title",
+                HorizontalAlignment.Right, BackLink.Size.X, ButtonText, _hoverBack ? Ui.Vermilion : Ui.InkQuiet);
     }
 
     private void DrawChoose()
@@ -449,7 +452,7 @@ public partial class ImportScreen : Control
         DrawField(y + 4);
         y = Step(y + 70, 1, "The files are checked and the scenario read", "Once for this folder, a second or so.", StepState.Next);
         Step(y + 14, 2, "Play", null, StepState.Next);
-        DrawButton("Import", 22);
+        DrawButton("Import");
     }
 
     private void DrawImporting()
@@ -499,7 +502,7 @@ public partial class ImportScreen : Control
         DrawString(_cinzelBold, new Vector2(centre.X - 80, centre.Y), "NOT", HorizontalAlignment.Center, 160, 22, Ui.Vermilion);
         DrawString(_cinzelBold, new Vector2(centre.X - 80, centre.Y + 28), "v1.0", HorizontalAlignment.Center, 160, 18, Ui.Vermilion);
         DrawField(y + 30, compact: true);
-        DrawButton("Choose another folder", 18);
+        DrawButton("Choose another folder");
     }
 
     private enum StepState { Now, Next, Done, Failed }
@@ -553,19 +556,19 @@ public partial class ImportScreen : Control
                 _hoverField ? Ui.Vermilion : Ui.VermilionInk);
     }
 
-    private void DrawButton(string label, int size)
+    private void DrawButton(string label, int size = ButtonText)
     {
         if (ButtonLive)
         {
             Ui.DrawRedButton(this, Button, _hoverButton, _pressedButton && _hoverButton, _k);
-            DrawString(_cinzelBold, new Vector2(Button.Position.X, Lacquer.Baseline(Button, _cinzelBold, size)), label,
+            DrawString(_buttonFont, new Vector2(Button.Position.X, Lacquer.Baseline(Button, _buttonFont, size)), label,
                 HorizontalAlignment.Center, Button.Size.X, size, Ui.SealText);
         }
         else
         {
             DrawRect(Button, Ui.OffButton);
             DrawRect(Button, Ui.OffLine, false, Lacquer.Line(2, _k));
-            DrawString(_cinzelBold, new Vector2(Button.Position.X, Lacquer.Baseline(Button, _cinzelBold, size)), label,
+            DrawString(_buttonFont, new Vector2(Button.Position.X, Lacquer.Baseline(Button, _buttonFont, size)), label,
                 HorizontalAlignment.Center, Button.Size.X, size, Ui.OffText);
         }
     }

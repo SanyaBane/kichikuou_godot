@@ -41,17 +41,37 @@ internal sealed partial class TreasureView
         PhonePickerParts.DrawTitle(c, u, _brush, _cinzel, "Treasure", _date);
         DrawPicture(c, u.Rect(PhonePickers.Picture(f)));
         PhoneDetails(c, u);
+        var end = u.Rect(PhonePickers.TreasureEnd(f));
+        _buttonSize = ButtonSize(u, PhonePickers.ButtonText, u.Rect(PhonePickers.Tab(f, 0)), u.Rect(PhonePickers.Back(f)), end,
+            u.Rect(PhonePickers.Action(f)));
         if (_button is { } button)
             PhoneAction(c, u, button);
         if (_prompt is { } prompt)
         {
             PhonePrompt(c, u, prompt);
-            PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickers.Back(f)), _brush, "Back", !Busy && _hovered == BackButton);
+            PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickers.Back(f)), "Back", !Busy && _hovered == BackButton, _buttonSize);
         }
         else
             PhoneTabs(c, u);
-        PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickers.TreasureEnd(f)), _brush, "End", !Busy && _hovered == EndButton);
+        PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
         PhoneGrid(c, u);
+    }
+
+    /// <summary>The size every button of the phone's screen writes its word at, this drawing's (<see cref="ButtonSize"/>).</summary>
+    private int _buttonSize;
+
+    /// <summary>
+    /// One Cinzel 700 size for the tabs, Back, End and the red button (docs/ui/style.md, "Buttons side by side"):
+    /// <paramref name="text"/> reference pixels, or as much smaller as the longest word in its box needs.
+    /// </summary>
+    private int ButtonSize(PhoneUnits u, float text, Rect2 tab, Rect2 back, Rect2 end, Rect2 action)
+    {
+        float tabRoom = PhonePickerParts.Room(u, tab);
+        List<(string, float)> words = [("Characters", tabRoom), ("Items", tabRoom), ("Back", PhonePickerParts.Room(u, back)),
+            ("End", PhonePickerParts.Room(u, end))];
+        if (_button is { } b)
+            words.Add((b.Label, PhonePickerParts.Room(u, action)));
+        return SideCells.FitAll(_cinzel, u.Size(text), [.. words]);
     }
 
     /// <summary>
@@ -110,18 +130,17 @@ internal sealed partial class TreasureView
     private void DrawAction(Control c, PhoneUnits u, TreasureButton b, Rect2 r)
     {
         float cx = r.GetCenter().X, room = r.Size.X - u.Px(30);
+        int size = _buttonSize;                                 // the group's, the tabs' and End's (ButtonSize)
         if (b.Refusal is null)
         {
             bool hover = !Busy && _hovered == ActionButton;
             Ui.DrawRedButton(c, r, hover, hover && _pressed == ActionButton, _k);
-            int size = SideCells.Fit(_cinzel, b.Label, u.Size(PhonePickers.ActionText * 0.8f), room);
             Centred(c, _cinzel, b.Label, size, Color.Color8(250, 226, 160), cx, PhonePickerParts.Middle(_cinzel, size, r.GetCenter().Y));
             return;
         }
         c.DrawRect(r, Ui.OffButton);
         c.DrawRect(r, Ui.OffLine, false, Frame(1));
-        int word = SideCells.Fit(_cinzel, b.Label, u.Size(PhonePickers.ActionText * 0.7f), room);
-        Centred(c, _cinzel, b.Label, word, Ui.OffText, cx, PhonePickerParts.Middle(_cinzel, word, r.Position.Y + r.Size.Y * 0.34f));
+        Centred(c, _cinzel, b.Label, size, Ui.OffText, cx, PhonePickerParts.Middle(_cinzel, size, r.Position.Y + r.Size.Y * 0.34f));
         int why = SideCells.Fit(_gothic, b.Refusal, u.Size(28), room);
         Centred(c, _gothic, b.Refusal, why, Ui.Minus, cx, PhonePickerParts.Middle(_gothic, why, r.Position.Y + r.Size.Y * 0.72f));
     }
@@ -165,7 +184,7 @@ internal sealed partial class TreasureView
     /// <summary>Characters | Items at the places <paramref name="tab"/> gives.</summary>
     private void DrawTabs(Control c, PhoneUnits u, Func<int, Rect2> tab)
     {
-        int size = u.Size(PhonePickers.TabText);
+        int size = _buttonSize;
         for (int view = 0; view < 2; view++)
         {
             var r = tab(view);

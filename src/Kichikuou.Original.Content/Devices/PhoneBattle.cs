@@ -118,10 +118,11 @@ public static class PhoneBattle
 
     /// <summary>
     /// Its insides, reference pixels: the question's line (its top and type) and the note's, the rule, the answers' row (its
-    /// top, height, the room round it and between the answers), the tip's half height and length.
+    /// top, height, the room round it and between the answers; the answers' one type, Retreat's among them, the game's
+    /// font, docs/ui/style.md, "Buttons side by side"), the tip's half height and length.
     /// </summary>
     public const float QuestionTop = 34, QuestionText = 44, NoteTop = 100, NoteText = 38, QuestionRule = 166, AnswersTop = 186,
-        AnswerHeight = 138, AnswersSide = 40, AnswerGap = 16, AnswerText = 40, RetreatText = 50, TipHalf = 30, TipLength = 46;
+        AnswerHeight = 138, AnswersSide = 40, AnswerGap = 16, AnswerText = 40, TipHalf = 30, TipLength = 46;
 
     /// <summary>The left rail's column (the rows' room less <see cref="RowIn"/> each way).</summary>
     private static (float X, float W) LeftColumn(PhoneFrame f)

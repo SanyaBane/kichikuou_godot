@@ -50,6 +50,8 @@ internal sealed partial class EnemyAttackView : Control
     // The answers' row: Intercept, Ninja Scout, Abandon City; in the touch mode mirrored, Abandon City first and Intercept
     // last (owner, 2026-10-27).
     private const float ButtonsLeft = 548, ButtonsRight = 1226;
+    /// <summary>The foot's words — Intercept, Ninja Scout, Abandon City: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int ButtonText = 17;
     private static readonly Rect2 InterceptButton = Mirrored(new(548, FootTop + 28, 252, 92));
     private static readonly Rect2 ScoutButton = Mirrored(new(822, FootTop + 28, 190, 92));
     private static readonly Rect2 AbandonButton = Mirrored(new(1030, FootTop + 44, 196, 52));
@@ -602,7 +604,7 @@ internal sealed partial class EnemyAttackView : Control
         bool Hovered(Spot spot) => _hover.Spot == spot && !_callout.MenuOpen;
         bool Down(Spot spot) => _pressed.Spot == spot && _hover.Spot == spot;
         Ui.DrawRedButton(_sheet, InterceptButton, Hovered(Spot.Intercept), Down(Spot.Intercept), _k);
-        Centred(_brush, "Intercept", 22, InterceptButton, 0.40f, Ui.Name);
+        Centred(_cinzelBold, "Intercept", ButtonText, InterceptButton, 0.40f, Ui.Name);
         Centred(_font!, "choose the units", 13, InterceptButton, 0.76f, Color.Color8(236, 206, 160));
 
         int free = attack.Ninjas.Count(n => n.Free);
@@ -614,7 +616,7 @@ internal sealed partial class EnemyAttackView : Control
             _sheet.DrawRect(ScoutButton, Ui.OffButton);
             _sheet.DrawRect(ScoutButton, Ui.OffLine, false, Lacquer.Line(1, _k));
         }
-        Centred(_cinzel, "Ninja Scout", 17, ScoutButton, 0.40f,
+        Centred(_cinzelBold, "Ninja Scout", ButtonText, ScoutButton, 0.40f,
             !canScout ? Ui.OffText : Hovered(Spot.Scout) || _listOpen ? Ui.Name : Ui.Text);
         string sub = attack.Ninjas.Count == 0 ? "no ninja in service" : $"{free} of {attack.Ninjas.Count} free";
         Centred(_font!, sub, 13, ScoutButton, 0.76f, canScout ? Ui.Quiet : Ui.OffText);
@@ -623,10 +625,10 @@ internal sealed partial class EnemyAttackView : Control
         bool abandonLit = Hovered(Spot.Abandon) || _callout.MenuOpen;
         Ui.DrawDangerButton(_sheet, AbandonButton, abandonLit, _k);
         const string abandon = "Abandon City";
-        var size = _cinzel.GetStringSize(abandon, fontSize: 17);
+        var size = _cinzelBold.GetStringSize(abandon, fontSize: ButtonText);
         float x = AbandonButton.GetCenter().X - (size.X + 24) / 2, middle = AbandonButton.GetCenter().Y;
         DrawWhiteFlag(x, middle - 10);
-        _sheet.DrawString(_cinzel, new Vector2(x + 24, middle + _cinzel.GetAscent(17) - size.Y / 2), abandon, fontSize: 17,
+        _sheet.DrawString(_cinzelBold, new Vector2(x + 24, middle + _cinzelBold.GetAscent(ButtonText) - size.Y / 2), abandon, fontSize: ButtonText,
             modulate: abandonLit ? Ui.Name : Ui.DangerText);
     }
 

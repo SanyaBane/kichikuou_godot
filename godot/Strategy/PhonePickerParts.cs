@@ -66,13 +66,16 @@ internal static class PhonePickerParts
         c.DrawLine(new Vector2(x / u.K, top / u.K), new Vector2(x / u.K, bottom / u.K), Ui.DimGold, Lacquer.Line(u.Px(2), u.K));
     }
 
-    /// <summary>A plain button of the foot: a panel, its word in the brush face fitted to it, lit while hovered.</summary>
-    public static void DrawButton(CanvasItem c, PhoneUnits u, Rect2 box, Font brush, string word, bool lit)
+    /// <summary>
+    /// A plain button of the foot: a panel, its word in Cinzel 700 at <paramref name="size"/> (the group's, <see cref="Room"/>),
+    /// lit while hovered.
+    /// </summary>
+    public static void DrawButton(CanvasItem c, PhoneUnits u, Rect2 box, string word, bool lit, int size)
     {
         Ui.DrawPanel(c, box, u.K, lit ? Ui.RowHover : null);
-        int size = SideCells.Fit(brush, word, u.Size(PhonePickers.EndText), box.Size.X - u.Px(30));
-        float w = brush.GetStringSize(word, fontSize: size).X;
-        c.DrawString(brush, new Vector2(box.GetCenter().X - w / 2, Middle(brush, size, box.GetCenter().Y)), word, fontSize: size,
-            modulate: lit ? Ui.Name : Ui.Text);
+        SideCells.DrawCentred(c, box, SideCells.Cinzel, word, size, lit ? Ui.Name : Ui.Text);
     }
+
+    /// <summary>The room a button's word has in <paramref name="box"/>: 15 reference pixels clear at either side.</summary>
+    public static float Room(PhoneUnits u, Rect2 box) => box.Size.X - u.Px(30);
 }

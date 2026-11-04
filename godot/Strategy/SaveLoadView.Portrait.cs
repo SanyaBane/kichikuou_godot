@@ -108,6 +108,8 @@ internal sealed partial class SaveLoadView
 
         public static float ButtonText(PhoneFrame f) => f.IsPortrait ? PhoneSavesPortrait.ButtonText : PhoneSaves.ButtonText;
 
+        public static float TabText(PhoneFrame f) => f.IsPortrait ? PhoneSavesPortrait.TabText : PhoneSaves.TabText;
+
         public static PhoneFrame.Box DeleteQuestion(PhoneFrame f) => f.IsPortrait ? PhoneSavesPortrait.DeleteQuestion(f) : PhoneSaves.DeleteQuestion(f);
 
         public static PhoneFrame.Box SweepQuestion(PhoneFrame f) => f.IsPortrait ? PhoneSavesPortrait.SweepQuestion(f) : PhoneSaves.SweepQuestion(f);
@@ -124,7 +126,7 @@ internal sealed partial class SaveLoadView
     // ---------------------------------------------------------------- drawing
 
     /// <summary>The title band (<c>save_title</c>): the title in the brush face, Load | Save at its right, the divider under it.</summary>
-    private void DrawPortraitBand(PhoneUnits u, bool save)
+    private void DrawPortraitBand(PhoneUnits u, bool save, int tabs)
     {
         var room = u.Rect(u.Frame.Room);
         int title = u.Size(PhoneSavesPortrait.TitleText);
@@ -132,7 +134,7 @@ internal sealed partial class SaveLoadView
             room.Position.Y + u.Px(PhoneSavesPortrait.TitleTop) + _brush.GetAscent(title)), save ? "Save" : "Load", fontSize: title, modulate: Ui.Name);
         if (_tabs)
             foreach (var tab in (SaveList[])[SaveList.Load, SaveList.Save])
-                PhoneChip(TabBox(tab), tab.ToString(), tab == _list, _hovered == TabHit + (int)tab, u.Size(PhoneSavesPortrait.ChipText), u);
+                PhoneChip(TabBox(tab), tab.ToString(), tab == _list, _hovered == TabHit + (int)tab, tabs);
         float divider = room.Position.Y + u.Px(PhoneSavesPortrait.Divider), inset = u.Px(PhoneSavesPortrait.DividerIn);
         Ui.DrawDivider(this, room.Position.X + inset, room.End.X - inset, divider, _k);
     }
@@ -179,14 +181,8 @@ internal sealed partial class SaveLoadView
         DrawFieldWords(u, field);
         var (countRight, countMiddle) = PhoneSavesPortrait.Count(f, _keyboard);
         TextRight(_gothic, u.Size(PhoneSavesPortrait.CountText), countRight / u.K, countMiddle / u.K, $"{_edit.Text.Length} / {CommentLength}", Ui.Quiet);
-        var cancel = u.Rect(PhoneSavesPortrait.Cancel(f, _keyboard));
-        bool hover = _hovered == CancelHit;
-        Ui.DrawRowBox(this, cancel, hover, _k);
-        TextCentred(_brush, u.Size(PhoneSavesPortrait.CancelText), cancel.GetCenter().X, cancel.GetCenter().Y, "Cancel", hover ? Ui.Name : Ui.Text);
-        var keep = u.Rect(PhoneSavesPortrait.Keep(f, _keyboard));
-        bool lit = _hovered == KeepHit;
-        Ui.DrawRedButton(this, keep, lit, lit && _pressed == KeepHit, _k);
-        TextCentred(_brush, u.Size(PhoneSavesPortrait.KeepText), keep.GetCenter().X, keep.GetCenter().Y, "Keep", Ui.Name);
+        DrawCardButtons(u, u.Rect(PhoneSavesPortrait.Cancel(f, _keyboard)), u.Rect(PhoneSavesPortrait.Keep(f, _keyboard)),
+            PhoneSavesPortrait.CardButtonText);
     }
 
     /// <summary>The field's words as they wrap at the largest type that keeps them to its lines, the block in its middle.</summary>

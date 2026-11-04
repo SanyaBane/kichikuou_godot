@@ -37,14 +37,14 @@ internal sealed partial class SubordinatesView
 
         var rep = RectOf(ReplenishButton)!.Value;
         var r = panel.Replenish;
-        int word = SideCells.Fit(_brush, "Replenish", u.Size(PhoneLedgerPortrait.ReplenishText), rep.Size.X - u.Px(30));
+        int word = OrdersSize(u, PhoneLedgerPortrait.OrderButtonText, PhoneLedgerPortrait.TalkFaceIn);
         string note = r.Enabled ? $"{Figures.Signed(r.Men)} · {Figures.GoldShort(r.Price * 100)}" : r.Note;
         int small = SideCells.Fit(_gothic, note, u.Size(PhoneLedgerPortrait.ReplenishNote), rep.Size.X - u.Px(24));
         if (Enabled(ReplenishButton))
-            DrawPrimary(c, rep, "Replenish", note, ReplenishButton, word, small);
+            DrawPrimary(c, rep, "Replenish", note, ReplenishButton, word, small, _cinzel);
         else
-            DrawPlain(c, rep, "Replenish", note, ReplenishButton, _brush, word, small);
-        DrawPortraitTalk(c, u, panel);
+            DrawPlain(c, rep, "Replenish", note, ReplenishButton, _cinzel, word, small);
+        DrawPortraitTalk(c, u, panel, word);
 
         if (panel.AddOffered)
         {
@@ -76,14 +76,14 @@ internal sealed partial class SubordinatesView
         c.DrawString(_cinzelLight, new Vector2(bx + _cinzel.GetStringSize(gold, fontSize: figure).X + u.Px(PhoneLedgerPortrait.BudgetUnitGap),
             Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerPortrait.BudgetUnitMiddle))), "GOLD", fontSize: label, modulate: Ui.Subtitle);
         var end = RectOf(EndButton)!.Value;
-        DrawPlain(c, end, "End", null, EndButton, _brush, SideCells.Fit(_brush, "End", u.Size(PhoneLedgerPortrait.EndText), end.Size.X - u.Px(30)), 0);
+        DrawPlain(c, end, "End", null, EndButton, _cinzel, word, 0);
     }
 
     /// <summary>The baseline that puts <paramref name="font"/>'s text of <paramref name="size"/> with its middle at <paramref name="middle"/>.</summary>
     private static float Middle(Font font, int size, float middle) => middle + (font.GetAscent(size) - font.GetDescent(size)) / 2;
 
     /// <summary>Talk beside Replenish (<c>talk_button</c>): the unit's face at the left, "Talk" and "WITH …" beside it; its talk's NEW or ??? pill at the top right.</summary>
-    private void DrawPortraitTalk(Control c, PhoneUnits u, SubordinatePanel panel)
+    private void DrawPortraitTalk(Control c, PhoneUnits u, SubordinatePanel panel, int text)
     {
         var rect = RectOf(TalkButton)!.Value;
         bool on = Enabled(TalkButton), hover = on && _hovered == TalkButton;
@@ -100,10 +100,9 @@ internal sealed partial class SubordinatesView
             c.DrawTextureRect(face, faceRect, false, on ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
         c.DrawRect(faceRect, on ? Ui.Gold : Ui.OffLine, false, Line(1));
         float x = faceRect.End.X, w = rect.End.X - x;
-        int text = SideCells.Fit(_brush, "Talk", u.Size(PhoneLedgerPortrait.TalkText), w - u.Px(26));
         float y0 = rect.Position.Y, y1 = rect.End.Y;
-        CentredString(c, _brush, "Talk", text, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text, x + w / 2,
-            Middle(_brush, text, y0 + u.Px(PhoneLedgerPortrait.WordMiddle)));
+        CentredString(c, _cinzel, "Talk", text, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text, x + w / 2,
+            Middle(_cinzel, text, y0 + u.Px(PhoneLedgerPortrait.WordMiddle)));
         string with = "With " + panel.Name;
         int small = SideCells.Fit(_cinzelLight, with, u.Size(PhoneLedgerPortrait.TalkWith), w - u.Px(26));
         CentredString(c, _cinzelLight, with, small, on ? Ui.Subtitle : Ui.OffText, x + w / 2,

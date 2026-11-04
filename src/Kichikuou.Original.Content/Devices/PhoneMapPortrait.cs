@@ -61,6 +61,12 @@ public static class PhoneMapPortrait
     /// <summary>The plates' type over the map (2 mm), as held landscape.</summary>
     public const float PlateText = PhoneMap.PlateText;
 
+    /// <summary>
+    /// The sheets' rows' type, the command panel's (Turn END's among them) and a province's: the game's font at one size
+    /// within a sheet (docs/ui/style.md, "Buttons side by side"), scaled with a low row, shrunk together where a name is too long.
+    /// </summary>
+    public const float RowText = 40;
+
     /// <summary>The map in its own pixels (<c>WAO_MAP.ADV</c>: six pictures of 640 × 400).</summary>
     public const int MapWidth = 1920, MapHeight = 800;
 

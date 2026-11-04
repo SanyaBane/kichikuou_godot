@@ -46,8 +46,10 @@ internal sealed partial class HaremView
         }
         PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
         _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
+        var end = u.Rect(PhonePickersPortrait.End(f));
+        _buttonSize = ButtonSize(u, PhonePickersPortrait.ButtonText, end, u.Rect(PhonePickersPortrait.Action(f)));
         bool hoverEnd = !Busy && _hovered == EndButton;
-        PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickersPortrait.End(f)), _brush, "End", hoverEnd);
+        PhonePickerParts.DrawButton(c, u, end, "End", hoverEnd, _buttonSize);
         DrawSummon(c, u, u.Rect(PhonePickersPortrait.Action(f)));
     }
 

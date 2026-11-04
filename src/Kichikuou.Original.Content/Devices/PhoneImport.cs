@@ -139,8 +139,11 @@ public static class PhoneImport
     /// <summary>The red button: this far over the sheet's foot, as high; Import's width and Choose another folder's.</summary>
     private const float ButtonsUp = 30, ButtonHeight = 130, ImportWidth = 460, ChooseWidth = 640;
 
-    /// <summary>The red button's word (the brush face): Import's, Choose another folder's.</summary>
-    public const float ImportText = 54, ChooseText = 50;
+    /// <summary>
+    /// The red button's word and Back's, Cinzel 700 at one size whichever the red button says (docs/ui/style.md, "Buttons
+    /// side by side"), shrunk together.
+    /// </summary>
+    public const float ButtonText = 40;
 
     /// <summary>
     /// The red button at the right column's foot: Import, or (<paramref name="refused"/>) Choose another folder; at the
@@ -153,8 +156,8 @@ public static class PhoneImport
         return new PhoneFrame.Box(back ? left : right - w, bottom - f.Px(ButtonHeight), w, f.Px(ButtonHeight));
     }
 
-    /// <summary>Back: its arrow's width and half height, its word in from the arrow's tip (Cinzel); the box a finger takes.</summary>
-    public const float ArrowWidth = 24, ArrowHalf = 16, BackTextIn = 44, BackText = 34;
+    /// <summary>Back: its arrow's width and half height, its word in from the arrow's tip (at <see cref="ButtonText"/>); the box a finger takes.</summary>
+    public const float ArrowWidth = 24, ArrowHalf = 16, BackTextIn = 44;
 
     private const float BackGap = 20;
 

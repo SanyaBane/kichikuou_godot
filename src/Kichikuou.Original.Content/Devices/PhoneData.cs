@@ -30,8 +30,12 @@ public static class PhoneData
     /// <summary>A figure's baseline over the bar's frame line, in layout pixels (the mock-up's <c>top - 5</c> over the line's grey).</summary>
     private const float FigureOver = 6;
 
-    /// <summary>The type: a graph's name (two lines this far apart), the headings (Cinzel), a chip's, Back's (the brush face), a figure's (2.3 mm).</summary>
-    public const float CellText = 38, CellLine = 46, HeadingText = 26, ChipText = 38, BackText = 44, FigureText = 40;
+    /// <summary>
+    /// The type: a graph's name (two lines this far apart; the four cells of the left side Cinzel 700 at one size), the
+    /// headings (Cinzel), the right side's buttons — the chips and Back, Cinzel 700 at one size (docs/ui/style.md, "Buttons
+    /// side by side") —, a figure's (2.3 mm). Each group shrinks together where a word is too long for its box.
+    /// </summary>
+    public const float CellText = 38, CellLine = 46, HeadingText = 26, ButtonText = 38, FigureText = 40;
 
     private static float Foot(PhoneFrame f) => f.Screen.H - f.Safe.Bottom - f.Px(FootOver);
 

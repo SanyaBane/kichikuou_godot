@@ -63,6 +63,15 @@ public static class PhoneMap
     /// <summary>The ring round the tapped province (its radius) and the plates' type over the map (2 mm).</summary>
     public const float RingRadius = 74, PlateText = 36;
 
+    /// <summary>
+    /// The rails' rows' type, the command panel's (Turn END's among them) and a province's: the game's font at one size within
+    /// a rail (docs/ui/style.md, "Buttons side by side"), scaled with a low row, shrunk together where a name is too long.
+    /// </summary>
+    public const float RowText = 36;
+
+    /// <summary>A province's rows' type past what the side holds, in the frame's panel down two columns (2.3 mm).</summary>
+    public const float ColumnsRowText = 40;
+
     /// <summary>The status stacked under the Menu cell in the left side (LM1a).</summary>
     public static PhoneFrame.Box StatusBox(PhoneFrame f) => Left(f, PhoneScenes.MenuCell(f).Bottom + f.Px(StatusGap), StatusHeight);
 

@@ -52,8 +52,8 @@ internal sealed partial class AllDataView
         var back = PortraitRectOf(u, BackPart);
         bool held = _pressed == BackPart;
         Ui.DrawPanel(this, back, u.K, held ? Ui.RowHover : null);
-        int backSize = SideCells.Fit(_brush, BackWord, u.Size(PhoneDataPortrait.BackText), back.Size.X - u.Px(30));
-        Centred(_brush, backSize, back.GetCenter(), BackWord, held ? Ui.Name : Ui.Text);
+        int backSize = SideCells.Fit(SideCells.Cinzel, BackWord, SideCells.GroupSize(u), back.Size.X - u.Px(30));   // the bar's cells' size
+        Centred(SideCells.Cinzel, backSize, back.GetCenter(), BackWord, held ? Ui.Name : Ui.Text);
     }
 
     /// <summary>A graph's finger row over the menu: its name at the left in the game's font.</summary>
@@ -71,8 +71,13 @@ internal sealed partial class AllDataView
     private void DrawPortraitGraph(PhoneUnits u, Sides s)
     {
         var f = u.Frame;
-        for (int i = 0; i < PhoneDataPortrait.Graphs && i < s.Graphs.Count; i++)
-            Tab(u, PortraitRectOf(u, i), s.Graphs[i], i == s.Shown, _pressed == i);
+        int graphs = Math.Min(PhoneDataPortrait.Graphs, s.Graphs.Count), scales = Math.Min(PhoneDataPortrait.Scales, s.Scales.Count);
+        // The tabs and the chips: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        int buttons = Math.Min(TabSize(u, PhoneDataPortrait.ButtonText, [.. Enumerable.Range(0, graphs).Select(i => (s.Graphs[i], PortraitRectOf(u, i)))], 20),
+            SideCells.FitAll(_cinzel, u.Size(PhoneDataPortrait.ButtonText),
+                [.. Enumerable.Range(0, scales).Select(i => (s.Scales[i], PortraitRectOf(u, ChipBase + i).Size.X - u.Px(16)))]));
+        for (int i = 0; i < graphs; i++)
+            Tab(u, PortraitRectOf(u, i), s.Graphs[i], i == s.Shown, _pressed == i, buttons);
         float middle = (f.Room.X + f.Room.W / 2) / u.K;
         int titleSize = SideCells.Fit(_gothic, s.Title, u.Size(PhoneDataPortrait.TitleText),
             (f.Room.W - f.Px(PhoneDataPortrait.TitleNarrower)) / u.K);
@@ -120,25 +125,21 @@ internal sealed partial class AllDataView
             fontSize: captionSize, modulate: Ui.Quiet);
         var (hx, hy) = PhoneDataPortrait.ScaleHeading(f);
         Heading(u, "SCALE", hx, hy, PhoneDataPortrait.HeadingText);
-        for (int i = 0; i < PhoneDataPortrait.Scales && i < s.Scales.Count; i++)
-            Chip(u, PortraitRectOf(u, ChipBase + i), s.Scales[i], i == s.Scale, _pressed == ChipBase + i, PhoneDataPortrait.ChipText);
+        for (int i = 0; i < scales; i++)
+            Chip(u, PortraitRectOf(u, ChipBase + i), s.Scales[i], i == s.Scale, _pressed == ChipBase + i, buttons);
     }
 
-    /// <summary>A graph's tab: its name in two lines (split at the first space), lit gold while shown.</summary>
-    private void Tab(PhoneUnits u, Rect2 box, string name, bool lit, bool held)
+    /// <summary>A graph's tab: its name in two lines (split at the first space) at the group's <paramref name="size"/>, lit gold while shown.</summary>
+    private void Tab(PhoneUnits u, Rect2 box, string name, bool lit, bool held, int size)
     {
         DrawRect(box, lit || held ? Ui.RowHover : Ui.Row);
         DrawRect(box, lit ? Ui.Gold : held ? Ui.HoverLine : Ui.DimGold, false, Lacquer.Line(u.Px(lit ? 3 : 2), u.K));
-        int space = name.IndexOf(' ');
-        string[] lines = space > 0 ? [name[..space], name[(space + 1)..]] : [name];
-        int size = u.Size(PhoneDataPortrait.TabText);
-        foreach (var text in lines)
-            size = SideCells.Fit(_gothic, text, size, box.Size.X - u.Px(20));
+        string[] lines = TabLines(name);
         var middle = box.GetCenter();
         for (int i = 0; i < lines.Length; i++)
         {
             float dy = (i - (lines.Length - 1) / 2f) * 2 * u.Px(PhoneDataPortrait.TabLine);
-            Centred(_gothic, size, middle + new Vector2(0, dy), lines[i], lit ? Ui.Name : held ? Ui.Text : Ui.Quiet);
+            Centred(_cinzel, size, middle + new Vector2(0, dy), lines[i], lit ? Ui.Name : held ? Ui.Text : Ui.Quiet);
         }
     }
 

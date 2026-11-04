@@ -127,6 +127,15 @@ public static class PhoneMenu
     /// <summary>The tiles a row.</summary>
     public const int Columns = 4;
 
+    /// <summary>
+    /// The tiles' words held landscape and the rows' upright: BIZ UDGothic, one size for the sheet (docs/ui/style.md,
+    /// "Buttons side by side"), shrunk together where a word is too long for its tile or row.
+    /// </summary>
+    public const float TileText = 44, RowText = 46;
+
+    /// <summary>A question's answers, the red button's and Cancel's: Cinzel 700 at one size, shrunk together.</summary>
+    public const float ButtonText = 46;
+
     /// <summary>A question's callout: at most this wide and this high, this far from its tile; its buttons' height and margins.</summary>
     private const float QuestionWidth = 1100, QuestionHeight = 420, QuestionGap = 30, ButtonHeight = 130, ButtonMargin = 40, ButtonGap = 8;
 

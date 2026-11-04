@@ -163,8 +163,12 @@ public static class PhoneAttack
     /// <summary>The answers from the foot up: Intercept's height 10 over the gesture zone, the room over it, the row's height (Ninja Scout's), Abandon City's inset in the row (10% lower) and width (90% of its half).</summary>
     private const float AnswersFoot = 10, InterceptHeight = 130, AnswersGap = 16, RowHeight = 180, AbandonInset = 18, AbandonShare = 0.9f;
 
-    /// <summary>The answers' type: Intercept's word and its note (two lines closer on a low button), Ninja Scout's word and note, Abandon City's word.</summary>
-    public const float InterceptText = 44, InterceptNote = 26, ScoutText = 44, ScoutNote = 28, AbandonText = 38;
+    /// <summary>
+    /// The answers' type: Intercept's, Ninja Scout's and Abandon City's words, Cinzel 700 at one size (docs/ui/style.md,
+    /// "Buttons side by side"), shrunk together where a word is too long for its box; Intercept's note (two lines closer on a
+    /// low button) and Ninja Scout's.
+    /// </summary>
+    public const float ButtonText = 42, InterceptNote = 26, ScoutNote = 28;
 
     /// <summary>Intercept, as wide as the column, at the thumb.</summary>
     public static PhoneFrame.Box Intercept(PhoneFrame f)

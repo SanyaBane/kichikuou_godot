@@ -91,7 +91,7 @@ public partial class ImportScreen
         y = PhoneStep(u, 1, 1, top, right, "The files are checked and the scenario read", "Once for this folder, a second or so.",
             StepState.Next);
         PhoneStep(u, 1, 2, y + u.Px(PhoneImport.PlayGap), right, "Play", null, StepState.Next);
-        PhoneButton(u, "Import", PhoneImport.ImportText);
+        PhoneButton(u, "Import");
     }
 
     /// <summary>LIp: the folder ticked at the left, the stage and its bar at the right, Play under it (lit once read).</summary>
@@ -135,7 +135,7 @@ public partial class ImportScreen
         y = HashLines(u, x, y, right);
         var field = PhoneField(u, y);
         Stamp(u, new Vector2(L(PhoneImport.StampX(f)), field.GetCenter().Y));
-        PhoneButton(u, "Choose another folder", PhoneImport.ChooseText);
+        PhoneButton(u, "Choose another folder");
     }
 
     /// <summary>The refusal's hashes from <paramref name="y"/>, each line shrunk to the room; returns where the field starts.</summary>
@@ -239,8 +239,27 @@ public partial class ImportScreen
         return box;
     }
 
-    /// <summary>The red button at the right thumb (the brush face), greyed while it cannot act.</summary>
-    private void PhoneButton(PhoneUnits u, string word, float text)
+    /// <summary>
+    /// One Cinzel 700 size for the red button and Back (docs/ui/style.md, "Buttons side by side"), the same whichever word
+    /// the red button says: the type, or as much smaller as the longest word in its box needs.
+    /// </summary>
+    private int ButtonSize(PhoneUnits u)
+    {
+        var f = u.Frame;
+        if (f.IsPortrait)
+        {
+            float red = u.Rect(PhoneImportPortrait.Button(f, HasBack)).Size.X - u.Px(30);
+            return SideCells.FitAll(SideCells.Cinzel, u.Size(PhoneImportPortrait.ButtonText), ("Import", red), ("Choose another folder", red),
+                ("Back", u.Rect(PhoneImportPortrait.Back(f)).Size.X - u.Px(PhoneImportPortrait.BackTextIn)));
+        }
+        float Red(bool refused) => u.Rect(PhoneImport.Button(f, refused, HasBack)).Size.X - u.Px(30);
+        float Back(bool refused) => u.Rect(PhoneImport.Back(f, refused)).Size.X - u.Px(PhoneImport.BackTextIn);
+        return SideCells.FitAll(SideCells.Cinzel, u.Size(PhoneImport.ButtonText), ("Import", Red(false)), ("Choose another folder", Red(true)),
+            (PhoneImport.BackWord(false), Back(false)), (PhoneImport.BackWord(true), Back(true)));
+    }
+
+    /// <summary>The red button at the right thumb (Cinzel 700 at <see cref="ButtonSize"/>), greyed while it cannot act.</summary>
+    private void PhoneButton(PhoneUnits u, string word)
     {
         var r = Button;
         bool live = ButtonLive;
@@ -253,11 +272,10 @@ public partial class ImportScreen
             DrawRect(r, Ui.OffButton);
             DrawRect(r, Ui.OffLine, false, u.Px(3));
         }
-        int size = SideCells.Fit(_brush, word, u.Size(text), r.Size.X - u.Px(30));
-        Middle(_brush, word, size, r.Position.X, r.GetCenter().Y, live ? Ui.Name : Ui.OffText, r.Size.X);
+        Middle(SideCells.Cinzel, word, ButtonSize(u), r.Position.X, r.GetCenter().Y, live ? Ui.Name : Ui.OffText, r.Size.X);
     }
 
-    /// <summary>Back: its arrow and its word (Cinzel, shrunk to the box) at the box's left, level with the red button and right of it.</summary>
+    /// <summary>Back: its arrow and its word (Cinzel 700 at <see cref="ButtonSize"/>) at the box's left, level with the red button and right of it.</summary>
     private void PhoneBack(PhoneUnits u)
     {
         var r = BackBox;
@@ -266,8 +284,7 @@ public partial class ImportScreen
         DrawColoredPolygon([new(x + u.Px(PhoneImport.ArrowWidth), cy - half), new(x, cy), new(x + u.Px(PhoneImport.ArrowWidth), cy + half)],
             colour);
         string word = PhoneImport.BackWord(_phase == Phase.Refused);
-        int size = SideCells.Fit(_cinzelBold, word, u.Size(PhoneImport.BackText), r.End.X - x - u.Px(PhoneImport.BackTextIn));
-        Middle(_cinzelBold, word, size, x + u.Px(PhoneImport.BackTextIn), cy, colour);
+        Middle(SideCells.Cinzel, word, ButtonSize(u), x + u.Px(PhoneImport.BackTextIn), cy, colour);
     }
 
     /// <summary><paramref name="text"/> with its middle at <paramref name="middle"/> (the mock-ups' anchor "lm"), centred in <paramref name="width"/> when given.</summary>

@@ -34,6 +34,8 @@ internal sealed partial class HaremView : Control
     private const int Columns = 3, Cells = 50;          // every girl at her own number's cell, as Sﾊｰﾚﾑ's grid; the rest empty
     private static readonly Color Plum = Color.Color8(128, 44, 70), PlumDim = Color.Color8(90, 60, 66);
 
+    /// <summary>Every button's word on the PC and the tablet, Summon's and End's: one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int ButtonText = 17;
     private const int NoButton = -1, SummonButton = -2, EndButton = -3;    // a tablet is its girl's number
 
     private readonly FacePictures _faces;
@@ -294,7 +296,7 @@ internal sealed partial class HaremView : Control
             DrawStat(c, visitX, InfoPanel.Position.Y + 88, "This visit", visit, MarkColour(girl.Mark) ?? Ui.Quiet);
         bool on = Enabled(SummonButton), hover = on && _hovered == SummonButton;
         Ui.DrawRedButton(c, SummonArea, hover, hover && _pressed == SummonButton, _k);
-        CentredString(c, _brush, $"Summon {girl.Name}", 28, Color.Color8(250, 226, 160), SummonArea.GetCenter().X, Lacquer.Baseline(SummonArea, _brush, 28));
+        CentredString(c, _cinzel, $"Summon {girl.Name}", ButtonText, Color.Color8(250, 226, 160), SummonArea.GetCenter().X, Lacquer.Baseline(SummonArea, _cinzel, ButtonText));
         if (PickerMarks.Label(girl.Mark) is { } pill)
             Ui.DrawPill(c, _cinzel, SummonArea.End.X - 12, SummonArea.Position.Y + 23, pill, MarkColour(girl.Mark)!.Value, 14, 22);
     }
@@ -353,7 +355,7 @@ internal sealed partial class HaremView : Control
         bool hoverEnd = !Busy && _hovered == EndButton;
         c.DrawRect(EndArea, hoverEnd ? Ui.RowHover : Ui.Row);
         c.DrawRect(EndArea, hoverEnd ? Ui.HoverLine : Ui.DimGold, false, Line(hoverEnd ? 2 : 1));
-        CentredString(c, _cinzel, "End", 17, hoverEnd ? Ui.Name : Ui.Text, EndArea.GetCenter().X, Lacquer.Baseline(EndArea, _cinzel, 17));
+        CentredString(c, _cinzel, "End", ButtonText, hoverEnd ? Ui.Name : Ui.Text, EndArea.GetCenter().X, Lacquer.Baseline(EndArea, _cinzel, ButtonText));
     }
 
     /// <summary>A small heart, drawn: two circles over a point.</summary>

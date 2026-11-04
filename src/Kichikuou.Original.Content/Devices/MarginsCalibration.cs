@@ -65,8 +65,11 @@ public sealed class MarginsCalibration
     /// <summary>How dark the screen under the frame is kept (the mock-up's 55%).</summary>
     public const float Dim = 0.55f;
 
-    /// <summary>The title ("Screen margins", Cinzel), the orientation's name, the steppers' labels and values, the buttons' words.</summary>
-    public const float TitleText = 52, OrientationText = 40, LabelText = 44, ValueText = 48, ResetText = 36, DoneText = 44;
+    /// <summary>
+    /// The title ("Screen margins", Cinzel), the orientation's name, the steppers' labels and values; Reset's and Done's
+    /// words, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side").
+    /// </summary>
+    public const float TitleText = 52, OrientationText = 40, LabelText = 44, ValueText = 48, ButtonText = 42;
 
     // The panel upright (C-up): its size; the title's middle and the orientation's from its top; the steppers' rows from
     // its top, their height and pitch; the sides in; a value's width between its buttons; Reset | Done from its foot, as

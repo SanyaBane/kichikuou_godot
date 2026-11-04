@@ -42,6 +42,8 @@ internal sealed partial class DeploymentPanels : Control
     private const float RowLabelsY = 428, CardsTop = 440, CardHeight = 104, CardGap = 8, TotalsY = 678;
     private static readonly Rect2 BarArea = new(730, 712, 520, 58);
     private const float StopWidth = 130, ButtonGap = 8;
+    /// <summary>The bar's words, the sends' and Stop's: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int BarText = 18;
 
     /// <summary>The strip right of the cards where the facing mark stands (the owner's U5), with the gap before it.</summary>
     private const float FacingStrip = 30, FacingGap = 6;
@@ -500,17 +502,16 @@ internal sealed partial class DeploymentPanels : Control
 
         int sends = BarButtons().Count(b => b.Button != 3);
         string cost = Figures.GoldShort(party.Cost * 100);
+        int size = BarSize();
         foreach (var (button, rect) in BarButtons())
         {
             bool hover = button == _hovered, down = hover && button == _pressed;
-            string label = _labels[button - 1].Trim();
+            string label = BarLabel(button);
             if (button == 3)
             {
-                if (_mode == 2)
-                    label = "Back";                             // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
                 c.DrawRect(rect, down ? Ui.Row : hover ? Ui.RowHover : Ui.Row);
                 c.DrawRect(rect, hover ? Ui.HoverLine : Ui.DimGold, false, Line(hover ? 2 : 1));
-                CentredString(c, _cinzel, label, 18, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, 18));
+                CentredString(c, _cinzel, label, size, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, size));
                 continue;
             }
             Ui.DrawRedButton(c, rect, hover, down, _k);
@@ -521,20 +522,35 @@ internal sealed partial class DeploymentPanels : Control
                 (3, _) => $"Into the dungeon  ·  {cost}",
                 _ => null,                                      // Attack alone (owner, 2026-10-24): the war expenses are above it
             };
-            int size = sends == 1 ? 21 : 19;
             if (note is null)
             {
-                CentredString(c, _brush, label, size + 3, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(rect, _brush, size + 3));
+                CentredString(c, _cinzel, label, size, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, size));
                 continue;
             }
             var top = new Rect2(rect.Position, new Vector2(rect.Size.X, rect.Size.Y * 0.62f));
             var bottom = new Rect2(rect.Position.X, rect.Position.Y + rect.Size.Y * 0.56f, rect.Size.X, rect.Size.Y * 0.38f);
-            CentredString(c, _brush, label, size, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(top, _brush, size));
+            CentredString(c, _cinzel, label, size, Color.Color8(250, 226, 160), rect.GetCenter().X, Lacquer.Baseline(top, _cinzel, size));
             if (sends == 1)
                 CentredString(c, _gothic, note, 13, Color.Color8(236, 206, 160), rect.GetCenter().X, Lacquer.Baseline(bottom, _gothic, 13));
             else
                 CentredString(c, _cinzelLight, note, 11, Color.Color8(236, 206, 160), rect.GetCenter().X, Lacquer.Baseline(bottom, _cinzelLight, 11));
         }
+    }
+
+    /// <summary>Bar button <paramref name="button"/>'s word: the script's, a defence's Stop "Back" (it goes back to our attack screen, owner, 2026-10-24).</summary>
+    private string BarLabel(int button) => button == 3 && _mode == 2 ? "Back" : _labels[button - 1].Trim();
+
+    /// <summary>
+    /// The bar's one size, the sends' and Stop's alike: <see cref="BarText"/>, or the size the widest word fits its box at
+    /// (one fit for the bar, docs/ui/style.md, "Buttons side by side").
+    /// </summary>
+    private int BarSize()
+    {
+        int size = BarText;
+        foreach (var (button, rect) in BarButtons())
+            while (size > 10 && _cinzel.GetStringSize(BarLabel(button), fontSize: size).X > rect.Size.X - 20)
+                size--;
+        return size;
     }
 
     /// <summary>

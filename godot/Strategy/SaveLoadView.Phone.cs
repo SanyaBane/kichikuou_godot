@@ -108,8 +108,9 @@ internal sealed partial class SaveLoadView
     {
         var f = u.Frame;
         bool save = list == SaveList.Save;
+        int tabs = TabSize(u);
         if (f.IsPortrait)
-            DrawPortraitBand(u, save);
+            DrawPortraitBand(u, save, tabs);
         else
         {
             var column = u.Rect(Places.List(f));
@@ -118,11 +119,11 @@ internal sealed partial class SaveLoadView
                 save ? "Save" : "Load", fontSize: title, modulate: Ui.Name);
             if (_tabs)
                 foreach (var tab in (SaveList[])[SaveList.Load, SaveList.Save])
-                    PhoneChip(TabBox(tab), tab.ToString(), tab == _list, _hovered == TabHit + (int)tab, u.Size(PhoneSaves.ChipText), u);
+                    PhoneChip(TabBox(tab), tab.ToString(), tab == _list, _hovered == TabHit + (int)tab, tabs);
             Ui.DrawDivider(this, column.Position.X, column.End.X, u.Px(PhoneSaves.Divider), _k);
         }
-        PhoneChip(SideBox(false), $"Manual saves · {_shelf.Manuals.Count}", !_autoSide, _hovered == SideHit, u.Size(PhoneSaves.TabText), u);
-        PhoneChip(SideBox(true), $"Auto-saves · {_shelf.Autos.Count}", _autoSide, _hovered == SideHit + 1, u.Size(PhoneSaves.TabText), u);
+        PhoneChip(SideBox(false), ManualsTab, !_autoSide, _hovered == SideHit, tabs);
+        PhoneChip(SideBox(true), AutosTab, _autoSide, _hovered == SideHit + 1, tabs);
         PhoneList(u);
         if (f.IsPortrait)
             DrawPortraitPageDivider(u);
@@ -140,8 +141,43 @@ internal sealed partial class SaveLoadView
         }
     }
 
-    /// <summary>Load | Save and the lists' tabs: the chosen one in vermilion, as the PC's.</summary>
-    private void PhoneChip(Rect2 r, string text, bool on, bool hover, int size, PhoneUnits u)
+    private string ManualsTab => $"Manual saves · {_shelf.Manuals.Count}";
+
+    private string AutosTab => $"Auto-saves · {_shelf.Autos.Count}";
+
+    /// <summary>The words' room in a button <paramref name="r"/>: 15 reference pixels clear at either side.</summary>
+    private static float Room(PhoneUnits u, Rect2 r) => r.Size.X - u.Px(30);
+
+    /// <summary>
+    /// One Cinzel 700 size for Load | Save and the lists' tabs (docs/ui/style.md, "Buttons side by side"): the tabs' type,
+    /// or as much smaller as the longest word in its box needs.
+    /// </summary>
+    private int TabSize(PhoneUnits u)
+    {
+        List<(string, float)> words = [(ManualsTab, Room(u, SideBox(false))), (AutosTab, Room(u, SideBox(true)))];
+        if (_tabs)
+            words.AddRange([("Load", Room(u, TabBox(SaveList.Load))), ("Save", Room(u, TabBox(SaveList.Save)))]);
+        return SideCells.FitAll(_cinzel, u.Size(Places.TabText(u.Frame)), [.. words]);
+    }
+
+    /// <summary>
+    /// One Cinzel 700 size for the page's buttons (docs/ui/style.md, "Buttons side by side"): Delete, Edit, the red button
+    /// and Back at the page's type, or as much smaller as the longest word in its box needs.
+    /// </summary>
+    private int PageButtonSize(PhoneUnits u, string? word)
+    {
+        List<(string, float)> words =
+        [
+            ("Delete", DeleteBox.Size.X - u.Px(70 + 16)), ("Edit", Room(u, EditBox)),
+            ("Back", BackBox.Size.X - u.Px(52 + 44 + 16)), ("Save", Room(u, ButtonBox)),
+        ];
+        if (word is not null)
+            words.Add((word, ButtonBox.Size.X - u.Px(60)));
+        return SideCells.FitAll(_cinzel, u.Size(Places.ButtonText(u.Frame)), [.. words]);
+    }
+
+    /// <summary>Load | Save and the lists' tabs: the chosen one in vermilion, as the PC's; <paramref name="size"/> the group's (<see cref="TabSize"/>).</summary>
+    private void PhoneChip(Rect2 r, string text, bool on, bool hover, int size)
     {
         if (on)
         {
@@ -150,7 +186,6 @@ internal sealed partial class SaveLoadView
         }
         else
             Ui.DrawRowBox(this, r, hover, _k);
-        size = SideCells.Fit(_cinzel, text, size, r.Size.X - u.Px(30));
         TextCentred(_cinzel, size, r.GetCenter().X, r.GetCenter().Y, text, on ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
     }
 
@@ -199,14 +234,28 @@ internal sealed partial class SaveLoadView
             Ui.DrawRowBox(this, r, hover, _k);
         const string label = "Delete all without";
         string tail = $"({count})";
-        int size = u.Size(PhoneSaves.SweepText);
+        int size = ListButtonSize(u);
         float star = u.Px(PhoneSaves.SweepStar), gap = u.Px(10);
-        float lw = _gothic.GetStringSize(label, fontSize: size).X, tw = _gothic.GetStringSize(tail, fontSize: size).X;
+        float lw = _cinzel.GetStringSize(label, fontSize: size).X, tw = _cinzel.GetStringSize(tail, fontSize: size).X;
         float x = r.GetCenter().X - (lw + 2 * gap + 2 * star + tw) / 2, y = r.GetCenter().Y;
         var colour = off ? Ui.OffText : hover ? Ui.Name : Ui.Text;
-        Text(_gothic, size, x, y, label, colour);
+        Text(_cinzel, size, x, y, label, colour);
         DrawStar(new Vector2(x + lw + gap + star, y), star, off ? Ui.OffText : Ui.Gold);
-        Text(_gothic, size, x + lw + 2 * gap + 2 * star, y, tail, colour);
+        Text(_cinzel, size, x + lw + 2 * gap + 2 * star, y, tail, colour);
+    }
+
+    /// <summary>
+    /// One Cinzel 700 size for the sweep and New save (docs/ui/style.md, "Buttons side by side"): the list's buttons' type,
+    /// or as much smaller as the sweep's words, its star and its count need in its box.
+    /// </summary>
+    private int ListButtonSize(PhoneUnits u)
+    {
+        int size = u.Size(PhoneSaves.ListButtonText);
+        float room = Room(u, SweepBox) - 2 * u.Px(10) - 2 * u.Px(PhoneSaves.SweepStar);
+        string words = $"Delete all without({UncommentedCount})";
+        while (size > 8 && _cinzel.GetStringSize(words, fontSize: size).X > room)
+            size--;
+        return size;
     }
 
     private void PhoneNewRow(PhoneUnits u)
@@ -225,7 +274,7 @@ internal sealed partial class SaveLoadView
         }
         float cy = rect.GetCenter().Y;
         Text(_cinzel, u.Size(48), rect.Position.X + u.Px(36), cy, "+", Ui.Name);
-        Text(_cinzel, u.Size(34), rect.Position.X + u.Px(88), cy, "New save", _chosenNew || _hovered == NewHit ? Ui.Name : Ui.Quiet);
+        Text(_cinzel, ListButtonSize(u), rect.Position.X + u.Px(88), cy, "New save", _chosenNew || _hovered == NewHit ? Ui.Name : Ui.Quiet);
     }
 
     /// <summary>
@@ -289,7 +338,9 @@ internal sealed partial class SaveLoadView
         var held = ChosenSave;
         var shown = _chosenNew ? _now : held;
         bool lines = PageLines;
-        PhoneBack(u);
+        string? word = ButtonShown && shown is not null ? (_chosenNew || !save ? (save ? "Save" : "Load") : $"Save over {held!.Label}") : null;
+        int buttons = PageButtonSize(u, word);
+        PhoneBack(u, buttons);
         var page = u.Rect(Places.Page(f));
         var mapRect = u.Rect(Places.Map(f, lines));
         if (shown is null)
@@ -325,7 +376,7 @@ internal sealed partial class SaveLoadView
         }
         if (!_chosenNew)                                                // a new save: nothing under its figures (owner, 2026-11-04)
         {
-            PhoneComment(u, held!, lines);
+            PhoneComment(u, held!, lines, buttons);
             if (lines)
             {
                 var (first, second) = LoadLines(held!);
@@ -334,12 +385,12 @@ internal sealed partial class SaveLoadView
                 Text(_gothic, size, page.Position.X, Places.LineMiddle(f, 1) / u.K, Fit(second, size, page.Size.X), Ui.Quiet);
             }
         }
-        if (ButtonShown)
-            PhoneButton(u, _chosenNew || !save ? (save ? "Save" : "Load") : $"Save over {held!.Label}");
+        if (word is not null)
+            PhoneButton(u, word, buttons);
         else if (save)
-            PhoneOffButton(u);
+            PhoneOffButton(u, buttons);
         if (held is not null)
-            PhoneDelete(u);
+            PhoneDelete(u, buttons);
     }
 
     /// <summary>The page's title, an auto-save's Auto and kind after it, shrunk to end short of Delete.</summary>
@@ -364,7 +415,7 @@ internal sealed partial class SaveLoadView
     }
 
     /// <summary>The comment's label, its box and Edit (<c>land_save_page</c>).</summary>
-    private void PhoneComment(PhoneUnits u, SaveSlot held, bool lines)
+    private void PhoneComment(PhoneUnits u, SaveSlot held, bool lines, int buttons)
     {
         var f = u.Frame;
         int label = u.Size(PhoneSaves.LabelText);
@@ -381,43 +432,41 @@ internal sealed partial class SaveLoadView
         var edit = EditBox;
         bool hover = _hovered == EditHit;
         Ui.DrawRowBox(this, edit, hover, _k);
-        TextCentred(_brush, u.Size(PhoneSaves.EditText), edit.GetCenter().X, edit.GetCenter().Y, "Edit", hover ? Ui.Name : Ui.Text);
+        TextCentred(_cinzel, buttons, edit.GetCenter().X, edit.GetCenter().Y, "Edit", hover ? Ui.Name : Ui.Text);
     }
 
-    /// <summary>Back at the foot's right (<c>land_back</c>): a panel, the gold triangle, its word in the brush face.</summary>
-    private void PhoneBack(PhoneUnits u)
+    /// <summary>Back at the foot's right (<c>land_back</c>): a panel, the gold triangle, its word at the page's buttons' size.</summary>
+    private void PhoneBack(PhoneUnits u, int size)
     {
         var r = BackBox;
         bool hover = _hovered == BackHit;
         Ui.DrawPanel(this, r, _k, hover ? Ui.RowHover : null);
         float cy = r.GetCenter().Y, ax = r.Position.X + u.Px(52);
         DrawColoredPolygon([new(ax + u.Px(32), cy - u.Px(18)), new(ax, cy), new(ax + u.Px(32), cy + u.Px(18))], Ui.Gold);
-        int size = SideCells.Fit(_brush, "Back", u.Size(PhoneSaves.BackText), r.End.X - ax - u.Px(70));
-        TextCentred(_brush, size, (ax + u.Px(44) + r.End.X) / 2, cy, "Back", hover ? Ui.Name : Ui.Text);
+        TextCentred(_cinzel, size, (ax + u.Px(44) + r.End.X) / 2, cy, "Back", hover ? Ui.Name : Ui.Text);
     }
 
     /// <summary>The red button: its word alone (no "Saving: …" line under it on a phone, owner, 2026-11-04).</summary>
-    private void PhoneButton(PhoneUnits u, string word)
+    private void PhoneButton(PhoneUnits u, string word, int size)
     {
         var r = ButtonBox;
         bool hover = _hovered == ButtonHit;
         Ui.DrawRedButton(this, r, hover, hover && _pressed == ButtonHit, _k);
-        float room = r.Size.X - u.Px(60);
-        TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(Places.ButtonText(u.Frame)), room), r.GetCenter().X, r.GetCenter().Y, word, Ui.Name);
+        TextCentred(_cinzel, size, r.GetCenter().X, r.GetCenter().Y, word, Ui.Name);
     }
 
     /// <summary>The red button off in Save: an auto-save is the game's own, not saved over.</summary>
-    private void PhoneOffButton(PhoneUnits u)
+    private void PhoneOffButton(PhoneUnits u, int size)
     {
         var r = ButtonBox;
         DrawRect(r, Ui.OffButton);
         DrawRect(r, Ui.OffLine, false, Frame(2));
-        TextCentred(_brush, u.Size(Places.ButtonText(u.Frame) * 0.86f), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.4f, "Save", Ui.OffText);
+        TextCentred(_cinzel, size, r.GetCenter().X, r.Position.Y + r.Size.Y * 0.4f, "Save", Ui.OffText);
         TextCentred(_gothic, u.Size(PhoneSaves.ButtonLineText), r.GetCenter().X, r.Position.Y + r.Size.Y * 0.77f, "auto-saves are the game's own", Ui.OffText);
     }
 
     /// <summary>Delete as the PC's danger button (<c>bin_button</c>): its bin before the word.</summary>
-    private void PhoneDelete(PhoneUnits u)
+    private void PhoneDelete(PhoneUnits u, int size)
     {
         var r = DeleteBox;
         bool hover = _hovered == DeleteHit || _confirm;
@@ -425,7 +474,7 @@ internal sealed partial class SaveLoadView
         var colour = hover ? Ui.Name : Ui.DangerText;
         float s = u.Px(22) / 14;                                        // the bin 22 reference pixels wide
         DrawBin(r.Position.X + u.Px(30), r.GetCenter().Y - 8 * s, colour, s);
-        TextCentred(_cinzel, u.Size(PhoneSaves.DeleteText), (r.Position.X + u.Px(70) + r.End.X) / 2, r.GetCenter().Y, "Delete", colour);
+        TextCentred(_cinzel, size, (r.Position.X + u.Px(70) + r.End.X) / 2, r.GetCenter().Y, "Delete", colour);
     }
 
     /// <summary>Delete's question hanging under it (the PC's words): Delete | Keep.</summary>
@@ -474,11 +523,11 @@ internal sealed partial class SaveLoadView
     {
         bool lit = _hovered == yesHit;
         Ui.DrawRedButton(this, yes, lit, lit && _pressed == yesHit, _k);
-        TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(PhoneSaves.AnswerText), yes.Size.X - u.Px(24)), yes.GetCenter().X, yes.GetCenter().Y,
-            word, Ui.Name);
+        int size = SideCells.FitAll(_cinzel, u.Size(PhoneSaves.AnswerText), (word, yes.Size.X - u.Px(24)), ("Keep", no.Size.X - u.Px(24)));
+        TextCentred(_cinzel, size, yes.GetCenter().X, yes.GetCenter().Y, word, Ui.Name);
         bool keep = _hovered == noHit;
         Ui.DrawRowBox(this, no, keep, _k);
-        TextCentred(_cinzel, u.Size(34), no.GetCenter().X, no.GetCenter().Y, "Keep", keep ? Ui.Name : Ui.Text);
+        TextCentred(_cinzel, size, no.GetCenter().X, no.GetCenter().Y, "Keep", keep ? Ui.Name : Ui.Text);
     }
 
     /// <summary>
@@ -508,14 +557,19 @@ internal sealed partial class SaveLoadView
         string text = $"{_edit.Text.Length} / {CommentLength}";
         DrawString(_gothic, new Vector2(right / u.K - _gothic.GetStringSize(text, fontSize: count).X, top / u.K + _gothic.GetAscent(count)), text,
             fontSize: count, modulate: Ui.Quiet);
-        var cancel = u.Rect(PhoneSaves.Cancel(f, _keyboard));
+        DrawCardButtons(u, u.Rect(PhoneSaves.Cancel(f, _keyboard)), u.Rect(PhoneSaves.Keep(f, _keyboard)), PhoneSaves.CardButtonText);
+    }
+
+    /// <summary>The card's Cancel | Keep, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private void DrawCardButtons(PhoneUnits u, Rect2 cancel, Rect2 keep, float text)
+    {
+        int size = SideCells.FitAll(_cinzel, u.Size(text), ("Cancel", Room(u, cancel)), ("Keep", Room(u, keep)));
         bool hover = _hovered == CancelHit;
         Ui.DrawRowBox(this, cancel, hover, _k);
-        TextCentred(_brush, u.Size(PhoneSaves.CancelText), cancel.GetCenter().X, cancel.GetCenter().Y, "Cancel", hover ? Ui.Name : Ui.Text);
-        var keep = u.Rect(PhoneSaves.Keep(f, _keyboard));
+        TextCentred(_cinzel, size, cancel.GetCenter().X, cancel.GetCenter().Y, "Cancel", hover ? Ui.Name : Ui.Text);
         bool lit = _hovered == KeepHit;
         Ui.DrawRedButton(this, keep, lit, lit && _pressed == KeepHit, _k);
-        TextCentred(_brush, u.Size(PhoneSaves.KeepText), keep.GetCenter().X, keep.GetCenter().Y, "Keep", Ui.Name);
+        TextCentred(_cinzel, size, keep.GetCenter().X, keep.GetCenter().Y, "Keep", Ui.Name);
     }
 
     /// <summary>A layer of the screen drawn by its view.</summary>

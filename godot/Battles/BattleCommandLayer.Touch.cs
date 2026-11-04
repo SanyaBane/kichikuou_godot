@@ -23,7 +23,7 @@ internal sealed partial class BattleCommandLayer
     private const float RailInset = 4, RailPad = 10, RailText = 18;     // the panel 4 in from the rail, the rows 10 off its foot
     private const float LeftTop = 60, LeftButton = 54, LeftGap = 8, LeftWidth = 116;       // under the acting unit's name
     private const float RightTop = 78, RightButton = 76, RightGap = 10, RightWidth = 116;  // under TARGET and the target's name
-    private const float NameText = 19, TargetText = 17, TitleText = 13, AttackText = 19, RetreatText = 15;
+    private const float NameText = 19, TargetText = 17, TitleText = 13, AttackText = 19;
     private static readonly Color TargetName = Color8(150, 225, 255);
 
     // The target's name under TARGET (the owner, 2026-10-27): one line at 17, its middle 46 below the rail's top, down to 14
@@ -295,6 +295,7 @@ internal sealed partial class BattleCommandLayer
                 }
             }
             RailRule(RightRail, 66);
+            int left = LeftRailSize(font);
             foreach (var (rect, text, choice, place) in RailButtons())
             {
                 bool hot = place == _hotRail;
@@ -303,16 +304,29 @@ internal sealed partial class BattleCommandLayer
                 else if (choice.Command == FigtSelCommand.Retreat)
                 {
                     Ui.DrawRedButton(this, rect, hot, false, s);
-                    Centred(_brush, text, RetreatText, rect, Color8(250, 226, 160));
+                    Centred(font, text, left, rect, Color8(250, 226, 160));   // a row's font: its red fill sets it apart
                 }
                 else
                 {
                     Ui.DrawRowBox(this, rect, hot, s);
-                    Centred(font, text, RailText, rect, Ui.Text);
+                    Centred(font, text, left, rect, Ui.Text);
                 }
             }
         }
         DrawSetTransform(Vector2.Zero, 0, Vector2.One);
+    }
+
+    /// <summary>
+    /// The left rail's one size, Retreat's included (docs/ui/style.md, "Buttons side by side"): <see cref="RailText"/>, or as
+    /// much less as its longest word needs (one fit for the rail, never per row).
+    /// </summary>
+    private int LeftRailSize(Font font)
+    {
+        int px = (int)RailText;
+        foreach (var (rect, text, _, place) in RailButtons())
+            while (!place.Right && px > 11 && font.GetStringSize(text, fontSize: px).X > rect.Size.X - 10)
+                px--;
+        return px;
     }
 
     /// <summary>One line centred on <paramref name="rail"/>, its middle <paramref name="y"/> below the rail's top, smaller if it would not fit.</summary>

@@ -23,7 +23,6 @@ internal sealed partial class ScreenMarginsView : Control
     private static readonly Color TabFill = Color.Color8(64, 50, 26);
 
     private readonly FontVariation _cinzel = Lacquer.Cinzel(700);
-    private readonly FontFile _brush = Lacquer.Brush();
     private readonly FontFile _gothic = DeploymentTableView.LoadFont(GodotGlyphRenderer.Chosen);
     private readonly StyleBoxFlat _tab = new() { BgColor = TabFill, BorderColor = Ui.Gold, AntiAliasing = true };
     private MarginsCalibration.Target _pressed, _hover;
@@ -208,13 +207,15 @@ internal sealed partial class ScreenMarginsView : Control
             Centred(_gothic, ScreenMargins.Millimetres(margins[edge]), box.GetCenter().X, box.GetCenter().Y, value, Ui.Name);
         }
         var reset = R(c.Reset);
+        var done = R(c.Done);
+        // Reset | Done: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        int size = SideCells.FitAll(_cinzel, Pt(c, MarginsCalibration.ButtonText), ("Reset", reset.Size.X - c.Px(30)), ("Done", done.Size.X - c.Px(30)));
         bool resetLit = _hover.Kind == MarginsCalibration.Kind.Reset;
         Ui.DrawRowBox(this, reset, resetLit || _pressed.Kind == MarginsCalibration.Kind.Reset, 1);
-        Centred(_cinzel, "Reset", reset.GetCenter().X, reset.GetCenter().Y, Pt(c, MarginsCalibration.ResetText), Ui.Text);
-        var done = R(c.Done);
+        Centred(_cinzel, "Reset", reset.GetCenter().X, reset.GetCenter().Y, size, Ui.Text);
         bool doneLit = _hover.Kind == MarginsCalibration.Kind.Done;
         Ui.DrawRedButton(this, done, doneLit, _pressed.Kind == MarginsCalibration.Kind.Done, 1);
-        Centred(_brush, "Done", done.GetCenter().X, done.GetCenter().Y, Pt(c, MarginsCalibration.DoneText), Ui.Name);
+        Centred(_cinzel, "Done", done.GetCenter().X, done.GetCenter().Y, size, Ui.Name);
     }
 
     private void StepButton(MarginsCalibration c, PhoneFrame.Box b, MarginsCalibration.Target target, bool plus)

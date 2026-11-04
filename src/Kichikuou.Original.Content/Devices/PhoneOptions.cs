@@ -137,8 +137,8 @@ public static class PhoneOptions
     /// <summary>The buttons: this far over the sheet's foot, as high; Defaults as wide, Close this far right of it to the right column's end.</summary>
     private const float ButtonsUp = 30, ButtonHeight = 130, DefaultsWidth = 380, ButtonsGap = 20;
 
-    /// <summary>Defaults' word (Cinzel) and Close's (the brush face).</summary>
-    public const float DefaultsText = 36, CloseText = 56;
+    /// <summary>Defaults' and Close's words, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.</summary>
+    public const float ButtonText = 42;
 
     /// <summary>Defaults, a paper button at the right column's foot.</summary>
     public static PhoneFrame.Box Defaults(PhoneFrame f)

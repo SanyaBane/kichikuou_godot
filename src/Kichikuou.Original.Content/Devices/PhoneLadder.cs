@@ -68,14 +68,11 @@ public static class PhoneLadder
 
     /// <summary>
     /// A rung's insides, reference pixels: the arrow's middle in from the left and its half size; the word's left, its middle
-    /// over the rung's and its type (shrunk to the rung less <see cref="WordRoom"/>); the sub-line's left, its middle under the
-    /// rung's and its type.
+    /// over the rung's and its type (shrunk to the rung less <see cref="WordRoom"/>; the rungs' and Retreat's one size, the
+    /// game's font, docs/ui/style.md, "Buttons side by side"); the sub-line's left, its middle under the rung's and its type.
     /// </summary>
     public const float ArrowIn = 50, ArrowSize = 20, WordIn = 96, WordUp = 20, WordText = 46, WordRoom = 110, SubIn = 98,
         SubDown = 30, SubText = 28;
-
-    /// <summary>Retreat's word (the brush face).</summary>
-    public const float RetreatText = 52;
 
     /// <summary>The floor's block: "FLOOR"'s middle under its top and type (Cinzel), the number's middle and type (the brush face).</summary>
     public const float FloorLabelMiddle = 26, FloorLabelText = 24, FloorMiddle = 74, FloorText = 56;

@@ -31,10 +31,25 @@ internal sealed partial class HaremView
         DrawPicture(c, u.Rect(PhonePickers.Picture(f)));
         PhoneDetails(c, u);
         PhoneGrid(c, u);
+        var end = u.Rect(PhonePickers.HaremEnd(f));
+        _buttonSize = ButtonSize(u, PhonePickers.ButtonText, end, u.Rect(PhonePickers.Summon(f)));
         bool hoverEnd = !Busy && _hovered == EndButton;
-        PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickers.HaremEnd(f)), _brush, "End", hoverEnd);
+        PhonePickerParts.DrawButton(c, u, end, "End", hoverEnd, _buttonSize);
         PhoneSummon(c, u);
     }
+
+    /// <summary>The size End and Summon write their words at, this drawing's (<see cref="ButtonSize"/>).</summary>
+    private int _buttonSize;
+
+    /// <summary>"Summon" and the chosen girl's name: the red button's word.</summary>
+    private string SummonWord => _girls.FirstOrDefault(g => g.Number == _chosen) is { } girl ? $"Summon {girl.Name}" : "Summon";
+
+    /// <summary>
+    /// One Cinzel 700 size for End and Summon (docs/ui/style.md, "Buttons side by side"): <paramref name="text"/> reference
+    /// pixels, or as much smaller as Summon's word with her name needs.
+    /// </summary>
+    private int ButtonSize(PhoneUnits u, float text, Rect2 end, Rect2 summon) =>
+        SideCells.FitAll(_cinzel, u.Size(text), ("End", PhonePickerParts.Room(u, end)), (SummonWord, PhonePickerParts.Room(u, summon)));
 
     private void PhoneDetails(Control c, PhoneUnits u)
     {
@@ -89,8 +104,8 @@ internal sealed partial class HaremView
         bool hover = Enabled(SummonButton) && _hovered == SummonButton;
         Ui.DrawRedButton(c, box, hover, hover && _pressed == SummonButton, _k);
         string word = $"Summon {girl.Name}";
-        int size = SideCells.Fit(_brush, word, u.Size(PhonePickers.SummonText), box.Size.X - u.Px(30));
-        CentredString(c, _brush, word, size, Color.Color8(250, 226, 160), box.GetCenter().X, PhonePickerParts.Middle(_brush, size, box.GetCenter().Y));
+        int size = _buttonSize;                                 // End's too (ButtonSize)
+        CentredString(c, _cinzel, word, size, Color.Color8(250, 226, 160), box.GetCenter().X, PhonePickerParts.Middle(_cinzel, size, box.GetCenter().Y));
         if (PickerMarks.Label(girl.Mark) is { } pill)
             Ui.DrawPill(c, _cinzel, box.End.X - u.Px(20), box.Position.Y + u.Px(38), pill, MarkColour(girl.Mark)!.Value, u.Size(26), u.Px(40));
     }

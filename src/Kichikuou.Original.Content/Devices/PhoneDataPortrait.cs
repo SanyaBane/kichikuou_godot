@@ -67,8 +67,11 @@ public static class PhoneDataPortrait
     /// <summary>The tabs under the sheet's top, their height.</summary>
     private const float TabsDown = 26, TabHeight = 124;
 
-    /// <summary>A tab's type and its two lines' distance from its middle.</summary>
-    public const float TabText = 36, TabLine = 22;
+    /// <summary>
+    /// The tabs' and the chips' type, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together;
+    /// a tab's two lines' distance from its middle.
+    /// </summary>
+    public const float ButtonText = 36, TabLine = 22;
 
     private static float PartsX(PhoneFrame f) => f.Room.X + f.Px(PartsIn);
 
@@ -91,9 +94,6 @@ public static class PhoneDataPortrait
 
     /// <summary>The chips over the bar, their height.</summary>
     private const float ChipsOver = 64, ChipHeight = 120;
-
-    /// <summary>A chip's type.</summary>
-    public const float ChipText = 40;
 
     /// <summary>Chip <paramref name="index"/> (0 1x … 7 128x), the eight in a row at the thumb.</summary>
     public static PhoneFrame.Box Chip(PhoneFrame f, int index)
@@ -168,8 +168,6 @@ public static class PhoneDataPortrait
     /// <summary>Back's width at the bar's right; its type (the brush face).</summary>
     private const float BackWidth = 420;
 
-    /// <summary>Back's type.</summary>
-    public const float BackText = 52;
 
     /// <summary>Back (the menu's Return, a graph's left click) at the bar's right thumb.</summary>
     public static PhoneFrame.Box Back(PhoneFrame f) =>

@@ -227,16 +227,20 @@ internal sealed partial class EnemyAttackView
         bool Down(Spot spot) => _pressed.Spot == spot && _hover.Spot == spot;
 
         var abandon = AbandonRect;
+        var scout = ScoutRect;
+        var intercept = InterceptRect;
+        const string word = "Abandon City";
+        float wordLeft = abandon.Position.X + u.Px(92), wordRoom = abandon.End.X - u.Px(8) - wordLeft;
+        // One Cinzel 700 size for the three (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        var face = _cinzelBold;
+        int size = SideCells.FitAll(face, u.Size(PhoneAttack.ButtonText), (word, wordRoom - u.Px(10)), ("Ninja Scout", scout.Size.X - u.Px(40)),
+            ("Intercept", intercept.Size.X - u.Px(40)));
         bool abandonLit = Hovered(Spot.Abandon) || _callout.MenuOpen;
         Ui.DrawDangerButton(_sheet, abandon, abandonLit, _k);
         float middle = abandon.GetCenter().Y, s = u.Px(52) / 18;                       // the flag 52 high (the PC's 18)
         DrawWhiteFlag(abandon.Position.X + u.Px(36) - 2 * s, middle - u.Px(26), s);
-        const string word = "Abandon City";
-        float wordLeft = abandon.Position.X + u.Px(92), wordRoom = abandon.End.X - u.Px(8) - wordLeft;
-        int wordSize = SideCells.Fit(_brush, word, u.Size(PhoneAttack.AbandonText), wordRoom - u.Px(10));
-        CentredAt(_brush, word, wordSize, wordLeft + wordRoom / 2, Middle(_brush, wordSize, middle), abandonLit ? Ui.Name : Ui.DangerText);
+        CentredAt(face, word, size, wordLeft + wordRoom / 2, Middle(face, size, middle), abandonLit ? Ui.Name : Ui.DangerText);
 
-        var scout = ScoutRect;
         bool canScout = attack.CanScout, scoutLit = canScout && (Hovered(Spot.Scout) || _listOpen);
         if (canScout)
             Ui.DrawPanel(_sheet, scout, _k, scoutLit ? Ui.RowHover : null);
@@ -245,8 +249,7 @@ internal sealed partial class EnemyAttackView
             _sheet.DrawRect(scout, Ui.OffButton);
             _sheet.DrawRect(scout, Ui.OffLine, false, Lacquer.Frame(1, _k));
         }
-        int scoutSize = SideCells.Fit(_brush, "Ninja Scout", u.Size(PhoneAttack.ScoutText), scout.Size.X - u.Px(40));
-        CentredAt(_brush, "Ninja Scout", scoutSize, scout.GetCenter().X, Middle(_brush, scoutSize, scout.Position.Y + u.Px(56)),
+        CentredAt(face, "Ninja Scout", size, scout.GetCenter().X, Middle(face, size, scout.Position.Y + u.Px(56)),
             canScout ? Ui.Name : Ui.OffText);
         int free = attack.Ninjas.Count(n => n.Free);
         string sub = attack.Ninjas.Count == 0 ? "no ninja in service" : $"{free} of {attack.Ninjas.Count} free";
@@ -255,12 +258,11 @@ internal sealed partial class EnemyAttackView
 
         // Intercept: held landscape half as high as first drawn, its two lines closer (the mock-ups' low button); upright
         // the bar, its lines as Ninja Scout's.
-        var intercept = InterceptRect;
         Ui.DrawRedButton(_sheet, intercept, Hovered(Spot.Intercept), Down(Spot.Intercept), _k);
         bool low = intercept.Size.Y < u.Px(140);
-        int interceptSize = u.Size(PhoneAttack.InterceptText), noteSize = u.Size(low ? PhoneAttack.InterceptNote : PhoneAttack.ScoutNote);
-        CentredAt(_brush, "Intercept", interceptSize, intercept.GetCenter().X,
-            Middle(_brush, interceptSize, low ? intercept.Position.Y + intercept.Size.Y * 0.36f : intercept.Position.Y + u.Px(56)), Ui.Name);
+        int noteSize = u.Size(low ? PhoneAttack.InterceptNote : PhoneAttack.ScoutNote);
+        CentredAt(face, "Intercept", size, intercept.GetCenter().X,
+            Middle(face, size, low ? intercept.Position.Y + intercept.Size.Y * 0.36f : intercept.Position.Y + u.Px(56)), Ui.Name);
         CentredAt(_font!, "choose the units", noteSize, intercept.GetCenter().X,
             Middle(_font!, noteSize, low ? intercept.End.Y - intercept.Size.Y * 0.2f : intercept.End.Y - u.Px(38)), Color.Color8(236, 206, 160));
     }

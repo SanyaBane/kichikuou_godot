@@ -15,8 +15,21 @@ internal sealed partial class BattleCommandLayer
 {
     private PhoneFrame? _phone;                         // the phone held landscape: the rails in the sides
 
-    /// <summary>The rails' type on the phone, reference pixels: a command's 40, Retreat's 42, "No attack reaches it" 34, a long target name's two lines 44.</summary>
-    private const float PhoneRowText = 40, PhoneRetreatText = 42, PhoneNoAttack = 34, PhoneTargetTwo = 44;
+    /// <summary>The rails' type on the phone, reference pixels: a command's 40 (Retreat's too), "No attack reaches it" 34, a long target name's two lines 44.</summary>
+    private const float PhoneRowText = 40, PhoneNoAttack = 34, PhoneTargetTwo = 44;
+
+    /// <summary>
+    /// The commands' one size, Retreat's among them (docs/ui/style.md, "Buttons side by side"): the game's font at 40, or as
+    /// much smaller as the longest command needs in its row — the size <see cref="Centred"/> then keeps for each.
+    /// </summary>
+    private float RowSize(Font font)
+    {
+        int px = (int)P(PhoneRowText);
+        foreach (var (rect, text, _, place) in RailButtons())
+            while (!place.Right && px > 11 && font.GetStringSize(text, fontSize: px).X > rect.Size.X - 10)
+                px--;
+        return px;
+    }
 
     /// <summary>A box of the canvas's units in the layer's layout pixels (the frame's).</summary>
     private Rect2 L(PhoneFrame.Box b)
@@ -65,6 +78,7 @@ internal sealed partial class BattleCommandLayer
                 }
             }
             PhoneRule(f, true);
+            float rows = RowSize(font);
             foreach (var (rect, text, choice, place) in RailButtons())
             {
                 bool hot = place == _hotRail;
@@ -73,12 +87,12 @@ internal sealed partial class BattleCommandLayer
                 else if (choice.Command == FigtSelCommand.Retreat)
                 {
                     Ui.DrawRedButton(this, rect, hot, false, s);
-                    Centred(_brush, text, P(PhoneRetreatText), rect, Color8(250, 226, 160));
+                    Centred(font, text, rows, rect, Color8(250, 226, 160));
                 }
                 else
                 {
                     Ui.DrawRowBox(this, rect, hot, s);
-                    Centred(font, text, P(PhoneRowText), rect, Ui.Text);
+                    Centred(font, text, rows, rect, Ui.Text);
                 }
             }
         }

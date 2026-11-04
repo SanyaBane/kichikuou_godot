@@ -297,6 +297,28 @@ internal sealed partial class CommandMenuView : Control
         Ui.DrawDivider(this, right.Position.X + 16, right.End.X - 16, head + 34, _k);
     }
 
+    private const float TouchCommandLeft = 94, TouchLinkLeft = 14;
+
+    /// <summary>
+    /// Every row's text size — the commands', the other items' and Turn END's, one list (docs/ui/style.md, "Buttons side
+    /// by side"): the rows' size on the PC; on touch 19, or as much smaller as the longest word needs to fit its rail's row
+    /// (one fit for both rails, as the province menu's <c>TouchTextSize</c>).
+    /// </summary>
+    private int RowText
+    {
+        get
+        {
+            if (!Touch)
+                return Rows.Text;
+            int size = 19;
+            bool Over(string text, float left) => left + _gothic.GetStringSize(text, fontSize: size).X > TouchRowW - 8;
+            while (size > 14 && _menu is { } m && (m.Commands.Any(c => Over(c.Text, TouchCommandLeft))
+                       || m.Links.Any(l => Over(l.Text, TouchLinkLeft)) || Over(m.TurnEndText, 8)))
+                size--;
+            return size;
+        }
+    }
+
     private void DrawCommand(int r)
     {
         var item = _menu!.Commands[r];
@@ -304,7 +326,7 @@ internal sealed partial class CommandMenuView : Control
         bool on = item.Enabled, hover = r == _hovered && on;
         Ui.DrawRowBox(this, rect, hover, _k);
         var (tag, colour) = TagOf(item.Action);
-        int size = Touch ? 19 : Rows.Text;
+        int size = RowText;
         var tagRect = Touch
             ? new Rect2(rect.Position.X + 7, rect.Position.Y + 8, 72, rect.Size.Y - 16)
             : new Rect2(rect.Position.X + Rows.TagInset, rect.Position.Y + Rows.TagInset, Rows.TagWidth, rect.Size.Y - 2 * Rows.TagInset);
@@ -317,9 +339,7 @@ internal sealed partial class CommandMenuView : Control
             Ui.DrawBusyTag(this, _gothic, tagRect, tag, colour, _k, Touch ? 13 : Rows.TagText, Touch ? item.WeeksLeft : null);
         else
             Ui.DrawTag(this, _gothic, tagRect, tag, colour, on, _k, Touch ? 13 : Rows.TagText);
-        float textX = rect.Position.X + (Touch ? 94 : Rows.TextLeft);
-        while (Touch && size > 14 && textX + _gothic.GetStringSize(item.Text, fontSize: size).X > rect.End.X - 8)
-            size--;                                                     // a long name shrinks to fit the rail's row
+        float textX = rect.Position.X + (Touch ? TouchCommandLeft : Rows.TextLeft);
         DrawString(_gothic, new Vector2(textX, Lacquer.Baseline(rect, _gothic, size)), item.Text, fontSize: size,
             modulate: busy ? Ui.Quiet : on ? Ui.Text : Ui.OffText);
         if (!Touch && (busy || !on))
@@ -339,8 +359,8 @@ internal sealed partial class CommandMenuView : Control
         // On touch every row has its box: no hover shows that it can be tapped.
         if (hover || Touch)
             Ui.DrawRowBox(this, rect, hover, _k);
-        int size = Touch ? 18 : Rows.Text - 1;
-        DrawString(_gothic, new Vector2(rect.Position.X + (Touch ? 14 : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
+        int size = RowText;
+        DrawString(_gothic, new Vector2(rect.Position.X + (Touch ? TouchLinkLeft : 10), Lacquer.Baseline(rect, _gothic, size)), _menu!.Links[r - Commands].Text,
             fontSize: size, modulate: Ui.Text);
     }
 
@@ -353,9 +373,9 @@ internal sealed partial class CommandMenuView : Control
         DrawRect(rect, hover ? Ui.HoverLine : Ui.Gold, false, Line(2));
         DrawRect(rect.Grow(-4), Color.Color8(214, 150, 90), false, Line(1));
         string text = _menu!.TurnEndText;
-        int size = Touch ? 24 : Rows.Text + 5;
-        float tw = _brush.GetStringSize(text, fontSize: size).X;
-        DrawString(_brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _brush, size)), text, fontSize: size,
+        int size = RowText;                                             // the rows' font: its red fill sets it apart
+        float tw = _gothic.GetStringSize(text, fontSize: size).X;
+        DrawString(_gothic, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _gothic, size)), text, fontSize: size,
             modulate: Color.Color8(250, 226, 160));
     }
 

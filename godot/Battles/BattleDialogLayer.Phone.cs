@@ -55,7 +55,7 @@ internal sealed partial class BattleDialogLayer
 
     /// <summary>The callout's type and insides in layout pixels, held landscape (LB2r1) or upright (PB3r).</summary>
     private readonly record struct Callout(float OnButton, float TipHalf, float TipLength, float TextIn, float TextOut, float QuestionTop,
-        float QuestionText, float NoteTop, float NoteText, float Rule, float RuleIn, float AnswerText, float RetreatText);
+        float QuestionText, float NoteTop, float NoteText, float Rule, float RuleIn, float AnswerText);
 
     private void DrawPhone(PhoneFrame f)
     {
@@ -68,19 +68,19 @@ internal sealed partial class BattleDialogLayer
             static float U(float reference) => PhoneBattlePortrait.Layout(reference);
             DrawRect(new Rect2(0, -f.Room.Y / f.Scale, PhoneBattlePortrait.Width, f.Screen.H / f.Scale), PortraitDim);   // the whole screen
             retreat = null;                                                 // the question alone in the middle, Retreat under the dim
-            c = new Callout(U(PhoneBattlePortrait.RetreatText), 0, 0,
+            c = new Callout(U(PhoneBattlePortrait.AnswerText), 0, 0,
                 U(PhoneBattlePortrait.QuestionIn), U(PhoneBattlePortrait.QuestionIn + 20), U(PhoneBattlePortrait.QuestionTop),
                 U(PhoneBattlePortrait.QuestionText), U(PhoneBattlePortrait.NoteTop), U(PhoneBattlePortrait.NoteText),
-                U(PhoneBattlePortrait.QuestionRule), U(24), U(PhoneBattlePortrait.AnswerText), U(PhoneBattlePortrait.RetreatText));
+                U(PhoneBattlePortrait.QuestionRule), U(24), U(PhoneBattlePortrait.AnswerText));
         }
         else
         {
             DrawRect(L(f.Screen), Dim);
             Ui.DrawPanel(this, L(PhoneBattle.LeftPanel(f)), s);
             retreat = L(PhoneRetreat(f));
-            c = new Callout(P(PhoneBattle.AnswerText + 2), P(PhoneBattle.TipHalf), P(PhoneBattle.TipLength), P(40), P(60),
+            c = new Callout(P(PhoneBattle.AnswerText), P(PhoneBattle.TipHalf), P(PhoneBattle.TipLength), P(40), P(60),
                 P(PhoneBattle.QuestionTop), P(PhoneBattle.QuestionText), P(PhoneBattle.NoteTop), P(PhoneBattle.NoteText),
-                P(PhoneBattle.QuestionRule), P(30), P(PhoneBattle.AnswerText), P(PhoneBattle.RetreatText));
+                P(PhoneBattle.QuestionRule), P(30), P(PhoneBattle.AnswerText));
         }
         var box = Box;
         if (retreat is { } button)
@@ -88,8 +88,8 @@ internal sealed partial class BattleDialogLayer
             Ui.DrawRedButton(this, button, true, false, s);                 // lit while it asks
             DrawRect(button.Grow(P(5)), Ui.HoverLine, false, Lacquer.Line(P(5), s));
             int warning = Enumerable.Range(0, _dialog!.Items.Count).FirstOrDefault(i => _dialog.Items[i].Warning, -1);
-            if (warning >= 0)
-                PhoneCentred(_brush, _labels[warning], c.OnButton, button, Color.Color8(250, 226, 160));
+            if (warning >= 0 && GetThemeDefaultFont() is { } rail)           // the rail's row: the game's font, as the commands'
+                PhoneCentred(rail, _labels[warning], c.OnButton, button, Color.Color8(250, 226, 160));
         }
         DrawRect(new Rect2(box.Position + new Vector2(P(6), P(8)), box.Size), new Color(0, 0, 0, 0.3f));
         Ui.DrawPanel(this, box, s);
@@ -109,6 +109,11 @@ internal sealed partial class BattleDialogLayer
                 HorizontalAlignment.Left, box.Size.X - c.TextOut, note, Ui.Quiet);
             float y = box.Position.Y + c.Rule;
             DrawLine(new Vector2(box.Position.X + c.RuleIn, y), new Vector2(box.End.X - c.RuleIn, y), Ui.DimGold, Lacquer.Line(1, s));
+            // The answers: the game's font at one size, Retreat's red among them (docs/ui/style.md, "Buttons side by side").
+            int answers = (int)Math.Round(c.AnswerText);
+            for (int i = 0; i < _dialog.Items.Count; i++)
+                while (answers > 11 && font.GetStringSize(_labels[i], fontSize: answers).X > ItemRect(i).Size.X - P(24))
+                    answers--;
             for (int i = 0; i < _dialog.Items.Count; i++)
             {
                 var r = ItemRect(i);
@@ -118,7 +123,7 @@ internal sealed partial class BattleDialogLayer
                     Ui.DrawRedButton(this, r, hot, false, s);
                 else
                     Ui.DrawRowBox(this, r, hot, s);
-                PhoneCentred(warn ? _brush : font, _labels[i], warn ? c.RetreatText : c.AnswerText, r,
+                PhoneCentred(font, _labels[i], answers, r,
                     warn ? Color.Color8(250, 226, 160) : Ui.Text);
             }
         }

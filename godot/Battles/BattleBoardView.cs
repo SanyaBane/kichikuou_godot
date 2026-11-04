@@ -1446,6 +1446,10 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         float s = _scale;
         strip.DrawSetTransform(-new Vector2(Pad, Pad), 0, new Vector2(s, s));     // in layout pixels from the card's corner
         float flash = card.Record == _flashUnit ? FlashLevel() : 0;
+        int px = (int)Math.Round(OrderText);                                // one fit for the pair (docs/ui/style.md, "Buttons side by side")
+        for (int i = 0; i < OrderToggles.Length; i++)
+            while (px > 10 && font.GetStringSize(OrderToggles[i].Text, fontSize: px).X > OrderToggleArea(place, i).Size.X - 6)
+                px--;
         for (int i = 0; i < OrderToggles.Length; i++)
         {
             var (order, text) = OrderToggles[i];
@@ -1465,9 +1469,6 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             }
             else
                 Ui.DrawRowBox(strip, r, false, s);
-            int px = (int)Math.Round(OrderText);
-            while (px > 10 && font.GetStringSize(text, fontSize: px).X > r.Size.X - 6)
-                px--;
             strip.DrawString(font, new Vector2(r.Position.X, Lacquer.Baseline(r, font, px)), text, HorizontalAlignment.Center, r.Size.X, px,
                 lit ? PillInk : Ui.Quiet);
         }

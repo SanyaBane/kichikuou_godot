@@ -270,14 +270,20 @@ internal sealed partial class AllDataView : Control
         }
         var (gx, gy) = PhoneData.GraphsHeading(f);
         Heading(u, "GRAPHS", gx, gy);
-        for (int i = 0; i < PhoneData.Graphs && i < s.Graphs.Count; i++)
-            GraphCell(u, RectOf(u, i), s.Graphs[i], i == s.Shown && _mode != Mode.Menu, _pressed == i);
+        int graphs = Math.Min(PhoneData.Graphs, s.Graphs.Count), scales = Math.Min(PhoneData.Scales, s.Scales.Count);
+        // The left side's cells one size, the right side's chips and Back another (docs/ui/style.md, "Buttons side by side").
+        int cells = TabSize(u, PhoneData.CellText, [.. Enumerable.Range(0, graphs).Select(i => (s.Graphs[i], RectOf(u, i)))], 24);
+        var back = RectOf(u, BackPart);
+        int buttons = SideCells.FitAll(_cinzel, u.Size(PhoneData.ButtonText),
+            [.. Enumerable.Range(0, scales).Select(i => (s.Scales[i], RectOf(u, ChipBase + i).Size.X - u.Px(16))), (BackWord, back.Size.X - u.Px(30))]);
+        for (int i = 0; i < graphs; i++)
+            GraphCell(u, RectOf(u, i), s.Graphs[i], i == s.Shown && _mode != Mode.Menu, _pressed == i, cells);
         if (_mode != Mode.Menu)
         {
             var (sx, sy) = PhoneData.ScaleHeading(f);
             Heading(u, "SCALE", sx, sy);
-            for (int i = 0; i < PhoneData.Scales && i < s.Scales.Count; i++)
-                Chip(u, RectOf(u, ChipBase + i), s.Scales[i], i == s.Scale, _pressed == ChipBase + i);
+            for (int i = 0; i < scales; i++)
+                Chip(u, RectOf(u, ChipBase + i), s.Scales[i], i == s.Scale, _pressed == ChipBase + i, buttons);
             int size = u.Size(PhoneData.FigureText);
             foreach (var figure in s.Figures)
             {
@@ -286,12 +292,24 @@ internal sealed partial class AllDataView : Control
                 DrawString(_gothic, new Vector2(x / u.K - w / 2, baseline / u.K), figure.Text, fontSize: size, modulate: FigureInk);
             }
         }
-        var back = RectOf(u, BackPart);
         bool held = _pressed == BackPart;
         Ui.DrawPanel(this, back, u.K, held ? Ui.RowHover : null);
-        int backSize = SideCells.Fit(_brush, BackWord, u.Size(PhoneData.BackText), back.Size.X - u.Px(30));
-        Centred(_brush, backSize, back.GetCenter(), BackWord, held ? Ui.Name : Ui.Text);
+        Centred(_cinzel, buttons, back.GetCenter(), BackWord, held ? Ui.Name : Ui.Text);
     }
+
+    /// <summary>A graph's name in two lines, split at its first space.</summary>
+    private static string[] TabLines(string name)
+    {
+        int space = name.IndexOf(' ');
+        return space > 0 ? [name[..space], name[(space + 1)..]] : [name];
+    }
+
+    /// <summary>
+    /// One Cinzel 700 size for the graphs' cells or tabs (docs/ui/style.md, "Buttons side by side"): <paramref name="type"/>,
+    /// or as much smaller as the longest line needs in its box less <paramref name="inset"/> (reference pixels).
+    /// </summary>
+    private int TabSize(PhoneUnits u, float type, (string Name, Rect2 Box)[] tabs, float inset) =>
+        SideCells.FitAll(_cinzel, u.Size(type), [.. tabs.SelectMany(t => TabLines(t.Name).Select(line => (line, t.Box.Size.X - u.Px(inset))))]);
 
     /// <summary>A side's heading (GRAPHS, SCALE): Cinzel at its left, its middle given.</summary>
     private void Heading(PhoneUnits u, string text, float x, float middle, float type = PhoneData.HeadingText)
@@ -301,31 +319,26 @@ internal sealed partial class AllDataView : Control
             modulate: Ui.Subtitle);
     }
 
-    /// <summary>A graph's cell: its name in two lines (split at the first space), lit gold while shown.</summary>
-    private void GraphCell(PhoneUnits u, Rect2 box, string name, bool lit, bool held)
+    /// <summary>A graph's cell: its name in two lines (split at the first space) at the cells' <paramref name="size"/>, lit gold while shown.</summary>
+    private void GraphCell(PhoneUnits u, Rect2 box, string name, bool lit, bool held, int size)
     {
         DrawRect(box, lit || held ? Ui.RowHover : Ui.Row);
         DrawRect(box, lit ? Ui.Gold : held ? Ui.HoverLine : Ui.DimGold, false, Lacquer.Line(u.Px(lit ? 3 : 2), u.K));
-        int space = name.IndexOf(' ');
-        string[] lines = space > 0 ? [name[..space], name[(space + 1)..]] : [name];
-        int size = u.Size(PhoneData.CellText);
-        foreach (var line in lines)
-            size = SideCells.Fit(_gothic, line, size, box.Size.X - u.Px(24));
+        string[] lines = TabLines(name);
         var middle = box.GetCenter();
         for (int i = 0; i < lines.Length; i++)
         {
             float dy = (i - (lines.Length - 1) / 2f) * u.Px(PhoneData.CellLine);
-            Centred(_gothic, size, middle + new Vector2(0, dy), lines[i], lit ? Ui.Name : Ui.Text);
+            Centred(_cinzel, size, middle + new Vector2(0, dy), lines[i], lit ? Ui.Name : Ui.Text);
         }
     }
 
-    /// <summary>A scale's chip: vermilion framed in gold while it is the shown scale.</summary>
-    private void Chip(PhoneUnits u, Rect2 box, string word, bool lit, bool held, float type = PhoneData.ChipText)
+    /// <summary>A scale's chip at the group's <paramref name="size"/> (Cinzel 700): vermilion framed in gold while it is the shown scale.</summary>
+    private void Chip(PhoneUnits u, Rect2 box, string word, bool lit, bool held, int size)
     {
         DrawRect(box, lit ? Ui.Vermilion : held ? Ui.RowHover : Ui.Row);
         DrawRect(box, lit ? Ui.Gold : held ? Ui.HoverLine : Ui.DimGold, false, Lacquer.Line(u.Px(lit ? 3 : 2), u.K));
-        int size = SideCells.Fit(_gothic, word, u.Size(type), box.Size.X - u.Px(16));
-        Centred(_gothic, size, box.GetCenter(), word, lit ? Ui.Name : Ui.Text);
+        Centred(_cinzel, size, box.GetCenter(), word, lit ? Ui.Name : Ui.Text);
     }
 
     private void Centred(Font font, int size, Vector2 middle, string text, Color ink)

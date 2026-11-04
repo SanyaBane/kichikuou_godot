@@ -253,11 +253,11 @@ public static class PhoneLedgerPortrait
     private const float StopWidth = 404, BarGap = 16;
 
     /// <summary>
-    /// The bar's type: Stop's, a send button's alone, two sends' (a defence's Plains and City), a send's note (a field's
-    /// limit: 32, 15 % over held landscape's, owner, 2026-11-04); the gap between a send's word and its note, as a part
-    /// of held landscape's (85 %).
+    /// The bar's type: Stop's and the sends' words, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"),
+    /// shrunk together where a word is too long for its box; a send's note (a field's limit: 32, 15 % over held
+    /// landscape's, owner, 2026-11-04); the gap between a send's word and its note, as a part of held landscape's (85 %).
     /// </summary>
-    public const float StopText = 48, SendText = 60, SendsText = 46, NoteText = 32, NoteGap = 0.85f;
+    public const float BarText = 46, NoteText = 32, NoteGap = 0.85f;
 
     /// <summary>
     /// The deployment's bar: the <paramref name="sends"/> buttons that send the party from the left, sharing the room, and
@@ -291,11 +291,11 @@ public static class PhoneLedgerPortrait
     private const float ButtonsTop = 100, ButtonsHeight = 136, OrdersIn = 24, ButtonsGap = 20;
 
     /// <summary>
-    /// The buttons' type and lines: Replenish's word and its figures (their middles from the top and the foot), Talk's word
-    /// and "WITH …", Talk's face's inset.
+    /// The buttons' type and lines: Replenish's, Talk's and End's words, Cinzel 700 at one size (docs/ui/style.md, "Buttons
+    /// side by side"), shrunk together; Replenish's figures (their middles from the top and the foot), Talk's "WITH …",
+    /// Talk's face's inset.
     /// </summary>
-    public const float ReplenishText = 52, ReplenishNote = 32, WordMiddle = 46, NoteFoot = 30, TalkText = 52, TalkWith = 26,
-        TalkFaceIn = 14;
+    public const float OrderButtonText = 52, ReplenishNote = 32, WordMiddle = 46, NoteFoot = 30, TalkWith = 26, TalkFaceIn = 14;
 
     /// <summary>Add New Troops: the steps' top, height, the room between them, how many a row; their type and lines.</summary>
     private const float StepsTop = 310, StepHeight = 128, StepGap = 12;
@@ -342,8 +342,6 @@ public static class PhoneLedgerPortrait
     /// <summary>End's width at the bar's right (PU1e3).</summary>
     private const float EndWidth = 420;
 
-    /// <summary>End's type.</summary>
-    public const float EndText = 52;
 
     /// <summary>End at the bar's right, the right thumb (PU1e3).</summary>
     public static PhoneFrame.Box End(PhoneFrame f) => new(f.Bar.Right - f.Px(EndWidth), f.Bar.Y, f.Px(EndWidth), f.Bar.H);

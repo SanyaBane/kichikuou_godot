@@ -245,8 +245,9 @@ internal sealed partial class FloorLadderView : Control
             return;
         var panel = PanelRect;
         Ui.DrawPanel(this, panel, _k);
+        int size = RungSize(l);
         if (l.Up is { } up)
-            DrawWay(Part.Up, up, true, false);
+            DrawWay(Part.Up, up, true, false, size);
         // The floor between the arrows.
         float mid = panel.GetCenter().X, floorY = Touch ? TouchY + 200 : Y + 112;
         const string label = "FLOOR";
@@ -259,15 +260,29 @@ internal sealed partial class FloorLadderView : Control
             fontSize: 34, modulate: Ui.Name);
         // The touch rail's Descend is larger: it sits in the corner, under the thumb.
         if (l.Down is { } down)
-            DrawWay(Part.Down, down, false, Touch);
+            DrawWay(Part.Down, down, false, Touch, size);
         float inset = Touch ? TouchInset : Inset;
         Ui.DrawDivider(this, panel.Position.X + inset + 8, panel.End.X - inset - 8, Touch ? TouchY + 90 : Y + 266, _k);
         var retreat = RectOf(Part.Retreat);
-        int retreatSize = Touch ? 22 : 20;
         Ui.DrawRedButton(this, retreat, _hovered == Part.Retreat, _pressed == Part.Retreat && _hovered == Part.Retreat, _k);
-        float rw = _brush.GetStringSize(l.RetreatText, fontSize: retreatSize).X;
-        DrawString(_brush, new Vector2(retreat.GetCenter().X - rw / 2, Lacquer.Baseline(retreat, _brush, retreatSize)),
-            l.RetreatText, fontSize: retreatSize, modulate: Color.Color8(250, 226, 160));
+        float rw = _gothic.GetStringSize(l.RetreatText, fontSize: size).X;      // a rung's font: its red fill sets it apart
+        DrawString(_gothic, new Vector2(retreat.GetCenter().X - rw / 2, Lacquer.Baseline(retreat, _gothic, size)),
+            l.RetreatText, fontSize: size, modulate: Color.Color8(250, 226, 160));
+    }
+
+    /// <summary>The rungs' words, the ways' and Retreat's, at one size in the game's font (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int RungText = 24;
+
+    /// <summary><see cref="RungText"/>, or as much less as the longest word needs in its rung (one fit for the ladder).</summary>
+    private int RungSize(FloorLadder l)
+    {
+        float Room(Part part, bool large) => RectOf(part).Size.X - (large ? 66 : 62) - 8;
+        int size = SideCells.Fit(_gothic, l.RetreatText, RungText, RectOf(Part.Retreat).Size.X - 16);
+        if (l.Up is { } up)
+            size = SideCells.Fit(_gothic, up.Text, size, Room(Part.Up, false));
+        if (l.Down is { } down)
+            size = SideCells.Fit(_gothic, down.Text, size, Room(Part.Down, Touch));
+        return size;
     }
 
     private void DrawEntry(DungeonEntryMenu entry)
@@ -312,7 +327,7 @@ internal sealed partial class FloorLadderView : Control
         return size;
     }
 
-    private void DrawWay(Part part, FloorWay way, bool up, bool large)
+    private void DrawWay(Part part, FloorWay way, bool up, bool large, int size)
     {
         var rect = RectOf(part);
         Ui.DrawRowBox(this, rect, _hovered == part, _k);
@@ -322,7 +337,6 @@ internal sealed partial class FloorLadderView : Control
             : [new(cx - half, cy - h), new(cx + half, cy - h), new(cx, cy + h)];
         Lacquer.DrawSmoothPolygon(this, arrow, way.Deeper ? Ui.Gold : Ui.Quiet, _k);
         float tx = rect.Position.X + (large ? 66 : 62);
-        int size = large ? 26 : 24;
         DrawString(_gothic, new Vector2(tx, cy - (large ? 12 : 11) + (_gothic.GetAscent(size) - _gothic.GetDescent(size)) / 2),
             way.Text, fontSize: size, modulate: Ui.Text);
         string caption = $"{(way.Deeper ? "deeper" : "back")} · to {way.To}F";

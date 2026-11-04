@@ -107,8 +107,8 @@ public static class PhoneOptionsPortrait
     /// <summary>Defaults' width at the bar's left, the gap to Close.</summary>
     private const float DefaultsWidth = 404, BarGap = 16;
 
-    /// <summary>Defaults' word (Cinzel) and Close's (the brush face).</summary>
-    public const float DefaultsText = 36, CloseText = 56;
+    /// <summary>Defaults' and Close's words, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.</summary>
+    public const float ButtonText = 42;
 
     /// <summary>Defaults, a lacquer plate at the bar's left.</summary>
     public static PhoneFrame.Box Defaults(PhoneFrame f) => new(f.Bar.X, f.Bar.Y, Math.Min(f.Px(DefaultsWidth), f.Bar.W), f.Bar.H);

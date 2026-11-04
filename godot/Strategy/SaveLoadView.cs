@@ -45,12 +45,14 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private static readonly Rect2 EditRect = new(1132, 585, 94, 34);
     private static readonly Rect2 CalloutRect = new(806, 126, 420, 110);
     private static readonly Rect2 YesRect = new(1004, 196, 110, 30), NoRect = new(1124, 196, 80, 30);
-    private static readonly Rect2 SweepRect = new(206, 128, 176, 26);
+    private static readonly Rect2 SweepRect = new(160, 128, 222, 26);
     private static readonly Rect2 SweepCalloutRect = new(400, 75, 440, 132);
     private static readonly Rect2 SweepYesRect = new(608, 153, 120, 30), SweepNoRect = new(738, 153, 80, 30);
     private const float ListX = 52, ListW = 330, SideY = 84, SideH = 30, HeadY = 141, ListTop = 162, ListBottom = 756;
     private const float RowW = 318, RowH = 52, RowPitch = 57, NewH = 44, PageX = 426, PageY = 84;
     private const int CommentLength = 60;
+    /// <summary>The buttons' words, Cinzel 700, one size a group (docs/ui/style.md, "Buttons side by side"): the tabs and the lists' switch, the foot's red button and Back, the page's and the callouts' small buttons.</summary>
+    private const int TabText = 15, FootText = 18, SmallText = 14;
 
     private static Color ChosenFill => Ui.ChosenFill;
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
@@ -782,7 +784,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         }
         else
             Ui.DrawRowBox(this, rect, hover, _k);
-        TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y, text, on ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
+        TextCentred(_cinzel, TabText, rect.GetCenter().X, rect.GetCenter().Y, text, on ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
     }
 
     private void DrawAutos()
@@ -874,7 +876,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         }
         else
             Ui.DrawRowBox(this, rect, hover, _k);
-        TextCentred(_cinzel, 15, rect.GetCenter().X, rect.GetCenter().Y, tab.ToString(), active ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
+        TextCentred(_cinzel, TabText, rect.GetCenter().X, rect.GetCenter().Y, tab.ToString(), active ? Ui.Name : hover ? Ui.Text : Ui.Quiet);
     }
 
     /// <summary>
@@ -945,12 +947,12 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
             Ui.DrawRowBox(this, SweepRect, hover, _k);
         const string label = "Delete all without";
         string tail = $"({count})";
-        float lw = _gothic.GetStringSize(label, fontSize: 12).X, tw = _gothic.GetStringSize(tail, fontSize: 12).X;
+        float lw = _cinzel.GetStringSize(label, fontSize: SmallText).X, tw = _cinzel.GetStringSize(tail, fontSize: SmallText).X;
         float x = SweepRect.GetCenter().X - (lw + 22 + tw) / 2, y = SweepRect.GetCenter().Y;
         var colour = off ? Ui.OffText : hover ? Ui.Name : Ui.Text;
-        Text(_gothic, 12, x, y, label, colour);
+        Text(_cinzel, SmallText, x, y, label, colour);
         DrawStar(new Vector2(x + lw + 11, y), 6, off ? Ui.OffText : Ui.Gold);
-        Text(_gothic, 12, x + lw + 22, y, tail, colour);
+        Text(_cinzel, SmallText, x + lw + 22, y, tail, colour);
     }
 
     /// <summary>The sweep's question beside its button, the tip pointing left at it so the list stays in view: Delete n | Keep.</summary>
@@ -968,7 +970,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Text(_gothic, 16, left + 22, SweepCalloutRect.Position.Y + 56, stay + " It cannot be undone.", Ui.Text);
         bool yes = _hovered == SweepYesHit;
         Ui.DrawRedButton(this, SweepYesRect, yes, yes && _pressed == SweepYesHit, _k);
-        TextCentred(_brush, 16, SweepYesRect.GetCenter().X, SweepYesRect.GetCenter().Y, $"Delete {gone}", Ui.Name);
+        TextCentred(_cinzel, SmallText, SweepYesRect.GetCenter().X, SweepYesRect.GetCenter().Y, $"Delete {gone}", Ui.Name);
         DrawSmallButton(SweepNoRect, "Keep", SweepNoHit);
     }
 
@@ -1070,9 +1072,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         bool hover = _hovered == BackHit;
         Ui.DrawRowBox(this, BackRect, hover, _k);
         const string label = "Back";
-        float w = _cinzel.GetStringSize(label, fontSize: 16).X + 18, x = BackRect.GetCenter().X - w / 2, y = BackRect.GetCenter().Y;
+        float w = _cinzel.GetStringSize(label, fontSize: FootText).X + 18, x = BackRect.GetCenter().X - w / 2, y = BackRect.GetCenter().Y;
         DrawColoredPolygon([new(x + 8, y - 6), new(x + 8, y + 6), new(x, y)], Ui.Gold);
-        Text(_cinzel, 16, x + 18, y, label, hover ? Ui.Name : Ui.Text);
+        Text(_cinzel, FootText, x + 18, y, label, hover ? Ui.Name : Ui.Text);
     }
 
     /// <summary>Delete as a danger button: dark red lacquer in a vermilion frame, a bin before its label.</summary>
@@ -1082,9 +1084,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Ui.DrawDangerButton(this, DeleteRect, hover, _k);
         var colour = hover ? Ui.Name : Ui.DangerText;
         const string label = "Delete";
-        float w = _cinzel.GetStringSize(label, fontSize: 15).X + 22, x = DeleteRect.GetCenter().X - w / 2, y = DeleteRect.GetCenter().Y;
+        float w = _cinzel.GetStringSize(label, fontSize: SmallText).X + 22, x = DeleteRect.GetCenter().X - w / 2, y = DeleteRect.GetCenter().Y;
         DrawBin(x, y - 8, colour);
-        Text(_cinzel, 15, x + 22, y + 1, label, colour);
+        Text(_cinzel, SmallText, x + 22, y + 1, label, colour);
     }
 
     /// <summary>A small waste bin, 14 wide and 16 high (times <paramref name="s"/>), its top left at (<paramref name="x"/>, <paramref name="y"/>).</summary>
@@ -1123,14 +1125,14 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     {
         bool hover = _hovered == hit || (hit == DeleteHit && _confirm);
         Ui.DrawRowBox(this, rect, hover, _k);
-        TextCentred(_cinzel, 14, rect.GetCenter().X, rect.GetCenter().Y, text, hover ? Ui.Name : Ui.Text);
+        TextCentred(_cinzel, SmallText, rect.GetCenter().X, rect.GetCenter().Y, text, hover ? Ui.Name : Ui.Text);
     }
 
     private void DrawButton(string title)
     {
         bool hover = _hovered == ButtonHit;
         Ui.DrawRedButton(this, ButtonRect, hover, hover && _pressed == ButtonHit, _k);
-        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y, title, Ui.Name);
+        TextCentred(_cinzel, FootText, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y, title, Ui.Name);
     }
 
     /// <summary>The red button off: an auto-save is the game's own, not saved over.</summary>
@@ -1138,7 +1140,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     {
         DrawRect(ButtonRect, Ui.OffButton);
         DrawRect(ButtonRect, Ui.OffLine, false, Line(2));
-        TextCentred(_brush, 22, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y - 6, title, Ui.OffText);
+        TextCentred(_cinzel, FootText, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y - 6, title, Ui.OffText);
         TextCentred(_gothic, 12, ButtonRect.GetCenter().X, ButtonRect.GetCenter().Y + 16, "auto-saves are the game's own", Ui.OffText);
     }
 
@@ -1155,7 +1157,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         Text(_gothic, 16, CalloutRect.Position.X + 22, CalloutRect.Position.Y + 56, "It cannot be undone.", Ui.Text);
         bool yes = _hovered == DeleteYesHit;
         Ui.DrawRedButton(this, YesRect, yes, yes && _pressed == DeleteYesHit, _k);
-        TextCentred(_brush, 16, YesRect.GetCenter().X, YesRect.GetCenter().Y, "Delete", Ui.Name);
+        TextCentred(_cinzel, SmallText, YesRect.GetCenter().X, YesRect.GetCenter().Y, "Delete", Ui.Name);
         DrawSmallButton(NoRect, "Keep", DeleteNoHit);
     }
 

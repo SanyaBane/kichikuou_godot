@@ -53,10 +53,13 @@ internal sealed partial class TreasureView
         DrawPicture(c, u.Rect(PhonePickersPortrait.Picture(f)));
         var (dx, dy) = PhonePickersPortrait.Details(f);
         DrawDetails(c, u, dx / u.K, dy / u.K, (PhonePickersPortrait.DetailsRight(f) - dx) / u.K);
+        var end = u.Rect(PhonePickersPortrait.End(f));
+        _buttonSize = ButtonSize(u, PhonePickersPortrait.ButtonText, u.Rect(PhonePickersPortrait.Tab(f, 0)),
+            u.Rect(PhonePickersPortrait.Back(f)), end, u.Rect(PhonePickersPortrait.Action(f)));
         if (_prompt is { } prompt)
         {
             DrawPrompt(c, u, prompt, u.Rect(PhonePickersPortrait.Prompt(f)));
-            PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickersPortrait.Back(f)), _brush, "Back", !Busy && _hovered == BackButton);
+            PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickersPortrait.Back(f)), "Back", !Busy && _hovered == BackButton, _buttonSize);
         }
         else
             DrawTabs(c, u, view => u.Rect(PhonePickersPortrait.Tab(f, view)));
@@ -72,7 +75,7 @@ internal sealed partial class TreasureView
         }
         PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
         _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
-        PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickersPortrait.End(f)), _brush, "End", !Busy && _hovered == EndButton);
+        PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
         if (_button is { } button)
             DrawAction(c, u, button, u.Rect(PhonePickersPortrait.Action(f)));
     }

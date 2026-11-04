@@ -70,9 +70,6 @@ public static class PhonePickers
     /// <summary>The touch mode's button: as wide as this at the column's right, 10 under the details' top, as high; a callout 40 left of it.</summary>
     private const float ActionWidth = 440, ActionDown = 10, ActionHeight = 150, BesideGap = 40;
 
-    /// <summary>The button's type.</summary>
-    public const float ActionText = 54;
-
     /// <summary>The treasure's touch mode button (Take Off, Equip, …) beside the details, at the column's right.</summary>
     public static PhoneFrame.Box Action(PhoneFrame f)
     {
@@ -108,8 +105,11 @@ public static class PhonePickers
         return new PhoneFrame.Box(x, end.Y, end.X - f.Px(ButtonsGap) - x, end.H);
     }
 
-    /// <summary>The foot's type: End's word, Summon's (the brush face), the tabs' (Cinzel).</summary>
-    public const float EndText = 44, SummonText = 56, TabText = 34;
+    /// <summary>
+    /// Every button's type, Cinzel 700 (docs/ui/style.md, "Buttons side by side"): the tabs, End, Back, Summon and the
+    /// treasure's red button alike, the group shrunk together where a word is too long for its box.
+    /// </summary>
+    public const float ButtonText = 38;
 
     /// <summary>The treasure's foot: 130 high; the tabs 12 apart, ending 16 short of End.</summary>
     private const float TreasureButtons = 130, TabsGap = 12;

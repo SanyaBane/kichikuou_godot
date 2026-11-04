@@ -45,15 +45,16 @@ internal sealed partial class OptionsView
         var defaults = u.Rect(PhoneOptionsPortrait.Defaults(f));
         bool enabled = _tab != Tab.Game, lit = enabled && _hover == "defaults";
         Ui.DrawPanel(this, defaults, u.K, lit ? Ui.RowHover : null);
-        int size = SideCells.Fit(_cinzelBold, "Defaults", u.Size(PhoneOptionsPortrait.DefaultsText), defaults.Size.X - u.Px(30));
-        DrawString(_cinzelBold, new Vector2(defaults.Position.X, Lacquer.Baseline(defaults, _cinzelBold, size)), "Defaults",
-            HorizontalAlignment.Center, defaults.Size.X, size, !enabled ? Ui.OffText : lit ? Ui.Name : Ui.Text);
         var close = u.Rect(PhoneOptionsPortrait.Close(f));
+        var face = SideCells.Cinzel;                                    // one face and size for both (docs/ui/style.md)
+        int size = SideCells.FitAll(face, u.Size(PhoneOptionsPortrait.ButtonText), ("Defaults", defaults.Size.X - u.Px(30)),
+            ("Close", close.Size.X - u.Px(30)));
+        DrawString(face, new Vector2(defaults.Position.X, Lacquer.Baseline(defaults, face, size)), "Defaults",
+            HorizontalAlignment.Center, defaults.Size.X, size, !enabled ? Ui.OffText : lit ? Ui.Name : Ui.Text);
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, close, closeLit, closeLit && _pressed == "close", u.K);
-        int closeSize = SideCells.Fit(_brush, "Close", u.Size(PhoneOptionsPortrait.CloseText), close.Size.X - u.Px(30));
-        DrawString(_brush, new Vector2(close.Position.X, Lacquer.Baseline(close, _brush, closeSize)), "Close",
-            HorizontalAlignment.Center, close.Size.X, closeSize, Ui.Name);
+        DrawString(face, new Vector2(close.Position.X, Lacquer.Baseline(close, face, size)), "Close",
+            HorizontalAlignment.Center, close.Size.X, size, Ui.Name);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         if (enabled)
             _spots.Add(new Spot("defaults", Part(PhoneOptionsPortrait.Defaults(f)), AskDefaults));

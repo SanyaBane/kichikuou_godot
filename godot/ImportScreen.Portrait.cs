@@ -67,7 +67,7 @@ public partial class ImportScreen
         y = PhoneStep(u, 0, 1, field.End.Y + u.Px(PhoneImportPortrait.FieldUnder), right, "The files are checked and the scenario read",
             "Once for this folder, a second or so.", StepState.Next);
         PhoneStep(u, 0, 2, y + u.Px(PhoneImportPortrait.StepRoom), right, "Play", null, StepState.Next);
-        PhoneButton(u, "Import", PhoneImportPortrait.ButtonText);
+        PhoneButton(u, "Import");
     }
 
     /// <summary>PIp: the folder ticked, the stage and its bar under it, Play under the bar (lit once read).</summary>
@@ -97,18 +97,17 @@ public partial class ImportScreen
         y = HashLines(u, x, y, right);
         var field = PhoneField(u, y);
         Stamp(u, new Vector2(L(PhoneImportPortrait.StampX(f)), field.Position.Y + u.Px(PhoneImportPortrait.StampDown)));
-        PhoneButton(u, "Choose another folder", PhoneImportPortrait.ButtonText);
+        PhoneButton(u, "Choose another folder");
     }
 
-    /// <summary>Back in the bar (<c>back_and</c>): a panel, the gold triangle, its word in the brush face.</summary>
+    /// <summary>Back in the bar (<c>back_and</c>): a panel, the gold triangle, its word at the red button's size (Cinzel 700).</summary>
     private void PortraitBack(PhoneUnits u)
     {
         var r = BackBox;
         Ui.DrawPanel(this, r, u.K, _hoverBack ? Ui.RowHover : null);
         float cy = r.GetCenter().Y, ax = r.Position.X + u.Px(62);
         DrawColoredPolygon([new(ax + u.Px(32), cy - u.Px(18)), new(ax, cy), new(ax + u.Px(32), cy + u.Px(18))], Ui.Gold);
-        int size = SideCells.Fit(_brush, "Back", u.Size(PhoneImportPortrait.BackText), r.End.X - ax - u.Px(70));
         float left = ax + u.Px(44);
-        Middle(_brush, "Back", size, left, cy, _hoverBack ? Ui.Name : Ui.Text, r.End.X - left);
+        Middle(SideCells.Cinzel, "Back", ButtonSize(u), left, cy, _hoverBack ? Ui.Name : Ui.Text, r.End.X - left);
     }
 }

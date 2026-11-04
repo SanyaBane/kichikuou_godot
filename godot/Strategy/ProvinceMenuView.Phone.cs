@@ -218,11 +218,15 @@ internal sealed partial class ProvinceMenuView
         // the phone's type: 2.3 mm), then Return at the foot.
         if (columns is not null)
             Ui.DrawPanel(this, u.Rect(columns.Panel), u.K);
+        // The rows: the game's font at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        float scale = Items > 0 ? SideCells.RowScale(u, u.Rect(rows[0])) : 1;
+        int rowSize = SideCells.FitAll(_gothic, u.Size((columns is null ? PhoneMap.RowText : PhoneMap.ColumnsRowText) * scale),
+            [.. Enumerable.Range(0, Items).Select(r => (m.Items[r].Text, SideCells.RowRoom(u, u.Rect(rows[r]))))]);
         for (int r = 0; r < Items; r++)
         {
             var item = m.Items[r];
             SideCells.DrawRow(this, u, u.Rect(rows[r]), _gothic, item.Text, item.Enabled, r == _hovered || r == _pressed,
-                TagOf(item.Action), palette: Ui, nameSize: columns is null ? 36 : 40);
+                TagOf(item.Action), palette: Ui, size: rowSize);
         }
         int back = RowCount - 1;
         SideCells.DrawButton(this, u, u.Rect(PhoneMap.FootCell(f)), SideCells.Icon.Close, "Return",
@@ -277,11 +281,16 @@ internal sealed partial class ProvinceMenuView
             DrawLine(new Vector2(band.Position.X, cy), new Vector2(mid - pw / 2 - u.Px(16), cy), Ui.DimGold, Lacquer.Line(u.Px(2), u.K));
             DrawLine(new Vector2(mid + pw / 2 + u.Px(16), cy), new Vector2(band.End.X, cy), Ui.DimGold, Lacquer.Line(u.Px(2), u.K));
         }
+        // The rows: the game's font at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        float scale = Items > 0 ? SideCells.LineRowScale(u, u.Rect(sheet.Rows[0])) : 1;
+        int rowSize = SideCells.FitAll(_gothic, u.Size(PhoneMapPortrait.RowText * scale),
+            [.. Enumerable.Range(0, Items).Select(r => (m.Items[r].Text,
+                SideCells.LineRowRoom(u, u.Rect(sheet.Rows[r]), _gothic, TagOf(m.Items[r].Action))))]);
         for (int r = 0; r < Items; r++)
         {
             var item = m.Items[r];
             SideCells.DrawLineRow(this, u, u.Rect(sheet.Rows[r]), _gothic, item.Text, item.Enabled, r == _hovered || r == _pressed,
-                TagOf(item.Action), palette: Ui);
+                TagOf(item.Action), palette: Ui, size: rowSize);
         }
         int back = RowCount - 1;
         SideCells.DrawBarButton(this, u, u.Rect(PhoneMapPortrait.CommandsCell(f)), SideCells.Icon.Close, "Return",

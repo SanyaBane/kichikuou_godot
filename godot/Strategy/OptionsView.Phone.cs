@@ -105,6 +105,11 @@ internal sealed partial class OptionsView
         bool portrait = f.IsPortrait;
         PhoneFrame.Box Place(int i, bool chosen) => portrait ? PhoneOptionsPortrait.Tab(f, i, chosen) : PhoneOptions.Tab(f, i, chosen);
         Rect2 current = default;
+        // One size for the five (docs/ui/style.md, "Buttons side by side"): the tabs' type, or as much smaller as the longest
+        // name needs in its tab at the chosen one's weight; the chosen one keeps its heavier weight.
+        float room = P(portrait ? PhoneOptionsPortrait.TabTextRoom : PhoneOptions.TabTextRoom);
+        int size = SideCells.FitAll(_cinzelBold, Ref(portrait ? PhoneOptionsPortrait.TabText : PhoneOptions.TabText),
+            [.. Tabs.Select((t, i) => (t.ToString(), Math.Min(Part(Place(i, false)).Size.X, Part(Place(i, true)).Size.X) - room))]);
         for (int i = 0; i < Tabs.Length; i++)
         {
             var tab = Tabs[i];
@@ -116,9 +121,6 @@ internal sealed partial class OptionsView
             if (on)
                 current = rect;
             var font = on ? _cinzelBold : _cinzel;
-            int size = portrait
-                ? SideCells.Fit(font, name, Ref(PhoneOptionsPortrait.TabText), rect.Size.X - P(PhoneOptionsPortrait.TabTextRoom))
-                : SideCells.Fit(font, name, Ref(PhoneOptions.TabText), rect.Size.X - P(PhoneOptions.TabTextRoom));
             float middle = Part(Place(i, chosen: true)).GetCenter().Y + P(6);    // the words level on every tab
             Text(font, new Vector2(rect.Position.X, middle + (font.GetAscent(size) - font.GetDescent(size)) / 2), name,
                 HorizontalAlignment.Center, rect.Size.X, size, on ? Ui.HeadInk : Ui.InkQuiet);
@@ -139,17 +141,17 @@ internal sealed partial class OptionsView
         bool enabled = _tab != Tab.Game, lit = enabled && _hover == "defaults";
         DrawRect(defaults, lit ? Field : Ui.PaperHead);
         DrawRect(defaults, Ui.InkQuiet, false, Line(1));
-        int size = Ref(PhoneOptions.DefaultsText);
-        Text(_cinzelBold, new Vector2(defaults.Position.X, Lacquer.Baseline(defaults, _cinzelBold, size)), "Defaults",
+        var close = Part(PhoneOptions.Close(f));
+        var face = SideCells.Cinzel;                                    // one face and size for both (docs/ui/style.md)
+        int size = SideCells.FitAll(face, Ref(PhoneOptions.ButtonText), ("Defaults", defaults.Size.X - P(30)), ("Close", close.Size.X - P(30)));
+        Text(face, new Vector2(defaults.Position.X, Lacquer.Baseline(defaults, face, size)), "Defaults",
             HorizontalAlignment.Center, defaults.Size.X, size, enabled ? Ui.HeadInk : Ui.InkGrey);
         if (enabled)
             _spots.Add(new Spot("defaults", defaults, AskDefaults));
-        var close = Part(PhoneOptions.Close(f));
         bool closeLit = _hover == "close";
         Ui.DrawRedButton(this, close, closeLit, closeLit && _pressed == "close", _k);
-        int closeSize = SideCells.Fit(_brush, "Close", Ref(PhoneOptions.CloseText), close.Size.X - P(30));
-        Text(_brush, new Vector2(close.Position.X, Lacquer.Baseline(close, _brush, closeSize)), "Close", HorizontalAlignment.Center,
-            close.Size.X, closeSize, Ui.Name);
+        Text(face, new Vector2(close.Position.X, Lacquer.Baseline(close, face, size)), "Close", HorizontalAlignment.Center,
+            close.Size.X, size, Ui.Name);
         _spots.Add(new Spot("close", close, Close));
     }
 

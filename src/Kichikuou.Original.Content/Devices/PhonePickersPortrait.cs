@@ -259,6 +259,12 @@ public static class PhonePickersPortrait
     /// <summary>The red button's width at the bar's left; the gap after it.</summary>
     private const float ActionWidth = 760, BarGap = 16;
 
+    /// <summary>
+    /// Every button's type, Cinzel 700 (docs/ui/style.md, "Buttons side by side"): the tabs, Back, End and the red button
+    /// alike, the group shrunk together where a word is too long for its box.
+    /// </summary>
+    public const float ButtonText = 40;
+
     /// <summary>End at the bar's right: a way back stands right of the action (owner, 2026-10-30).</summary>
     public static PhoneFrame.Box End(PhoneFrame f)
     {

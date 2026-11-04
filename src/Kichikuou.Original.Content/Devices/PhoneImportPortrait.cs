@@ -103,8 +103,11 @@ public static class PhoneImportPortrait
 
     // ------------------------------------------------------------------ the bar (back_and)
 
-    /// <summary>Back's and the red button's type (the brush face).</summary>
-    public const float BackText = PhoneSavesPortrait.BackText, ButtonText = PhoneSavesPortrait.ButtonText;
+    /// <summary>
+    /// Back's and the red button's type, Cinzel 700 at one size whichever the red button says (docs/ui/style.md, "Buttons
+    /// side by side"), as Save/Load's bar; Back's word this far in from its box's left (the triangle before it).
+    /// </summary>
+    public const float ButtonText = PhoneSavesPortrait.ButtonText, BackTextIn = 62 + 44 + 26;
 
     /// <summary>Back at the bar's right, the right thumb, as Save/Load's.</summary>
     public static PhoneFrame.Box Back(PhoneFrame f) => PhoneSavesPortrait.Back(f);

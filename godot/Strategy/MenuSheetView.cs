@@ -269,12 +269,19 @@ internal sealed partial class MenuSheetView : Control
         DrawString(_brush, new Vector2(tx / u.K, ty / u.K + (_brush.GetAscent(title) - _brush.GetDescent(title)) / 2), "Menu",
             fontSize: title, modulate: Ui.Name);
         var boxes = PhoneMenu.Tiles(f, _tiles);
+        // One size for the sheet's words (docs/ui/style.md, "Buttons side by side"): the longest's in its tile or row.
+        var font = SideCells.Font;
+        int words = f.IsPortrait
+            ? SideCells.FitAll(font, u.Size(PhoneMenu.RowText),
+                [.. Enumerable.Range(0, _tiles.Count).Select(i => (RowWord(_tiles[i]), u.Rect(boxes[i]).Size.X - u.Px(300)))])
+            : Enumerable.Range(0, _tiles.Count).Select(i => Lines(font, _tiles[i].Label, u.Size(PhoneMenu.TileText),
+                u.Rect(boxes[i]).Size.X - u.Px(30)).Size).DefaultIfEmpty(u.Size(PhoneMenu.TileText)).Min();
         for (int i = 0; i < _tiles.Count; i++)
         {
             if (f.IsPortrait)
-                DrawRow(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
+                DrawRow(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null, words);
             else
-                DrawTile(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
+                DrawTile(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null, words);
         }
         int sound = _tiles.ToList().FindIndex(t => t.Command == PhoneMenu.Command.Sound);
         if (f.IsPortrait && sound >= 0 && sound + 1 < _tiles.Count && _tiles[sound + 1].Command == PhoneMenu.Command.Screenshot)
@@ -293,15 +300,14 @@ internal sealed partial class MenuSheetView : Control
     /// A row of the sheet held upright (docs/ui/phone.md, §25, PN1): its word at the left (a command that asks first with
     /// "…"), a switch's pill at the right reading On or Off, a page's ›; a greyed one dim.
     /// </summary>
-    private void DrawRow(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held)
+    private void DrawRow(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held, int size)
     {
         DrawRect(box, Ui.Row);
         DrawRect(box, Ui.DimGold, false, Lacquer.Frame(2, u.K));
         if (held && !tile.Disabled)
             DrawRect(box.Grow(-u.Px(4)), Held);
         var font = SideCells.Font;
-        string word = tile.Kind == PhoneMenu.Kind.Asks ? tile.Label + "…" : tile.Label;
-        int size = SideCells.Fit(font, word, u.Size(46), box.Size.X - u.Px(300));
+        string word = RowWord(tile);
         float cy = box.GetCenter().Y, right = box.End.X - u.Px(28);
         DrawString(font, new Vector2(box.Position.X + u.Px(36), cy + (font.GetAscent(size) - font.GetDescent(size)) / 2), word,
             fontSize: size, modulate: tile.Disabled ? Ui.OffText : Ui.Text);
@@ -334,9 +340,11 @@ internal sealed partial class MenuSheetView : Control
         }
     }
 
-    /// <summary>A tile: its word over its small line; a switch's lit while on, a greyed one dim.</summary>
+    /// <summary>A row's word upright: a command that asks first with "…".</summary>
+    private static string RowWord(PhoneMenu.Tile tile) => tile.Kind == PhoneMenu.Kind.Asks ? tile.Label + "…" : tile.Label;
 
-    private void DrawTile(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held)
+    /// <summary>A tile: its word over its small line at the sheet's <paramref name="size"/>; a switch's lit while on, a greyed one dim.</summary>
+    private void DrawTile(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool held, int size)
     {
         bool lit = tile is { Kind: PhoneMenu.Kind.Switch, On: true };
         DrawRect(box, lit ? Lit : Ui.Row);
@@ -346,8 +354,7 @@ internal sealed partial class MenuSheetView : Control
         var font = SideCells.Font;
         var ink = tile.Disabled ? Ui.OffText : Ui.Text;
         float cx = box.GetCenter().X, cy = box.GetCenter().Y;
-        var lines = Lines(font, tile.Label, u.Size(44), box.Size.X - u.Px(30));
-        int size = lines.Size;
+        var lines = Lines(font, tile.Label, size, box.Size.X - u.Px(30));
         float pitch = u.Px(50), top = cy - u.Px(26) - (lines.Text.Length - 1) * pitch;   // the last line where one line stands
         for (int i = 0; i < lines.Text.Length; i++)
             Centred(font, lines.Text[i], size, cx, top + i * pitch, ink);
@@ -396,10 +403,14 @@ internal sealed partial class MenuSheetView : Control
         DrawString(font, new Vector2(x, box.Position.Y + u.Px(142) + (font.GetAscent(line) - font.GetDescent(line)) / 2),
             question.Line, fontSize: line, modulate: Ui.Text);
         var cancel = u.Rect(callout.Cancel);
-        Ui.DrawRowBox(this, cancel, _held == Cancel, u.K);
-        Centred(_brush, "Cancel", u.Size(46), cancel.GetCenter().X, cancel.GetCenter().Y, Ui.Text);
         var confirm = u.Rect(callout.Confirm);
+        // Cancel | the red button: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        var face = SideCells.Cinzel;
+        int size = SideCells.FitAll(face, u.Size(PhoneMenu.ButtonText), ("Cancel", cancel.Size.X - u.Px(30)),
+            (question.Confirm, confirm.Size.X - u.Px(30)));
+        Ui.DrawRowBox(this, cancel, _held == Cancel, u.K);
+        Centred(face, "Cancel", size, cancel.GetCenter().X, cancel.GetCenter().Y, Ui.Text);
         Ui.DrawRedButton(this, confirm, false, _held == Confirm, u.K);
-        Centred(_brush, question.Confirm, u.Size(52), confirm.GetCenter().X, confirm.GetCenter().Y, Ui.Name);
+        Centred(face, question.Confirm, size, confirm.GetCenter().X, confirm.GetCenter().Y, Ui.Name);
     }
 }

@@ -54,6 +54,7 @@ internal sealed partial class BattleCommandLayer
             float y = PhoneBattlePortrait.RuleY;
             DrawLine(new Vector2(L(PhoneBattlePortrait.RuleIn), y), new Vector2(PhoneBattlePortrait.Width - L(PhoneBattlePortrait.RuleIn), y),
                 Ui.DimGold, Lacquer.Line(1, s));
+            float rows = RowSize(font);
             foreach (var (rect, text, choice, place) in RailButtons())
             {
                 bool hot = place == _hotRail;
@@ -62,12 +63,12 @@ internal sealed partial class BattleCommandLayer
                 else if (choice.Command == FigtSelCommand.Retreat)
                 {
                     Ui.DrawRedButton(this, rect, hot, false, s);
-                    Centred(_brush, text, P(PhoneRetreatText), rect, Color8(250, 226, 160));
+                    Centred(font, text, rows, rect, Color8(250, 226, 160));
                 }
                 else
                 {
                     Ui.DrawRowBox(this, rect, hot, s);
-                    Centred(font, text, P(PhoneRowText), rect, Ui.Text);
+                    Centred(font, text, rows, rect, Ui.Text);
                 }
             }
         }

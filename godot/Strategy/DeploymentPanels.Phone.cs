@@ -118,19 +118,18 @@ internal sealed partial class DeploymentPanels
     /// <summary>Stop at the left (Back in a defence), the buttons that send the party in red lacquer right of it.</summary>
     private void DrawPhoneBar(Control c, PhoneUnits u, string cost)
     {
-        int sends = BarButtons().Count(b => b.Button != 3);
+        // One Cinzel 700 size for Stop and the sends (docs/ui/style.md, "Buttons side by side"), shrunk together.
+        string Label(int button) => button == 3 && _mode == 2 ? "Back" : _labels[button - 1].Trim();
+        int size = SideCells.FitAll(_cinzel, u.Size(u.Frame.IsPortrait ? PhoneLedgerPortrait.BarText : PhoneLedger.BarText),
+            [.. BarButtons().Select(b => (Label(b.Button), b.Rect.Size.X - u.Px(30)))]);
         foreach (var (button, rect) in BarButtons())
         {
             bool hover = button == _hovered, down = hover && button == _pressed;
-            string label = _labels[button - 1].Trim();
+            string label = Label(button);                       // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
             if (button == 3)
             {
-                if (_mode == 2)
-                    label = "Back";                             // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
                 Ui.DrawRowBox(c, rect, hover, _k);
-                float stopText = u.Frame.IsPortrait ? PhoneLedgerPortrait.StopText : PhoneLedger.StopText;
-                int stop = SideCells.Fit(_brush, label, u.Size(stopText), rect.Size.X - u.Px(30));
-                CentredString(c, _brush, label, stop, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _brush, stop));
+                CentredString(c, _cinzel, label, size, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, size));
                 continue;
             }
             Ui.DrawRedButton(c, rect, hover, down, _k);
@@ -141,24 +140,23 @@ internal sealed partial class DeploymentPanels
                 (3, _) => $"Into the dungeon  ·  {cost}",
                 _ => null,
             };
-            int size = SideCells.Fit(_brush, label, u.Size(sends == 1 ? PhoneLedger.SendText : PhoneLedger.SendsText), rect.Size.X - u.Px(30));
             var ink = Color.Color8(250, 226, 160);
             if (note is null)
             {
-                CentredString(c, _brush, label, size, ink, rect.GetCenter().X, Lacquer.Baseline(rect, _brush, size));
+                CentredString(c, _cinzel, label, size, ink, rect.GetCenter().X, Lacquer.Baseline(rect, _cinzel, size));
                 continue;
             }
             var top = new Rect2(rect.Position, new Vector2(rect.Size.X, rect.Size.Y * 0.62f));
             var bottom = new Rect2(rect.Position.X, rect.Position.Y + rect.Size.Y * 0.56f, rect.Size.X, rect.Size.Y * 0.38f);
             bool portrait = u.Frame.IsPortrait;
             int small = SideCells.Fit(_gothic, note, u.Size(portrait ? PhoneLedgerPortrait.NoteText : PhoneLedger.NoteText), rect.Size.X - u.Px(24));
-            float wordLine = Lacquer.Baseline(top, _brush, size), noteLine = Lacquer.Baseline(bottom, _gothic, small);
+            float wordLine = Lacquer.Baseline(top, _cinzel, size), noteLine = Lacquer.Baseline(bottom, _gothic, small);
             if (portrait)                                                   // the word and its note drawn together (owner, 2026-11-04)
             {
                 float gap = noteLine - _gothic.GetAscent(small) - wordLine, pull = gap * (1 - PhoneLedgerPortrait.NoteGap) / 2;
                 (wordLine, noteLine) = (wordLine + pull, noteLine - pull);
             }
-            CentredString(c, _brush, label, size, ink, rect.GetCenter().X, wordLine);
+            CentredString(c, _cinzel, label, size, ink, rect.GetCenter().X, wordLine);
             CentredString(c, _gothic, note, small, Color.Color8(236, 206, 160), rect.GetCenter().X, noteLine);
         }
     }

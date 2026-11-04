@@ -79,8 +79,8 @@ Read this before a new screen's survey and mock-ups: the first round should not 
 
 ## 3. Type
 
-- **Shojumaru** (`Lacquer.Brush`) — titles and names: panel titles, unit and place names, army names, Turn END, the
-  touch buttons, a strategy's title. **Never money or troops** (owner, 2026-10-31): a budget, a price, a troop count or
+- **Shojumaru** (`Lacquer.Brush`) — titles and names: panel titles, unit and place names, army names, a strategy's
+  title; a button's words only where every button of its group is in it (the battle's attacks, the title's rows). **Never money or troops** (owner, 2026-10-31): a budget, a price, a troop count or
   gain, a battle's damages are Cinzel 700 wherever they stand out on their own (the Subordinates' and the deployment
   screen's budget, Add New Troops' steps, the results plate's damages), the game's font in a note or a ledger. Other
   figures may stay in Shojumaru: a floor ("3F"), a percentage in a strategy's title, a count in a button's words.
@@ -99,10 +99,14 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   "116,400K" + "GOLD", never left in the small face (owner, 2026-11-04: it went unseen; mock-up A,
   `tools/ui/mock_budget_k.py`); the scenario's sums in our windows
   get it only where they are verified money (`ScenarioFigures`; docs/ui/gold-figures.md).
-- **Buttons side by side** (owner, 2026-11-04): the buttons of one screen that stand together — its tabs, its actions
-  and its way back — write their words in one face and one size (Treasure: Characters | Items, End, Back and the red
-  button all Cinzel 700 at 17). A main action stands out by its fill (the red button), a chosen tab by its frame and
-  colour, an unchosen one by a quieter colour, never by a size a point or two apart, which reads as a mistake.
+- **Buttons side by side** (owner, 2026-11-04, the strict variant A): the buttons of one screen that stand together —
+  its tabs, its actions, its way back, a callout's answers, a rail's or a bar's cells — write their words in one face
+  and one size (Treasure: Characters | Items, End, Back and the red button all Cinzel 700 at 17). A main action stands
+  out by its fill alone (the red button, Turn END's and Retreat's red), a chosen tab by its frame, colour and weight, an
+  unchosen one by a quieter colour — never by another face or a size a point or two apart, which reads as a mistake.
+  Button boxes are **Cinzel 700**; rows of a list or a rail (the command panel, the province menu, the battle's
+  commands, the ladder's rungs, the retreat question's answers) are the game's font, a red row among them included. A
+  word too long for its box shrinks the whole group to the size it fits at (one `Fit` for the group, never per button).
 - A label that overruns is shortened ("Trp.") or a name shrunk to fit its row, never wrapped into the next.
 - The date reads "LP 3 · Month 5 · Week 2"; at a title band's right, Cinzel 700 at 16 in the name's colour (owner,
   2026-10-26: Subordinates, Harem, Treasure, deployment, the enemy attack). The status strip's (18), the week report's

@@ -43,6 +43,8 @@ internal sealed partial class SubordinatesView : Control
     private static readonly Color AskedLine = Color.Color8(190, 60, 40);   // the button the callout asks about
 
     // The buttons, as the view tells them apart: Replenish, Talk, End, then Add More's steps from StepButton.
+    /// <summary>Every order's word on the PC and the tablet — Replenish, the steps, Talk, End: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int ButtonText = 17;
     private const int NoButton = -1, ReplenishButton = 0, TalkButton = 1, EndButton = 2, StepButton = 10;
 
     private readonly FacePictures _faces;
@@ -501,9 +503,9 @@ internal sealed partial class SubordinatesView : Control
 
         var r = panel.Replenish;
         if (Enabled(ReplenishButton))
-            DrawPrimary(c, ReplenishArea, "Replenish", $"{Figures.Signed(r.Men)} troops  ·  {Figures.GoldShort(r.Price * 100)}", ReplenishButton);
+            DrawPrimary(c, ReplenishArea, "Replenish", $"{Figures.Signed(r.Men)} troops  ·  {Figures.GoldShort(r.Price * 100)}", ReplenishButton, ButtonText, 14, _cinzel);
         else
-            DrawPlain(c, ReplenishArea, "Replenish", r.Enabled ? $"{Figures.Signed(r.Men)} troops  ·  {Figures.GoldShort(r.Price * 100)}" : r.Note, ReplenishButton, _brush, 22, 14);
+            DrawPlain(c, ReplenishArea, "Replenish", r.Enabled ? $"{Figures.Signed(r.Men)} troops  ·  {Figures.GoldShort(r.Price * 100)}" : r.Note, ReplenishButton, _cinzel, ButtonText, 14);
 
         if (panel.AddOffered)
         {
@@ -516,13 +518,13 @@ internal sealed partial class SubordinatesView : Control
             for (int i = 0; i < panel.Steps.Count; i++)
             {
                 var s = panel.Steps[i];
-                DrawPlain(c, StepRect(i), Figures.Signed(s.Men), Figures.GoldShort(s.Price * 100), StepButton + i, _cinzel, 17, 12);
+                DrawPlain(c, StepRect(i), Figures.Signed(s.Men), Figures.GoldShort(s.Price * 100), StepButton + i, _cinzel, ButtonText, 12);
             }
         }
         c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Ui.DimGold, Line(1));
 
         DrawTalk(c, panel);
-        DrawPlain(c, EndArea, "End", null, EndButton, _cinzel, 17, 0);
+        DrawPlain(c, EndArea, "End", null, EndButton, _cinzel, ButtonText, 0);
     }
 
     /// <summary>Draws <paramref name="text"/> ending at <paramref name="right"/>, centred in <paramref name="band"/>; returns where it starts.</summary>
@@ -556,11 +558,11 @@ internal sealed partial class SubordinatesView : Control
     }
 
     /// <summary>The main order: red lacquer framed in gold, as Turn END on the command panel.</summary>
-    private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button, int titleSize = 22, int noteSize = 15)
+    private void DrawPrimary(Control c, Rect2 rect, string title, string note, int button, int titleSize = 22, int noteSize = 15, Font? titleFont = null)
     {
         bool hover = button == _hovered || button == _asked, down = button == _hovered && button == _pressed;
         Ui.DrawRedButton(c, rect, hover, down, _k);
-        DrawLabels(c, rect, title, _brush, titleSize, Color.Color8(250, 226, 160), note, _gothic, noteSize, Color.Color8(236, 206, 160));
+        DrawLabels(c, rect, title, titleFont ?? _brush, titleSize, Color.Color8(250, 226, 160), note, _gothic, noteSize, Color.Color8(236, 206, 160));
     }
 
     /// <summary>A plain order: a dark row box, lit when hovered, sunk when pressed, grey when it cannot be clicked.</summary>
@@ -605,7 +607,7 @@ internal sealed partial class SubordinatesView : Control
         c.DrawRect(faceRect, on ? Ui.Gold : Ui.OffLine, false, Line(1));
         var text = new Rect2(faceRect.End.X + 6, rect.Position.Y, rect.End.X - faceRect.End.X - 12, rect.Size.Y);
         string note = on || string.IsNullOrEmpty(panel.Talk.Note) ? $"with {panel.Name}" : panel.Talk.Note;
-        DrawLabels(c, text, "Talk", _brush, 20, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text,
+        DrawLabels(c, text, "Talk", _cinzel, ButtonText, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text,
             note, _cinzelLight, 11, on ? Ui.Subtitle : Ui.OffText);
         if (on && PickerMarks.Label(panel.TalkMark) is { } pill)
             Ui.DrawPill(c, _cinzel, rect.End.X - 6, rect.Position.Y + 12, pill,

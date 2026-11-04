@@ -89,25 +89,30 @@ internal sealed partial class CommandMenuView
         int captionSize = u.Size(26);
         DrawString(_caption, new Vector2(caption.Position.X + u.Px(6), caption.Position.Y + _caption.GetAscent(captionSize)), week,
             fontSize: captionSize, modulate: Ui.Subtitle);
+        // The rail's rows, Turn END among them: the game's font at one size (docs/ui/style.md, "Buttons side by side").
+        int end = RowCount - 1;
+        var rect = u.Rect(PhoneRow(f, end));
+        string text = _menu!.TurnEndText;
+        int size = SideCells.FitAll(_gothic, u.Size(PhoneMap.RowText * SideCells.RowScale(u, rect)),
+            [.. Enumerable.Range(0, RowCount).Select(r => (RowWords(r), SideCells.RowRoom(u, u.Rect(PhoneRow(f, r)))))]);
         for (int r = 0; r < Commands; r++)
         {
             var item = _menu!.Commands[r];
             SideCells.DrawRow(this, u, u.Rect(PhoneRow(f, r)), _gothic, item.Text, item.Enabled, r == _hovered || r == _pressed,
-                TagOf(item.Action), item.WeeksText is not null ? item.WeeksLeft : null, Ui);
+                TagOf(item.Action), item.WeeksText is not null ? item.WeeksLeft : null, Ui, size: size);
         }
         for (int r = Commands; r < Commands + Links; r++)
             SideCells.DrawRow(this, u, u.Rect(PhoneRow(f, r)), _gothic, _menu!.Links[r - Commands].Text,
-                held: r == _hovered || r == _pressed, palette: Ui);
-        int end = RowCount - 1;
-        var rect = u.Rect(PhoneRow(f, end));
+                held: r == _hovered || r == _pressed, palette: Ui, size: size);
         Ui.DrawRedButton(this, rect, end == _hovered, end == _pressed && end == _hovered, u.K);
-        string text = _menu!.TurnEndText;
-        var brush = SideCells.Brush;
-        int size = SideCells.Fit(brush, text, u.Size(44), rect.Size.X - u.Px(30));
-        float tw = brush.GetStringSize(text, fontSize: size).X;
-        DrawString(brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, brush, size)), text, fontSize: size,
+        float tw = _gothic.GetStringSize(text, fontSize: size).X;
+        DrawString(_gothic, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _gothic, size)), text, fontSize: size,
             modulate: Color.Color8(250, 226, 160));
     }
+
+    /// <summary>Row <paramref name="r"/>'s words: a command's, a link's, Turn END's.</summary>
+    private string RowWords(int r) =>
+        r < Commands ? _menu!.Commands[r].Text : r < Commands + Links ? _menu!.Links[r - Commands].Text : _menu!.TurnEndText;
 
     /// <summary>The sheet held upright (PM1b): the map over it dimmed, Turn END and "This week" over the commands, the two columns from the foot up.</summary>
     private void DrawPortrait(PhoneFrame f, PhoneUnits u)
@@ -120,23 +125,33 @@ internal sealed partial class CommandMenuView
         int captionSize = u.Size(32);
         DrawString(_caption, new Vector2(caption.Position.X + u.Px(6), Lacquer.Baseline(caption, _caption, captionSize)), "THIS WEEK",
             fontSize: captionSize, modulate: Ui.Subtitle);
+        // The sheet's rows, Turn END among them: the game's font at one size (docs/ui/style.md, "Buttons side by side").
+        int end = RowCount - 1;
+        var rect = u.Rect(sheet.TurnEnd);
+        string text = _menu!.TurnEndText;
+        var first = u.Rect(sheet.Commands.Count > 0 ? sheet.Commands[0] : sheet.TurnEnd);
+        List<(string, float)> words = [(text, SideCells.RowRoom(u, rect))];
+        for (int r = 0; r < Commands; r++)
+        {
+            var item = _menu!.Commands[r];
+            words.Add((item.Text, SideCells.LineRowRoom(u, u.Rect(sheet.Commands[r]), _gothic, TagOf(item.Action),
+                item.WeeksText is not null ? item.WeeksLeft : null)));
+        }
+        for (int r = Commands; r < Commands + Links; r++)
+            words.Add((_menu!.Links[r - Commands].Text, SideCells.LineRowRoom(u, u.Rect(sheet.Links[r - Commands]), _gothic)));
+        int size = SideCells.FitAll(_gothic, u.Size(PhoneMapPortrait.RowText * SideCells.LineRowScale(u, first)), [.. words]);
         for (int r = 0; r < Commands; r++)
         {
             var item = _menu!.Commands[r];
             SideCells.DrawLineRow(this, u, u.Rect(sheet.Commands[r]), _gothic, item.Text, item.Enabled, r == _hovered || r == _pressed,
-                TagOf(item.Action), item.WeeksText is not null ? item.WeeksLeft : null, Ui);
+                TagOf(item.Action), item.WeeksText is not null ? item.WeeksLeft : null, Ui, size);
         }
         for (int r = Commands; r < Commands + Links; r++)
             SideCells.DrawLineRow(this, u, u.Rect(sheet.Links[r - Commands]), _gothic, _menu!.Links[r - Commands].Text,
-                held: r == _hovered || r == _pressed, palette: Ui);
-        int end = RowCount - 1;
-        var rect = u.Rect(sheet.TurnEnd);
+                held: r == _hovered || r == _pressed, palette: Ui, size: size);
         Ui.DrawRedButton(this, rect, end == _hovered, end == _pressed && end == _hovered, u.K);
-        string text = _menu!.TurnEndText;
-        var brush = SideCells.Brush;
-        int size = SideCells.Fit(brush, text, u.Size(52), rect.Size.X - u.Px(30));
-        float tw = brush.GetStringSize(text, fontSize: size).X;
-        DrawString(brush, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, brush, size)), text, fontSize: size,
+        float tw = _gothic.GetStringSize(text, fontSize: size).X;
+        DrawString(_gothic, new Vector2(rect.GetCenter().X - tw / 2, Lacquer.Baseline(rect, _gothic, size)), text, fontSize: size,
             modulate: Color.Color8(250, 226, 160));
     }
 }

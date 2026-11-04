@@ -45,9 +45,6 @@ public static class PhoneSaves
     /// <summary>Load | Save: 150 × 80, 12 apart, 18 from the top, the pair ending at the list's right (from 312 short of it).</summary>
     private const float ChipWidth = 150, ChipHeight = 80, ChipGap = 12, ChipTop = 18;
 
-    /// <summary>The chips' type (Cinzel).</summary>
-    public const float ChipText = 32;
-
     /// <summary>Load (<paramref name="save"/> false) or Save at the band's right, from <c>COMMAND</c>.</summary>
     public static PhoneFrame.Box Chip(PhoneFrame f, bool save)
     {
@@ -61,7 +58,10 @@ public static class PhoneSaves
     /// <summary>The lists' tabs: 96 high from 124, 12 apart, across the list.</summary>
     private const float TabsTop = 124, TabsHeight = 96, TabsGap = 12;
 
-    /// <summary>The tabs' type (Cinzel).</summary>
+    /// <summary>
+    /// The tabs' type, Load | Save's and the lists' alike (Cinzel 700; docs/ui/style.md, "Buttons side by side"), the four
+    /// shrunk together where a word is too long for its box.
+    /// </summary>
     public const float TabText = 34;
 
     /// <summary>The manual saves' tab (<paramref name="auto"/> false) or the auto-saves'.</summary>
@@ -75,8 +75,14 @@ public static class PhoneSaves
     /// <summary>The heading 16 under the tabs, 64 high; the sweep 440 wide at its right.</summary>
     private const float HeadTop = TabsTop + TabsHeight + 16, HeadHeight = 64, SweepWidth = 440;
 
-    /// <summary>The heading's words: in from the list's left, their type (Cinzel); the sweep's type and its star's radius.</summary>
-    public const float HeadIn = 8, HeadText = 26, SweepText = 28, SweepStar = 12;
+    /// <summary>The heading's words: in from the list's left, their type (Cinzel); the sweep's star's radius.</summary>
+    public const float HeadIn = 8, HeadText = 26, SweepStar = 12;
+
+    /// <summary>
+    /// The list's buttons' type, the sweep's and New save's alike (Cinzel 700; docs/ui/style.md, "Buttons side by side"),
+    /// shrunk together where the sweep's words are too long for its box.
+    /// </summary>
+    public const float ListButtonText = 30;
 
     /// <summary>The heading's middle ("NEWEST FIRST" at the left).</summary>
     public static float HeadMiddle(PhoneFrame f) => f.Px(HeadTop + HeadHeight / 2);
@@ -142,13 +148,16 @@ public static class PhoneSaves
     private const float PageTop = 14, TitleBand = 100, DeleteWidth = 240, DeleteHeight = 84;
 
     /// <summary>The page's title: its middle under the page's top, its type (Cinzel), the auto-save's tags' type.</summary>
-    public const float PageTitleMiddle = 40, PageTitleText = 36, TagText = 28, DeleteText = 30;
+    public const float PageTitleMiddle = 40, PageTitleText = 36, TagText = 28;
 
     /// <summary>The foot's buttons: 150 high; Back 360 wide, the red button 16 right of it to the page's right; the page 16 over them.</summary>
     private const float FootHeight = 150, BackWidth = 360, FootGap = 16;
 
-    /// <summary>Back's and the red button's type (the brush face), its word alone; the line under the word of the button off.</summary>
-    public const float BackText = 50, ButtonText = 64, ButtonLineText = 28;
+    /// <summary>
+    /// The page's buttons' type — Delete, Edit, the red button (its word alone) and Back alike, Cinzel 700 (docs/ui/style.md,
+    /// "Buttons side by side"), shrunk together where a word is too long for its box; the line under the word of the button off.
+    /// </summary>
+    public const float ButtonText = 40, ButtonLineText = 28;
 
     /// <summary>The page at the right: 40 right of the list to the hole's strip, from its top to 16 over the foot's buttons.</summary>
     public static PhoneFrame.Box Page(PhoneFrame f)
@@ -183,8 +192,8 @@ public static class PhoneSaves
     /// <summary>A figure: its label 8 in at its type (Cinzel), the value 32 under it at its type, shrunk to the column less 48.</summary>
     public const float FigureIn = 8, LabelText = 24, ValueDown = 32, ValueText = 38, ValueRoom = 48;
 
-    /// <summary>The comment's box: its words 24 in at their type; Edit 204 wide at the page's right, 16 right of the box (its type).</summary>
-    public const float CommentIn = 24, CommentText = 38, EditText = 40, LineText = 28;
+    /// <summary>The comment's box: its words 24 in at their type; Edit 204 wide at the page's right, 16 right of the box (at <see cref="ButtonText"/>).</summary>
+    public const float CommentIn = 24, CommentText = 38, LineText = 28;
 
     private const float EditWidth = 204, EditGap = 16;
 
@@ -246,8 +255,11 @@ public static class PhoneSaves
 
     // ------------------------------------------------------------------ the questions (the PC's callouts at the phone's sizes)
 
-    /// <summary>A question's callout: its lines 32 in, their middles and type; its answers 84 high, 24 in from its foot and right, 16 apart.</summary>
-    public const float QuestionIn = 32, QuestionFirst = 56, QuestionSecond = 104, QuestionText = 32, AnswerText = 40, Tip = 24;
+    /// <summary>
+    /// A question's callout: its lines 32 in, their middles and type; its answers 84 high, 24 in from its foot and right, 16
+    /// apart, both at the answers' type (Cinzel 700, shrunk together).
+    /// </summary>
+    public const float QuestionIn = 32, QuestionFirst = 56, QuestionSecond = 104, QuestionText = 32, AnswerText = 36, Tip = 24;
 
     private const float QuestionHeight = 250, AnswerHeight = 84, AnswerIn = 24, AnswerGap = 16, YesWidth = 260, NoWidth = 180;
 
@@ -297,7 +309,10 @@ public static class PhoneSaves
     public const float CardLabelIn = 32, CardLabelMiddle = 54, CardLabelText = 28, CardTitleIn = 220, CardTitleText = 30;
 
     /// <summary>The field: 24 in, 100 under the card's top, 130 high, to 32 short of the buttons; its type; the count under its right.</summary>
-    public const float FieldText = 46, CountDown = 40, CountText = 32, CancelText = 48, KeepText = 56;
+    public const float FieldText = 46, CountDown = 40, CountText = 32;
+
+    /// <summary>Keep's and Cancel's type, Cinzel 700 both (docs/ui/style.md, "Buttons side by side").</summary>
+    public const float CardButtonText = 46;
 
     private const float FieldIn = 24, FieldDown = 100, FieldHeight = 130, FieldGap = 32, CardButton = 330, CardButtonIn = 24;
 

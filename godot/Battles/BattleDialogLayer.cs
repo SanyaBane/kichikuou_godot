@@ -27,7 +27,9 @@ internal sealed partial class BattleDialogLayer : Control
     // left rail's top, where its Retreat stands, the items side by side as buttons a thumb's size; a warning item
     // (Retreat) farthest from the rail, so a second tap on the rail's button does not confirm it.
     private static readonly Vector2 TouchCorner = new(146, 470);
-    private const float TouchWidth = 330, TouchButton = 80, TouchGap = 12, TouchPad = 14, TouchItemText = 19;
+    private const float TouchWidth = 330, TouchButton = 80, TouchGap = 12, TouchPad = 14;
+    /// <summary>The touch box's answers, Retreat's too: the game's font at one size, as the PC's list (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int TouchItemText = 17;
     private static bool Touch => Device.TouchLayout;                // the tablet's layout, read live (docs/ui/phone-build.md, §3)
     private readonly FontFile _brush = Lacquer.Brush();
 
@@ -244,6 +246,10 @@ internal sealed partial class BattleDialogLayer : Control
             }
             y += Rule / 2;
             DrawLine(new Vector2(box.Position.X + TouchPad, y), new Vector2(box.End.X - TouchPad, y), Ui.DimGold, Lacquer.Line(1, s));
+            int px = TouchItemText;                                         // one fit for the answers, never per button
+            for (int i = 0; i < _dialog.Items.Count; i++)
+                while (px > 11 && font.GetStringSize(_labels[i], fontSize: px).X > ItemRect(i).Size.X - 12)
+                    px--;
             for (int i = 0; i < _dialog.Items.Count; i++)
             {
                 var r = ItemRect(i);
@@ -252,11 +258,8 @@ internal sealed partial class BattleDialogLayer : Control
                     Ui.DrawRedButton(this, r, hot, false, s);
                 else
                     Ui.DrawRowBox(this, r, hot, s);
-                var (face, size, colour) = _dialog.Items[i].Warning ? ((Font)_brush, TouchItemText, Color.Color8(250, 226, 160)) : (font, TouchItemText - 2, Ui.Text);
-                int px = (int)size;
-                while (px > 11 && face.GetStringSize(_labels[i], fontSize: px).X > r.Size.X - 12)
-                    px--;
-                DrawString(face, new Vector2(r.Position.X, Lacquer.Baseline(r, face, px)), _labels[i], HorizontalAlignment.Center, r.Size.X, px,
+                var colour = _dialog.Items[i].Warning ? Color.Color8(250, 226, 160) : Ui.Text;
+                DrawString(font, new Vector2(r.Position.X, Lacquer.Baseline(r, font, px)), _labels[i], HorizontalAlignment.Center, r.Size.X, px,
                     colour);
             }
         }

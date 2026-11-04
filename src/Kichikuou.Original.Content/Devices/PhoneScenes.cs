@@ -46,6 +46,12 @@ public static class PhoneScenes
     private const float BarCell = 170, BarCellGap = 14;
 
     /// <summary>
+    /// The words of a side's cells and map buttons held landscape (Menu, Skip, Log, Close, Commands, Return) and of the bar's
+    /// upright, Cinzel 700 at one size within a side or the bar (docs/ui/style.md, "Buttons side by side"), shrunk together.
+    /// </summary>
+    public const float CellText = 36, BarCellText = 40;
+
+    /// <summary>
     /// Portrait: the message windows' margin from the screen's sides, their distance from the picture, the height of a
     /// speech's, a thought's and the narration's (23.9 mm: five lines of the script's at their type, so the picture never
     /// moves) and of 131's; the text's room from the panel's side and top, 131's (under its speaker's plate); the type

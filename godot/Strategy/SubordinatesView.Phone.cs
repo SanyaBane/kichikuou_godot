@@ -81,19 +81,31 @@ internal sealed partial class SubordinatesView
         Top(c, _cinzelLight, "Budget", u.Size(PhoneLedger.LabelText), Ui.Subtitle, rx, u.Px(PhoneLedger.BudgetLabelTop), rw);
         Top(c, _cinzel, Figures.GoldShort(panel.Gold * 100), u.Size(PhoneLedger.SideBudgetText), Ui.Name, rx, u.Px(PhoneLedger.SideBudgetTop), rw);
 
-        DrawPhoneTalk(c, u, panel);
         var rep = RectOf(ReplenishButton)!.Value;
+        var end = RectOf(EndButton)!.Value;
+        int word = OrdersSize(u, PhoneLedger.OrderButtonText, PhoneLedger.TalkFaceIn);
+        DrawPhoneTalk(c, u, panel, word);
         var r = panel.Replenish;
-        int word = SideCells.Fit(_brush, "Replenish", u.Size(PhoneLedger.ReplenishText), rep.Size.X - u.Px(30));
         string figures = $"{Figures.Signed(r.Men)} · {Figures.GoldShort(r.Price * 100)}";
         string note = r.Enabled ? figures : r.Note;
         int small = SideCells.Fit(_gothic, note, u.Size(PhoneLedger.ReplenishNote), rep.Size.X - u.Px(24));
         if (Enabled(ReplenishButton))
-            DrawPrimary(c, rep, "Replenish", note, ReplenishButton, word, small);
+            DrawPrimary(c, rep, "Replenish", note, ReplenishButton, word, small, _cinzel);
         else
-            DrawPlain(c, rep, "Replenish", note, ReplenishButton, _brush, word, small);
-        var end = RectOf(EndButton)!.Value;
-        DrawPlain(c, end, "End", null, EndButton, _brush, SideCells.Fit(_brush, "End", u.Size(PhoneLedger.EndText), end.Size.X - u.Px(30)), 0);
+            DrawPlain(c, rep, "Replenish", note, ReplenishButton, _cinzel, word, small);
+        DrawPlain(c, end, "End", null, EndButton, _cinzel, word, 0);
+    }
+
+    /// <summary>
+    /// One Cinzel 700 size for Replenish, Talk and End (docs/ui/style.md, "Buttons side by side"): <paramref name="text"/>, or
+    /// as much smaller as the longest word needs in its box (Talk's right of its face, <paramref name="faceIn"/> in).
+    /// </summary>
+    private int OrdersSize(PhoneUnits u, float text, float faceIn)
+    {
+        var talk = RectOf(TalkButton)!.Value;
+        float talkRoom = talk.Size.X - (talk.Size.Y - u.Px(faceIn)) - u.Px(26);   // right of the face: its inset and its side
+        return SideCells.FitAll(_cinzel, u.Size(text), ("Replenish", RectOf(ReplenishButton)!.Value.Size.X - u.Px(30)), ("Talk", talkRoom),
+            ("End", RectOf(EndButton)!.Value.Size.X - u.Px(30)));
     }
 
     /// <summary>A step of Add New Troops (<c>lu_orders_side</c>): the men at the left, the price at the foot right; grey above the budget.</summary>
@@ -118,7 +130,7 @@ internal sealed partial class SubordinatesView
     }
 
     /// <summary>Talk in the side (<c>side_talk</c>): the unit's face at the left, the word beside it; its talk's NEW or ??? pill at the top right.</summary>
-    private void DrawPhoneTalk(Control c, PhoneUnits u, SubordinatePanel panel)
+    private void DrawPhoneTalk(Control c, PhoneUnits u, SubordinatePanel panel, int text)
     {
         var rect = RectOf(TalkButton)!.Value;
         bool on = Enabled(TalkButton), hover = on && _hovered == TalkButton;
@@ -135,8 +147,7 @@ internal sealed partial class SubordinatesView
             c.DrawTextureRect(face, faceRect, false, on ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
         c.DrawRect(faceRect, on ? Ui.Gold : Ui.OffLine, false, Line(1));
         float x = faceRect.End.X, w = rect.End.X - x;
-        int text = SideCells.Fit(_brush, "Talk", u.Size(PhoneLedger.TalkText), w - u.Px(26));
-        CentredString(c, _brush, "Talk", text, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text, x + w / 2, Lacquer.Baseline(rect, _brush, text));
+        CentredString(c, _cinzel, "Talk", text, !on ? Ui.OffText : hover ? Ui.Name : Ui.Text, x + w / 2, Lacquer.Baseline(rect, _cinzel, text));
         if (on && PickerMarks.Label(panel.TalkMark) is { } pill)
             Ui.DrawPill(c, _cinzel, rect.End.X - u.Px(10), rect.Position.Y + u.Px(22), pill,
                 panel.TalkMark == SceneMark.New ? Ui.MarkNew : Ui.MarkMaybe, u.Size(22), u.Px(30));

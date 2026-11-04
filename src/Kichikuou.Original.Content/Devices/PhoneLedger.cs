@@ -83,8 +83,11 @@ public static class PhoneLedger
     /// <summary>The bar's buttons: their height over the gesture zone (10 above it), Stop's width, the room between buttons; their type.</summary>
     private const float BarHeight = 150, BarFoot = 10, StopWidth = 300, BarGap = 16;
 
-    /// <summary>The bar's type: Stop's, a send button's alone, two sends' (a defence's Plains and City), a send's note.</summary>
-    public const float StopText = 44, SendText = 60, SendsText = 46, NoteText = 28;
+    /// <summary>
+    /// The bar's type: Stop's and the sends' words, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"),
+    /// shrunk together where a word is too long for its box; a send's note.
+    /// </summary>
+    public const float BarText = 44, NoteText = 28;
 
     /// <summary>The deployment's right part, the screen's height over the gesture zone: the cards and the bracket's room right of them.</summary>
     public static PhoneFrame.Box Part(PhoneFrame f)
@@ -192,8 +195,11 @@ public static class PhoneLedger
     /// <summary>The right side's buttons from the foot up: End's height, Replenish's, Talk's, the room between them; their type.</summary>
     private const float EndHeight = 140, ReplenishHeight = 150, TalkHeight = 140, ButtonGap = 14;
 
-    /// <summary>The buttons' type: End's, Replenish's word and its figures, Talk's word.</summary>
-    public const float EndText = 44, ReplenishText = 44, ReplenishNote = 30, TalkText = 44;
+    /// <summary>
+    /// The buttons' type: End's, Replenish's and Talk's words, Cinzel 700 at one size (docs/ui/style.md, "Buttons side by
+    /// side"), shrunk together; Replenish's figures.
+    /// </summary>
+    public const float OrderButtonText = 44, ReplenishNote = 30;
 
     /// <summary>A rail's foot over the gesture zone.</summary>
     private const float RailFoot = 10;

@@ -155,11 +155,11 @@ public static class PhoneBattlePortrait
 
     /// <summary>
     /// Its insides, reference pixels from its corner: the question's line (36 in, its top and type) and the note's, the
-    /// rule, the answers' row (its top, height, the room at its sides and between the answers), the answers' type and
-    /// Retreat's.
+    /// rule, the answers' row (its top, height, the room at its sides and between the answers), the answers' one type,
+    /// Retreat's among them (the game's font, docs/ui/style.md, "Buttons side by side").
     /// </summary>
     public const float QuestionIn = 36, QuestionTop = 36, QuestionText = 38, NoteTop = 90, NoteText = 32, QuestionRule = 146,
-        AnswersTop = 168, AnswerHeight = 138, AnswersSide = 20, AnswerGap = 12, AnswerText = 34, RetreatText = 40;
+        AnswersTop = 168, AnswerHeight = 138, AnswersSide = 20, AnswerGap = 12, AnswerText = 34;
 
     /// <summary>
     /// The retreat question centred on the screen, which runs from <paramref name="screenTop"/> to
