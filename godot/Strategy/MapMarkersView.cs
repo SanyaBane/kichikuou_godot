@@ -16,7 +16,7 @@ namespace Kichikuou.Game.Strategy;
 /// Their colours are the steel palette's, kept here since the plates' own choice was dropped (owner, 2026-10-24).
 /// On the phone the plates' type is 2 mm (docs/ui/phone.md, §12, LM1, and §3, PM1; <see cref="PhoneMap.PlateText"/>), the
 /// plates as tight round it as the mock-up's; held upright they show the map's whole height and take no input — the map
-/// under them does (<see cref="UprightMapView"/>, <see cref="PlateAt"/>), so a finger's drag may start on one.
+/// under them does (<see cref="PortraitMapView"/>, <see cref="PlateAt"/>), so a finger's drag may start on one.
 /// </summary>
 internal sealed partial class MapMarkersView : Control
 {

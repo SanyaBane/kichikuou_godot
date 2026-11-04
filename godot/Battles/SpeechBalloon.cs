@@ -77,9 +77,9 @@ internal sealed partial class SpeechBalloon : Control
             DrawPhone(speech, left, s);
             return;
         }
-        if (Device.Layout == DeviceLayout.PhoneUpright)
+        if (Device.Layout == DeviceLayout.PhonePortrait)
         {
-            DrawUpright(speech, left, s);
+            DrawPortrait(speech, left, s);
             return;
         }
         int size = Math.Max(8, (int)Math.Round(TextSize * s));
@@ -121,29 +121,29 @@ internal sealed partial class SpeechBalloon : Control
 
     /// <summary>
     /// Held upright (docs/ui/phone-build.md, step P4; PB4b): the balloon over the scene's foot beside the speaker's portrait at
-    /// the scene's top corner, at the phone's type, smaller down to <see cref="PhoneBattleStatesUpright.LineMin"/> to keep it
+    /// the scene's top corner, at the phone's type, smaller down to <see cref="PhoneBattleStatesPortrait.LineMin"/> to keep it
     /// to two lines; in the board's layout pixels.
     /// </summary>
-    private void DrawUpright(BattleSpeech speech, bool left, float s)
+    private void DrawPortrait(BattleSpeech speech, bool left, float s)
     {
-        static float L(float reference) => PhoneBattleUpright.Layout(reference);
-        float textWidth = (L(PhoneBattleStatesUpright.BalloonWidth) - 2 * L(PhoneBattleStatesUpright.BalloonSide)) * s;
+        static float L(float reference) => PhoneBattlePortrait.Layout(reference);
+        float textWidth = (L(PhoneBattleStatesPortrait.BalloonWidth) - 2 * L(PhoneBattleStatesPortrait.BalloonSide)) * s;
         int size = 8;
         Vector2 text = default;
-        for (float em = PhoneBattleStatesUpright.LineText; em >= PhoneBattleStatesUpright.LineMin; em -= 2)
+        for (float em = PhoneBattleStatesPortrait.LineText; em >= PhoneBattleStatesPortrait.LineMin; em -= 2)
         {
             size = Math.Max(8, (int)Math.Round(L(em) * s));
-            _bold.SetSpacing(TextServer.SpacingType.Bottom, (int)Math.Round(L(PhoneBattleStatesUpright.LineGap) * s));
+            _bold.SetSpacing(TextServer.SpacingType.Bottom, (int)Math.Round(L(PhoneBattleStatesPortrait.LineGap) * s));
             text = _bold.GetMultilineStringSize(speech.Text, HorizontalAlignment.Left, textWidth, size, -1, Breaks);
-            if (text.Y <= PhoneBattleStatesUpright.MaxLines * (_bold.GetHeight(size) + (int)Math.Round(L(PhoneBattleStatesUpright.LineGap) * s)) + 1)
+            if (text.Y <= PhoneBattleStatesPortrait.MaxLines * (_bold.GetHeight(size) + (int)Math.Round(L(PhoneBattleStatesPortrait.LineGap) * s)) + 1)
                 break;
         }
-        var b = PhoneBattleStatesUpright.Balloon(left, text.Y / s);
+        var b = PhoneBattleStatesPortrait.Balloon(left, text.Y / s);
         var box = new Rect2(b.X * s, b.Y * s, b.W * s, b.H * s);
-        var ink = DrawBalloon(this, box, left, L(PhoneBattleStatesUpright.TailDepth) / TailDepth * s, speech.Thought,
-            L(PhoneBattleStatesUpright.TailFromTop) * s);
-        DrawSaying(speech, box, ink, size, textWidth, L(PhoneBattleStatesUpright.BalloonSide) * s,
-            L(PhoneBattleStatesUpright.BalloonTop) * s - 4 * s, L(PhoneBattleStatesUpright.LineText) / TextSize * s);
+        var ink = DrawBalloon(this, box, left, L(PhoneBattleStatesPortrait.TailDepth) / TailDepth * s, speech.Thought,
+            L(PhoneBattleStatesPortrait.TailFromTop) * s);
+        DrawSaying(speech, box, ink, size, textWidth, L(PhoneBattleStatesPortrait.BalloonSide) * s,
+            L(PhoneBattleStatesPortrait.BalloonTop) * s - 4 * s, L(PhoneBattleStatesPortrait.LineText) / TextSize * s);
     }
 
     /// <summary>The line in the balloon from (<paramref name="side"/>, <paramref name="top"/>) in, the marker bobbing in its corner (<paramref name="k"/> its scale).</summary>

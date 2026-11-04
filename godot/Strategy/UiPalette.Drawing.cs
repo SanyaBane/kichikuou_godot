@@ -185,11 +185,11 @@ internal sealed partial record UiPalette
         if (thumb is not { } t)
             return;
         Capsule(c, t, fill);
-        bool upright = groove.Size.Y >= groove.Size.X;
-        float w = upright ? groove.Size.X : groove.Size.Y, r = w / 2;
-        if ((upright ? t.Size.Y : t.Size.X) <= 2 * r)
+        bool portrait = groove.Size.Y >= groove.Size.X;
+        float w = portrait ? groove.Size.X : groove.Size.Y, r = w / 2;
+        if ((portrait ? t.Size.Y : t.Size.X) <= 2 * r)
             return;
-        if (upright)
+        if (portrait)
             c.DrawLine(new Vector2(t.Position.X + w / 6, t.Position.Y + r), new Vector2(t.Position.X + w / 6, t.End.Y - r), lit, w / 10);
         else
             c.DrawLine(new Vector2(t.Position.X + r, t.Position.Y + w / 6), new Vector2(t.End.X - r, t.Position.Y + w / 6), lit, w / 10);

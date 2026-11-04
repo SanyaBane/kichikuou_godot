@@ -38,7 +38,7 @@ internal sealed partial class SaveLoadView
             return KeepHit;
         if (Phone.Rect(Places.Cancel(f, _keyboard)).HasPoint(at))
             return CancelHit;
-        return f.IsUpright && Phone.Rect(PhoneSavesUpright.Field(f, _keyboard)).HasPoint(at) ? FieldHit : 0;
+        return f.IsPortrait && Phone.Rect(PhoneSavesPortrait.Field(f, _keyboard)).HasPoint(at) ? FieldHit : 0;
     }
 
     private void WatchKeyboard()
@@ -91,12 +91,12 @@ internal sealed partial class SaveLoadView
     /// <summary>The comment's field in the card's: its words 26 in, at the card's type (held upright unseen, the card drawing them).</summary>
     private void PlacePhoneEdit(PhoneFrame f)
     {
-        var field = f.IsUpright ? PhoneSavesUpright.Field(f, _keyboard) : PhoneSaves.Field(f, _keyboard);
+        var field = f.IsPortrait ? PhoneSavesPortrait.Field(f, _keyboard) : PhoneSaves.Field(f, _keyboard);
         float inset = f.Px(26);
         _edit.Position = new Vector2(field.X + inset, field.Y);
         _edit.Size = new Vector2(field.W - 2 * inset, field.H);
         _edit.AddThemeFontOverride("font", _gothic);
-        _edit.AddThemeFontSizeOverride("font_size", Math.Max(8, (int)Math.Round(f.Px(f.IsUpright ? PhoneSavesUpright.FieldText : PhoneSaves.FieldText))));
+        _edit.AddThemeFontSizeOverride("font_size", Math.Max(8, (int)Math.Round(f.Px(f.IsPortrait ? PhoneSavesPortrait.FieldText : PhoneSaves.FieldText))));
     }
 
     /// <summary>The finger's rows' pitch in layout pixels.</summary>
@@ -108,8 +108,8 @@ internal sealed partial class SaveLoadView
     {
         var f = u.Frame;
         bool save = list == SaveList.Save;
-        if (f.IsUpright)
-            DrawUprightBand(u, save);
+        if (f.IsPortrait)
+            DrawPortraitBand(u, save);
         else
         {
             var column = u.Rect(Places.List(f));
@@ -124,8 +124,8 @@ internal sealed partial class SaveLoadView
         PhoneChip(SideBox(false), $"Manual saves · {_shelf.Manuals.Count}", !_autoSide, _hovered == SideHit, u.Size(PhoneSaves.TabText), u);
         PhoneChip(SideBox(true), $"Auto-saves · {_shelf.Autos.Count}", _autoSide, _hovered == SideHit + 1, u.Size(PhoneSaves.TabText), u);
         PhoneList(u);
-        if (f.IsUpright)
-            DrawUprightPageDivider(u);
+        if (f.IsPortrait)
+            DrawPortraitPageDivider(u);
         PhonePage(u, save);
         if (_confirm)
             PhoneDeleteQuestion(u);
@@ -133,8 +133,8 @@ internal sealed partial class SaveLoadView
             PhoneSweepQuestion(u);
         if (_editing)
         {
-            if (f.IsUpright)
-                UprightCard(u);
+            if (f.IsPortrait)
+                PortraitCard(u);
             else
                 PhoneCard(u);
         }
@@ -449,8 +449,8 @@ internal sealed partial class SaveLoadView
         int gone = SaveSlots.Uncommented(shelf).Count, kept = shelf.Count - gone;
         var box = u.Rect(Places.SweepQuestion(u.Frame));
         Ui.DrawPanel(this, box, _k);
-        if (u.Frame.IsUpright)
-            DrawUprightSweepTip(u, box);                                // held upright it hangs under the sweep
+        if (u.Frame.IsPortrait)
+            DrawPortraitSweepTip(u, box);                                // held upright it hangs under the sweep
         else
         {
             float left = box.Position.X, tip = SweepBox.GetCenter().Y, t = u.Px(PhoneSaves.Tip);

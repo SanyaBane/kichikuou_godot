@@ -13,7 +13,7 @@ namespace Kichikuou.Game;
 // refused, GameFiles' message across the sheet, its hashes in two lines under it, the field at the left, the stamp at the
 // right, Choose another folder with Back right of it at the thumb. A folder is its name over its
 // place, a path its folders with Android's storage named (PhoneImport.FolderLines, Readable). Drawn in the frame's layout
-// pixels over the whole screen (PhoneUnits), the places PhoneImport's; held upright as PI, PIp, PIr (ImportScreen.Upright.cs).
+// pixels over the whole screen (PhoneUnits), the places PhoneImport's; held upright as PI, PIp, PIr (ImportScreen.Portrait.cs).
 public partial class ImportScreen
 {
     private PhoneFrame? _phone;
@@ -46,9 +46,9 @@ public partial class ImportScreen
     private void DrawPhone(PhoneUnits u)
     {
         var f = u.Frame;
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(u);
+            DrawPortrait(u);
             return;
         }
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));

@@ -162,10 +162,10 @@ internal sealed partial class SubordinatesView : Control
         var frame = new Rect2(origin, new Vector2(1280, 800) * k);
         _plate.Place(frame);                                    // the plate in the frame's middle on every device
         var phone = Device.Held(this);
-        if (phone is { IsUpright: true })
+        if (phone is { IsPortrait: true })
         {
-            var ledger = PhoneLedgerUpright.Ledger(phone, deployment: false);  // PU1: the ledger over the orders
-            _table.PlaceUpright(new Rect2(ledger.X, ledger.Y, ledger.W, ledger.H), phone);
+            var ledger = PhoneLedgerPortrait.Ledger(phone, deployment: false);  // PU1: the ledger over the orders
+            _table.PlacePortrait(new Rect2(ledger.X, ledger.Y, ledger.W, ledger.H), phone);
             _callout.PlacePhone(phone);
             (origin, k) = (Vector2.Zero, phone.Scale);
         }
@@ -307,7 +307,7 @@ internal sealed partial class SubordinatesView : Control
     private Rect2 StepRect(int step)
     {
         if (_phone is { } phone)
-            return Box((phone.IsUpright ? PhoneLedgerUpright.Steps(phone, _panel?.Steps.Count ?? 0) : PhoneLedger.Steps(phone, _panel?.Steps.Count ?? 0))[step]);
+            return Box((phone.IsPortrait ? PhoneLedgerPortrait.Steps(phone, _panel?.Steps.Count ?? 0) : PhoneLedger.Steps(phone, _panel?.Steps.Count ?? 0))[step]);
         int across = Math.Max(4, _panel?.Steps.Count ?? 0);    // a step as wide as a quarter of the row; more than four share it
         float w = (ReplenishArea.Size.X - StepGap * (across - 1)) / across;
         return new Rect2(ReplenishArea.Position.X + step * (w + StepGap), StepsTop, w, StepsHeight);
@@ -315,9 +315,9 @@ internal sealed partial class SubordinatesView : Control
 
     private Rect2? RectOf(int button) => button switch
     {
-        ReplenishButton => _phone is { } f ? Box(f.IsUpright ? PhoneLedgerUpright.Replenish(f) : PhoneLedger.Replenish(f)) : ReplenishArea,
-        TalkButton => _phone is { } f ? Box(f.IsUpright ? PhoneLedgerUpright.Talk(f) : PhoneLedger.Talk(f)) : TalkArea,
-        EndButton => _phone is { } f ? Box(f.IsUpright ? PhoneLedgerUpright.End(f) : PhoneLedger.End(f)) : EndArea,
+        ReplenishButton => _phone is { } f ? Box(f.IsPortrait ? PhoneLedgerPortrait.Replenish(f) : PhoneLedger.Replenish(f)) : ReplenishArea,
+        TalkButton => _phone is { } f ? Box(f.IsPortrait ? PhoneLedgerPortrait.Talk(f) : PhoneLedger.Talk(f)) : TalkArea,
+        EndButton => _phone is { } f ? Box(f.IsPortrait ? PhoneLedgerPortrait.End(f) : PhoneLedger.End(f)) : EndArea,
         >= StepButton when _panel is { AddOffered: true } p && button - StepButton < p.Steps.Count => StepRect(button - StepButton),
         _ => null,
     };

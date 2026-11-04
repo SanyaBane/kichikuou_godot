@@ -77,7 +77,7 @@ any more. Measured as above, pinned, in MB; *other* is `video` less `tex` and `b
   which is what the GPU showed of the old texture where a layout pixel is a screen pixel: the PC's battle board in the screen
   gallery differs by at most 1 of 255. On the phone, whose board is drawn at 0.95 of the layout upright and ~1.5 landscape,
   the stones' edges are a little softer (up to 13 of 255). The same stones, the same seed. `tex` −27 MB (36 → 9).
-- **The upright map's picture is updated in place** (`UprightMapView.Load`): made anew each time its markers changed, the new
+- **The upright map's picture is updated in place** (`PortraitMapView.Load`): made anew each time its markers changed, the new
   6 MB texture lived beside the old one until a collection (the long session's +6.7 MB, −6.7 five seconds later).
 - **The Save/Load screen lets its saves' maps go when it closes** (`SaveLoadView.Close`): 2.7 MB on the GPU for each save
   looked at, kept for the launch.
@@ -132,10 +132,10 @@ has 1 MB to spare, so its figure is luck, not a level. The block stays while any
 Restart keeps graphics at 557 MB with `video` at 181.
 
 Godot 4.7.2 has no setting for the block size (`ProjectSettings`, `rendering/rendering_device/`), so the way out is using less.
-The largest parts of `video` in the held battle, upright: the glyph atlases 45 MB, `BoardStones` 36, `UprightMapView` 17 (its
+The largest parts of `video` in the held battle, upright: the glyph atlases 45 MB, `BoardStones` 36, `PortraitMapView` 17 (its
 pictures 11, its texture 6), the screen's and the battle's seven pictures ~20, ~14 of the empty project's textures, and ~50 that
 is neither `tex` nor `buf` (~36 landscape; 6 in the empty project): Godot's upload buffers, found and cut with
-[cut 10](#cut-10-under-the-gpus-block). (The walker's "`UprightMapView._pictures`" is `FacePictures`, which every screen
+[cut 10](#cut-10-under-the-gpus-block). (The walker's "`PortraitMapView._pictures`" is `FacePictures`, which every screen
 shares: the faces' squares and the units' picture panels, ~1 MB each on the GPU.)
 
 **A turn of the phone** adds to it. Turned to landscape on the map: 913 MB, nothing paid (`video` 182). Turned in the battle: 1153
@@ -217,7 +217,7 @@ not. The effect masks are small (43 of them, 5 MB in all); no cache of decoded C
 | What | MB | Source |
 | --- | --- | --- |
 | `BoardStones` (2560×2656 and 2560×1016, on the GPU) | 36 | walker |
-| `UprightMapView._pictures`: 29 images and 31 textures, each picture on the CPU and on the GPU | 23 | walker |
+| `PortraitMapView._pictures`: 29 images and 31 textures, each picture on the CPU and on the GPU | 23 | walker |
 | The exchange counters' and effects' SubViewports | 4 | walker |
 | What the driver holds beyond Godot's `video` count, in a battle | ~280 (floor: ~95) | `dumpsys` − monitors |
 
@@ -262,7 +262,7 @@ they free on their own; with cut 10 built they also widen the room left to the e
 | | **1–4 together, as built** | **912–915 MB in a battle loaded directly, 1204–1210 through the title, 1279–1285 in the long session, 584 at the title** | | |
 | 5 | The surfaces stored at 1× where nothing draws at 2× | ~70 MB, by size | Large | Medium: the engine's drawing, its own survey first |
 | 6 | Fewer font sizes: fit by one measure and scale | ~60 MB, by size | Medium | Low |
-| 7 | `BoardStones` at half size (built with cut 10), no CPU copy of `UprightMapView`'s pictures | ~35 MB, by size (27 of it on the GPU) | Small | Low: the stones a little softer |
+| 7 | `BoardStones` at half size (built with cut 10), no CPU copy of `PortraitMapView`'s pictures | ~35 MB, by size (27 of it on the GPU) | Small | Low: the stones a little softer |
 | 8 | The GL Compatibility renderer | 45 MB (910 → 865), before the block | Small to try, large to verify | Medium: every screen's look to check |
 | 9 | The release export instead of the debug one | 27 MB, measured on the empty project | Comes with a release | None |
 | 10 | Keep `video` under the edge of ~222 MB, so [the 256 MB block](#the-gpus-memory-goes-in-steps-of-up-to-256-mb) is never taken (built): the stones kept at the layout's pixels, which also shrinks the upload's worker buffer 32 → 8 MiB, the upright map updated in place, the Save/Load maps let go | 256 MB as the steps promised: 1204–1210 → 938–959 through the title, 1279–1285 → 1005 in the long session; `video` −51 to −55 | Small | Low: the stones' edges a little softer on the phone |

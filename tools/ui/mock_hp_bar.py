@@ -73,7 +73,7 @@ class Held:
 
 
 # Held landscape the dump is two thirds of the reference (2712 × 1220), upright half of it (1220 × 2712). The troops'
-# bar is the Troops cell's held landscape (about 5 px), PhoneLedgerUpright.BarHeight upright (8).
+# bar is the Troops cell's held landscape (about 5 px), PhoneLedgerPortrait.BarHeight upright (8).
 LAND = Held('phone-landscape', (2712, 1220), bar=5, search={'deployment': (400, 560), 'subordinates': (730, 890)},
             gap=4, line=6, pip=10, pip_gap=3, battle_gap=3)
 UP = Held('phone-portrait', (1220, 2712), bar=8, search={'deployment': (280, 530), 'subordinates': (280, 530)},

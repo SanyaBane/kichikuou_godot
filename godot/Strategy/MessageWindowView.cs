@@ -41,7 +41,7 @@ internal sealed partial class MessageWindowView : Control
     private Texture2D? _screen;
     private (int X, int Y, int W, int H)? _menu;
     private float _k = 1;                           // window pixels to a screen pixel
-    private PhoneFrame? _upright;                   // the phone held upright: the window over or under the picture
+    private PhoneFrame? _portrait;                   // the phone held upright: the window over or under the picture
     private double _typed;                          // the glyphs typed so far, a fraction of the next one included
 
     public MessageWindowView(GameFont font)
@@ -143,12 +143,12 @@ internal sealed partial class MessageWindowView : Control
     /// <summary>Lays the window over the picture (<paramref name="area"/>, in its parent's coordinates).</summary>
     public void Place(Rect2 area)
     {
-        var upright = Leaves ? Device.Upright(this) : null;
-        if (upright is { } f)
+        var portrait = Leaves ? Device.Portrait(this) : null;
+        if (portrait is { } f)
             area = new Rect2(Vector2.Zero, GetParentAreaSize());        // over the whole screen: the window leaves the picture
-        float k = upright?.Scale ?? area.Size.X / 1280f;
-        bool turned = upright != _upright;
-        _upright = upright;
+        float k = portrait?.Scale ?? area.Size.X / 1280f;
+        bool turned = portrait != _portrait;
+        _portrait = portrait;
         if (!turned && Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f)
             return;
         Position = area.Position;
@@ -195,9 +195,9 @@ internal sealed partial class MessageWindowView : Control
     {
         if (_window is not { } w)
             return;
-        if (_upright is { } phone)
+        if (_portrait is { } phone)
         {
-            DrawUpright(phone, w);
+            DrawPortrait(phone, w);
             return;
         }
         DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
@@ -260,7 +260,7 @@ internal sealed partial class MessageWindowView : Control
     /// triangle; a menu over the picture at its place. 131's band at the picture's foot, which our panel no longer covers,
     /// is hidden.
     /// </summary>
-    private void DrawUpright(PhoneFrame f, MessageWindow w)
+    private void DrawPortrait(PhoneFrame f, MessageWindow w)
     {
         var u = new PhoneUnits(f);
         var place = PhoneScenes.Window(f, w.Kind, w.TextRect, Portraits);
@@ -278,12 +278,12 @@ internal sealed partial class MessageWindowView : Control
             case MessageKind.SpeechLeft or MessageKind.SpeechRight:
                 Ui.DrawPanel(this, box, u.K, SpeechFill);
                 if (pointer is { } sx)
-                    UprightTail(u, box, sx, place.Above);
+                    PortraitTail(u, box, sx, place.Above);
                 break;
             case MessageKind.ThoughtLeft or MessageKind.ThoughtRight:
                 ThoughtPanel(box, w.AtLeft, sideBubbles: false);
                 if (pointer is { } tx)
-                    UprightBubbles(u, box, tx, place.Above);
+                    PortraitBubbles(u, box, tx, place.Above);
                 text = Ui.Quiet;
                 break;
             case MessageKind.CgBar:
@@ -337,7 +337,7 @@ internal sealed partial class MessageWindowView : Control
     }
 
     /// <summary>A speech's tail held upright: out of the panel's edge nearest the picture, at <paramref name="x"/> (layout pixels), down or up to the portrait.</summary>
-    private void UprightTail(PhoneUnits u, Rect2 box, float x, bool above)
+    private void PortraitTail(PhoneUnits u, Rect2 box, float x, bool above)
     {
         float edge = above ? box.End.Y : box.Position.Y, way = above ? 1 : -1, inward = -way * u.Px(7);
         var tip = new Vector2(x - u.Px(10), edge + way * u.Px(44));
@@ -349,7 +349,7 @@ internal sealed partial class MessageWindowView : Control
     }
 
     /// <summary>A thought's bubbles held upright: out of the panel's edge nearest the picture, towards the thinker at <paramref name="x"/>.</summary>
-    private void UprightBubbles(PhoneUnits u, Rect2 box, float x, bool above)
+    private void PortraitBubbles(PhoneUnits u, Rect2 box, float x, bool above)
     {
         float edge = above ? box.End.Y : box.Position.Y, way = above ? 1 : -1, line = Lacquer.Line(2, u.K);
         foreach (var (dx, dy, r) in new[] { (0f, 22f, 17f), (-16f, 54f, 11f), (-28f, 78f, 7f) })

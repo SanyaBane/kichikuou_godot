@@ -10,7 +10,7 @@ namespace Kichikuou.Game.Strategy;
 /// and after with the men gained; right of a rule the cost and the budget left, the click's triangle. It waits for a click,
 /// which closes it and which it takes (owner, 2026-10-24: gone by itself after a few seconds, it could be missed). Our
 /// Subordinates screen and our deployment screen's Replenish (owner's decision 27) show it. Laid out in the 1280×800
-/// screen's pixels, scaled with the picture; held upright a card of its own (PU1r1, <c>OrderResultPlate.Upright.cs</c>).
+/// screen's pixels, scaled with the picture; held upright a card of its own (PU1r1, <c>OrderResultPlate.Portrait.cs</c>).
 /// </summary>
 internal sealed partial class OrderResultPlate : Control
 {
@@ -62,13 +62,13 @@ internal sealed partial class OrderResultPlate : Control
     /// <summary>
     /// Lays the plate's layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone
     /// over the whole screen, so that its sides are dimmed and their buttons wait under it too: held landscape the plate in
-    /// the frame, held upright drawn in the frame's layout pixels (PU1r1, <c>OrderResultPlate.Upright.cs</c>).
+    /// the frame, held upright drawn in the frame's layout pixels (PU1r1, <c>OrderResultPlate.Portrait.cs</c>).
     /// </summary>
     public void Place(Rect2 area)
     {
         float k = area.Size.X / 1280f;
         var origin = Vector2.Zero;
-        if (Device.Upright(this) is { } f)
+        if (Device.Portrait(this) is { } f)
         {
             k = f.Scale;
             area = new Rect2(0, 0, f.Screen.W, f.Screen.H);
@@ -116,9 +116,9 @@ internal sealed partial class OrderResultPlate : Control
     {
         if (_result is not { } r)
             return;
-        if (Device.Upright(this) is { } f)
+        if (Device.Portrait(this) is { } f)
         {
-            DrawUpright(r, f);
+            DrawPortrait(r, f);
             return;
         }
         DrawSetTransform(_origin, 0, new Vector2(_k, _k));

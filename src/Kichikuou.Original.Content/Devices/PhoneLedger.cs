@@ -157,7 +157,7 @@ public static class PhoneLedger
     /// A party card's insides in reference pixels from its corner, as the constants above: the face and its inset, the
     /// badge, the name, ✕, the troops and their bar (its right <see cref="BarRight"/> short of the card's), the cost
     /// (<see cref="CostRight"/> short of the card's right, on its foot), an empty place's words; their types. Held upright
-    /// the card is lower (<see cref="PhoneLedgerUpright.Insides"/>).
+    /// the card is lower (<see cref="PhoneLedgerPortrait.Insides"/>).
     /// </summary>
     public sealed record CardInsides(float Face, float In, float BadgeX, float BadgeY, float Badge, float NameX, float NameText,
         float Remove, float RemoveIn, float TroopsX, float TroopsTop, float TroopsText, float StrengthTop, float StrengthHeight,

@@ -455,7 +455,7 @@ def calibration(size, live=None):
         y += 70
         if not compact:
             d.multiline_text((px0 + 60, y), 'Drag each gold edge in until it and its corners are wholly in sight.\n'
-                             'Turn the phone to set Upright. Sides within the camera\'s strip move nothing.',
+                             'Turn the phone to set Portrait. Sides within the camera\'s strip move nothing.',
                              font=GOTHIC(36), fill=TEXT, spacing=14)
             y += 190
         else:

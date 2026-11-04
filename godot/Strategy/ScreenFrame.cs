@@ -26,7 +26,7 @@ internal readonly record struct ScreenFrame(Rect2 Area, float Scale)
     /// <summary>The picture in <paramref name="room"/> for the device: the phone's frame held either way, else fitted.</summary>
     public static ScreenFrame In(Rect2 room)
     {
-        if (Device.Layout is not (DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright))
+        if (Device.Layout is not (DeviceLayout.PhoneLandscape or DeviceLayout.PhonePortrait))
             return Fit(room);
         var frame = Device.Frame(room.Size).Frame;
         return Fit(new Rect2(room.Position + new Vector2(frame.X, frame.Y), frame.W, frame.H));

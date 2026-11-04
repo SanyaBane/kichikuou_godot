@@ -81,7 +81,7 @@ C, after the model of §2. Awaiting the owner's look on the Poco and on the tabl
 
 - **The model** (`Original.Content/Devices`, `ScreenMarginsTests`): `ScreenMargins` — a set in tenths of a millimetre
   (Top, Bottom, Sides; 0-80), its words for Option ("2.8 mm all round", "none", or each edge) and its insets at a
-  millimetre's units. `PhoneFrame` takes the margins (`Landscape`, `Upright`, `For`): the size it is given is the room
+  millimetre's units. `PhoneFrame` takes the margins (`Landscape`, `Portrait`, `For`): the size it is given is the room
   inside them, the system's insets are still the whole screen's, and each edge keeps free only what its margin has not
   already (`PhoneFrame.Within`); the reference's camera strip and gesture zone are measured on the whole screen.
   `MarginsCalibration` lays out C over the whole screen: the frame at the margins, the four tabs (9 mm in, 7 mm across;

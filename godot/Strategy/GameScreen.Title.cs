@@ -5,7 +5,7 @@ using Kichikuou.Original.Content.Devices;
 namespace Kichikuou.Game.Strategy;
 
 // The title on the phone held upright (docs/ui/phone-build.md, step P8d; docs/ui/phone.md, §44-§45, PE6): while ｽﾀMENU polls
-// the mouse our own screen covers the engine's picture (TitleUprightView: the stone, the logo, a row for each button it
+// the mouse our own screen covers the engine's picture (TitlePortraitView: the stone, the logo, a row for each button it
 // draws); a row is a click in the middle of its button's box, a long press there the right click, through the title's own
 // mouse reads. While it shows a button's description the screen stays, the rows hidden and the presses the key wait's, the
 // picture under it centred on the logo (Device.PictureTop), so window 113 comes under the logo; at the requests slip it
@@ -14,12 +14,12 @@ public partial class GameScreen
 {
     private const string TitleScene = "ｽﾀMENU.ADV";
 
-    private TitleUprightView _titleView = null!;
+    private TitlePortraitView _titleView = null!;
     private PointerScript _titlePointer = new();        // a row's click on its way to the title's poll
 
     private void ReadyTitleView(FacePictures faces)
     {
-        _titleView = new TitleUprightView(faces.Cgs);
+        _titleView = new TitlePortraitView(faces.Cgs);
         _titleView.Chosen += TitleRowChosen;
         _titleView.Described += TitleRowDescribed;
         _content.AddChild(_titleView);
@@ -31,9 +31,9 @@ public partial class GameScreen
     /// otherwise (its Fortune Check, gallery and music room are files of their own, shown as they are).
     /// </summary>
     private IReadOnlyList<int> TitleButtons() =>
-        PhoneUpright && InterfaceChoice.New && _presenter.State is { } s && _scenes?.RunningScenes is [.., TitleScene]
-            && s.Buttons[(Sys3Int)PhoneTitleUpright.Start].X2 != 0
-            ? PhoneTitleUpright.Buttons(s) : [];
+        PhonePortrait && InterfaceChoice.New && _presenter.State is { } s && _scenes?.RunningScenes is [.., TitleScene]
+            && s.Buttons[(Sys3Int)PhoneTitlePortrait.Start].X2 != 0
+            ? PhoneTitlePortrait.Buttons(s) : [];
 
     /// <summary>The title polls the mouse: not at a key wait, under a window or a menu.</summary>
     private bool TitlePolls(IReadOnlyList<int> buttons) =>
@@ -45,7 +45,7 @@ public partial class GameScreen
     /// <summary>Where the title stands the picture held upright (on the logo, under a description), or null: the room's middle.</summary>
     private Func<PhoneFrame, float?>? TitlePictureTop(IReadOnlyList<int> buttons) =>
         TitleDescribes(buttons) && _titleView.LogoHeight is int logo
-            ? f => PhoneTitleUpright.DescriptionPictureTop(f, buttons.Count, logo) : null;
+            ? f => PhoneTitlePortrait.DescriptionPictureTop(f, buttons.Count, logo) : null;
 
     /// <summary>Each frame: our screen with its rows while the title polls the mouse, without them under a description.</summary>
     private void UpdateTitleView()
@@ -66,7 +66,7 @@ public partial class GameScreen
     {
         if (_titlePointer.Pending > 0 || _presenter.State is not { } s)
             return;
-        var (x, y) = PhoneTitleUpright.Centre(s, button);
+        var (x, y) = PhoneTitlePortrait.Centre(s, button);
         _titlePointer.Click(x, y);
     }
 
@@ -75,7 +75,7 @@ public partial class GameScreen
     {
         if (_titlePointer.Pending > 0 || _presenter.State is not { } s)
             return;
-        var (x, y) = PhoneTitleUpright.Centre(s, button);
+        var (x, y) = PhoneTitlePortrait.Centre(s, button);
         _titlePointer.RightClick(x, y);
     }
 }

@@ -5,7 +5,7 @@ namespace Kichikuou.Game.Strategy;
 /// <summary>
 /// Option → Display → "Screen orientation", a phone's only (docs/ui/phone-build.md, §3 and step P0; the owner's PO1o,
 /// docs/ui/phone.md, §21): <see cref="Way.System"/> (the default: as the phone is held, unless its own rotation lock holds
-/// it), <see cref="Way.Upright"/>, <see cref="Way.Landscape1"/> (the phone's top at the left) or
+/// it), <see cref="Way.Portrait"/>, <see cref="Way.Landscape1"/> (the phone's top at the left) or
 /// <see cref="Way.Landscape2"/> (at the right), kept in <c>[display] orientation</c> of <c>user://settings.cfg</c>. On an
 /// Android phone it is the activity's requested orientation, through <see cref="DisplayServer.ScreenSetOrientation"/>:
 /// Godot 4.7.2's Android library asks Android for <c>fullUser</c> on <c>Sensor</c> (the sensor's four ways unless the
@@ -16,13 +16,13 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal static class OrientationChoice
 {
-    public enum Way { System, Upright, Landscape1, Landscape2 }
+    public enum Way { System, Portrait, Landscape1, Landscape2 }
 
     /// <summary>The ways in the order Option lists them, each with its name and the line under it (PO1o).</summary>
     public static readonly (Way Way, string Name, string Hint)[] All =
     [
         (Way.System, "System", "As the phone is held, unless its rotation lock holds it."),
-        (Way.Upright, "Portrait", "Always, however the phone is held."),
+        (Way.Portrait, "Portrait", "Always, however the phone is held."),
         (Way.Landscape1, "Landscape 1", "Always, the phone's top at the left."),
         (Way.Landscape2, "Landscape 2", "Always, the phone's top at the right."),
     ];
@@ -52,7 +52,7 @@ internal static class OrientationChoice
             config.Save(GameData.SettingsPath);
             Apply();
             if (Device.PlaysPhone && value != Way.System)
-                Device.TurnWindow(value == Way.Upright);
+                Device.TurnWindow(value == Way.Portrait);
         }
     }
 
@@ -63,7 +63,7 @@ internal static class OrientationChoice
             return;
         DisplayServer.ScreenSetOrientation(Chosen switch
         {
-            Way.Upright => DisplayServer.ScreenOrientation.Portrait,
+            Way.Portrait => DisplayServer.ScreenOrientation.Portrait,
             Way.Landscape1 => DisplayServer.ScreenOrientation.Landscape,
             Way.Landscape2 => DisplayServer.ScreenOrientation.ReverseLandscape,
             _ => DisplayServer.ScreenOrientation.Sensor,

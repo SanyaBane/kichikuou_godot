@@ -144,7 +144,7 @@ public class SubordinatesScreenTests
     }
 
     [Fact]
-    public void The_upright_bar_shows_the_troops_kept_and_gained_and_ticks_a_raised_maximum()
+    public void The_portrait_bar_shows_the_troops_kept_and_gained_and_ticks_a_raised_maximum()
     {
         var replenish = new SubordinateResult(SubordinateOrderKind.Replenish, "Haurein", "", 12, 50, 1400, 1400, 1400, 27, 1114);
         Assert.Equal(new TroopsBar(50 / 1400f, 1350 / 1400f, 0, null, 50 / 1400f), replenish.Bar);

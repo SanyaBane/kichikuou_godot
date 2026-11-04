@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Strategy;
 /// Treasure's: by whole rows, under a finger as the save list's (<c>SaveLoadView.Touch.cs</c>) — moved past
 /// <see cref="FingerScroll.Slop"/> a press scrolls the rows (no tap), a row for each row's pitch it moves, and its quick
 /// release flicks them on; a press while a flick goes on stops it — or the wheel, a row a notch; an entry newly chosen out
-/// of view scrolls the grid the least that shows it. The grid's places are <see cref="PhonePickersUpright.ScrolledGrid"/>'s,
+/// of view scrolls the grid the least that shows it. The grid's places are <see cref="PhonePickersPortrait.ScrolledGrid"/>'s,
 /// in the view's units.
 /// </summary>
 internal sealed class PickerGridScroll
@@ -29,14 +29,14 @@ internal sealed class PickerGridScroll
     }
 
     /// <summary>The grid scrolled the least that shows cell <paramref name="number"/> (the hint's pill pressed), a flick stopped.</summary>
-    public void Show(PhonePickersUpright.ScrolledGrid grid, int number)
+    public void Show(PhonePickersPortrait.ScrolledGrid grid, int number)
     {
         _finger.Cancel();
         Scroll = grid.Reveal(number, Scroll);
     }
 
     /// <summary>Entry <paramref name="chosen"/> (a cell's number, 0 none) newly chosen out of view is scrolled into it; the scroll kept within <paramref name="grid"/>.</summary>
-    public void Reveal(PhonePickersUpright.ScrolledGrid grid, int chosen)
+    public void Reveal(PhonePickersPortrait.ScrolledGrid grid, int chosen)
     {
         if (chosen != 0 && chosen != _revealed)
         {
@@ -52,7 +52,7 @@ internal sealed class PickerGridScroll
     /// <paramref name="started"/> is told when a press starts scrolling (the view drops its pressed and lit cells),
     /// <paramref name="changed"/> when the rows move.
     /// </summary>
-    public bool Touch(InputEvent e, PhonePickersUpright.ScrolledGrid grid, Action started, Action changed)
+    public bool Touch(InputEvent e, PhonePickersPortrait.ScrolledGrid grid, Action started, Action changed)
     {
         var area = new Rect2(grid.Scrolled.X, grid.Scrolled.Y, grid.Scrolled.W, grid.Scrolled.H);
         switch (e)
@@ -82,7 +82,7 @@ internal sealed class PickerGridScroll
     }
 
     /// <summary>A frame of a flick going on over <paramref name="grid"/> (null: the grid is gone, the flick stops); the rows slow to a stop at either end.</summary>
-    public void Process(double delta, PhonePickersUpright.ScrolledGrid? grid, Action changed)
+    public void Process(double delta, PhonePickersPortrait.ScrolledGrid? grid, Action changed)
     {
         if (!_finger.Flinging)
             return;
@@ -108,7 +108,7 @@ internal sealed class PickerGridScroll
         started();
     }
 
-    private void Set(int scroll, PhonePickersUpright.ScrolledGrid grid, Action changed)
+    private void Set(int scroll, PhonePickersPortrait.ScrolledGrid grid, Action changed)
     {
         scroll = Math.Clamp(scroll, 0, grid.MaxScroll);
         if (scroll == Scroll)

@@ -29,26 +29,26 @@ internal static class PhonePickerParts
     }
 
     /// <summary>Held upright (PH2, PT2): the screen's name at the band's left (the brush face), the date at its right, the divider under them.</summary>
-    public static void DrawUprightTitle(CanvasItem c, PhoneUnits u, Font brush, Font cinzel, string title, string date)
+    public static void DrawPortraitTitle(CanvasItem c, PhoneUnits u, Font brush, Font cinzel, string title, string date)
     {
-        var band = u.Rect(PhonePickersUpright.Band(u.Frame));
+        var band = u.Rect(PhonePickersPortrait.Band(u.Frame));
         float y = band.Position.Y;
-        int size = u.Size(PhonePickersUpright.TitleText);
-        c.DrawString(brush, new Vector2(band.Position.X + u.Px(PhonePickersUpright.TitleIn), y + brush.GetAscent(size)), title, fontSize: size,
+        int size = u.Size(PhonePickersPortrait.TitleText);
+        c.DrawString(brush, new Vector2(band.Position.X + u.Px(PhonePickersPortrait.TitleIn), y + brush.GetAscent(size)), title, fontSize: size,
             modulate: Ui.Name);
-        int dateSize = u.Size(PhonePickersUpright.DateText);
-        c.DrawString(cinzel, new Vector2(band.End.X - u.Px(PhonePickersUpright.DateRight) - cinzel.GetStringSize(date, fontSize: dateSize).X,
-            y + u.Px(PhonePickersUpright.DateTop) + cinzel.GetAscent(dateSize)), date, fontSize: dateSize, modulate: Ui.Name);
-        Ui.DrawDivider(c, band.Position.X + u.Px(PhonePickersUpright.DividerIn), band.End.X - u.Px(PhonePickersUpright.DividerIn),
-            y + u.Px(PhonePickersUpright.Divider), u.K);
+        int dateSize = u.Size(PhonePickersPortrait.DateText);
+        c.DrawString(cinzel, new Vector2(band.End.X - u.Px(PhonePickersPortrait.DateRight) - cinzel.GetStringSize(date, fontSize: dateSize).X,
+            y + u.Px(PhonePickersPortrait.DateTop) + cinzel.GetAscent(dateSize)), date, fontSize: dateSize, modulate: Ui.Name);
+        Ui.DrawDivider(c, band.Position.X + u.Px(PhonePickersPortrait.DividerIn), band.End.X - u.Px(PhonePickersPortrait.DividerIn),
+            y + u.Px(PhonePickersPortrait.Divider), u.K);
     }
 
     /// <summary>Held upright: the reference scroll bar right of the grid, while the grid scrolls.</summary>
-    public static void DrawScrollBar(CanvasItem c, PhoneUnits u, PhonePickersUpright.ScrolledGrid grid, int scroll)
+    public static void DrawScrollBar(CanvasItem c, PhoneUnits u, PhonePickersPortrait.ScrolledGrid grid, int scroll)
     {
         if (grid.MaxScroll == 0)
             return;
-        var (track, thumb) = PhonePickersUpright.ScrollBar(u.Frame, grid, scroll);
+        var (track, thumb) = PhonePickersPortrait.ScrollBar(u.Frame, grid, scroll);
         Ui.DrawScrollBar(c, u.Rect(track), u.Rect(thumb), u.Px(PhoneScrollBar.Rim));
     }
 

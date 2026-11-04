@@ -17,7 +17,7 @@ namespace Kichikuou.Game.Strategy;
 /// spent ones dimmed) and Abandon City (asked first, at its button). It decides nothing of the rules:
 /// <see cref="ChooseAsync"/> gives the menu's code and, for a scouting, the ninja's. Points are layout pixels of the
 /// 1280×800 screen; on the phone held landscape the screen spans the whole width in its own layout
-/// (<c>EnemyAttackView.Phone.cs</c>), held upright it is stacked over the whole room (<c>EnemyAttackView.Upright.cs</c>).
+/// (<c>EnemyAttackView.Phone.cs</c>), held upright it is stacked over the whole room (<c>EnemyAttackView.Portrait.cs</c>).
 /// </summary>
 internal sealed partial class EnemyAttackView : Control
 {
@@ -327,18 +327,18 @@ internal sealed partial class EnemyAttackView : Control
 
     /// <summary>Intercept in the screen's layout pixels (the phone's own, LA2 or PA1).</summary>
     private Rect2 InterceptRect => _phone is { } f
-        ? new PhoneUnits(f).Rect(f.IsUpright ? PhoneAttackUpright.Intercept(f) : PhoneAttack.Intercept(f))
+        ? new PhoneUnits(f).Rect(f.IsPortrait ? PhoneAttackPortrait.Intercept(f) : PhoneAttack.Intercept(f))
         : InterceptButton;
 
     /// <summary>Ninja Scout in the screen's layout pixels.</summary>
     private Rect2 ScoutRect => _phone is { } f
-        ? new PhoneUnits(f).Rect(f.IsUpright ? PhoneAttackUpright.NinjaScout(f) : PhoneAttack.NinjaScout(f))
+        ? new PhoneUnits(f).Rect(f.IsPortrait ? PhoneAttackPortrait.NinjaScout(f) : PhoneAttack.NinjaScout(f))
         : ScoutButton;
 
     /// <summary>Abandon City in the screen's layout pixels.</summary>
     private Rect2 AbandonRect => _phone is { } f ? new PhoneUnits(f).Rect(PhoneAbandon(f)) : AbandonButton;
 
-    private static PhoneFrame.Box PhoneAbandon(PhoneFrame f) => f.IsUpright ? PhoneAttackUpright.Abandon(f) : PhoneAttack.Abandon(f);
+    private static PhoneFrame.Box PhoneAbandon(PhoneFrame f) => f.IsPortrait ? PhoneAttackPortrait.Abandon(f) : PhoneAttack.Abandon(f);
 
     /// <summary>Abandon City in the callout's layout: the PC's layout pixels, or the phone's reference pixels over its whole screen.</summary>
     private Rect2 AbandonCell
@@ -355,7 +355,7 @@ internal sealed partial class EnemyAttackView : Control
     private Rect2 ListRect(EnemyAttack attack)
     {
         if (_phone is { } f)
-            return new PhoneUnits(f).Rect(f.IsUpright ? PhoneAttackUpright.List(f, attack.Ninjas.Count) : PhoneAttack.List(f, attack.Ninjas.Count));
+            return new PhoneUnits(f).Rect(f.IsPortrait ? PhoneAttackPortrait.List(f, attack.Ninjas.Count) : PhoneAttack.List(f, attack.Ninjas.Count));
         float h = 2 * ListPad + ListHead + attack.Ninjas.Count * (ListRow + ListGap) - ListGap;
         float x = Math.Min(ScoutButton.GetCenter().X - ListWidth / 2, 1280 - 24 - ListWidth);
         return new Rect2(x, ScoutButton.Position.Y - 16 - h, ListWidth, h);
@@ -368,8 +368,8 @@ internal sealed partial class EnemyAttackView : Control
     private Rect2 ListRowRect(EnemyAttack attack, int i)
     {
         if (_phone is { } f)
-            return new PhoneUnits(f).Rect(f.IsUpright
-                ? PhoneAttackUpright.ListRowBox(f, i, attack.Ninjas.Count)
+            return new PhoneUnits(f).Rect(f.IsPortrait
+                ? PhoneAttackPortrait.ListRowBox(f, i, attack.Ninjas.Count)
                 : PhoneAttack.ListRowBox(f, i, attack.Ninjas.Count));
         var list = ListRect(attack);
         return new Rect2(list.Position.X + ListPad, list.Position.Y + ListPad + ListHead + i * (ListRow + ListGap),
@@ -391,8 +391,8 @@ internal sealed partial class EnemyAttackView : Control
             return;
         if (_phone is { } phone)
         {
-            if (phone.IsUpright)
-                DrawUpright(attack, phone);
+            if (phone.IsPortrait)
+                DrawPortrait(attack, phone);
             else
                 DrawPhone(attack, phone);
             return;

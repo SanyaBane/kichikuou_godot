@@ -291,12 +291,12 @@ public partial class ImportScreen : Control
     /// bar), alone at the right thumb without one.
     /// </summary>
     private Rect2 Button => _phone is { } f
-        ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Button(f, HasBack) : PhoneImport.Button(f, _phase == Phase.Refused, HasBack))
+        ? Phone.Rect(f.IsPortrait ? PhoneImportPortrait.Button(f, HasBack) : PhoneImport.Button(f, _phase == Phase.Refused, HasBack))
         : _phase == Phase.Refused ? WideButton : NarrowButton;
 
     /// <summary>The way back's link, right of the red button; on the phone level with it (upright in the bar right of it).</summary>
     private Rect2 BackBox => _phone is { } f
-        ? Phone.Rect(f.IsUpright ? PhoneImportUpright.Back(f) : PhoneImport.Back(f, _phase == Phase.Refused))
+        ? Phone.Rect(f.IsPortrait ? PhoneImportPortrait.Back(f) : PhoneImport.Back(f, _phase == Phase.Refused))
         : BackLink;
 
     private bool ButtonLive => !_dialogOpen && _phase switch

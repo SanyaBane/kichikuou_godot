@@ -39,7 +39,7 @@ internal static class Device
     public static float PerMillimetre => _perMillimetre;
 
     /// <summary>Whether the device is held upright: a phone's (the tablet and the PC are landscape).</summary>
-    public static bool HeldUpright => _layout == DeviceLayout.PhoneUpright;
+    public static bool HeldPortrait => _layout == DeviceLayout.PhonePortrait;
 
     /// <summary>The room inside the <see cref="Margins"/> of a screen of <paramref name="size"/>, in its coordinates.</summary>
     public static Rect2 RoomIn(Vector2 size) => new(new Vector2(_margins.Left, _margins.Top),
@@ -103,8 +103,8 @@ internal static class Device
     public static PhoneFrame Frame(Vector2 size)
     {
         var frame = PhoneFrame.For(size.X, size.Y, _insets, _margins,
-            _layout is DeviceLayout.PhoneUpright or DeviceLayout.PhoneLandscape ? HeldUpright : null);
-        return frame.IsUpright && PictureTop?.Invoke(frame) is float top ? frame.WithPictureAt(top) : frame;
+            _layout is DeviceLayout.PhonePortrait or DeviceLayout.PhoneLandscape ? HeldPortrait : null);
+        return frame.IsPortrait && PictureTop?.Invoke(frame) is float top ? frame.WithPictureAt(top) : frame;
     }
 
     /// <summary>
@@ -121,20 +121,20 @@ internal static class Device
     public static PhoneFrame? Landscape(Control view) => _layout == DeviceLayout.PhoneLandscape ? Frame(view.GetParentAreaSize()) : null;
 
     /// <summary>The phone's frame held upright over <paramref name="view"/>'s parent, as <see cref="Landscape"/>; null on any other device.</summary>
-    public static PhoneFrame? Upright(Control view) => _layout == DeviceLayout.PhoneUpright ? Frame(view.GetParentAreaSize()) : null;
+    public static PhoneFrame? Portrait(Control view) => _layout == DeviceLayout.PhonePortrait ? Frame(view.GetParentAreaSize()) : null;
 
     /// <summary>
     /// The phone's frame held either way over <paramref name="view"/>'s parent, as <see cref="Landscape"/>, for a view whose
-    /// phone layout serves both (its model's figures follow <see cref="PhoneFrame.IsUpright"/>); null on any other device.
+    /// phone layout serves both (its model's figures follow <see cref="PhoneFrame.IsPortrait"/>); null on any other device.
     /// </summary>
-    public static PhoneFrame? Held(Control view) => Landscape(view) ?? Upright(view);
+    public static PhoneFrame? Held(Control view) => Landscape(view) ?? Portrait(view);
 
     /// <summary>
     /// The phone's frame held either way over a room of <paramref name="room"/> inside the <see cref="Margins"/> (a screen of
     /// its own at the root, <see cref="RoomIn"/>); null on any other device.
     /// </summary>
     public static PhoneFrame? HeldIn(Vector2 room) =>
-        _layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright ? Frame(room) : null;
+        _layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhonePortrait ? Frame(room) : null;
 
     /// <summary>
     /// <c>--phone landscape</c> or <c>--phone portrait</c> (also <c>upright</c>, its former name) on a PC: the window at the reference phone's shape held so
@@ -154,15 +154,15 @@ internal static class Device
     }
 
     /// <summary>
-    /// A PC playing a phone held <paramref name="upright"/> or landscape: the window at the reference phone's shape
+    /// A PC playing a phone held <paramref name="portrait"/> or landscape: the window at the reference phone's shape
     /// (1220 × 2712 or 2712 × 1220), as large as the monitor's usable area allows with the window's frame round it, at most
     /// the reference's size, centred; headless (no monitor) the canvas at half the reference's shape. The layout follows
     /// the new size (<see cref="Follow"/>), as a phone's turn.
     /// </summary>
-    public static void TurnWindow(bool upright)
+    public static void TurnWindow(bool portrait)
     {
-        int wide = upright ? PhoneFrame.ReferenceShort : PhoneFrame.ReferenceLong;
-        int high = upright ? PhoneFrame.ReferenceLong : PhoneFrame.ReferenceShort;
+        int wide = portrait ? PhoneFrame.ReferenceShort : PhoneFrame.ReferenceLong;
+        int high = portrait ? PhoneFrame.ReferenceLong : PhoneFrame.ReferenceShort;
         if (DisplayServer.GetName() == "headless")
         {
             if (_root is not null)
@@ -175,7 +175,7 @@ internal static class Device
         var size = new Vector2I((int)(wide * scale), (int)(high * scale));
         DisplayServer.WindowSetSize(size);
         DisplayServer.WindowSetPosition(usable.Position + (usable.Size - size) / 2);
-        GD.Print($"Kichikuou: a phone held {(upright ? "in portrait" : "landscape")}, window {size.X}×{size.Y}.");
+        GD.Print($"Kichikuou: a phone held {(portrait ? "in portrait" : "landscape")}, window {size.X}×{size.Y}.");
     }
 
     /// <summary>Whether a PC plays a phone (<c>--phone</c>), whose window a choice of the orientation turns.</summary>
@@ -198,7 +198,7 @@ internal static class Device
         }
         if (_turnEvery == 0 || Godot.Engine.GetProcessFrames() % (ulong)_turnEvery != 0)
             return;
-        TurnWindow(_layout != DeviceLayout.PhoneUpright);
+        TurnWindow(_layout != DeviceLayout.PhonePortrait);
     }
 
     private static void Read()
@@ -230,7 +230,7 @@ internal static class Device
         _perMillimetre = PlaysPhone ? shortSide / PhoneFrame.ReferenceShort * MarginsCalibration.ReferencePerMillimetre
             : OS.GetName() == "Android" && DisplayServer.ScreenGetDpi() is > 0 and var dpi ? dpi / 25.4f * canvas.X / window.X
             : shortSide / TabletShortSide;
-        _margins = TouchLayout ? ScreenMarginsChoice.For(HeldUpright).Insets(_perMillimetre) : default;
+        _margins = TouchLayout ? ScreenMarginsChoice.For(HeldPortrait).Insets(_perMillimetre) : default;
     }
 
     /// <summary>A set of margins changed: every screen lays itself out again, as after a turn (<see cref="Turns"/>).</summary>

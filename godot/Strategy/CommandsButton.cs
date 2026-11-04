@@ -13,7 +13,7 @@ namespace Kichikuou.Game.Strategy;
 /// double gold frame and its studs, an icon, the brush face of Turn END. On the phone held landscape it stands in the
 /// right side at the thumb, its icon over its word (docs/ui/phone.md, §12, LM1; <see cref="PhoneMap.CommandsCell"/>), and
 /// as Close a row's height where it stood (<see cref="PhoneMap.FootCell"/>); held upright at the bar's right, its icon
-/// beside its word, Close in its place (§3, PM1; <see cref="PhoneMapUpright.CommandsCell"/>).
+/// beside its word, Close in its place (§3, PM1; <see cref="PhoneMapPortrait.CommandsCell"/>).
 /// </summary>
 internal sealed partial class CommandsButton : Control
 {
@@ -64,7 +64,7 @@ internal sealed partial class CommandsButton : Control
     {
         if (Device.Held(this) is { } f)
         {
-            var cell = f.IsUpright ? PhoneMapUpright.CommandsCell(f) : _closes ? PhoneMap.FootCell(f) : PhoneMap.CommandsCell(f);
+            var cell = f.IsPortrait ? PhoneMapPortrait.CommandsCell(f) : _closes ? PhoneMap.FootCell(f) : PhoneMap.CommandsCell(f);
             (_phone, Position, Size) = (f, new Vector2(cell.X, cell.Y), new Vector2(cell.W, cell.H));
             QueueRedraw();
             return;
@@ -112,7 +112,7 @@ internal sealed partial class CommandsButton : Control
             var cell = new Rect2(Position / u.K, Size / u.K);
             var glyph = _closes ? SideCells.Icon.Close : SideCells.Icon.Menu;
             string word = _closes ? "Close" : "Commands";
-            if (phone.IsUpright)
+            if (phone.IsPortrait)
                 SideCells.DrawBarButton(this, u, cell, glyph, word, _down && _inside, Ui);
             else
                 SideCells.DrawButton(this, u, cell, glyph, word, _down && _inside, Ui);

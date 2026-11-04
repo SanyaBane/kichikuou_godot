@@ -7,8 +7,8 @@ namespace Kichikuou.Original.Content.Strategy;
 /// <c>tools/ui/mock_name_cell.py</c>; Subordinates the same day, without the rows): one cell in place of the Name, Type and
 /// Rows columns — the unit's face from the name's top to the HP bar's foot, the name, the type and on the deployment table
 /// the rows under it from one left edge, the troops' and the HP bars under them. Its places are the upright row's
-/// (<see cref="PhoneLedgerUpright.DeploymentRows"/>, <see cref="PhoneLedgerUpright.SubordinatesRows"/>) scaled so
-/// the ledger's text (<paramref name="Text"/>) stands for upright's (<see cref="PhoneLedgerUpright.Text"/>): every value
+/// (<see cref="PhoneLedgerPortrait.DeploymentRows"/>, <see cref="PhoneLedgerPortrait.SubordinatesRows"/>) scaled so
+/// the ledger's text (<paramref name="Text"/>) stands for upright's (<see cref="PhoneLedgerPortrait.Text"/>): every value
 /// in the window's pixels, from the row's top or the cell's left.
 /// </summary>
 public sealed record LedgerNameCell(float Text, float Row, float NameText, float NameMiddle, float TypeText, float TypeMiddle,
@@ -26,11 +26,11 @@ public sealed record LedgerNameCell(float Text, float Row, float NameText, float
     /// </summary>
     public static LedgerNameCell For(float text, bool deployment)
     {
-        var r = PhoneLedgerUpright.Rows(deployment);
-        float s = text / PhoneLedgerUpright.Text;
-        return new(text, r.Row * s, r.NameText * s, r.NameMiddle * s, PhoneLedgerUpright.TypeText * s, r.TypeMiddle * s,
-            r.RowsMiddle * s, r.FaceTop * s, r.Face * s, PhoneLedgerUpright.NameGap * s, r.BarTop * s, r.HpTop * s,
-            PhoneLedgerUpright.BarHeight * s, PhoneLedgerUpright.NameRight * s);
+        var r = PhoneLedgerPortrait.Rows(deployment);
+        float s = text / PhoneLedgerPortrait.Text;
+        return new(text, r.Row * s, r.NameText * s, r.NameMiddle * s, PhoneLedgerPortrait.TypeText * s, r.TypeMiddle * s,
+            r.RowsMiddle * s, r.FaceTop * s, r.Face * s, PhoneLedgerPortrait.NameGap * s, r.BarTop * s, r.HpTop * s,
+            PhoneLedgerPortrait.BarHeight * s, PhoneLedgerPortrait.NameRight * s);
     }
 
     /// <summary>The text's left from the cell's: the face (2 in) and the room after it.</summary>

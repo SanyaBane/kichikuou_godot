@@ -14,23 +14,23 @@ namespace Kichikuou.Game.Strategy;
 // layout pixels (PhoneUnits); the places are PhoneMap's. Held upright (step P2; phone.md, §3, PM1c) the card and the
 // commands rise as a sheet over the map's foot — the city's picture at its top left, the name, the army and the figures
 // beside it, the commands across it from the foot up — Return at the bar's right, and the map is drawn higher so the
-// ringed province stays over the sheet (PhoneMapUpright.Province, UprightMapView.LiftFor).
+// ringed province stays over the sheet (PhoneMapPortrait.Province, PortraitMapView.LiftFor).
 internal sealed partial class ProvinceMenuView
 {
     private PhoneFrame? _phone;                         // the phone: the rail in the right side, or the sheet upright
     private (int X, int Y)? _mapAt;                     // upright: the tapped province's map point
 
     /// <summary>The map held upright, which the sheet lifts and the ring is placed on; null elsewhere.</summary>
-    public UprightMapView? Map { get; set; }
+    public PortraitMapView? Map { get; set; }
 
-    /// <summary>The status band over the map held upright (<see cref="StatusStripView.UprightBand"/>); null for its least.</summary>
-    public PhoneFrame.Box? UprightBand { get; set; }
+    /// <summary>The status band over the map held upright (<see cref="StatusStripView.PortraitBand"/>); null for its least.</summary>
+    public PhoneFrame.Box? PortraitBand { get; set; }
 
-    private PhoneMapUpright.ProvinceSheet Sheet(PhoneFrame f, ProvinceMenu m) =>
-        PhoneMapUpright.Province(f, UprightBand ?? PhoneMapUpright.StatusBand(f, 1).Band, m.Card.Count, Items, m.Place is not null);
+    private PhoneMapPortrait.ProvinceSheet Sheet(PhoneFrame f, ProvinceMenu m) =>
+        PhoneMapPortrait.Province(f, PortraitBand ?? PhoneMapPortrait.StatusBand(f, 1).Band, m.Card.Count, Items, m.Place is not null);
 
     /// <summary>The ringed province's point held upright, in the canvas's units, on the map as drawn; null without one.</summary>
-    private (float X, float Y)? UprightPoint => _mapAt is { } p && Map is { Phone: not null } map ? map.View.FromMap(p.X, p.Y) : null;
+    private (float X, float Y)? PortraitPoint => _mapAt is { } p && Map is { Phone: not null } map ? map.View.FromMap(p.X, p.Y) : null;
 
     /// <summary>The name's least size beside the army (2.3 mm): a longer name has the army under it.</summary>
     private const float PhoneNameMin = 40;
@@ -45,7 +45,7 @@ internal sealed partial class ProvinceMenuView
                 (_phone, _k) = (null, 0);                // placed again by the caller
             return false;
         }
-        if (f.IsUpright && _menu is { } menu && _mapAt is { } p && Map is { Phone: not null } map)
+        if (f.IsPortrait && _menu is { } menu && _mapAt is { } p && Map is { Phone: not null } map)
         {
             var before = map.View;
             map.LiftFor(p.X, p.Y, Sheet(f, menu).Sheet.Y);
@@ -81,7 +81,7 @@ internal sealed partial class ProvinceMenuView
 
     /// <summary>Held landscape, past what the side holds: the commands' panel in the frame (the owner's PE); else null.</summary>
     private PhoneMap.ProvinceColumns? PhonePanel(PhoneFrame f) =>
-        f.IsUpright || _menu is not { } m ? null : PhoneMap.ProvincePanel(f, Items, m.Place is not null);
+        f.IsPortrait || _menu is not { } m ? null : PhoneMap.ProvincePanel(f, Items, m.Place is not null);
 
     /// <summary>The tapped province's point, unless it lies under the commands' panel (its ring and the card's triangle then left out).</summary>
     private (float X, float Y)? PhoneRingPoint(PhoneFrame f)
@@ -94,11 +94,11 @@ internal sealed partial class ProvinceMenuView
     }
 
     private IReadOnlyList<PhoneFrame.Box> PhoneRows(PhoneFrame f) =>
-        f.IsUpright && _menu is { } m ? Sheet(f, m).Rows : PhoneMap.ProvinceRows(f, Items, _menu?.Place is not null);
+        f.IsPortrait && _menu is { } m ? Sheet(f, m).Rows : PhoneMap.ProvinceRows(f, Items, _menu?.Place is not null);
 
     /// <summary>Row <paramref name="row"/>'s box on the phone (the canvas's units): the commands from the foot up, then Return.</summary>
     private PhoneFrame.Box PhoneRow(PhoneFrame f, int row) =>
-        row < Items ? PhoneRows(f)[row] : f.IsUpright ? PhoneMapUpright.CommandsCell(f) : PhoneMap.FootCell(f);
+        row < Items ? PhoneRows(f)[row] : f.IsPortrait ? PhoneMapPortrait.CommandsCell(f) : PhoneMap.FootCell(f);
 
     private int PhoneRowAt(PhoneFrame f, Vector2 at)
     {
@@ -111,11 +111,11 @@ internal sealed partial class ProvinceMenuView
     /// <summary>A tap at <paramref name="at"/> (the screen's) is off the card, the ring and the rows: it cancels.</summary>
     private bool PhoneOutside(PhoneFrame f, Vector2 at)
     {
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
             if (PhoneRowAt(f, at) >= 0 || _menu is not { } menu || Sheet(f, menu).Sheet.Contains(at.X, at.Y))
                 return false;
-            return UprightPoint is not var (ux, uy) || new Vector2(ux, uy).DistanceTo(at) > f.Px(PhoneMapUpright.RingRadius) + f.Px(8);
+            return PortraitPoint is not var (ux, uy) || new Vector2(ux, uy).DistanceTo(at) > f.Px(PhoneMapPortrait.RingRadius) + f.Px(8);
         }
         if (PhoneRowAt(f, at) >= 0 || _menu is not { } m || PhoneCard(f, m).Box.Contains(at.X, at.Y)
             || PhonePanel(f)?.Panel.Contains(at.X, at.Y) == true)
@@ -126,10 +126,10 @@ internal sealed partial class ProvinceMenuView
     /// <summary>A point of the frame off the card and the ring, global: where unattended play taps to close the menu.</summary>
     private Vector2 PhoneOutsidePoint(PhoneFrame f)
     {
-        if (f.IsUpright && _menu is { } menu)
+        if (f.IsPortrait && _menu is { } menu)
         {
-            // Upright: the map over the sheet, a corner of it away from the ring.
-            float top = (UprightBand ?? PhoneMapUpright.StatusBand(f, 1).Band).Bottom, foot = Sheet(f, menu).Sheet.Y, margin = f.Px(80);
+            // Portrait: the map over the sheet, a corner of it away from the ring.
+            float top = (PortraitBand ?? PhoneMapPortrait.StatusBand(f, 1).Band).Bottom, foot = Sheet(f, menu).Sheet.Y, margin = f.Px(80);
             Vector2[] places = [new(f.Room.X + margin, foot - margin), new(f.Room.Right - margin, foot - margin),
                 new(f.Room.X + margin, top + margin), new(f.Room.Right - margin, top + margin)];
             return GetGlobalRect().Position + places.FirstOrDefault(p => PhoneOutside(f, p), places[0]);
@@ -146,9 +146,9 @@ internal sealed partial class ProvinceMenuView
     {
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(f, u, m);
+            DrawPortrait(f, u, m);
             return;
         }
         bool two = PhoneTwoLines(f, m);
@@ -233,14 +233,14 @@ internal sealed partial class ProvinceMenuView
     /// The sheet held upright (PM1c): the ring round the province on the map, the city's picture, the name, the army and
     /// the figures beside it, the place's caption (the dungeon's), the commands from the foot up, Return at the bar's right.
     /// </summary>
-    private void DrawUpright(PhoneFrame f, PhoneUnits u, ProvinceMenu m)
+    private void DrawPortrait(PhoneFrame f, PhoneUnits u, ProvinceMenu m)
     {
         var sheet = Sheet(f, m);
-        if (UprightPoint is var (px, py))
+        if (PortraitPoint is var (px, py))
         {
             var p = new Vector2(px, py) / u.K;
-            DrawArc(p, u.Px(PhoneMapUpright.RingRadius + 8), 0, MathF.Tau, 64, Ui.HoverLine, Lacquer.Line(u.Px(2), u.K));
-            DrawArc(p, u.Px(PhoneMapUpright.RingRadius), 0, MathF.Tau, 64, Ui.Gold, Lacquer.Line(u.Px(6), u.K));
+            DrawArc(p, u.Px(PhoneMapPortrait.RingRadius + 8), 0, MathF.Tau, 64, Ui.HoverLine, Lacquer.Line(u.Px(2), u.K));
+            DrawArc(p, u.Px(PhoneMapPortrait.RingRadius), 0, MathF.Tau, 64, Ui.Gold, Lacquer.Line(u.Px(6), u.K));
         }
         Ui.DrawPanel(this, u.Rect(sheet.Sheet), u.K);
         var picture = u.Rect(sheet.Picture);
@@ -284,7 +284,7 @@ internal sealed partial class ProvinceMenuView
                 TagOf(item.Action), palette: Ui);
         }
         int back = RowCount - 1;
-        SideCells.DrawBarButton(this, u, u.Rect(PhoneMapUpright.CommandsCell(f)), SideCells.Icon.Close, "Return",
+        SideCells.DrawBarButton(this, u, u.Rect(PhoneMapPortrait.CommandsCell(f)), SideCells.Icon.Close, "Return",
             back == _pressed || back == _hovered, Ui);
     }
 }

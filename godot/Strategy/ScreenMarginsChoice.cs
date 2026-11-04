@@ -13,7 +13,7 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal static class ScreenMarginsChoice
 {
-    private static ScreenMargins? _upright, _landscape;
+    private static ScreenMargins? _portrait, _landscape;
 
     /// <summary>
     /// What the screen gallery shows instead of the player's set, both ways alike, never saved (null: the player's): none
@@ -24,34 +24,34 @@ internal static class ScreenMarginsChoice
     /// <summary>A set changed (the calibration, Option's Defaults): <see cref="Device"/> lays the screens out again.</summary>
     public static event Action? Changed;
 
-    /// <summary>The set for the device held <paramref name="upright"/> or landscape.</summary>
-    public static ScreenMargins For(bool upright)
+    /// <summary>The set for the device held <paramref name="portrait"/> or landscape.</summary>
+    public static ScreenMargins For(bool portrait)
     {
         if (Override is { } shown)
             return shown;
-        ref var kept = ref upright ? ref _upright : ref _landscape;
+        ref var kept = ref portrait ? ref _portrait : ref _landscape;
         if (kept is null)
         {
             var config = new ConfigFile();
-            var saved = config.Load(GameData.SettingsPath) == Error.Ok ? (Vector3I)config.GetValue("display", Key(upright), Vector3I.Zero) : Vector3I.Zero;
+            var saved = config.Load(GameData.SettingsPath) == Error.Ok ? (Vector3I)config.GetValue("display", Key(portrait), Vector3I.Zero) : Vector3I.Zero;
             kept = new ScreenMargins(saved.X, saved.Y, saved.Z).Clamped();
         }
         return kept.Value;
     }
 
-    /// <summary>Keeps <paramref name="margins"/> for the device held <paramref name="upright"/> or landscape, at once.</summary>
-    public static void Set(bool upright, ScreenMargins margins)
+    /// <summary>Keeps <paramref name="margins"/> for the device held <paramref name="portrait"/> or landscape, at once.</summary>
+    public static void Set(bool portrait, ScreenMargins margins)
     {
         margins = margins.Clamped();
-        if (Override is null && For(upright) == margins)
+        if (Override is null && For(portrait) == margins)
             return;
-        if (upright)
-            _upright = margins;
+        if (portrait)
+            _portrait = margins;
         else
             _landscape = margins;
         var config = new ConfigFile();
         config.Load(GameData.SettingsPath);
-        config.SetValue("display", Key(upright), new Vector3I(margins.Top, margins.Bottom, margins.Sides));
+        config.SetValue("display", Key(portrait), new Vector3I(margins.Top, margins.Bottom, margins.Sides));
         config.Save(GameData.SettingsPath);
         Changed?.Invoke();
     }
@@ -65,5 +65,5 @@ internal static class ScreenMarginsChoice
         Changed?.Invoke();
     }
 
-    private static string Key(bool upright) => upright ? "margins_upright" : "margins_landscape";
+    private static string Key(bool portrait) => portrait ? "margins_upright" : "margins_landscape";
 }

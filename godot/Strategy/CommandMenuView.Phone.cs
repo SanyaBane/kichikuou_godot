@@ -11,7 +11,7 @@ namespace Kichikuou.Game.Strategy;
 // pixels (PhoneUnits); the rows' places are PhoneMap's. Held upright (step P2; phone.md, §3, PM1b) the panel is a sheet
 // over the map's foot — the other items in the left column and the week's commands in the right, both from the foot up,
 // Turn END and "This week" over the commands, a row on one line, 7.1 mm — Close at the bar's right where Commands stood,
-// the map above the sheet dimmed (PhoneMapUpright.Commands).
+// the map above the sheet dimmed (PhoneMapPortrait.Commands).
 internal sealed partial class CommandMenuView
 {
     private PhoneFrame? _phone;                         // the phone: the rails in the sides, or the sheet upright
@@ -20,12 +20,12 @@ internal sealed partial class CommandMenuView
     /// <summary>The map under the panel dimmed on the phone (the mock-up's 150 of 255).</summary>
     private static readonly Color Dim = new(0, 0, 0, 150 / 255f);
 
-    /// <summary>The status band over the map held upright (<see cref="StatusStripView.UprightBand"/>), which the sheet stays clear of; null for its least.</summary>
-    public PhoneFrame.Box? UprightBand { get; set; }
+    /// <summary>The status band over the map held upright (<see cref="StatusStripView.PortraitBand"/>), which the sheet stays clear of; null for its least.</summary>
+    public PhoneFrame.Box? PortraitBand { get; set; }
 
     /// <summary>The sheet held upright for the menu as it is.</summary>
-    private PhoneMapUpright.CommandSheet Sheet(PhoneFrame f) =>
-        PhoneMapUpright.Commands(f, UprightBand ?? PhoneMapUpright.StatusBand(f, 1).Band, Commands, Links);
+    private PhoneMapPortrait.CommandSheet Sheet(PhoneFrame f) =>
+        PhoneMapPortrait.Commands(f, PortraitBand ?? PhoneMapPortrait.StatusBand(f, 1).Band, Commands, Links);
 
     /// <summary>On the phone, the panel over its parent's whole area; false elsewhere.</summary>
     private bool PlacePhone()
@@ -49,7 +49,7 @@ internal sealed partial class CommandMenuView
 
     /// <summary>Row <paramref name="row"/>'s box on the phone (the canvas's units): the commands, the items, Turn END.</summary>
     private PhoneFrame.Box PhoneRow(PhoneFrame f, int row) =>
-        f.IsUpright ? UprightRow(Sheet(f), row)
+        f.IsPortrait ? PortraitRow(Sheet(f), row)
         : row < Commands ? PhoneMap.CommandRows(f, Commands)[row]
         : row < Commands + Links ? PhoneMap.LinkRows(f, Links)[row - Commands]
         : PhoneMap.TurnEnd(f);
@@ -62,15 +62,15 @@ internal sealed partial class CommandMenuView
         return -1;
     }
 
-    private PhoneFrame.Box UprightRow(PhoneMapUpright.CommandSheet sheet, int row) =>
+    private PhoneFrame.Box PortraitRow(PhoneMapPortrait.CommandSheet sheet, int row) =>
         row < Commands ? sheet.Commands[row] : row < Commands + Links ? sheet.Links[row - Commands] : sheet.TurnEnd;
 
     /// <summary>The map's middle on the phone, global: no row there (upright the map's over the sheet).</summary>
     private Vector2 PhoneOutsidePoint(PhoneFrame f)
     {
-        if (!f.IsUpright)
+        if (!f.IsPortrait)
             return GetGlobalRect().Position + new Vector2(f.Frame.X + f.Frame.W / 2, f.Frame.Y + f.Frame.H / 2);
-        var band = UprightBand ?? PhoneMapUpright.StatusBand(f, 1).Band;
+        var band = PortraitBand ?? PhoneMapPortrait.StatusBand(f, 1).Band;
         return GetGlobalRect().Position + new Vector2(f.Room.X + f.Room.W / 2, (band.Bottom + Sheet(f).Sheet.Y) / 2);
     }
 
@@ -78,9 +78,9 @@ internal sealed partial class CommandMenuView
     {
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(f, u);
+            DrawPortrait(f, u);
             return;
         }
         DrawRect(u.Rect(f.Frame), Dim);
@@ -110,10 +110,10 @@ internal sealed partial class CommandMenuView
     }
 
     /// <summary>The sheet held upright (PM1b): the map over it dimmed, Turn END and "This week" over the commands, the two columns from the foot up.</summary>
-    private void DrawUpright(PhoneFrame f, PhoneUnits u)
+    private void DrawPortrait(PhoneFrame f, PhoneUnits u)
     {
         var sheet = Sheet(f);
-        var band = UprightBand ?? PhoneMapUpright.StatusBand(f, 1).Band;
+        var band = PortraitBand ?? PhoneMapPortrait.StatusBand(f, 1).Band;
         DrawRect(u.Rect(new PhoneFrame.Box(f.Room.X, band.Bottom, f.Room.W, Math.Max(0, sheet.Sheet.Y - band.Bottom))), Dim);
         Ui.DrawPanel(this, u.Rect(sheet.Sheet), u.K);
         var caption = u.Rect(sheet.Caption);

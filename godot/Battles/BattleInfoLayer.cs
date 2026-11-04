@@ -180,9 +180,9 @@ internal sealed partial class BattleInfoLayer : Control
             DrawPhonePanel(sentences);
             return;
         }
-        if (Upright)
+        if (Portrait)
         {
-            DrawUprightPanel(sentences);
+            DrawPortraitPanel(sentences);
             return;
         }
         var lines = sentences.SelectMany(s => Wrap(s, PanelMaxText, PanelSize)).ToList();
@@ -233,7 +233,7 @@ internal sealed partial class BattleInfoLayer : Control
 
         // At the card's foot, over the portrait's stats and under the state line (owner, 2026-10-24: across the middle it hid
         // the troops and the commander's HP). On the phone larger with the cards (step L4), upright at the same millimetres (P4).
-        float m = Phone ? PhoneBattleStates.RibbonScale : Upright ? PhoneBattleStatesUpright.RibbonScale : 1;
+        float m = Phone ? PhoneBattleStates.RibbonScale : Portrait ? PhoneBattleStatesPortrait.RibbonScale : 1;
         float x0 = card.Position.X, x1 = card.End.X, y1 = card.End.Y - 2, y0 = y1 - RibbonHeight * m, mid = (y0 + y1) / 2;
         foreach (int side in new[] { -1, 1 })
         {
@@ -256,18 +256,18 @@ internal sealed partial class BattleInfoLayer : Control
         if (_speaking || box.Sentences is not [var sentence, ..])
             return;
         // The phone's caption at 2.4 mm over the scene's foot, from the picture's edge on the defender's side (LB3b, PB4b).
-        float c = Phone ? P(PhoneBattleStates.CaptionText) / CaptionSize : Upright ? U(PhoneBattleStatesUpright.CaptionText) / CaptionSize : 1;
+        float c = Phone ? P(PhoneBattleStates.CaptionText) / CaptionSize : Portrait ? U(PhoneBattleStatesPortrait.CaptionText) / CaptionSize : 1;
         int nameSize = Phone ? (int)Math.Round(P(PhoneBattleStates.CaptionName))
-            : Upright ? (int)Math.Round(U(PhoneBattleStatesUpright.CaptionName)) : CaptionNameSize;
+            : Portrait ? (int)Math.Round(U(PhoneBattleStatesPortrait.CaptionName)) : CaptionNameSize;
         int textSize = (int)Math.Round(CaptionSize * c);
         float nameWidth = name == "" ? 0 : _bold.GetStringSize(name, fontSize: nameSize).X + 12 * c;
         float w = (50 + 24) * c + nameWidth + _gothic.GetStringSize(sentence, fontSize: textSize).X;
         bool enemy = box.Place?.Side == BattleSide.Enemy;
-        var caption = Phone ? R(PhoneBattleStates.Caption(!enemy, w)) : Upright ? R(PhoneBattleStatesUpright.Caption(!enemy, w))
+        var caption = Phone ? R(PhoneBattleStates.Caption(!enemy, w)) : Portrait ? R(PhoneBattleStatesPortrait.Caption(!enemy, w))
             : new Rect2(enemy ? CaptionRight - w : CaptionLeft, CaptionTop, w, CaptionHeight);
         Ui.DrawPanel(this, caption, _k, CaptionFill * tint);
-        float shield = Phone ? PhoneBattleStates.CaptionShield : Upright ? PhoneBattleStatesUpright.CaptionShield : 1;
-        DrawShield(caption.Position.X + 26 * c, caption.Position.Y + (Phone || Upright ? (caption.Size.Y - 33 * shield) / 2 : 9), 28 * shield, 33 * shield,
+        float shield = Phone ? PhoneBattleStates.CaptionShield : Portrait ? PhoneBattleStatesPortrait.CaptionShield : 1;
+        DrawShield(caption.Position.X + 26 * c, caption.Position.Y + (Phone || Portrait ? (caption.Size.Y - 33 * shield) / 2 : 9), 28 * shield, 33 * shield,
             2 * shield, alpha);
         float x = caption.Position.X + 50 * c;
         if (name != "")
@@ -346,9 +346,9 @@ internal sealed partial class BattleInfoLayer : Control
             DrawPhoneResults(r);
             return;
         }
-        if (Upright)
+        if (Portrait)
         {
-            DrawUprightResults(r);
+            DrawPortraitResults(r);
             return;
         }
         DrawRect(new Rect2(128, 0, 1024, 410), new Color(0, 0, 0, 0.43f));

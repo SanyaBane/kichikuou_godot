@@ -198,7 +198,7 @@ internal sealed partial class BattleCommandLayer
     {
         if (_phone is { } phone)
         {
-            foreach (var button in phone.IsUpright ? DeckButtons() : PhoneRailButtons(phone))
+            foreach (var button in phone.IsPortrait ? DeckButtons() : PhoneRailButtons(phone))
                 yield return button;
             yield break;
         }
@@ -270,7 +270,7 @@ internal sealed partial class BattleCommandLayer
     {
         if (_phone is { } phone)
         {
-            if (phone.IsUpright)
+            if (phone.IsPortrait)
                 DrawDeck(font);
             else
                 DrawPhoneRails(phone, font);

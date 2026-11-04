@@ -154,7 +154,7 @@ internal sealed partial class HaremView : Control
     private int ButtonAt(Vector2 local)
     {
         if (_phone is { } phone)
-            return phone.IsUpright ? UprightButtonAt(phone, local) : PhoneButtonAt(phone, local);
+            return phone.IsPortrait ? PortraitButtonAt(phone, local) : PhoneButtonAt(phone, local);
         var at = (local - _origin) / _k;
         if (SummonArea.HasPoint(at))
             return SummonButton;
@@ -170,7 +170,7 @@ internal sealed partial class HaremView : Control
 
     public override void _GuiInput(InputEvent e)
     {
-        if (_phone is { IsUpright: true } && GridTouch(e))
+        if (_phone is { IsPortrait: true } && GridTouch(e))
         {
             AcceptEvent();
             return;
@@ -237,8 +237,8 @@ internal sealed partial class HaremView : Control
         c.DrawSetTransform(Vector2.Zero, 0, new Vector2(_k, _k));
         if (_phone is { } phone)
         {
-            if (phone.IsUpright)
-                DrawUpright(c, new PhoneUnits(phone));
+            if (phone.IsPortrait)
+                DrawPortrait(c, new PhoneUnits(phone));
             else
                 DrawPhone(c, new PhoneUnits(phone));
             return;

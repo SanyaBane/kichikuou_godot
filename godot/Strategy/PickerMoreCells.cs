@@ -8,7 +8,7 @@ namespace Kichikuou.Game.Strategy;
 /// <c>tools/ui/mock_more_cells.py</c>; the Harem's and Treasure's grids): a lacquer pill over the rows' edge — "▼ 2 more
 /// below" at their foot, "▲ 3 more above" at their top while scrolled past one — whose press scrolls the grid the least
 /// that shows the nearest of them, and a tick on the scroll bar at every row holding a filled cell, the whole list laid
-/// along the groove. The places are <see cref="PhonePickersUpright"/>'s; the pills' boxes are kept from the last drawing
+/// along the groove. The places are <see cref="PhonePickersPortrait"/>'s; the pills' boxes are kept from the last drawing
 /// for the press.
 /// </summary>
 internal sealed class PickerMoreCells
@@ -20,46 +20,46 @@ internal sealed class PickerMoreCells
     private bool? _pressed;                             // the pill pressed (true: above), till the release
 
     /// <summary>The pills and the ticks for <paramref name="filled"/> (the filled cells' numbers) over <paramref name="grid"/> at <paramref name="scroll"/>.</summary>
-    public void Draw(CanvasItem c, PhoneUnits u, Font cinzel, PhonePickersUpright.ScrolledGrid grid, int scroll, IReadOnlyCollection<int> filled)
+    public void Draw(CanvasItem c, PhoneUnits u, Font cinzel, PhonePickersPortrait.ScrolledGrid grid, int scroll, IReadOnlyCollection<int> filled)
     {
         _above = _below = null;
         if (grid.MaxScroll == 0)
             return;
         var f = u.Frame;
-        var (track, _) = PhonePickersUpright.ScrollBar(f, grid, scroll);
+        var (track, _) = PhonePickersPortrait.ScrollBar(f, grid, scroll);
         var groove = u.Rect(track);
-        float thick = u.Px(PhonePickersUpright.TickThick), rim = u.Px(PhonePickersUpright.TickRim), x0 = groove.Position.X - u.Px(PhonePickersUpright.TickOut);
-        foreach (int row in filled.Select(n => (n - 1) / PhonePickersUpright.Columns).Distinct())
+        float thick = u.Px(PhonePickersPortrait.TickThick), rim = u.Px(PhonePickersPortrait.TickRim), x0 = groove.Position.X - u.Px(PhonePickersPortrait.TickOut);
+        foreach (int row in filled.Select(n => (n - 1) / PhonePickersPortrait.Columns).Distinct())
         {
-            float y = PhonePickersUpright.TickY(track, row) / u.K;
+            float y = PhonePickersPortrait.TickY(track, row) / u.K;
             c.DrawRect(new Rect2(x0 - rim, y - thick / 2 - rim, groove.End.X - x0 + rim, thick + 2 * rim), Ui.Ink);
             c.DrawRect(new Rect2(x0, y - thick / 2, groove.End.X - x0, thick), Ui.Text);
         }
         var (above, below, nearestAbove, nearestBelow) = grid.Hidden(filled, scroll);
         (_nearestAbove, _nearestBelow) = (nearestAbove, nearestBelow);
-        int size = u.Size(PhonePickersUpright.PillText);
+        int size = u.Size(PhonePickersPortrait.PillText);
         if (above > 0)
-            _above = DrawPill(c, u, cinzel, grid, true, PhonePickersUpright.MoreText(above, true), size);
+            _above = DrawPill(c, u, cinzel, grid, true, PhonePickersPortrait.MoreText(above, true), size);
         if (below > 0)
-            _below = DrawPill(c, u, cinzel, grid, false, PhonePickersUpright.MoreText(below, false), size);
+            _below = DrawPill(c, u, cinzel, grid, false, PhonePickersPortrait.MoreText(below, false), size);
     }
 
-    private PhoneFrame.Box DrawPill(CanvasItem c, PhoneUnits u, Font cinzel, PhonePickersUpright.ScrolledGrid grid, bool above, string text, int size)
+    private PhoneFrame.Box DrawPill(CanvasItem c, PhoneUnits u, Font cinzel, PhonePickersPortrait.ScrolledGrid grid, bool above, string text, int size)
     {
         float textWidth = cinzel.GetStringSize(text, fontSize: size).X;
-        var box = PhonePickersUpright.MorePill(u.Frame, grid, above, textWidth * u.K);
+        var box = PhonePickersPortrait.MorePill(u.Frame, grid, above, textWidth * u.K);
         var r = u.Rect(box);
         float radius = r.Size.Y / 2;
-        Pill(c, new Rect2(r.Position + new Vector2(u.Px(4), u.Px(PhonePickersUpright.PillShadow)), r.Size), radius, new Color(0, 0, 0, 0.85f), null, 0);
+        Pill(c, new Rect2(r.Position + new Vector2(u.Px(4), u.Px(PhonePickersPortrait.PillShadow)), r.Size), radius, new Color(0, 0, 0, 0.85f), null, 0);
         bool held = _pressed == above;
         Pill(c, r, radius, held ? Ui.RowHover : Ui.Row, Ui.HoverLine, Math.Max(1, u.Px(4)));
-        float cy = r.GetCenter().Y, half = u.Px(PhonePickersUpright.PillArrowHalf);
-        float ax = r.Position.X + u.Px(PhonePickersUpright.PillPad) + half;
+        float cy = r.GetCenter().Y, half = u.Px(PhonePickersPortrait.PillArrowHalf);
+        float ax = r.Position.X + u.Px(PhonePickersPortrait.PillPad) + half;
         Vector2[] arrow = above
             ? [new(ax - half, cy + half * 0.6f), new(ax + half, cy + half * 0.6f), new(ax, cy - half * 0.7f)]
             : [new(ax - half, cy - half * 0.6f), new(ax + half, cy - half * 0.6f), new(ax, cy + half * 0.7f)];
         c.DrawColoredPolygon(arrow, Ui.Name);
-        c.DrawString(cinzel, new Vector2(r.Position.X + u.Px(PhonePickersUpright.PillPad + PhonePickersUpright.PillArrow),
+        c.DrawString(cinzel, new Vector2(r.Position.X + u.Px(PhonePickersPortrait.PillPad + PhonePickersPortrait.PillArrow),
             PhonePickerParts.Middle(cinzel, size, cy)), text, fontSize: size, modulate: Ui.Text);
         return box;
     }

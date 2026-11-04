@@ -35,46 +35,46 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
 
     // The phone held upright (docs/ui/phone-build.md, step P3; docs/ui/phone.md, §6 PB3): the board over the whole room at
     // the PC's width, its corner the room's — the scene at the width on top, our army's rows under it, the gauge across
-    // between the front rows, the enemy's rows at the thumb, Skip on its strip, the deck at the foot (PhoneBattleUpright's
+    // between the front rows, the enemy's rows at the thumb, Skip on its strip, the deck at the foot (PhoneBattlePortrait's
     // places, the board's height its room's). Read live.
-    private static bool Upright => Device.Layout == DeviceLayout.PhoneUpright;
+    private static bool HeldPortrait => Device.Layout == DeviceLayout.PhonePortrait;
 
     private static Rect2 R(PhoneFrame.Box b) => new(b.X, b.Y, b.W, b.H);
 
     /// <summary>A card's type in layout pixels on the phone, held landscape or upright (reference pixels of each); null elsewhere.</summary>
-    private static float? CardType(float landscape, float upright) =>
-        Phone ? PhoneBattle.Layout(landscape) : Upright ? PhoneBattleUpright.Layout(upright) : null;
+    private static float? CardType(float landscape, float portrait) =>
+        Phone ? PhoneBattle.Layout(landscape) : HeldPortrait ? PhoneBattlePortrait.Layout(portrait) : null;
 
     // The order strip and the limit's plate at the scene's foot and top: the PC's size, upright the landscape phone's (the
     // same millimetres either way: 1.6 of the PC's layout pixels).
-    private static float SceneMarks => Upright ? PhoneBattleUpright.LayoutPerReference / PhoneBattle.LayoutPerReference : 1;
+    private static float SceneMarks => HeldPortrait ? PhoneBattlePortrait.LayoutPerReference / PhoneBattle.LayoutPerReference : 1;
 
     // The layout in the pixels of a 1280×800 window (two to a script pixel); upright of the board, 1280 wide.
-    private static Rect2 SidesArea => Upright ? R(PhoneBattleUpright.Scene) : Phone ? new(0, 0, 1280, PhoneBattle.SceneBand) : new(0, 0, 1280, 410);
-    private static Rect2 SceneArea => Upright ? R(PhoneBattleUpright.Scene) : Phone ? R(PhoneBattle.ScenePicture) : new(128, 0, 1024, 410);
-    private static Rect2 WindowsArea => Upright || Phone                       // 640×400 script pixels ×1.025, at the scene's scale
-        ? Windows(Upright ? PhoneBattleUpright.SceneScale : PhoneBattle.SceneScale)
+    private static Rect2 SidesArea => HeldPortrait ? R(PhoneBattlePortrait.Scene) : Phone ? new(0, 0, 1280, PhoneBattle.SceneBand) : new(0, 0, 1280, 410);
+    private static Rect2 SceneArea => HeldPortrait ? R(PhoneBattlePortrait.Scene) : Phone ? R(PhoneBattle.ScenePicture) : new(128, 0, 1024, 410);
+    private static Rect2 WindowsArea => HeldPortrait || Phone                       // 640×400 script pixels ×1.025, at the scene's scale
+        ? Windows(HeldPortrait ? PhoneBattlePortrait.SceneScale : PhoneBattle.SceneScale)
         : new(312, 0, 656, 410);
     private static Rect2 Windows(float k) => new(640 - 328 * k, 0, 656 * k, 410 * k);
     private static Rect2 StripArea => new(10, SceneFoot - 36 * SceneMarks, 1260, 32 * SceneMarks);   // over the scene's foot (owner, 2026-10-16)
     private static float SceneFoot => SidesArea.End.Y;
-    private static Rect2 PlayerNameArea => Upright ? R(PhoneBattleUpright.Names(true)) : Phone ? R(PhoneBattle.Names(true))
+    private static Rect2 PlayerNameArea => HeldPortrait ? R(PhoneBattlePortrait.Names(true)) : Phone ? R(PhoneBattle.Names(true))
         : Narrow ? new(146, 424, 454, 24) : new(10, 424, 574, 24);              // up under the separator (owner, 2026-10-16)
-    private static Rect2 EnemyNameArea => Upright ? R(PhoneBattleUpright.Names(false)) : Phone ? R(PhoneBattle.Names(false))
+    private static Rect2 EnemyNameArea => HeldPortrait ? R(PhoneBattlePortrait.Names(false)) : Phone ? R(PhoneBattle.Names(false))
         : Narrow ? new(680, 424, 454, 24) : new(696, 424, 574, 24);
-    private static Rect2 GaugeArea => Upright ? R(PhoneBattleUpright.Gauge) : Phone ? R(PhoneBattle.Gauge)
+    private static Rect2 GaugeArea => HeldPortrait ? R(PhoneBattlePortrait.Gauge) : Phone ? R(PhoneBattle.Gauge)
         : Narrow ? new(612, 450, 56, 324) : new(608, 450, 64, 324);             // the caption a word a line (owner, 2026-10-24)
     // The speaker's portrait beside the balloon; on the phone in the scene's blurred side, so that no sprite is covered
     // (docs/ui/phone.md, §17, LB3b); upright at the scene's top corner as the PC's at the width, the balloon beside it (§11,
     // PB4b; docs/ui/phone-build.md, step P4).
-    private static Rect2 SpeakerLeft => Upright ? R(PhoneBattleStatesUpright.Speaker(player: true))
+    private static Rect2 SpeakerLeft => HeldPortrait ? R(PhoneBattleStatesPortrait.Speaker(player: true))
         : Phone ? new(8, 4, SceneArea.Position.X - 16, SceneFoot - 8) : new(8, 6, 300, 398);
-    private static Rect2 SpeakerRight => Upright ? R(PhoneBattleStatesUpright.Speaker(player: false))
+    private static Rect2 SpeakerRight => HeldPortrait ? R(PhoneBattleStatesPortrait.Speaker(player: false))
         : Phone ? new(SceneArea.End.X + 8, 4, SceneArea.Position.X - 16, SceneFoot - 8) : new(972, 6, 300, 398);
-    private static Vector2 CardSize => Upright ? R(PhoneBattleUpright.Card(0, 0)).Size : Phone ? R(PhoneBattle.Card(0, 0)).Size
+    private static Vector2 CardSize => HeldPortrait ? R(PhoneBattlePortrait.Card(0, 0)).Size : Phone ? R(PhoneBattle.Card(0, 0)).Size
         : Narrow ? new(223, 150) : new(282, 150);
     private static readonly float[] CardRows = [450, 608];
-    private static float TextSize => CardType(PhoneBattle.CardText, PhoneBattleUpright.CardText) ?? 17;
+    private static float TextSize => CardType(PhoneBattle.CardText, PhoneBattlePortrait.CardText) ?? 17;
 
     /// <summary>The cards' columns: the player's back row far left, its front row, the enemy's front row, its back row far right.</summary>
     private static int ColumnOf(BattlePlace place) => (place.Side, place.Slot) switch
@@ -93,8 +93,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _ => Narrow ? 911 : 988,
     };
 
-    // Upright the columns are rows (our back row on top), an army's slots 1 and 3 at the left (PB3).
-    internal static Rect2 CardArea(BattlePlace place) => Upright ? R(PhoneBattleUpright.Card(ColumnOf(place), (place.Slot - 1) % 2))
+    // HeldPortrait the columns are rows (our back row on top), an army's slots 1 and 3 at the left (PB3).
+    internal static Rect2 CardArea(BattlePlace place) => HeldPortrait ? R(PhoneBattlePortrait.Card(ColumnOf(place), (place.Slot - 1) % 2))
         : Phone ? R(PhoneBattle.Card(ColumnOf(place), (place.Slot - 1) % 2))
         : new(Column(place), CardRows[(place.Slot - 1) % 2], CardSize.X, CardSize.Y);
 
@@ -104,7 +104,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     // rail's (FIGT_SEL 8/9: the script turns an order for the acting unit into these, FIGT.ADV:776-833).
     internal static readonly (StandingOrder Order, string Text)[] OrderToggles = [(StandingOrder.AutoAttack, "Auto-Atk"), (StandingOrder.AutoDefend, "Auto-Def")];
     private const float OrderHeight = 32, OrderBottom = 8, OrderGap = 5;
-    private static float OrderText => CardType(PhoneBattle.StatsText, PhoneBattleUpright.TogglesText) ?? 14;
+    private static float OrderText => CardType(PhoneBattle.StatsText, PhoneBattlePortrait.TogglesText) ?? 14;
 
     /// <summary>Whether <paramref name="card"/> at <paramref name="place"/> shows the order toggles (every own card).</summary>
     internal static bool ShowsOrders(BattlePlace place, BattleCard card) =>
@@ -120,10 +120,10 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             float w = (card.Size.X - 2 * inset - inset) / 2;
             return new Rect2(card.Position.X + inset + toggle * (w + inset), card.End.Y - inset - h, w, h);
         }
-        if (Upright)                                                    // across the text column's foot (PB3's slim card)
+        if (HeldPortrait)                                                    // across the text column's foot (PB3's slim card)
         {
-            float pad = PhoneBattleUpright.Layout(PhoneBattleUpright.CardPad), inset = PhoneBattleUpright.Layout(PhoneBattleUpright.TogglesInset);
-            float h = PhoneBattleUpright.Layout(PhoneBattleUpright.TogglesHeight);
+            float pad = PhoneBattlePortrait.Layout(PhoneBattlePortrait.CardPad), inset = PhoneBattlePortrait.Layout(PhoneBattlePortrait.TogglesInset);
+            float h = PhoneBattlePortrait.Layout(PhoneBattlePortrait.TogglesHeight);
             float from = card.Position.X + pad + CardPortrait.Width + 2 * pad, to = card.End.X - pad;
             float w = (to - from - inset) / 2;
             return new Rect2(from + toggle * (w + inset), card.End.Y - inset - h, w, h);
@@ -150,7 +150,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     // everything below the scene is darkened but the two cards that fight.
     private Rect2 PanelArea => new(0, SceneFoot, 1280, _height - SceneFoot);
 
-    /// <summary>The board's height in layout pixels: the 1280×800 window's, upright the room's (<see cref="PhoneBattleUpright.Height"/>).</summary>
+    /// <summary>The board's height in layout pixels: the 1280×800 window's, upright the room's (<see cref="PhoneBattlePortrait.Height"/>).</summary>
     private float _height = 800;
     private const double SpotFadeSeconds = 0.15;
 
@@ -224,7 +224,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private float _scale = 1;                       // window pixels to a layout pixel
     private (Vector2 Origin, float Scale, bool Narrow)? _placed;     // what Place laid the screen out for
     private PhoneFrame? _placedPhone;                                // and the phone's frame, or null
-    private PhoneFrame? _placedUpright;                              // and the phone's frame held upright, or null
+    private PhoneFrame? _placedPortrait;                              // and the phone's frame held upright, or null
     private readonly Control _deck;                                  // upright the deck's panel, empty while an exchange plays (PB3x)
 
     public BattleBoardView(GameFont font, FacePictures faces)
@@ -492,13 +492,13 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private static readonly Color LabelRim = new(0.03f, 0.025f, 0.02f, 0.8f);
 
     /// <summary>Where the gauge's "n TURNS LEFT" stands, in layout pixels: the stones are darker round it.</summary>
-    private static Rect2 GaugeCaptionArea => Upright
-        ? new(GaugeArea.Position.X + PhoneBattleUpright.Layout(PhoneBattleUpright.CaptionLeft - 20), GaugeArea.Position.Y,
-            PhoneBattleUpright.Layout(340), GaugeArea.Size.Y)
+    private static Rect2 GaugeCaptionArea => HeldPortrait
+        ? new(GaugeArea.Position.X + PhoneBattlePortrait.Layout(PhoneBattlePortrait.CaptionLeft - 20), GaugeArea.Position.Y,
+            PhoneBattlePortrait.Layout(340), GaugeArea.Size.Y)
         : new(GaugeArea.Position.X, GaugeArea.Position.Y + TubeH + 10 * GaugeK, GaugeArea.Size.X, 76 * GaugeK);
 
     /// <summary>Where the stones lie: under the separator to the screen's foot; upright to the deck's top.</summary>
-    private Rect2 StonesArea => new(0, SceneFoot + 4, 1280, (Upright ? PhoneBattleUpright.DeckTopY : _height) - SceneFoot - 4);
+    private Rect2 StonesArea => new(0, SceneFoot + 4, 1280, (HeldPortrait ? PhoneBattlePortrait.DeckTopY : _height) - SceneFoot - 4);
 
     /// <summary>The armies' names and their advantages on the phone (reference pixels; LB2's 30, a little larger).</summary>
     private const float PhoneNamesText = 32;
@@ -532,18 +532,18 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         // lines sorted again each time (a theme override set is a theme change) and every layer drawn again
         // (docs/ui/phone-build.md, "The battle's speed").
         var phone = Device.Landscape(this);
-        var upright = Device.Upright(this);
-        if (upright is not null)                                            // over the whole room (PB3)
-            (origin, scale) = (new Vector2(upright.Room.X, upright.Room.Y), PhoneBattleUpright.Scale(upright));
-        if (_placed == (origin, scale, Narrow) && _placedPhone == phone && _placedUpright == upright)
+        var portrait = Device.Portrait(this);
+        if (portrait is not null)                                            // over the whole room (PB3)
+            (origin, scale) = (new Vector2(portrait.Room.X, portrait.Room.Y), PhoneBattlePortrait.Scale(portrait));
+        if (_placed == (origin, scale, Narrow) && _placedPhone == phone && _placedPortrait == portrait)
             return;
-        float height = upright is null ? 800 : PhoneBattleUpright.Height(upright);
-        if (_placedPhone is null != phone is null || _placedUpright is null != upright is null || height != _height)
+        float height = portrait is null ? 800 : PhoneBattlePortrait.Height(portrait);
+        if (_placedPhone is null != phone is null || _placedPortrait is null != portrait is null || height != _height)
         {
             _height = height;
             _cardsKey = _stripKey = _speakerKey = "?";                  // the cards' insides and the speaker at the device's sizes
             _stones.Texture = BoardStones.For(Ui, GaugeCaptionArea, StonesArea);
-            bool across = upright is not null;                          // upright the enemy's name at the left as ours (PB3)
+            bool across = portrait is not null;                          // upright the enemy's name at the left as ours (PB3)
             _enemyArmyLine.Alignment = across ? BoxContainer.AlignmentMode.Begin : BoxContainer.AlignmentMode.End;
             _enemyArmyLine.MoveChild(_enemyName, across ? 0 : _enemyArmyLine.GetChildCount() - 1);
             _deck.Visible = across;
@@ -556,7 +556,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         }
         _placed = (origin, scale, Narrow);
         _placedPhone = phone;
-        _placedUpright = upright;
+        _placedPortrait = portrait;
         if (scale != _scale)
             _cardsKey = _stripKey = "?";                                // the faces and the text at the new size
         _origin = origin;
@@ -569,8 +569,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         var board = new Rect2(0, 0, 1280, _height);
         At(_back, board);
         At(_stones, StonesArea);
-        if (upright is not null)
-            At(_deck, R(PhoneBattleUpright.Deck(_height)));
+        if (portrait is not null)
+            At(_deck, R(PhoneBattlePortrait.Deck(_height)));
         _deck.QueueRedraw();
         At(_sidesClip, SidesArea);
         At(_sceneClip, SceneArea);
@@ -580,8 +580,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         _effect.Position = new Vector2(0, SceneArea.Size.Y - EffectPlayer.Height * sceneScale / scale) * scale;     // at the scene's foot
         _effect.Scale = new Vector2(sceneScale, sceneScale);
         _counters.Position = Vector2.Zero;
-        if (upright is not null)                                            // the PC's over the scene at its scale (PB3x)
-            _counters.Layout(_sceneClip.Size, scale * PhoneBattleUpright.SceneScale);
+        if (portrait is not null)                                            // the PC's over the scene at its scale (PB3x)
+            _counters.Layout(_sceneClip.Size, scale * PhoneBattlePortrait.SceneScale);
         else if (phone is null)
             _counters.Layout(_sceneClip.Size, scale);
         else
@@ -604,8 +604,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 label.AddThemeColorOverride("font_outline_color", LabelRim);
                 if (phone is not null)                                                   // under the cards' 2.3 mm (LB2's 30)
                     label.AddThemeFontSizeOverride("font_size", (int)Math.Round(PhoneBattle.Layout(PhoneNamesText) * scale));
-                else if (upright is not null)                                            // PB3's 32
-                    label.AddThemeFontSizeOverride("font_size", (int)Math.Round(PhoneBattleUpright.Layout(PhoneNamesText) * scale));
+                else if (portrait is not null)                                            // PB3's 32
+                    label.AddThemeFontSizeOverride("font_size", (int)Math.Round(PhoneBattlePortrait.Layout(PhoneNamesText) * scale));
                 else
                     label.RemoveThemeFontSizeOverride("font_size");
             }
@@ -621,9 +621,9 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         At(_info, board);
         _info.Layout(scale);
         At(_commands, board);
-        _commands.Layout(CardArea, scale, phone ?? upright, _height);
+        _commands.Layout(CardArea, scale, phone ?? portrait, _height);
         At(_dialog, board);
-        _dialog.Layout(scale, phone ?? upright, _height);
+        _dialog.Layout(scale, phone ?? portrait, _height);
         At(_advantageTip, board);
         _advantageTip.Layout(scale);
         At(_balloon, board);
@@ -994,7 +994,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     private void DrawPill(Fighter fighter)
     {
         float s = _scale, k = Phone ? PhonePill                         // the phone's cards' type: LB2x's pill (58 high)
-            : Upright ? PhoneBattleUpright.Layout(PhoneBattleUpright.PillHeight) / PillHeight : 1;  // PB3x's (42)
+            : HeldPortrait ? PhoneBattlePortrait.Layout(PhoneBattlePortrait.PillHeight) / PillHeight : 1;  // PB3x's (42)
         var font = _theme.DefaultFont;
         int size = Math.Max(8, (int)Math.Round(PillText * k * s));
         string text = BattleCommands.ActionName(fighter.Action);
@@ -1153,7 +1153,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         card is null ? Ui.PlaceLine : acting ? Ui.HoverLine : _cardsHovered == place ? Ui.Gold : Ui.Gold;
 
     /// <summary>The cards' padding inside their frame, in window pixels: four units of the acting frame.</summary>
-    private int Pad => Math.Max(1, (int)Math.Round((CardType(PhoneBattle.CardPad, PhoneBattleUpright.CardPad) ?? 4) * _scale));
+    private int Pad => Math.Max(1, (int)Math.Round((CardType(PhoneBattle.CardPad, PhoneBattlePortrait.CardPad) ?? 4) * _scale));
 
     /// <summary>
     /// The tooltip of the advantage under the pointer (owner, 2026-10-15): at once, while the screen shows, the battle's
@@ -1254,18 +1254,18 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     // The front row's slide: 640 layout pixels; upright as far as takes both armies' front rows wholly beyond their edges
     // (the enemy's stands 688 over the deck).
     private static float CardsSlideDistance =>
-        Upright ? Math.Max(640, Math.Max(SlideEdge(BattleSide.Player), SlideEdge(BattleSide.Enemy))) : 640;
+        HeldPortrait ? Math.Max(640, Math.Max(SlideEdge(BattleSide.Player), SlideEdge(BattleSide.Enemy))) : 640;
 
-    /// <summary>Upright, how far <paramref name="side"/>'s front row stands from its edge's far side: ours from the scene's foot, the enemy's from the deck's top.</summary>
+    /// <summary>HeldPortrait, how far <paramref name="side"/>'s front row stands from its edge's far side: ours from the scene's foot, the enemy's from the deck's top.</summary>
     private static float SlideEdge(BattleSide side)
     {
         var front = CardArea(new BattlePlace(side, 1));
-        return side == BattleSide.Player ? front.End.Y - SceneFoot : PhoneBattleUpright.DeckTopY - front.Position.Y;
+        return side == BattleSide.Player ? front.End.Y - SceneFoot : PhoneBattlePortrait.DeckTopY - front.Position.Y;
     }
 
     // The cards' clip: the panel; upright down to the deck's top, out from behind which the enemy's cards slide up (owner,
     // 2026-10-31).
-    private Rect2 CardsArea => Upright ? new(0, SceneFoot, 1280, PhoneBattleUpright.DeckTopY - SceneFoot) : PanelArea;
+    private Rect2 CardsArea => HeldPortrait ? new(0, SceneFoot, 1280, PhoneBattlePortrait.DeckTopY - SceneFoot) : PanelArea;
 
     /// <summary>
     /// The screen gallery's look at the cards' slide (<c>cards-sliding</c>, docs/ui/gallery.md): begun as a battle begins
@@ -1312,7 +1312,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             }
             if (place.Side == BattleSide.Player)
                 away = -away;
-            var at = CardArea(place).Position - CardsArea.Position + (Upright ? new Vector2(0, away) : new Vector2(away, 0));
+            var at = CardArea(place).Position - CardsArea.Position + (HeldPortrait ? new Vector2(0, away) : new Vector2(away, 0));
             card.Position = at * _scale;
             card.Size = CardSize * _scale;
             card.Modulate = new Color(1, 1, 1, alpha);
@@ -1503,12 +1503,12 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         text.AddThemeConstantOverride("separation", 0);
         var name = new HBoxContainer { MouseFilter = MouseFilterEnum.Ignore };
         name.AddThemeConstantOverride("separation", pad * 2);
-        float? nameType = CardType(PhoneBattle.NameText, PhoneBattleUpright.NameText);
+        float? nameType = CardType(PhoneBattle.NameText, PhoneBattlePortrait.NameText);
         name.AddChild(PhoneSized(Line(card.Place.Slot.ToString(), Ui.Quiet, expand: false), nameType));
         name.AddChild(PhoneSized(Line(card.Name), nameType));
         text.AddChild(name);
         text.AddChild(PhoneSized(Line(card.TroopType == "" ? "—" : card.TroopType, Ui.Quiet),
-            CardType(PhoneBattle.QuietText, PhoneBattleUpright.QuietText), TextRoom(pad)));
+            CardType(PhoneBattle.QuietText, PhoneBattlePortrait.QuietText), TextRoom(pad)));
         var side = card.Place.Side == BattleSide.Player ? PlayerColour : EnemyColour;
         foreach (var (gauge, colour) in new[] { (Gauge.Troops, side), (Gauge.Hp, HpColour) })
         {
@@ -1517,7 +1517,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             text.AddChild(label);
             text.AddChild(bar);
             Track(card, gauge, label, trail, fill);                         // the number and the bar, running to a new value
-            if (Phone || Upright)                                           // as large as its widest figures let it be (LB2's fit)
+            if (Phone || HeldPortrait)                                           // as large as its widest figures let it be (LB2's fit)
                 label.AddThemeFontSizeOverride("font_size", Fitted(Widest(card, gauge), (int)Math.Round(TextSize * _scale), TextRoom(pad)));
         }
         // The own cards show their order on the toggles (OrderStrip).
@@ -1540,7 +1540,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         // The line fits rather than end in "…" (owner, 2026-10-25: "Auto-Def · Defend · Acting" read "Auto-Def · Def…"): too
         // long, it drops "Acting" (the card's fill and blinking frame say it), then shrinks, down to seven eighths. The text
         // column is the card less its padding, the face and the separation.
-        int full = (int)Math.Round((CardType(PhoneBattle.QuietText, PhoneBattleUpright.QuietText) ?? TextSize) * _scale), fitted = full;
+        int full = (int)Math.Round((CardType(PhoneBattle.QuietText, PhoneBattlePortrait.QuietText) ?? TextSize) * _scale), fitted = full;
         float room = TextRoom(pad);
         string Whole() => order + (order != "" && state != "" ? " · " : "") + state;
         bool Fits(int size) => _theme.DefaultFont.GetStringSize(Whole(), fontSize: size).X <= room;
@@ -1562,7 +1562,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 state = " · " + state;
         }
         stateLine.AddChild(Line(state, Ui.Quiet));
-        if (fitted < full || Phone || Upright)
+        if (fitted < full || Phone || HeldPortrait)
         {
             foreach (var label in stateLine.GetChildren().OfType<Label>())         // an override is the node's own, not its children's
                 label.AddThemeFontSizeOverride("font_size", fitted);
@@ -1717,7 +1717,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
 
     private void DrawGauge()
     {
-        if (Upright)
+        if (HeldPortrait)
         {
             DrawGaugeAcross();
             return;
@@ -1789,11 +1789,11 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
     {
         var (rounds, left) = _gaugeValues;
         float s = _scale;
-        static float L(float reference) => PhoneBattleUpright.Layout(reference);
+        static float L(float reference) => PhoneBattlePortrait.Layout(reference);
         bool last = left == 1;
         var lit = last ? Ui.Minus : Ui.HoverLine;
-        var tube = new Rect2(L(PhoneBattleUpright.TubeLeft) * s, L(PhoneBattleUpright.TubeTop) * s,
-            L(PhoneBattleUpright.TubeWidth) * s, L(PhoneBattleUpright.TubeHeight) * s);
+        var tube = new Rect2(L(PhoneBattlePortrait.TubeLeft) * s, L(PhoneBattlePortrait.TubeTop) * s,
+            L(PhoneBattlePortrait.TubeWidth) * s, L(PhoneBattlePortrait.TubeHeight) * s);
         var box = new StyleBoxFlat { BgColor = TubeFill, BorderColor = Ui.Gold, AntiAliasing = true };
         box.SetCornerRadiusAll((int)Math.Round(TubeRadius * s));
         box.SetBorderWidthAll(Math.Max(1, (int)Math.Round(2 * s)));
@@ -1827,8 +1827,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         }
         var font = _opening.CinzelBold;
         var colour = last ? Ui.Minus : Ui.HoverLine;
-        int number = (int)Math.Round(L(PhoneBattleUpright.CaptionNumber) * s), caption = (int)Math.Round(L(PhoneBattleUpright.CaptionWords) * s);
-        float x = L(PhoneBattleUpright.CaptionLeft) * s, middle = _gauge.Size.Y / 2, rim = Math.Max(2, (int)Math.Round(4 * s));
+        int number = (int)Math.Round(L(PhoneBattlePortrait.CaptionNumber) * s), caption = (int)Math.Round(L(PhoneBattlePortrait.CaptionWords) * s);
+        float x = L(PhoneBattlePortrait.CaptionLeft) * s, middle = _gauge.Size.Y / 2, rim = Math.Max(2, (int)Math.Round(4 * s));
         string digits = left.ToString(), words = last ? "LAST TURN" : "TURNS LEFT";
         float baseline = middle + (font.GetAscent(number) - font.GetDescent(number)) / 2;
         _gauge.DrawStringOutline(font, new Vector2(x, baseline), digits, HorizontalAlignment.Left, -1, number, (int)rim, Color.Color8(20, 20, 24));

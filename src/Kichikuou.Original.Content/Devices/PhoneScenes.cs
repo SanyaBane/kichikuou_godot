@@ -42,11 +42,11 @@ public static class PhoneScenes
     /// <summary>The week report's card: as wide as the mock-up's (75.2 mm), unless its height would leave less than this over and under it.</summary>
     private const float ReportWidth = 1320, ReportMargin = 60;
 
-    /// <summary>Upright: the bar's cells' width (9.7 mm) and the room between them (PK1).</summary>
+    /// <summary>Portrait: the bar's cells' width (9.7 mm) and the room between them (PK1).</summary>
     private const float BarCell = 170, BarCellGap = 14;
 
     /// <summary>
-    /// Upright: the message windows' margin from the screen's sides, their distance from the picture, the height of a
+    /// Portrait: the message windows' margin from the screen's sides, their distance from the picture, the height of a
     /// speech's, a thought's and the narration's (23.9 mm: five lines of the script's at their type, so the picture never
     /// moves) and of 131's; the text's room from the panel's side and top, 131's (under its speaker's plate); the type
     /// at most (the script's 24, 48 screen pixels): a speech's 3.6 mm, 131's 2.6 mm (PS2, PS2b).
@@ -54,16 +54,16 @@ public static class PhoneScenes
     private const float WindowSide = 16, WindowGap = 64, WindowHeight = 420, CgBarHeight = 330, TextSide = 44, TextTop = 34,
         CgBarSide = 24, CgBarTop = 56, SpeechType = 64, CgBarType = 46, ScriptType = 48;
 
-    /// <summary>Upright: where a speech's tail or a thought's bubbles point in the picture — at the left portrait's, the right one's (layout pixels).</summary>
+    /// <summary>Portrait: where a speech's tail or a thought's bubbles point in the picture — at the left portrait's, the right one's (layout pixels).</summary>
     private const float LeftPortraitX = 240, RightPortraitX = 1040;
 
     /// <summary>
-    /// Upright: a <c>]</c> menu's rows (PS2m): their height (7.4 mm) and the room between them, their sides' distance from
+    /// Portrait: a <c>]</c> menu's rows (PS2m): their height (7.4 mm) and the room between them, their sides' distance from
     /// the screen's (the panel's sides the windows').
     /// </summary>
     private const float UpRowHeight = 130, UpRowGap = 14, UpRowSide = 40;
 
-    /// <summary>Upright: the log's paper's room from the bar and the screen's top (PR2).</summary>
+    /// <summary>Portrait: the log's paper's room from the bar and the screen's top (PR2).</summary>
     private const float UpPaperTop = 10, UpPaperFoot = 20;
 
     /// <summary>
@@ -71,18 +71,18 @@ public static class PhoneScenes
     /// upright the bar's first cell (PK1).
     /// </summary>
     public static PhoneFrame.Box MenuCell(PhoneFrame f) =>
-        f.IsUpright ? BarCellAt(f, 0) : Cell(f, f.LeftRoom.Y + f.Px(MenuTop), MenuHeight);
+        f.IsPortrait ? BarCellAt(f, 0) : Cell(f, f.LeftRoom.Y + f.Px(MenuTop), MenuHeight);
 
     /// <summary>The drawer's Log at the left thumb, at the side's foot; upright the bar's second cell.</summary>
     public static PhoneFrame.Box LogCell(PhoneFrame f) =>
-        f.IsUpright ? BarCellAt(f, 1) : Cell(f, f.LeftRoom.Bottom - f.Px(DrawerFoot + DrawerHeight), DrawerHeight);
+        f.IsPortrait ? BarCellAt(f, 1) : Cell(f, f.LeftRoom.Bottom - f.Px(DrawerFoot + DrawerHeight), DrawerHeight);
 
     /// <summary>The drawer's Skip, over Log; upright the bar's third cell, right of Log.</summary>
     public static PhoneFrame.Box SkipCell(PhoneFrame f) =>
-        f.IsUpright ? BarCellAt(f, 2) : Cell(f, LogCell(f).Y - f.Px(DrawerGap + DrawerHeight), DrawerHeight);
+        f.IsPortrait ? BarCellAt(f, 2) : Cell(f, LogCell(f).Y - f.Px(DrawerGap + DrawerHeight), DrawerHeight);
 
     /// <summary>The message log's Close: in the Menu cell's place held landscape (LR2), in Log's upright (PR2).</summary>
-    public static PhoneFrame.Box LogClose(PhoneFrame f) => f.IsUpright ? LogCell(f) : MenuCell(f);
+    public static PhoneFrame.Box LogClose(PhoneFrame f) => f.IsPortrait ? LogCell(f) : MenuCell(f);
 
     /// <summary>
     /// The message log's paper (LR2): from just right of the left side's cells — the frame's left edge — to the right
@@ -90,7 +90,7 @@ public static class PhoneScenes
     /// </summary>
     public static PhoneFrame.Box LogPaper(PhoneFrame f)
     {
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
             // PR2: over the screen from the hole's strip to the bar, its sides as the bar's.
             float top = f.Room.Y + f.Px(UpPaperTop);
@@ -113,8 +113,8 @@ public static class PhoneScenes
     public static MenuRows SceneMenu(PhoneFrame f, int count, float widest, float? under = null)
     {
         count = Math.Max(1, count);
-        if (f.IsUpright)
-            return UprightMenu(f, count, widest);
+        if (f.IsPortrait)
+            return PortraitMenu(f, count, widest);
         float p = f.Px(PanelPad), floor = f.LeftRoom.Bottom - f.Px(RowsFoot);
         float foot = under is { } window ? Math.Min(floor, window - f.Px(WindowClear) - p) : floor;
         var (top, scale) = Centre(count * f.Px(RowHeight) + (count - 1) * f.Px(RowGap), f.Frame.Y + f.Frame.H / 2,
@@ -152,7 +152,7 @@ public static class PhoneScenes
     /// in the frame's middle (LW1): as wide as the mock-up's card, smaller when a long account would leave less than the
     /// margin over and under it.
     /// </summary>
-    public static float ReportScale(PhoneFrame f, float width, float height) => f.IsUpright
+    public static float ReportScale(PhoneFrame f, float width, float height) => f.IsPortrait
         ? Math.Min(f.Bar.W / (width * f.Scale), (f.Bar.Y - f.Room.Y - 2 * f.Px(ReportMargin)) / (height * f.Scale))    // PW1: at the bar's width
         : Math.Min(f.Px(ReportWidth) / (width * f.Scale), (f.Frame.H - 2 * f.Px(ReportMargin)) / (height * f.Scale));
 
@@ -163,7 +163,7 @@ public static class PhoneScenes
     /// cells kept, the rows <see cref="RowScale"/> apart (a little more than the cells, as the mock-ups' lines) —, and its
     /// speech's tail or thought's bubbles pointing at <see cref="PointerX"/> (null: no portrait to point at).
     /// </summary>
-    public sealed record UprightWindow(PhoneFrame.Box Panel, bool Above, float Scale, float TextX, float TextY, float? PointerX)
+    public sealed record PortraitWindow(PhoneFrame.Box Panel, bool Above, float Scale, float TextX, float TextY, float? PointerX)
     {
         /// <summary>The canvas's units a screen pixel down the rows: the script's 2 pixels between lines spread to the type's size.</summary>
         public float RowScale => Scale * LineSpread;
@@ -182,7 +182,7 @@ public static class PhoneScenes
     /// it, a speech's or a thought's pointing up at its portrait when that shows. A speech's, a thought's and the
     /// narration's lines at a speech's type at most, 131's at its own, smaller if the text box would not fit the panel.
     /// </summary>
-    public static UprightWindow Window(PhoneFrame f, MessageKind kind, (int X, int Y, int W, int H) text, (bool Left, bool Right) portraits)
+    public static PortraitWindow Window(PhoneFrame f, MessageKind kind, (int X, int Y, int W, int H) text, (bool Left, bool Right) portraits)
     {
         bool left = kind is MessageKind.SpeechLeft or MessageKind.ThoughtLeft;
         bool speaks = left || kind is MessageKind.SpeechRight or MessageKind.ThoughtRight;
@@ -197,7 +197,7 @@ public static class PhoneScenes
         float side = f.Px(bar ? CgBarSide : TextSide);
         float scale = Math.Min(f.Px(bar ? CgBarType : SpeechType) / ScriptType, (panel.W - 2 * side) / Math.Max(1, text.W));
         float? pointer = speaks && portrait ? f.Frame.X + (left ? LeftPortraitX : RightPortraitX) * f.Scale : null;
-        return new UprightWindow(panel, above, scale, panel.X + side, panel.Y + f.Px(bar ? CgBarTop : TextTop), pointer);
+        return new PortraitWindow(panel, above, scale, panel.X + side, panel.Y + f.Px(bar ? CgBarTop : TextTop), pointer);
     }
 
     /// <summary>
@@ -257,7 +257,7 @@ public static class PhoneScenes
     /// height — below that they keep it and run down over the window to the bar's foot. The type smaller for an item too
     /// wide for its row.
     /// </summary>
-    private static MenuRows UprightMenu(PhoneFrame f, int count, float widest)
+    private static MenuRows PortraitMenu(PhoneFrame f, int count, float widest)
     {
         float x = f.Room.X + f.Px(UpRowSide), width = f.Room.W - 2 * f.Px(UpRowSide);
         float side = f.Px(UpRowSide) - f.Px(WindowSide);

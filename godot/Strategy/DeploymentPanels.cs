@@ -242,7 +242,7 @@ internal sealed partial class DeploymentPanels : Control
         int[] sends = [.. new[] { 1, 2 }.Where(HasButton)];
         if (_phone is { } phone)
         {
-            var boxes = phone.IsUpright ? PhoneLedgerUpright.Bar(phone, sends.Length) : PhoneLedger.Bar(phone, sends.Length);   // Stop first, at the right
+            var boxes = phone.IsPortrait ? PhoneLedgerPortrait.Bar(phone, sends.Length) : PhoneLedger.Bar(phone, sends.Length);   // Stop first, at the right
             for (int i = 0; i < sends.Length; i++)
                 yield return (sends[i], Box(boxes[i + 1]));
             if (HasButton(3))
@@ -264,7 +264,7 @@ internal sealed partial class DeploymentPanels : Control
     private Rect2 CardRect(int place)
     {
         if (_phone is { } phone)
-            return Box(phone.IsUpright ? PhoneLedgerUpright.Card(phone, place) : PhoneLedger.Card(phone, place));
+            return Box(phone.IsPortrait ? PhoneLedgerPortrait.Card(phone, place) : PhoneLedger.Card(phone, place));
         float x0 = PartyPanel.Position.X + 14, x1 = PartyPanel.End.X - 14 - FacingStrip - FacingGap, mid = (x0 + x1) / 2;
         float w = mid - 3 - x0;
         float x = place is 3 or 4 ? x0 : mid + 3;
@@ -275,7 +275,7 @@ internal sealed partial class DeploymentPanels : Control
     private Rect2 RemoveRect(int place)
     {
         if (_phone is { } phone)
-            return Box(Insides(phone).RemoveBox(phone, phone.IsUpright ? PhoneLedgerUpright.Card(phone, place) : PhoneLedger.Card(phone, place)));
+            return Box(Insides(phone).RemoveBox(phone, phone.IsPortrait ? PhoneLedgerPortrait.Card(phone, place) : PhoneLedger.Card(phone, place)));
         var card = CardRect(place);
         return new Rect2(card.End.X - 26, card.Position.Y + 6, 20, 20);
     }

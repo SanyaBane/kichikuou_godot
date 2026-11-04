@@ -2,7 +2,7 @@
 "Round P24").
 
 Held upright the army's front row stands on top, facing up at the province (PA1), but the only mark of it is the small
-triangle beside "FRONT ROW" (EnemyAttackView.UprightArmy: 16 reference pixels, 0.9 mm). The PC holds the front row in a
+triangle beside "FRONT ROW" (EnemyAttackView.PortraitArmy: 16 reference pixels, 0.9 mm). The PC holds the front row in a
 gold bracket whose head points at the "VS" (docs/ui/enemy-attack.md, §8), the phone held landscape has a gold pointer
 left of the cards (PhoneAttack.Pointer: 30 deep, 68 wide). These draw the facing upright as plainly.
 
@@ -324,7 +324,7 @@ detail('enemy-attack-scouted', 'p25-detail', 'Round P25 — the middle of the sc
 
 
 # --- Round P26: the deployment table's party upright -----------------------------------------------------------------
-# The party (PhoneLedgerUpright.Party, its panel from 274 to 874) faces down, as our army in the battle upright (PB3): the
+# The party (PhoneLedgerPortrait.Party, its panel from 274 to 874) faces down, as our army in the battle upright (PB3): the
 # back row on top, the front row under it with "Front row ▼". Each variant holds the front row in PA1f2a's bracket turned
 # down; the panel grows, and the ledger under it loses as much at its foot.
 
@@ -408,11 +408,11 @@ detail('deployment', 'p26-detail', 'Round P26 — the party at the dump\'s pixel
 
 
 # --- Round P27: the scout report upright ------------------------------------------------------------------------------
-# The ninja's report before the field (PB4s, ScoutReportView.Upright.cs): the enemy's cards as the enemy attack's, the
+# The ninja's report before the field (PB4s, ScoutReportView.Portrait.cs): the enemy's cards as the enemy attack's, the
 # front row on top facing up, "FRONT ROW" over it with no mark of the facing at all. PA1f2a's bracket as built.
 
 SCOUT_ROWS = (606, 1210)                # "FRONT ROW" down to the back row's cards
-SCOUT_TOP = 650                         # the front row's top (PhoneBattleStatesUpright: the room's top + 540)
+SCOUT_TOP = 650                         # the front row's top (PhoneBattleStatesPortrait: the room's top + 540)
 SCOUT_ENDS = (17, 1203)                 # the cards' outer sides, 1 in
 
 
@@ -441,7 +441,7 @@ detail('scout-report', 'p27-detail', 'Round P27 — the report and the cards at 
 
 # --- Round P28: PB4sf2 with the ninja and the enemy in the screen's middle ------------------------------------------------
 # The owner chose PB4sf2 with Kanami's report and the cards moved to the screen's middle. Rance's answer stays standing on
-# the bar; with Maris's comment (PhoneBattleStatesUpright.SpeakerPortrait) his row stands a row higher (324 px).
+# the bar; with Maris's comment (PhoneBattleStatesPortrait.SpeakerPortrait) his row stands a row higher (324 px).
 
 SCOUT_BLOCK = (129, 1206 + 60)          # Kanami's portrait's top to the back row's foot, in PB4sf2
 ROOM = (110, 2504)                      # the room: under the hole, over the bar

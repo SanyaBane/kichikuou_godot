@@ -13,7 +13,7 @@ namespace Kichikuou.Game.Strategy;
 // thumb a column of its own: the title, the date and the news, Maris's question, Abandon City | Ninja Scout, Intercept at
 // the thumb. Ninja Scout's list opens above its button, two ninjas a row; Abandon City asks in the callout above its button.
 // Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhoneAttack's. The answers, the list,
-// the cards and the totals serve the phone held upright too (EnemyAttackView.Upright.cs).
+// the cards and the totals serve the phone held upright too (EnemyAttackView.Portrait.cs).
 internal sealed partial class EnemyAttackView
 {
     private PhoneFrame? _phone;
@@ -294,7 +294,7 @@ internal sealed partial class EnemyAttackView
             if (_faces.SquareTexture(ninja.Portrait, _faces.CropOf(ninja.Portrait, _crops), (int)Math.Round(size * _k)) is { } square)
                 _sheet.DrawTextureRect(square, face, false, ninja.Free ? Colors.White : new Color(0.45f, 0.42f, 0.4f));
             _sheet.DrawRect(face, Ui.DimGold, false, Lacquer.Line(1, _k));
-            float gap = u.Frame.IsUpright ? PhoneAttackUpright.RowTextGap : PhoneAttack.RowTextGap;
+            float gap = u.Frame.IsPortrait ? PhoneAttackPortrait.RowTextGap : PhoneAttack.RowTextGap;
             float tx = row.Position.X + row.Size.Y + u.Px(gap), room = row.End.X - inset - tx;
             string name = ninja.Name.ToUpperInvariant();
             int nameSize = SideCells.Fit(_cinzelBold, name, u.Size(PhoneAttack.RowName), room);

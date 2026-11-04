@@ -135,17 +135,17 @@ internal static partial class GalleryEntries
     {
         var p = GalleryTitle.HeldAt(g.Fresh, moment);
         var picture = g.Picture(p);
-        TitleUprightView? screen = null;
-        if (title && Device.Layout == DeviceLayout.PhoneUpright && p.State is { } s)
+        TitlePortraitView? screen = null;
+        if (title && Device.Layout == DeviceLayout.PhonePortrait && p.State is { } s)
         {
-            var buttons = PhoneTitleUpright.Buttons(s);
+            var buttons = PhoneTitlePortrait.Buttons(s);
             bool polls = !moment.AtKey && p.MessageWindow is null;
             if (polls || p.MessageWindow is not null)
             {
-                screen = g.Add(new TitleUprightView(g.Faces.Cgs));
+                screen = g.Add(new TitlePortraitView(g.Faces.Cgs));
                 screen.ShowTitle(buttons, polls);
                 if (!polls && screen.LogoHeight is int logo)
-                    Device.PictureTop = f => PhoneTitleUpright.DescriptionPictureTop(f, buttons.Count, logo);
+                    Device.PictureTop = f => PhoneTitlePortrait.DescriptionPictureTop(f, buttons.Count, logo);
             }
         }
         MessageWindowView? window = null;

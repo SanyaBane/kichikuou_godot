@@ -5,7 +5,7 @@ namespace Kichikuou.Game.Strategy;
 
 // Every tab in one column, scrolled, on every device (owner, 2026-11-03; docs/ui/options.md, "Frame rate"): on the PC and
 // the tablet the 1280×800 sheet between the tabs and its foot (Defaults, Close), held landscape the sheet over Defaults |
-// Close (PhoneOptions.View), held upright the sheet down to the bar (PhoneOptionsUpright.View). What scrolls past the view
+// Close (PhoneOptions.View), held upright the sheet down to the bar (PhoneOptionsPortrait.View). What scrolls past the view
 // is cut at its edges: the item's clip is the column's view, the frame, the backdrop, the tabs, the foot, the bar and a
 // question drawn outside it (clip ignored), the preview's 121, a child, cut with the column. The reference scroll bar at
 // the sheet's right while the tab scrolls (the layout's 8 px on the PC and the tablet, the phone's elsewhere, on the
@@ -35,7 +35,7 @@ internal sealed partial class OptionsView
     /// <summary>Where the column is seen, in the canvas's units.</summary>
     private Rect2 ViewBox() => _phone switch
     {
-        { IsUpright: true } f => Rect(PhoneOptionsUpright.View(f)),
+        { IsPortrait: true } f => Rect(PhoneOptionsPortrait.View(f)),
         { } f => Rect(PhoneOptions.View(f)),
         _ => new Rect2(PcView.Position * _k, PcView.Size * _k),
     };
@@ -46,7 +46,7 @@ internal sealed partial class OptionsView
         var view = ViewBox();
         var sheet = _phone switch
         {
-            { IsUpright: true } f => Rect(PhoneOptionsUpright.Sheet(f)),
+            { IsPortrait: true } f => Rect(PhoneOptionsPortrait.Sheet(f)),
             { } f => Rect(PhoneOptions.Sheet(f)),
             _ => new Rect2(Sheet.Position * _k, Sheet.Size * _k),
         };
@@ -58,9 +58,9 @@ internal sealed partial class OptionsView
     {
         switch (_phone)
         {
-            case { IsUpright: true } f:
-                var view = PhoneOptionsUpright.View(f);
-                return (view.X / _k, PhoneOptionsUpright.ColumnTop(f, _scroll) / _k, view.W / _k);
+            case { IsPortrait: true } f:
+                var view = PhoneOptionsPortrait.View(f);
+                return (view.X / _k, PhoneOptionsPortrait.ColumnTop(f, _scroll) / _k, view.W / _k);
             case { } f:
                 var across = PhoneOptions.Across(f);
                 return (across.X / _k, PhoneOptions.ColumnTop(f, _scroll) / _k, across.W / _k);
@@ -75,7 +75,7 @@ internal sealed partial class OptionsView
         float height = _columnHeight.GetValueOrDefault(_tab);
         return _phone switch
         {
-            { IsUpright: true } f => PhoneOptionsUpright.MaxScroll(f, height),
+            { IsPortrait: true } f => PhoneOptionsPortrait.MaxScroll(f, height),
             { } f => PhoneOptions.MaxScroll(f, height),
             _ => Math.Max(0, ContentY * _k + height - (PcView.End.Y - PcColumnFoot) * _k),
         };
@@ -87,7 +87,7 @@ internal sealed partial class OptionsView
         float height = _columnHeight.GetValueOrDefault(_tab);
         var bar = _phone switch
         {
-            { IsUpright: true } f => PhoneOptionsUpright.ScrollBar(f, height, _scroll),
+            { IsPortrait: true } f => PhoneOptionsPortrait.ScrollBar(f, height, _scroll),
             { } f => PhoneOptions.ScrollBar(f, height, _scroll),
             _ => null,
         };

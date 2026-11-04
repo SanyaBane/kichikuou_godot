@@ -24,7 +24,7 @@ namespace Kichikuou.Game.Strategy;
 /// Every change applies
 /// and is kept at once; Defaults resets the tab shown (Game has none: the game folder has no default); Close, Esc or a right click shut it. Defaults, Forget and the game folder ask first, in a box over the sheet. Laid out
 /// in the 1280×800 screen's pixels, scaled with the picture; on the phone held landscape across the whole screen (LO1,
-/// <c>OptionsView.Phone.cs</c>); held upright under the hole down to the bar (PO1 with PO1o, <c>OptionsView.Upright.cs</c>).
+/// <c>OptionsView.Phone.cs</c>); held upright under the hole down to the bar (PO1 with PO1o, <c>OptionsView.Portrait.cs</c>).
 /// On every device each tab is one column scrolled within the sheet (owner, 2026-11-03; <c>OptionsView.Scroll.cs</c>).
 /// </summary>
 internal sealed partial class OptionsView : Control
@@ -130,7 +130,7 @@ internal sealed partial class OptionsView : Control
     /// <summary>
     /// Lays the window over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone over
     /// the whole screen, the parts at PO1's type (held landscape LO1, <see cref="PhoneOptions"/>; upright PO1,
-    /// <see cref="PhoneOptionsUpright"/>).
+    /// <see cref="PhoneOptionsPortrait"/>).
     /// </summary>
     public void Place(Rect2 area)
     {
@@ -294,8 +294,8 @@ internal sealed partial class OptionsView : Control
                     OrientationChoice.Chosen = OrientationChoice.Way.System;
                 if (Device.TouchLayout)
                 {
-                    ScreenMarginsChoice.Set(upright: true, ScreenMargins.None);
-                    ScreenMarginsChoice.Set(upright: false, ScreenMargins.None);
+                    ScreenMarginsChoice.Set(portrait: true, ScreenMargins.None);
+                    ScreenMarginsChoice.Set(portrait: false, ScreenMargins.None);
                 }
                 break;
             case Tab.Battle:
@@ -659,11 +659,11 @@ internal sealed partial class OptionsView : Control
         const string adjust = "Adjust…";
         float adjustW = _gothic.GetStringSize(adjust, fontSize: 15).X;
         float textX = field.Position.X + 12, textW = field.Size.X - adjustW - 40;
-        static string Set(bool upright) => (upright ? "Portrait: " : "Landscape: ") + ScreenMarginsChoice.For(upright).Words;
-        bool upright = Device.HeldUpright;
+        static string Set(bool portrait) => (portrait ? "Portrait: " : "Landscape: ") + ScreenMarginsChoice.For(portrait).Words;
+        bool portrait = Device.HeldPortrait;
         if (Device.Phone)
         {
-            string first = Set(upright), second = Set(!upright);
+            string first = Set(portrait), second = Set(!portrait);
             Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 17, field.Position.Y + field.Size.Y * 0.36f)),
                 Ellipsis(first, textW, 17), fontSize: 17, modulate: Ui.Ink);
             Text(_gothic, new Vector2(textX, PhonePickerParts.Middle(_gothic, 13, field.Position.Y + field.Size.Y * 0.72f)),
@@ -754,7 +754,7 @@ internal sealed partial class OptionsView : Control
     /// <summary>Battle on every device: the effects, the timings one under another, each across the column (owner, 2026-11-03).</summary>
     private float DrawBattleColumn(float x, float y, float w)
     {
-        y = EffectsSection(x, y, w, wrap: true) + UprightGap;
+        y = EffectsSection(x, y, w, wrap: true) + PortraitGap;
         SectionHead(x, y, "Timings", w);
         y += 36;
         foreach (var setting in Timings)
@@ -992,7 +992,7 @@ internal sealed partial class OptionsView : Control
     {
         _spots.Clear();
         DrawRect(_phone is null ? Frame : new Rect2(Vector2.Zero, Size / _k), new Color(0, 0, 0, 0.35f));
-        var box = _phone is { } f ? Part(f.IsUpright ? PhoneOptionsUpright.Question(f) : PhoneOptions.Question(f))
+        var box = _phone is { } f ? Part(f.IsPortrait ? PhoneOptionsPortrait.Question(f) : PhoneOptions.Question(f))
             : new Rect2(390, 300, 500, 200);
         float grow = Math.Max(0, WrapLines(question.Text, box.Size.X - 80, 15).Count - QuestionLines) * WrapPitch(15) / 2;
         box = box.GrowIndividual(0, grow, 0, grow);

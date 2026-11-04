@@ -56,7 +56,7 @@ internal static partial class GalleryEntries
         // The phone held landscape: our sides answer the menus and draw a graph's figures again (LG2m, LG2); held upright
         // our page lays the graph out again under the miniature, which the presenter keeps whole (PG2m, PG2).
         p.DataFiguresCovered = PhoneLandscape && view != DataView.Map;
-        p.DataGraphCovered = Device.Layout == DeviceLayout.PhoneUpright;
+        p.DataGraphCovered = Device.Layout == DeviceLayout.PhonePortrait;
         SceneMenuView? menuView = null;
         if (items is not null && !PhoneHeld)
         {

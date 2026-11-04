@@ -60,7 +60,7 @@ public sealed class MarginsCalibration
     public const float CameraTabAt = 0.3f;
 
     /// <summary>Where along the sides the side tabs stand upright: a quarter of the way down, over the panel however wide the margins.</summary>
-    public const float UprightSideTabAt = 0.25f;
+    public const float PortraitSideTabAt = 0.25f;
 
     /// <summary>How dark the screen under the frame is kept (the mock-up's 55%).</summary>
     public const float Dim = 0.55f;
@@ -71,9 +71,9 @@ public sealed class MarginsCalibration
     // The panel upright (C-up): its size; the title's middle and the orientation's from its top; the steppers' rows from
     // its top, their height and pitch; the sides in; a value's width between its buttons; Reset | Done from its foot, as
     // high, Reset as wide, the gap.
-    private const float UprightWidth = 800, UprightHeight = 820, UprightTitle = 70, UprightOrientation = 140,
-        UprightRows = 200, Row = 112, UprightPitch = 138, PanelIn = 50, ValueWidth = 230,
-        UprightButtonsUp = 150, UprightButton = 112, UprightReset = 300, ButtonsGap = 20;
+    private const float PortraitWidth = 800, PortraitHeight = 820, PortraitTitle = 70, PortraitOrientation = 140,
+        PortraitRows = 200, Row = 112, PortraitPitch = 138, PanelIn = 50, ValueWidth = 230,
+        PortraitButtonsUp = 150, PortraitButton = 112, PortraitReset = 300, ButtonsGap = 20;
 
     // The panel landscape (C-land): its size; the title's middle from its top; the steppers' row from its top, their
     // labels' baseline over it, the gap between two; Reset | Done from its foot, as high, Reset as wide, Done as wide.
@@ -82,22 +82,22 @@ public sealed class MarginsCalibration
 
     private readonly PhoneFrame.Insets _margins;
 
-    private MarginsCalibration(float width, float height, PhoneFrame.Insets margins, float perMillimetre, bool upright)
+    private MarginsCalibration(float width, float height, PhoneFrame.Insets margins, float perMillimetre, bool portrait)
     {
         Screen = new PhoneFrame.Box(0, 0, width, height);
         _margins = margins;
         PerMillimetre = perMillimetre;
         Unit = perMillimetre / ReferencePerMillimetre;
-        IsUpright = upright;
+        IsPortrait = portrait;
     }
 
     /// <summary>
     /// The calibration over a screen of <paramref name="width"/> × <paramref name="height"/> whose <paramref name="margins"/>
     /// are as given (the canvas's units), at <paramref name="perMillimetre"/> canvas units a millimetre, held
-    /// <paramref name="upright"/> or landscape.
+    /// <paramref name="portrait"/> or landscape.
     /// </summary>
-    public static MarginsCalibration For(float width, float height, PhoneFrame.Insets margins, float perMillimetre, bool upright) =>
-        new(width, height, margins, perMillimetre, upright);
+    public static MarginsCalibration For(float width, float height, PhoneFrame.Insets margins, float perMillimetre, bool portrait) =>
+        new(width, height, margins, perMillimetre, portrait);
 
     /// <summary>The whole screen.</summary>
     public PhoneFrame.Box Screen { get; }
@@ -109,7 +109,7 @@ public sealed class MarginsCalibration
     public float Unit { get; }
 
     /// <summary>Whether the device is held upright (the panel's layout, the tabs' places).</summary>
-    public bool IsUpright { get; }
+    public bool IsPortrait { get; }
 
     /// <summary>A length of <paramref name="reference"/> reference pixels in the canvas's units.</summary>
     public float Px(float reference) => reference * Unit;
@@ -128,15 +128,15 @@ public sealed class MarginsCalibration
 
     /// <summary>
     /// <paramref name="side"/>'s tab: from the frame's edge inward by <see cref="TabReach"/>, <see cref="TabThick"/> across,
-    /// in the edge's middle, at <see cref="CameraTabAt"/> of it on the camera's edge, at <see cref="UprightSideTabAt"/> of the
+    /// in the edge's middle, at <see cref="CameraTabAt"/> of it on the camera's edge, at <see cref="PortraitSideTabAt"/> of the
     /// sides upright.
     /// </summary>
     public PhoneFrame.Box Tab(Side side)
     {
         var f = Frame;
         float reach = TabReach * PerMillimetre, thick = TabThick * PerMillimetre;
-        float alongX = f.X + f.W * (side == Side.Top && IsUpright ? CameraTabAt : 0.5f);
-        float alongY = f.Y + f.H * (IsUpright ? UprightSideTabAt : CameraTabAt);
+        float alongX = f.X + f.W * (side == Side.Top && IsPortrait ? CameraTabAt : 0.5f);
+        float alongY = f.Y + f.H * (IsPortrait ? PortraitSideTabAt : CameraTabAt);
         return side switch
         {
             Side.Top => new(alongX - thick / 2, f.Y, thick, reach),
@@ -165,23 +165,23 @@ public sealed class MarginsCalibration
         get
         {
             var f = Frame;
-            float w = Px(IsUpright ? UprightWidth : LandWidth), h = Px(IsUpright ? UprightHeight : LandHeight);
+            float w = Px(IsPortrait ? PortraitWidth : LandWidth), h = Px(IsPortrait ? PortraitHeight : LandHeight);
             return new(f.X + (f.W - w) / 2, f.Y + (f.H - h) / 2, w, h);
         }
     }
 
     /// <summary>The title's place: upright its middle (centred), landscape its left end's middle.</summary>
-    public (float X, float Y) Title => IsUpright
-        ? (Panel.X + Panel.W / 2, Panel.Y + Px(UprightTitle))
+    public (float X, float Y) Title => IsPortrait
+        ? (Panel.X + Panel.W / 2, Panel.Y + Px(PortraitTitle))
         : (Panel.X + Px(LandIn), Panel.Y + Px(LandTitle));
 
     /// <summary>The orientation's name ("Portrait", "Landscape"): upright its middle under the title, landscape its right end's middle.</summary>
-    public (float X, float Y) Orientation => IsUpright
-        ? (Panel.X + Panel.W / 2, Panel.Y + Px(UprightOrientation))
+    public (float X, float Y) Orientation => IsPortrait
+        ? (Panel.X + Panel.W / 2, Panel.Y + Px(PortraitOrientation))
         : (Panel.Right - Px(LandIn), Panel.Y + Px(LandTitle));
 
     /// <summary>The orientation's name for the panel.</summary>
-    public string OrientationName => IsUpright ? "Portrait" : "Landscape";
+    public string OrientationName => IsPortrait ? "Portrait" : "Landscape";
 
     /// <summary>
     /// <paramref name="edge"/>'s row: upright the panel's width less its sides, one under another; landscape a column of
@@ -191,8 +191,8 @@ public sealed class MarginsCalibration
     {
         int i = Array.IndexOf(ScreenMargins.Edges, edge);
         var p = Panel;
-        if (IsUpright)
-            return new(p.X + Px(PanelIn), p.Y + Px(UprightRows + i * UprightPitch), p.W - 2 * Px(PanelIn), Px(Row));
+        if (IsPortrait)
+            return new(p.X + Px(PanelIn), p.Y + Px(PortraitRows + i * PortraitPitch), p.W - 2 * Px(PanelIn), Px(Row));
         float w = (p.W - 2 * Px(LandIn) - 2 * Px(LandColumnsGap)) / 3;
         return new(p.X + Px(LandIn) + i * (w + Px(LandColumnsGap)), p.Y + Px(LandRows), w, Px(Row));
     }
@@ -204,14 +204,14 @@ public sealed class MarginsCalibration
     public (float X, float Y) Label(ScreenMargins.Edge edge)
     {
         var r = StepperRow(edge);
-        return IsUpright ? (r.X, r.Y + r.H / 2) : (r.X + r.W / 2, r.Y - Px(LabelOver));
+        return IsPortrait ? (r.X, r.Y + r.H / 2) : (r.X + r.W / 2, r.Y - Px(LabelOver));
     }
 
     /// <summary><paramref name="edge"/>'s − : upright left of its value at the row's right, landscape at the column's left.</summary>
     public PhoneFrame.Box Minus(ScreenMargins.Edge edge)
     {
         var r = StepperRow(edge);
-        return IsUpright ? new(r.Right - 2 * r.H - Px(ValueWidth), r.Y, r.H, r.H) : new(r.X, r.Y, r.H, r.H);
+        return IsPortrait ? new(r.Right - 2 * r.H - Px(ValueWidth), r.Y, r.H, r.H) : new(r.X, r.Y, r.H, r.H);
     }
 
     /// <summary><paramref name="edge"/>'s + at the row's right.</summary>
@@ -235,8 +235,8 @@ public sealed class MarginsCalibration
         get
         {
             var p = Panel;
-            if (IsUpright)
-                return new(p.X + Px(PanelIn), p.Bottom - Px(UprightButtonsUp), Px(UprightReset), Px(UprightButton));
+            if (IsPortrait)
+                return new(p.X + Px(PanelIn), p.Bottom - Px(PortraitButtonsUp), Px(PortraitReset), Px(PortraitButton));
             var done = Done;
             return new(done.X - Px(ButtonsGap) - Px(LandReset), done.Y, Px(LandReset), done.H);
         }
@@ -248,10 +248,10 @@ public sealed class MarginsCalibration
         get
         {
             var p = Panel;
-            if (!IsUpright)
+            if (!IsPortrait)
                 return new(p.Right - Px(LandIn) - Px(LandDone), p.Bottom - Px(LandButtonsUp) - Px(LandButton), Px(LandDone), Px(LandButton));
-            float x = p.X + Px(PanelIn) + Px(UprightReset) + Px(ButtonsGap);
-            return new(x, p.Bottom - Px(UprightButtonsUp), p.Right - Px(PanelIn) - x, Px(UprightButton));
+            float x = p.X + Px(PanelIn) + Px(PortraitReset) + Px(ButtonsGap);
+            return new(x, p.Bottom - Px(PortraitButtonsUp), p.Right - Px(PanelIn) - x, Px(PortraitButton));
         }
     }
 

@@ -77,7 +77,7 @@ internal static class Lacquer
             return 1;
         float stretch = root.GetFinalTransform().X.Length();                    // window pixels a canvas unit; 0 minimized
         float pixel = stretch > 0 ? Math.Max(1, 1 / stretch) : 1;              // a window pixel in the canvas's units
-        return Device.Layout == DeviceLayout.PhoneUpright
+        return Device.Layout == DeviceLayout.PhonePortrait
             ? Math.Max(pixel, reference * root.GetVisibleRect().Size.X / PhoneFrame.ReferenceShort)
             : pixel;
     }

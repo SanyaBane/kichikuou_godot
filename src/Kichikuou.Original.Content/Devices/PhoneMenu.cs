@@ -141,7 +141,7 @@ public static class PhoneMenu
     public static (float X, float Y) Title(PhoneFrame f) => (Panel(f).X + f.Px(40), Panel(f).Y + f.Px(70));
 
     /// <summary>
-    /// Upright (docs/ui/phone.md, §25, PN1): the rows' height (7.4 mm) and the room between them, the rule's room, the rows'
+    /// Portrait (docs/ui/phone.md, §25, PN1): the rows' height (7.4 mm) and the room between them, the rule's room, the rows'
     /// sides' distance from the screen's, the title's room over them, their foot's room over the bar, the panel's foot over
     /// the bar; the title's place in the panel.
     /// </summary>
@@ -151,7 +151,7 @@ public static class PhoneMenu
     /// <summary>The sheet's panel for <paramref name="tiles"/>: held landscape over the frame's middle, upright from the bar up round its rows (PN1).</summary>
     public static PhoneFrame.Box Panel(PhoneFrame f, IReadOnlyList<Tile> tiles)
     {
-        if (!f.IsUpright)
+        if (!f.IsPortrait)
             return Panel(f);
         float top = RowsTop(f, tiles) - f.Px(UpTitle);
         return new PhoneFrame.Box(f.Bar.X, top, f.Bar.W, f.Bar.Y - f.Px(UpPanelFoot) - top);
@@ -159,7 +159,7 @@ public static class PhoneMenu
 
     /// <summary>The panel's title for <paramref name="tiles"/>: its left edge and the middle of its line.</summary>
     public static (float X, float Y) Title(PhoneFrame f, IReadOnlyList<Tile> tiles) =>
-        f.IsUpright ? (Panel(f, tiles).X + f.Px(UpTitleX), Panel(f, tiles).Y + f.Px(UpTitleY)) : Title(f);
+        f.IsPortrait ? (Panel(f, tiles).X + f.Px(UpTitleX), Panel(f, tiles).Y + f.Px(UpTitleY)) : Title(f);
 
     /// <summary>
     /// The boxes of <paramref name="tiles"/>: held landscape <see cref="Columns"/> a row (<see cref="Tiles(PhoneFrame, int)"/>);
@@ -168,7 +168,7 @@ public static class PhoneMenu
     /// </summary>
     public static IReadOnlyList<PhoneFrame.Box> Tiles(PhoneFrame f, IReadOnlyList<Tile> tiles)
     {
-        if (!f.IsUpright)
+        if (!f.IsPortrait)
             return Tiles(f, tiles.Count);
         var boxes = new PhoneFrame.Box[tiles.Count];
         float y = RowsTop(f, tiles), x = f.Room.X + f.Px(UpRowSide), w = f.Room.W - 2 * f.Px(UpRowSide);
@@ -242,8 +242,8 @@ public static class PhoneMenu
     /// </summary>
     public static Callout QuestionAt(PhoneFrame f, PhoneFrame.Box tile)
     {
-        if (f.IsUpright)
-            return UprightQuestion(f, tile);
+        if (f.IsPortrait)
+            return PortraitQuestion(f, tile);
         var p = Panel(f);
         float margin = f.Px(TilesMargin);
         float w = Math.Min(f.Px(QuestionWidth), p.W - 2 * margin), h = f.Px(QuestionHeight), gap = f.Px(QuestionGap);
@@ -258,7 +258,7 @@ public static class PhoneMenu
     }
 
     /// <summary>A question's callout held upright (PN1q): across the screen over its row, pointing down at it; under it when the top leaves no room.</summary>
-    private static Callout UprightQuestion(PhoneFrame f, PhoneFrame.Box tile)
+    private static Callout PortraitQuestion(PhoneFrame f, PhoneFrame.Box tile)
     {
         float x = f.Room.X + f.Px(UpQuestionSide), w = f.Room.W - 2 * f.Px(UpQuestionSide), h = f.Px(QuestionHeight), gap = f.Px(UpQuestionGap);
         bool below = tile.Y - gap - h < f.Room.Y + f.Px(10);

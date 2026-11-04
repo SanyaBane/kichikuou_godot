@@ -134,8 +134,8 @@ internal sealed partial class ScoutReportView : Control
             return;
         if (_phone is { } phone)
         {
-            if (phone.IsUpright)
-                DrawUpright(report, phone);
+            if (phone.IsPortrait)
+                DrawPortrait(report, phone);
             else
                 DrawPhone(report, phone);
             return;

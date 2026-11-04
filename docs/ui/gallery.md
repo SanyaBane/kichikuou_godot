@@ -500,7 +500,7 @@ the Menu cell in the bar on the entries that show it; the Menu sheet's three ent
 too. PS2, PS2l, PS2b, PS2m, PW1, PEd, PEr, PN1, PN1q and PR2 left `GALLERY_ENTRIES`.
 
 Step P2 (2026-10-29) built the map: on this pass the map's entries (`map-markers…`, `map-north`, `command-menu…`,
-`province-menu…`) show the status band on top and the map's whole height under it (`UprightMapView`, centred on the
+`province-menu…`) show the status band on top and the map's whole height under it (`PortraitMapView`, centred on the
 script's view as the game centres it), the command panel and a province's menu as sheets over its foot; `map` stays the
 engine's picture alone, for mock-ups. PM1a, PM1b and PM1c left `GALLERY_ENTRIES`.
 
@@ -647,5 +647,7 @@ device), **Tablet, landscape** (was Touch (Lacquer)), **Smartphone, landscape**,
 upright) and the two mock-up tabs after them. Their folders are `pc`, `tablet`, `phone-landscape`, `phone-portrait`,
 `phone-portrait-mockups` and `phone-landscape-mockups` (were `lacquer`, `touch`, `phone-upright`, `phone`,
 `phone-land`); the switches `-Tablet` and `-PhonePortrait` (`-Touch` and `-PhoneUp` still work), the game's
-`--phone portrait` (`upright` still works). The player sees Portrait in Option → Display too. The code's own names
-(`PhoneFrame.Upright`, `*.Upright.cs`, …) stay as they are.
+`--phone portrait` (`upright` still works). The player sees Portrait in Option → Display too. So do the code's names
+(`PhoneFrame.Portrait`, `Device.Portrait`, `*.Portrait.cs`, `PhoneLedgerPortrait`, …; were `…Upright…`), where a
+face's portrait met them the orientation's side took another (`BattleBoardView.HeldPortrait`,
+`StrategyCutInView._portraitFrame`); the settings' keys (`margins_upright`) stay, so that saved settings still load.

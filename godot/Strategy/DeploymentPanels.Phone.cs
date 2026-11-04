@@ -22,10 +22,10 @@ internal sealed partial class DeploymentPanels
     /// </summary>
     public static void PlaceTable(DeploymentTableView table, Vector2 origin, float pixelsPerScript)
     {
-        if (Device.Upright(table) is { } upright)
+        if (Device.Portrait(table) is { } portrait)
         {
-            var paper = PhoneLedgerUpright.Ledger(upright, deployment: true);
-            table.PlaceUpright(new Rect2(paper.X, paper.Y, paper.W, paper.H), upright);
+            var paper = PhoneLedgerPortrait.Ledger(portrait, deployment: true);
+            table.PlacePortrait(new Rect2(paper.X, paper.Y, paper.W, paper.H), portrait);
             return;
         }
         if (Device.Landscape(table) is { } phone)
@@ -45,22 +45,22 @@ internal sealed partial class DeploymentPanels
     internal static LedgerTabsBar.PhoneTabs PhoneTabs(PhoneFrame phone, bool deployment = true)
     {
         var u = new PhoneUnits(phone);
-        if (phone.IsUpright)
-            return new LedgerTabsBar.PhoneTabs(u.Rect(PhoneLedgerUpright.Tabs(phone, deployment)), u.Px(PhoneLedgerUpright.TabWidth),
-                u.Px(PhoneLedgerUpright.TabGap), u.Px(PhoneLedgerUpright.TabDrop), u.Size(PhoneLedgerUpright.TabText),
-                u.Size(PhoneLedgerUpright.OrderText), u.Rect(PhoneLedgerUpright.OrderNote(phone)));
+        if (phone.IsPortrait)
+            return new LedgerTabsBar.PhoneTabs(u.Rect(PhoneLedgerPortrait.Tabs(phone, deployment)), u.Px(PhoneLedgerPortrait.TabWidth),
+                u.Px(PhoneLedgerPortrait.TabGap), u.Px(PhoneLedgerPortrait.TabDrop), u.Size(PhoneLedgerPortrait.TabText),
+                u.Size(PhoneLedgerPortrait.OrderText), u.Rect(PhoneLedgerPortrait.OrderNote(phone)));
         return new LedgerTabsBar.PhoneTabs(u.Rect(PhoneLedger.Tabs(phone, deployment)), u.Px(PhoneLedger.TabWidth), u.Px(PhoneLedger.TabGap),
             u.Px(PhoneLedger.TabDrop), u.Size(PhoneLedger.TabText), u.Size(PhoneLedger.OrderText));
     }
 
     /// <summary>A party card's insides on the phone as it is held.</summary>
-    private static PhoneLedger.CardInsides Insides(PhoneFrame f) => f.IsUpright ? PhoneLedgerUpright.Insides : PhoneLedger.Insides;
+    private static PhoneLedger.CardInsides Insides(PhoneFrame f) => f.IsPortrait ? PhoneLedgerPortrait.Insides : PhoneLedger.Insides;
 
     private void DrawPhone(Control c, PhoneFrame f)
     {
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(c, f);
+            DrawPortrait(c, f);
             return;
         }
         var u = new PhoneUnits(f);
@@ -128,7 +128,7 @@ internal sealed partial class DeploymentPanels
                 if (_mode == 2)
                     label = "Back";                             // a defence's Stop goes back to our attack screen (owner, 2026-10-24)
                 Ui.DrawRowBox(c, rect, hover, _k);
-                float stopText = u.Frame.IsUpright ? PhoneLedgerUpright.StopText : PhoneLedger.StopText;
+                float stopText = u.Frame.IsPortrait ? PhoneLedgerPortrait.StopText : PhoneLedger.StopText;
                 int stop = SideCells.Fit(_brush, label, u.Size(stopText), rect.Size.X - u.Px(30));
                 CentredString(c, _brush, label, stop, hover ? Ui.Name : Ui.Text, rect.GetCenter().X, Lacquer.Baseline(rect, _brush, stop));
                 continue;
@@ -150,12 +150,12 @@ internal sealed partial class DeploymentPanels
             }
             var top = new Rect2(rect.Position, new Vector2(rect.Size.X, rect.Size.Y * 0.62f));
             var bottom = new Rect2(rect.Position.X, rect.Position.Y + rect.Size.Y * 0.56f, rect.Size.X, rect.Size.Y * 0.38f);
-            bool upright = u.Frame.IsUpright;
-            int small = SideCells.Fit(_gothic, note, u.Size(upright ? PhoneLedgerUpright.NoteText : PhoneLedger.NoteText), rect.Size.X - u.Px(24));
+            bool portrait = u.Frame.IsPortrait;
+            int small = SideCells.Fit(_gothic, note, u.Size(portrait ? PhoneLedgerPortrait.NoteText : PhoneLedger.NoteText), rect.Size.X - u.Px(24));
             float wordLine = Lacquer.Baseline(top, _brush, size), noteLine = Lacquer.Baseline(bottom, _gothic, small);
-            if (upright)                                                   // the word and its note drawn together (owner, 2026-11-04)
+            if (portrait)                                                   // the word and its note drawn together (owner, 2026-11-04)
             {
-                float gap = noteLine - _gothic.GetAscent(small) - wordLine, pull = gap * (1 - PhoneLedgerUpright.NoteGap) / 2;
+                float gap = noteLine - _gothic.GetAscent(small) - wordLine, pull = gap * (1 - PhoneLedgerPortrait.NoteGap) / 2;
                 (wordLine, noteLine) = (wordLine + pull, noteLine - pull);
             }
             CentredString(c, _brush, label, size, ink, rect.GetCenter().X, wordLine);

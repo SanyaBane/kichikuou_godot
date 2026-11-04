@@ -16,16 +16,16 @@ internal sealed partial class FloorLadderView
 
     private Rect2 PhonePanelRect(PhoneFrame f)
     {
-        if (f.IsUpright)
-            return UprightRailRect(f);
+        if (f.IsPortrait)
+            return PortraitRailRect(f);
         var u = new PhoneUnits(f);
         return u.Rect(_entry is { } e ? PhoneLadder.EntryPanel(f, e.Others.Count) : PhoneLadder.LadderPanel(f));
     }
 
     private Rect2 PhoneRectOf(PhoneFrame f, Part part)
     {
-        if (f.IsUpright)
-            return UprightRectOf(f, part);
+        if (f.IsPortrait)
+            return PortraitRectOf(f, part);
         var u = new PhoneUnits(f);
         if (_entry is { } e)
             return u.Rect(part switch
@@ -44,8 +44,8 @@ internal sealed partial class FloorLadderView
 
     private void DrawPhone(PhoneUnits u)
     {
-        if (u.Frame.IsUpright)
-            DrawUprightFrame(u);
+        if (u.Frame.IsPortrait)
+            DrawPortraitFrame(u);
         if (_entry is { } entry)
         {
             DrawPhoneEntry(u, entry);
@@ -53,11 +53,11 @@ internal sealed partial class FloorLadderView
         }
         if (_ladder is not { } l)
             return;
-        if (!u.Frame.IsUpright)                                 // upright the rungs stand on the black (PF1)
+        if (!u.Frame.IsPortrait)                                 // upright the rungs stand on the black (PF1)
             Ui.DrawPanel(this, PanelRect, _k);
         if (l.Up is { } up)
             PhoneRung(u, Part.Up, up.Text, Caption(up), true, up.Deeper);
-        var floor = u.Rect(u.Frame.IsUpright ? PhoneLadderUpright.Floor(u.Frame) : PhoneLadder.Floor(u.Frame));
+        var floor = u.Rect(u.Frame.IsPortrait ? PhoneLadderPortrait.Floor(u.Frame) : PhoneLadder.Floor(u.Frame));
         float mid = floor.GetCenter().X;
         int labelSize = u.Size(PhoneLadder.FloorLabelText), floorSize = u.Size(PhoneLadder.FloorText);
         Centred(_cinzel, labelSize, mid, floor.Position.Y + u.Px(PhoneLadder.FloorLabelMiddle), "FLOOR", Ui.Subtitle);
@@ -75,7 +75,7 @@ internal sealed partial class FloorLadderView
     /// <summary>Before a search: Return on top, the other items under it, Start Search in the corner framed in gold, their words one size.</summary>
     private void DrawPhoneEntry(PhoneUnits u, DungeonEntryMenu entry)
     {
-        if (!u.Frame.IsUpright)
+        if (!u.Frame.IsPortrait)
             Ui.DrawPanel(this, PanelRect, _k);
         var start = RectOf(Part.Start);
         int size = EntrySize(entry, u.Size(PhoneLadder.WordText), start.Size.X - u.Px(PhoneLadder.WordRoom), RectOf(Part.Return).Size.X - u.Px(40));

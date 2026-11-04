@@ -61,7 +61,7 @@ internal sealed partial class BattleCommandLayer : Control
     // The cards' menu: the PC's, or on the phone at a finger's size (docs/ui/phone-build.md, steps L4 and P4).
     private int _menuCount = 1;
     private float RowHeight => _phone is null ? PcRowHeight
-        : _phone.IsUpright ? PhoneBattleStatesUpright.MenuRowHeight(_menuCount, _height) : PhoneBattleStates.MenuRowHeight(_menuCount);
+        : _phone.IsPortrait ? PhoneBattleStatesPortrait.MenuRowHeight(_menuCount, _height) : PhoneBattleStates.MenuRowHeight(_menuCount);
     private float MenuPad => _phone is null ? PcMenuPad : P(PhoneBattleStates.MenuPad);
     private float MarkWidth => _phone is null ? PcMarkWidth : P(PhoneBattleStates.MenuMark);
     private float MenuMinWidth => _phone is null ? PcMenuMinWidth : P(PhoneBattleStates.MenuMinWidth);

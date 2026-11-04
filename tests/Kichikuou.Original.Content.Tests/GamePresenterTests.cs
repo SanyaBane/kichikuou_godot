@@ -364,7 +364,7 @@ public partial class GamePresenterTests(ITestOutputHelper output)
     /// the screen (the plot's grey under the miniature not drawn).
     /// </summary>
     [ScenarioFact]
-    public async Task All_data_keeps_the_bars_and_leaves_the_graph_off_for_the_phone_upright()
+    public async Task All_data_keeps_the_bars_and_leaves_the_graph_off_for_the_phone_portrait()
     {
         var run = await RunAsync(stopAtWeek: 0);
         var s = run.Session.State;

@@ -118,7 +118,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     private float BubbleRoom => _chooser ? _fontSize * 1.45f : 0;
 
     /// <summary>The headers' size: smaller than the text's (Cinzel's capitals are wide).</summary>
-    private int TitleSize => _upright is { } upright ? Math.Max(8, (int)Math.Round(upright.Px(PhoneLedgerUpright.HeadText)))
+    private int TitleSize => _portrait is { } portrait ? Math.Max(8, (int)Math.Round(portrait.Px(PhoneLedgerPortrait.HeadText)))
         : Math.Max(8, (int)Math.Round(_fontSize * (Tab is null ? 0.82f : 0.72f)));
 
     /// <summary>The chosen unit's row, marked and highlighted when the table is a chooser (our Subordinates screen).</summary>
@@ -228,13 +228,13 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
 
     /// <summary>
     /// The columns of the <see cref="Tab"/> (or every column), held upright but the fixed part's
-    /// (<see cref="PhoneLedgerUpright.Scrolled"/>); the headers, the look and the rows again.
+    /// (<see cref="PhoneLedgerPortrait.Scrolled"/>); the headers, the look and the rows again.
     /// </summary>
     private void ShowColumns()
     {
         var shown = Tab is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
-        if (_upright is not null)
-            shown = PhoneLedgerUpright.Scrolled(shown);
+        if (_portrait is not null)
+            shown = PhoneLedgerPortrait.Scrolled(shown);
         else
             shown = LedgerNameCell.Merge(shown);                    // the Name · Type cell (Stacked)
         (_columns, _groups) = (shown.Columns, shown.Groups);
@@ -253,7 +253,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     public string SortMark => _descending ? _down : _up;
 
     /// <summary>Whether the sorted column is shown: else the screen says the order beside the tabs.</summary>
-    public bool SortShown => _columns.Any(c => c.Column == _sort) || _upright is not null && PhoneLedgerUpright.FixedColumns.Contains(_sort);
+    public bool SortShown => _columns.Any(c => c.Column == _sort) || _portrait is not null && PhoneLedgerPortrait.FixedColumns.Contains(_sort);
 
     /// <summary>The text's font (the tabs' note writes the sort's mark with it).</summary>
     public Font TextFont => _font;
@@ -469,7 +469,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     public void Place(Rect2 rect, float pixelsPerScript)
     {
         HoldLandscape(null);
-        LeaveUpright();
+        LeavePortrait();
         StyleBars(null);
         int size = Math.Max(8, (int)Math.Round(_textSize * pixelsPerScript));
         int separation = (int)Math.Round(1.5f * pixelsPerScript);              // the ledger's rows breathe
@@ -487,7 +487,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     public void PlacePhone(Rect2 rect, PhoneFrame phone)
     {
         HoldLandscape(phone);
-        LeaveUpright();
+        LeavePortrait();
         StyleBars(phone);
         int separation = (int)Math.Round(phone.Px(6));
         int size = (int)Math.Round(phone.Px(PhoneLedger.Text));
@@ -499,7 +499,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// The Name · Type cell (<see cref="LedgerNameCell"/>; owner, 2026-11-04) off the upright phone, which has its own in
     /// the fixed part: the type (and on the deployment table the rows) under the name, the face beside them, the bars under them.
     /// </summary>
-    private bool Stacked => _upright is null;
+    private bool Stacked => _portrait is null;
 
     /// <summary>The cell's places at the text's size: the deployment table's, or Subordinates' without the rows.</summary>
     private LedgerNameCell Cell => LedgerNameCell.For(_fontSize, deployment: !_chooser);
@@ -805,7 +805,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         int separation = GetThemeConstant("h_separation");
         widths[0] = _chooser ? _fontSize * 0.3f + (_talkMarks.Count > 0 ? BubbleRoom : 0)   // the chosen row's bar; the talks' bubbles
             : Math.Max(widths[0], _fontSize * 1.3f);                        // a place's seal
-        if (_upright is not null)
+        if (_portrait is not null)
             widths[0] = _fixedWidth - separation - 3;                       // upright: the room the fixed part covers (DrawFixedRows)
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
@@ -887,7 +887,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 nameColumn = c + 1;
             }
         }
-        if (_upright is not null)                                   // upright the fixed part draws the first column's marks (DrawFixedRows)
+        if (_portrait is not null)                                   // upright the fixed part draws the first column's marks (DrawFixedRows)
         {
             if (place > 0 || chosen)
                 for (int c = 0; c < Columns; c++)
@@ -981,7 +981,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         var ink = TagColours.Of(WeekAction.Troops);
         if (party)                                                  // the tree's tint reaches a separation left of the cell
             DrawRect(cell.GrowIndividual(GetThemeConstant("h_separation"), 0, 0, 0), Ui.PartyRow);
-        float inset = _upright is { } upright ? (cell.Size.Y - upright.Px(PhoneLedgerUpright.RefillChip)) / 2   // upright: PD2s2's chip
+        float inset = _portrait is { } portrait ? (cell.Size.Y - portrait.Px(PhoneLedgerPortrait.RefillChip)) / 2   // upright: PD2s2's chip
             : Stacked ? cell.Size.Y / 4                                     // with the Name · Type cell: half the row, as upright
             : _rowMinimum > 0 ? cell.Size.Y / 12 : 2;                       // a taller row's chip grows with it: a finger's button
         var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);

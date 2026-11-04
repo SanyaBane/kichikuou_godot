@@ -264,7 +264,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private bool _tableActive;                          // our deployment screen takes the pointer: no message window over it
     private MapMarkersView _markers = null!;            // our name plates over the map in COMMAND's map wait (New)
     private CommandsButton _commandsButton = null!;     // the touch mode's Commands button with them
-    private UprightMapView _upMap = null!;              // the phone held upright: the map's whole height (step P2)
+    private PortraitMapView _upMap = null!;              // the phone held upright: the map's whole height (step P2)
     private ProvinceMenuView _provinceView = null!;     // our province menu over a city file's first menu (New)
     private CommandMenuView _commandView = null!;       // our command panel over COMMAND's command menu (New)
     private readonly LoadSaveShortcut _saveShortcut = new(); // its Load and Save rows: ﾛｰﾄﾞｾｰﾌﾞ's menu answered unseen
@@ -322,8 +322,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_view);
         ReadyHeadroom();
         var faces = new FacePictures(GameData.Cgs());
-        _upMap = new UprightMapView(faces);
-        _upMap.Tapped += UprightMapTapped;
+        _upMap = new PortraitMapView(faces);
+        _upMap.Tapped += PortraitMapTapped;
         _upMap.Forwarded += StripInput;
         _content.AddChild(_upMap);
         _markers = new MapMarkersView(GodotGlyphRenderer.Chosen);
@@ -2275,9 +2275,9 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     /// </summary>
     private void UpdateStatusStrip()
     {
-        if (PhoneUpright)
+        if (PhonePortrait)
         {
-            UpdateUprightMap();
+            UpdatePortraitMap();
             return;
         }
         if (_upMap.Visible)
@@ -2347,13 +2347,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             _commandsButton.Place(area);
         if (!show)
             return false;
-        _markers.SetCoveredTop(_strip.Visible && !PhoneLandscape && !PhoneUpright ? MapHeadroom.Strip : 0);  // the phone's status is in the sides or on top
-        if (PhoneUpright && _upMap.Visible)
+        _markers.SetCoveredTop(_strip.Visible && !PhoneLandscape && !PhonePortrait ? MapHeadroom.Strip : 0);  // the phone's status is in the sides or on top
+        if (PhonePortrait && _upMap.Visible)
         {
             // The map's whole height under the status band (step P2): the plates over our own view of it.
             var view = _upMap.View;
             _markers.Place(new Rect2(view.Box.X, view.Box.Y, view.Box.W, view.Box.H), view.Scale, _upMap.Corner,
-                ((int)MathF.Ceiling(view.Width), PhoneMapUpright.MapHeight));
+                ((int)MathF.Ceiling(view.Width), PhoneMapPortrait.MapHeight));
             return true;
         }
         _markers.Place(area, area.Size.X / Surface.ScreenWidth, MapCornerDrawn!.Value);
@@ -2370,7 +2370,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (!((!_options.Auto || _autoPlateClicking) && _markerPointer.Pending == 0 && _markers.Visible && _mapCamera.Corner
             && _presenter.State is { } s))
             return;
-        if (!PhoneUpright)
+        if (!PhonePortrait)
             MapMarkers.Press(s, marker, _markerPointer);
         else if (MapMarkers.PressAnywhere(s, marker, _markerPointer, out var corner))
             _upMap.Expect(corner);                              // the script's view dragged to it: ours stays

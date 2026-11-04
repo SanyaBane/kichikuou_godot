@@ -87,7 +87,7 @@ internal sealed partial class SceneMenuView : Control
         // Held landscape the script's window stays in the frame: the rows keep over one in its lower half (113, 121, 123, 131).
         float? under = _asking is { } w && w.GetCenter().Y > 400 ? f.Frame.Y + w.Position.Y * k : null;
         var rows = PhoneScenes.SceneMenu(f, menu.Items.Count, widest, under);
-        var (x0, y0) = f.IsUpright ? (0f, 0f) : (f.Frame.X, f.Frame.Y);  // upright the layer covers the screen
+        var (x0, y0) = f.IsPortrait ? (0f, 0f) : (f.Frame.X, f.Frame.Y);  // upright the layer covers the screen
         Rect2 Screen(PhoneFrame.Box b) => new((b.X - x0) / k, (b.Y - y0) / k, b.W / k, b.H / k);
         _phoneRows = [.. rows.Rows.Select(Screen)];
         _phonePanel = Screen(rows.Panel);
@@ -129,9 +129,9 @@ internal sealed partial class SceneMenuView : Control
     public void Place(Rect2 area)
     {
         var phone = Device.Held(this);
-        if (phone is { IsUpright: true })
+        if (phone is { IsPortrait: true })
             area = new Rect2(Vector2.Zero, GetParentAreaSize());        // the rows over the picture, the windows round it (PS2m)
-        float k = phone is { IsUpright: true } up ? up.Scale : area.Size.X / 1280f;
+        float k = phone is { IsPortrait: true } up ? up.Scale : area.Size.X / 1280f;
         if (Position == area.Position && Size == area.Size && Math.Abs(k - _k) < 0.001f && phone == _phone)
             return;
         Position = area.Position;

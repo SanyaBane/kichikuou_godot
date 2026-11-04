@@ -1,6 +1,6 @@
 """Sheets comparing the upright phone's picker grids at their row height now and lower (owner, 2026-11-04: Harem's and
 Treasure's rows 30 % lower, more of them in view). The pictures are the screen gallery's upright dumps of the game itself,
-dumped once as it is and once each with the rows lowered (PhonePickersUpright.HaremRow / TreasureRow changed for the dump
+dumped once as it is and once each with the rows lowered (PhonePickersPortrait.HaremRow / TreasureRow changed for the dump
 alone): side by side per entry, each labelled.
 
 Usage: python mock_picker_rows.py <out dir> <label>=<phone-upright folder> ... -- <entry> ...

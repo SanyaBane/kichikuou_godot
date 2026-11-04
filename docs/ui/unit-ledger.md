@@ -249,7 +249,7 @@ mock-ups `tools/ui/mock_name_cell.py` (PC, tablet, phone held landscape) were bu
   view on the PC and the tablet.
 - **Refill's button** half the row, as upright (it grew with the row, 5/6 of it).
 - **Subordinates** (owner, the same day): the same cell without the rows' line, upright too
-  (`PhoneLedgerUpright.SubordinatesRows`: the row 132 for 150 upright, 49 px on the PC, the name 12 % smaller, the face
+  (`PhoneLedgerPortrait.SubordinatesRows`: the row 132 for 150 upright, 49 px on the PC, the name 12 % smaller, the face
   from the name's top to the HP bar's foot — 102, a little smaller than its 108 before, the line under it gone). Sorting
   by the type or the rows goes with their columns.
 - Checked in the screen gallery's four passes (`deployment…`); the build, the core tests, `LedgerNameCellTests` and the

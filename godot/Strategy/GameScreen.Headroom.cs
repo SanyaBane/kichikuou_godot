@@ -61,7 +61,7 @@ public partial class GameScreen
         bool strip = InterfaceChoice.New && _presenter.State is not null && !_presenter.InBattle && !SkippingScene
             && _presenter.MapViewShown is not null
             && (_presenter.MapWaiting && _mapCamera.Waiting || _mapLeft || _presenter.MenuCovered || _commandView.Visible);
-        int shift = strip && !PhoneLandscape && !PhoneUpright ? MapHeadroom.Shift(_presenter.MapViewShown!.Value.Y) : 0;  // the phone's status is in the sides or on top
+        int shift = strip && !PhoneLandscape && !PhonePortrait ? MapHeadroom.Shift(_presenter.MapViewShown!.Value.Y) : 0;  // the phone's status is in the sides or on top
         if (strip == _mapStrip && shift == _mapShift)
             return false;
         if (strip)
@@ -123,7 +123,7 @@ public partial class GameScreen
     /// </summary>
     private int ScriptY(int y, ushort buttons)
     {
-        if (!_mapStrip || PhoneLandscape || PhoneUpright || _presenter.MapViewShown is not { } corner)
+        if (!_mapStrip || PhoneLandscape || PhonePortrait || _presenter.MapViewShown is not { } corner)
         {
             _headroom.Release();
             return y;

@@ -39,7 +39,7 @@ public partial class GameScreen
             ReleaseScreenTouch();
             return false;
         }
-        if (!(PhoneLandscape || PhoneUpright) || !OriginalScreenShown)
+        if (!(PhoneLandscape || PhonePortrait) || !OriginalScreenShown)
             return false;
         _screenTouch = button.Position;
         int touch = ++_screenTouches;

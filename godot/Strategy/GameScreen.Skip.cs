@@ -72,7 +72,7 @@ public partial class GameScreen
             _skipButton.Phone = Device.Held(_skipButton);
             if (_skipButton.Phone is { } phone)                             // on the left rail's top, the whole battle (LB2); upright on its strip (PB3)
             {
-                var cell = phone.IsUpright ? PhoneBattleUpright.OnScreen(phone, PhoneBattleUpright.Skip) : PhoneBattle.SkipCell(phone);
+                var cell = phone.IsPortrait ? PhoneBattlePortrait.OnScreen(phone, PhoneBattlePortrait.Skip) : PhoneBattle.SkipCell(phone);
                 _skipButton.Place(new Rect2(cell.X, cell.Y, cell.W, cell.H), k, 20);
                 return;
             }
@@ -121,7 +121,7 @@ public partial class GameScreen
         await TapAsync(_drawer.SkipCentre);
         if (_skip.Activated)
             throw new InvalidOperationException("--auto's second tap on Skip did not turn MsgSkip off.");
-        if (Device.Layout is Original.Content.Devices.DeviceLayout.PhoneLandscape or Original.Content.Devices.DeviceLayout.PhoneUpright)
+        if (Device.Layout is Original.Content.Devices.DeviceLayout.PhoneLandscape or Original.Content.Devices.DeviceLayout.PhonePortrait)
         {
             UpdatePhone();
             await FrameAsync();

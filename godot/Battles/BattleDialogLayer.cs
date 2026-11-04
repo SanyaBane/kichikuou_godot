@@ -82,7 +82,7 @@ internal sealed partial class BattleDialogLayer : Control
         get
         {
             if (_phone is { } f)
-                return f.IsUpright ? B(UprightQuestion()) : L(PhoneQuestion(f));
+                return f.IsPortrait ? B(PortraitQuestion()) : L(PhoneQuestion(f));
             if (Touch)
                 return new Rect2(TouchCorner, new Vector2(TouchWidth, TouchPad * 2 + QuestionLine * 2 + Rule + TouchGap + TouchButton));
             float height = Pad * 2 + QuestionLine * 2 + Rule + (_dialog?.Items.Count ?? 0) * RowHeight;
@@ -97,8 +97,8 @@ internal sealed partial class BattleDialogLayer : Control
     private Rect2 ItemRect(int item)
     {
         if (_phone is { } f)
-            return f.IsUpright
-                ? B(PhoneBattleUpright.RetreatAnswers(UprightQuestion(), _dialog?.Items.Count ?? 1)[TouchColumn(item)])
+            return f.IsPortrait
+                ? B(PhoneBattlePortrait.RetreatAnswers(PortraitQuestion(), _dialog?.Items.Count ?? 1)[TouchColumn(item)])
                 : L(PhoneBattle.RetreatAnswers(f, PhoneQuestion(f), _dialog?.Items.Count ?? 1)[TouchColumn(item)]);
         var box = Box;
         if (!Touch)

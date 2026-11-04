@@ -369,7 +369,7 @@ Step L10 is done but the owner's play (phone-build.md, "Step L10, where it stand
 `--saveload`, `--scout`, `--refill`, `--harem`, `--dungeon` to the cave's way out, weeks 18-21), all as before; the docs
 (phone.md, touch.md, style.md §6, backlog). **The landscape phone is built, awaiting the owner's play on the Poco**;
 upright (P0-P9) is next. Step P0 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P0, where it
-stands"): `PhoneFrame.Upright` (the picture at the width wherever a screen puts it, `PictureAt`; the room apart from it),
+stands"): `PhoneFrame.Portrait` (the picture at the width wherever a screen puts it, `PictureAt`; the room apart from it),
 Option → Display's orientation on a phone (`godot/Strategy/OrientationChoice`: System — Android's `fullUser` —, Portrait,
 Landscape 1, Landscape 2), `--phone portrait` (or `upright`), the gallery's `-PhonePortrait` pass; a screen without an upright layout yet
 shows the tablet's at the width between the hole and the bar. Step P1 is built, awaiting the owner's look on the Poco
@@ -377,14 +377,14 @@ shows the tablet's at the width between the hole and the bar. Step P1 is built, 
 its left (PK1), the picture between the hole and it, the left portrait's window above the picture while it shows and every
 other under it, the script's breaks at the phone's type (`PhoneScenes.Window`, `MessageWindow.TextRect`), a `]` menu's
 rows in the bar's place (since 2026-10-31 across the picture's middle, Menu in the bar), the Menu sheet in rows from the thumb up (PN1, PN1q), the log with the names over the lines
-(PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Upright(view)`;
+(PR2), the week report at the width (PW1); the views keyed by `Device.Held(view)` (either way) or `Device.Portrait(view)`;
 a battle's windows off the field no longer leave the original's in the picture under ours (2026-10-31,
 `BattlePresenter.HideWindow`; phone-build.md, "After the build: a battle's windows upright").
 Step P2 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P2, where it stands"): the map upright —
-the status a band on top, the map's whole height at the width under it (`godot/Strategy/UprightMapView`, drawn from the
+the status a band on top, the map's whole height at the width under it (`godot/Strategy/PortraitMapView`, drawn from the
 state's tiles and markers, scrolled sideways by our own camera), Commands at the bar's right, the command panel and a
 province's card and commands as sheets over the map's foot, the map lifted under a province's sheet
-(`Original.Content/Devices/PhoneMapUpright`; `GameScreen.UprightMap.cs`); a tap on a marker the script's view does not
+(`Original.Content/Devices/PhoneMapPortrait`; `GameScreen.PortraitMap.cs`); a tap on a marker the script's view does not
 show is the drag a player would make to bring it there, then the still click (`MapMarkers.PressAnywhere`).
 Step P3 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P3, where it stands"): the battle's turn
 upright — the board 1280 layout pixels wide over the whole room, the scene at the width on top, our rows under it, the
@@ -392,33 +392,33 @@ gauge across between the front rows, the enemy's rows at the thumb, Skip on its 
 from the foot up, the attacks at the right thumb), the retreat question over the deck's right column, the cards sliding
 in at a battle's start from their armies' sides (since 2026-10-31: ours down from under the scene, the enemy's up from
 behind the deck; phone-build.md, "After the build: the cards' slide upright")
-(`Original.Content/Devices/PhoneBattleUpright`; `BattleBoardView`'s upright places, `BattleCommandLayer.Upright.cs`,
+(`Original.Content/Devices/PhoneBattlePortrait`; `BattleBoardView`'s upright places, `BattleCommandLayer.Portrait.cs`,
 `BattleDialogLayer.Phone.cs`).
 Step P4 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P4, where it stands"): the battle's other
 states upright — the opening's plate on top of the scene and the names at its sides, the results plate over the dimmed
 board at the width (growing up over Skip), our panel where it stands, the speaker's portrait at the scene's top corner and
 our balloon beside it, a defence's ribbon and caption at held landscape's millimetres, the cards' menu at a finger's rows,
 the scout report (since 2026-10-31 the ninja and the enemy one block in the middle over Rance's answer, the front row in
-the bracket, the owner's PB4sf2m2, phone.md §34) and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesUpright`;
-the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Upright.cs`,
-`ScoutReportView.Upright.cs`, `StrategyCutInView.Upright.cs`).
+the bracket, the owner's PB4sf2m2, phone.md §34) and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesPortrait`;
+the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Portrait.cs`,
+`ScoutReportView.Portrait.cs`, `StrategyCutInView.Portrait.cs`).
 Step P5 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P5, where it stands"): the deployment table
 and Subordinates upright — the title band, the party on top as our army in the battle (since 2026-10-31 its front row held
-from below in the bracket, the owner's PD2f2, phone.md §32; `PhoneLedgerUpright.Bracket`, `Devices/PhoneBracket`,
+from below in the bracket, the owner's PD2f2, phone.md §32; `PhoneLedgerPortrait.Bracket`, `Devices/PhoneBracket`,
 `godot/Strategy/FacingBracket`, shared with the enemy attack's), the ledger at the thumb in two-line
 rows (the seal, № and the name over the type fixed at the left, the tab's other columns scrolled sideways under them, each
 tab its own scroll), the sends | Stop in the bar; Subordinates' orders under the ledger, Replenish and Talk on one row, the
 budget at the bar's left and End at the right thumb, a question under its button; a unit's picture on a long press as a
-sheet over the foot (`Original.Content/Devices/PhoneLedgerUpright`; `DeploymentTableView.Upright.cs`,
-`DeploymentPanels.Upright.cs`, `SubordinatesView.Upright.cs`, `UnitPictureView`, `OrderResultPlate`); since 2026-10-31 the
+sheet over the foot (`Original.Content/Devices/PhoneLedgerPortrait`; `DeploymentTableView.Portrait.cs`,
+`DeploymentPanels.Portrait.cs`, `SubordinatesView.Portrait.cs`, `UnitPictureView`, `OrderResultPlate`); since 2026-10-31 the
 plate after a troop order a card of its own in the middle over the screen dimmed 65% (the owner's PU1r1d2, phone.md §30;
-`OrderResultPlate.Upright.cs`, `SubordinateResult.Bar`; the 65% on every device).
+`OrderResultPlate.Portrait.cs`, `SubordinateResult.Bar`; the 65% on every device).
 Step P6 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P6, where it stands"): the enemy attack
 upright — the PC's screen stacked, the head with the news, the province's picture with its figures beside it, "VS", the
 army's cards two a row with the front row on top facing up at the province (since 2026-10-31 held from above in the PC's
-bracket turned up, the owner's PA1f2a, phone.md §31; `PhoneAttackUpright.Bracket`), Maris's question, Abandon City | Ninja Scout
+bracket turned up, the owner's PA1f2a, phone.md §31; `PhoneAttackPortrait.Bracket`), Maris's question, Abandon City | Ninja Scout
 over Intercept in the bar; Ninja Scout's list and Abandon City's question above their buttons
-(`Original.Content/Devices/PhoneAttackUpright`; `EnemyAttackView.Upright.cs`, the answers, the list, the cards and the
+(`Original.Content/Devices/PhoneAttackPortrait`; `EnemyAttackView.Portrait.cs`, the answers, the list, the cards and the
 totals shared with `EnemyAttackView.Phone.cs`).
 Step P7 is split as L7 was (phone-build.md, "Step P7, where it stands"): P7a is built, awaiting the owner's look on the
 Poco — Harem and Treasure upright: the title band, the picture at the width, the details, (Treasure's tabs or a first
@@ -426,34 +426,34 @@ pick's prompt and Back,) the picker's grid in rows of 5.8 / 5.4 mm (7.3 / 6.7 ti
 (since 2026-10-31 the owner's S2 from round P31, phone.md §40-§43: `Devices/PhoneScrollBar`, `UiPalette.DrawScrollBar`;
 every phone scroll bar takes it since, on the paper in PB's vermilion; the PC's and the tablet's 8 layout px wide, round T's T2,
 docs/ui/touch.md, `Devices/LayoutScrollBar`), the red button |
-End in the bar, Treasure's questions across the room over it (`Original.Content/Devices/PhonePickersUpright` with its
-`ScrolledGrid`; `HaremView.Upright.cs`, `TreasureView.Upright.cs`, `PickerGridScroll`); P7b is built, awaiting the
+End in the bar, Treasure's questions across the room over it (`Original.Content/Devices/PhonePickersPortrait` with its
+`ScrolledGrid`; `HaremView.Portrait.cs`, `TreasureView.Portrait.cs`, `PickerGridScroll`); P7b is built, awaiting the
 owner's look on the Poco — Save/Load upright as PL2: the title band with Load | Save, the tabs, the list in one-line rows
 above the page (nine in view, a drag for the rest), the chosen save's page standing on the bar (the map cut at its foot,
 the figures in two columns, the comment with Edit), the red button | Back in the bar; the comment's own card over
 Android's keyboard as PY2, its words wrapped in a field two lines high and drawn by the view, the line edit taking the keys
-unseen (`Original.Content/Devices/PhoneSavesUpright`; `SaveLoadView.Upright.cs`, held landscape's drawing shared through
+unseen (`Original.Content/Devices/PhoneSavesPortrait`; `SaveLoadView.Portrait.cs`, held landscape's drawing shared through
 its `Places`).
 Step P8 is split as L9 was (phone-build.md, "Step P8, where it stands"): P8a is built, awaiting the owner's look on the
 Poco — the options window upright as PO1 with PO1o: the title under the hole, the five paper tabs across the room, the
 sheet down to the bar with each tab's settings in one column at PO1's type (Display's orientation on top as PO1o's
 rows), scrolled by a finger with a thin bar, cut at the sheet's margins (the canvas item's clip, the frame drawn with it
-ignored), Defaults | Close in the bar (`Original.Content/Devices/PhoneOptionsUpright`; `OptionsView.Upright.cs`). P8b is
+ignored), Defaults | Close in the bar (`Original.Content/Devices/PhoneOptionsPortrait`; `OptionsView.Portrait.cs`). P8b is
 built, awaiting the owner's look on the Poco — the dungeon's menus upright as PF1 and PF1e: the screen black, the floor's
 picture cut from the engine's texture at the room's width, window 113's lines left of the rail (the view takes the window,
-`FloorLadderView.TakeWindow`), the rail at the right thumb on the bar's foot (`Original.Content/Devices/PhoneLadderUpright`;
-`FloorLadderView.Upright.cs`). P8c is built, awaiting the owner's look on the Poco — All Data upright as PG2m and PG2:
+`FloorLadderView.TakeWindow`), the rail at the right thumb on the bar's foot (`Original.Content/Devices/PhoneLadderPortrait`;
+`FloorLadderView.Portrait.cs`). P8c is built, awaiting the owner's look on the Poco — All Data upright as PG2m and PG2:
 the title band, the map in miniature cut from the engine's texture at the room's width (the presenter leaves the graph
 off it, `GamePresenter.DataGraphCovered`), a sheet with the graphs as finger rows or, over a graph, as tabs over the plot
 laid out again from the presenter's bars (`GamePresenter.DataBars`) and the scale as eight chips in a row, Back in the bar
-(`Original.Content/Devices/PhoneDataUpright`; `AllDataView.Upright.cs`). P8d is built, awaiting the owner's look on the
+(`Original.Content/Devices/PhoneDataPortrait`; `AllDataView.Portrait.cs`). P8d is built, awaiting the owner's look on the
 Poco — the title upright, since 2026-10-31 as PE6 (owner, docs/ui/phone.md §44-§46): our screen over the picture, the
 stone of CG 301 over the whole screen, the logo whole, a finger row for each button it draws with its character cut
 without its word from the player's CG 302 at run time (`Original.Content/Devices/PhoneTitleArt`), the characters in one
-column, the words left-aligned right of it (`Original.Content/Devices/PhoneTitleUpright`, `godot/Strategy/TitleUprightView`,
+column, the words left-aligned right of it (`Original.Content/Devices/PhoneTitlePortrait`, `godot/Strategy/TitlePortraitView`,
 `GameScreen.Title.cs`), a row a click in its button's box, a long press its description under the logo
 (`Device.PictureTop`); the import screen as PI, PIp, PIr, a card in the middle with the steps one under
-another, the red button | Back in the bar (`Original.Content/Devices/PhoneImportUpright`; `godot/ImportScreen.Upright.cs`);
+another, the red button | Back in the bar (`Original.Content/Devices/PhoneImportPortrait`; `godot/ImportScreen.Portrait.cs`);
 the original's own screens as they are, a long press the right click upright too.
 Step P9 is done but the owner's play (phone-build.md, "Step P9, where it stands"): unattended play headless with
 `--phone upright` from the week-18 save through every exercise, all as before, and again with the window turned every n

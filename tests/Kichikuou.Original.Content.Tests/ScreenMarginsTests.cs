@@ -55,11 +55,11 @@ public class ScreenMarginsTests
     }
 
     [Fact]
-    public void Upright_the_room_inside_the_margins_scales_the_layout_by_its_width()
+    public void Portrait_the_room_inside_the_margins_scales_the_layout_by_its_width()
     {
         var m = new ScreenMargins(28, 28, 28).Insets(PerMm);
         float w = 1220 - m.Left - m.Right;
-        var phone = PhoneFrame.Upright(w, 2712 - m.Top - m.Bottom, margins: m);
+        var phone = PhoneFrame.Portrait(w, 2712 - m.Top - m.Bottom, margins: m);
         Assert.Equal(w / 1220, phone.Unit, Close);
         Assert.Equal(0, phone.Safe.Left, Close);
         Assert.Equal(110 - m.Top, phone.Safe.Top, Close);                         // the camera's strip left under the margin
@@ -70,7 +70,7 @@ public class ScreenMarginsTests
     public void Without_margins_the_frame_is_as_before()
     {
         Assert.Equal(PhoneFrame.Landscape(2712, 1220).Safe, PhoneFrame.Landscape(2712, 1220, margins: new(0, 0, 0, 0)).Safe);
-        Assert.Equal(PhoneFrame.For(1220, 2712).Frame, PhoneFrame.For(1220, 2712, upright: true).Frame);
+        Assert.Equal(PhoneFrame.For(1220, 2712).Frame, PhoneFrame.For(1220, 2712, portrait: true).Frame);
     }
 
     [Fact]
@@ -78,9 +78,9 @@ public class ScreenMarginsTests
     {
         // Android's back gesture takes a strip of the sides, its home gesture the foot: a tab's ridges, where the finger
         // takes it, stand 9 mm × 0.62 in from the frame's edge, which is itself the margin in from the screen's.
-        foreach (bool upright in new[] { true, false })
+        foreach (bool portrait in new[] { true, false })
         {
-            var c = upright ? MarginsCalibration.For(1220, 2712, default, PerMm, true)
+            var c = portrait ? MarginsCalibration.For(1220, 2712, default, PerMm, true)
                 : MarginsCalibration.For(2712, 1220, default, PerMm, false);
             var (_, topY) = c.Ridges(MarginsCalibration.Side.Top);
             var (_, bottomY) = c.Ridges(MarginsCalibration.Side.Bottom);
@@ -107,7 +107,7 @@ public class ScreenMarginsTests
     [Fact]
     public void The_frame_follows_the_margins_and_the_panel_stays_in_it()
     {
-        foreach (var (w, h, perMm, upright) in new[]
+        foreach (var (w, h, perMm, portrait) in new[]
                  {
                      (1220f, 2712f, PerMm, true), (2712f, 1220f, PerMm, false),
                      (1280f, 800f, 800f / 167, false),                               // the tablet's canvas, 167 mm high
@@ -116,7 +116,7 @@ public class ScreenMarginsTests
             foreach (var set in new[] { ScreenMargins.None, new ScreenMargins(ScreenMargins.Max, ScreenMargins.Max, ScreenMargins.Max) })
             {
                 var m = set.Insets(perMm);
-                var c = MarginsCalibration.For(w, h, m, perMm, upright);
+                var c = MarginsCalibration.For(w, h, m, perMm, portrait);
                 Assert.Equal(m.Left, c.Frame.X, Close);
                 Assert.Equal(h - m.Bottom, c.Frame.Bottom, Close);
                 var p = c.Panel;

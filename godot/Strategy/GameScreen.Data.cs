@@ -23,7 +23,7 @@ public partial class GameScreen
     }
 
     /// <summary>Whether All Data's screen is up on the phone held either way, with our interface.</summary>
-    private bool PhoneData => (PhoneLandscape || PhoneUpright) && InterfaceChoice.New && _presenter.Data != DataView.Closed;
+    private bool PhoneData => (PhoneLandscape || PhonePortrait) && InterfaceChoice.New && _presenter.Data != DataView.Closed;
 
     /// <summary>
     /// Each frame: over a graph the sides show (its figures ours, the presenter's left off), over the map's view with no
@@ -32,16 +32,16 @@ public partial class GameScreen
     /// </summary>
     private void UpdateDataView()
     {
-        bool graph = PhoneData && _presenter.Data != DataView.Map, upright = PhoneData && PhoneUpright;
+        bool graph = PhoneData && _presenter.Data != DataView.Map, portrait = PhoneData && PhonePortrait;
         _presenter.DataFiguresCovered = graph;
         _dataView.Screen = _texture;
         if (graph && !SkippingScene)
             _dataView.ShowGraph(AllDataView.Sides.Of(_presenter));
-        else if (upright && !SkippingScene)
+        else if (portrait && !SkippingScene)
             _dataView.ShowMap(AllDataView.Sides.Of(_presenter));
         else
             _dataView.HideSides();
-        _presenter.DataGraphCovered = upright && _dataView.Visible;
+        _presenter.DataGraphCovered = portrait && _dataView.Visible;
         if (_dataView.Visible)
             _dataView.Place();
     }

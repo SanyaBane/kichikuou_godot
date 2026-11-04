@@ -14,7 +14,7 @@ public enum DeviceLayout
     /// <summary>A phone held landscape: the frame at the screen's height, our controls in the black sides.</summary>
     PhoneLandscape,
     /// <summary>A phone held upright (step P0 on).</summary>
-    PhoneUpright,
+    PhonePortrait,
 }
 
 /// <summary>How the device is told (docs/ui/phone-build.md, §3, and its §6: no setting). Engine-independent.</summary>
@@ -36,6 +36,6 @@ public static class DeviceLayouts
     /// else the tablet's in the touch mode, else the PC's.
     /// </summary>
     public static DeviceLayout Decide(bool touch, bool phone, float width, float height) =>
-        phone ? width >= height ? DeviceLayout.PhoneLandscape : DeviceLayout.PhoneUpright
+        phone ? width >= height ? DeviceLayout.PhoneLandscape : DeviceLayout.PhonePortrait
         : touch ? DeviceLayout.Tablet : DeviceLayout.Pc;
 }

@@ -24,11 +24,11 @@ public sealed class LedgerNameCellTests
     }
 
     [Fact]
-    public void For_ScalesTheUprightRowToTheLedgersText()
+    public void For_ScalesThePortraitRowToTheLedgersText()
     {
-        var upright = LedgerNameCell.For(PhoneLedgerUpright.Text, deployment: true);
-        Assert.Equal(PhoneLedgerUpright.DeploymentRows.Row, upright.Row, 3);
-        Assert.Equal(PhoneLedgerUpright.DeploymentRows.Face, upright.Face, 3);
+        var portrait = LedgerNameCell.For(PhoneLedgerPortrait.Text, deployment: true);
+        Assert.Equal(PhoneLedgerPortrait.DeploymentRows.Row, portrait.Row, 3);
+        Assert.Equal(PhoneLedgerPortrait.DeploymentRows.Face, portrait.Face, 3);
         var pc = LedgerNameCell.For(17, deployment: true);
         Assert.Equal(166 * 17 / 46f, pc.Row, 3);                                // ~61 px on the PC
         Assert.Equal(pc.HpTop + pc.BarHeight, pc.FaceTop + pc.Face, 3);         // the face down to the HP bar's foot

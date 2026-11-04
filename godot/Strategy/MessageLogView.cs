@@ -43,7 +43,7 @@ internal sealed partial class MessageLogView : Control
         public static Metrics Phone(PhoneUnits u)
         {
             var paper = u.Rect(PhoneScenes.LogPaper(u.Frame));
-            if (u.Frame.IsUpright)
+            if (u.Frame.IsPortrait)
                 return new(paper, paper, u.Px(100), 0, u.Px(76), u.Px(58), u.Px(32), u.Px(30), u.Px(46), u.Px(24), u.Px(40), false, true);
             return new(paper, paper, u.Px(100), u.Px(420), u.Px(84), u.Px(58), u.Px(36), u.Px(30), u.Px(46), u.Px(24), u.Px(40), false);
         }
@@ -94,7 +94,7 @@ internal sealed partial class MessageLogView : Control
     /// side under its Close.
     /// </summary>
     public Vector2 OutsidePoint => GetGlobalTransformWithCanvas() * (_phone is { } u
-        ? u.Frame.IsUpright ? u.Rect(PhoneScenes.LogClose(u.Frame)).GetCenter() * _k
+        ? u.Frame.IsPortrait ? u.Rect(PhoneScenes.LogClose(u.Frame)).GetCenter() * _k
             : new Vector2(u.Rect(u.Frame.LeftRoom).GetCenter().X, _m.Paper.GetCenter().Y) * _k
         : new Vector2(100, 400) * _k);
 
@@ -262,7 +262,7 @@ internal sealed partial class MessageLogView : Control
                     : line.Kind == LogKind.Thought ? Ui.VermilionInk with { A = 0.6f } : Ui.VermilionInk;
                 if (m.Stacked)
                 {
-                    // Upright the name on a line of its own over the lines it heads (PR2), at their left edge.
+                    // Portrait the name on a line of its own over the lines it heads (PR2), at their left edge.
                     string over = choice ? "YOUR CHOICE" : label;
                     float at = Fit(_label, over, choice ? m.Choice : m.Label, right - column);
                     Text(_label, over, at, column, top + m.Pitch * 0.62f, colour);

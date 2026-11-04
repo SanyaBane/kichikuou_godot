@@ -27,7 +27,7 @@ internal sealed partial class SubordinatesView
     {
         float r = _k / f.Unit;                                  // layout pixels to the reference's
         var cell = new Rect2(button.Position * r, button.Size * r);
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
             _callout.Show(SubordinatesScreen.Question, cell, waiting: false);   // PU1q: under its button, over it near the foot
             return;
@@ -41,9 +41,9 @@ internal sealed partial class SubordinatesView
 
     private void DrawPhone(Control c, PhoneFrame f)
     {
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(c, f);
+            DrawPortrait(c, f);
             return;
         }
         var u = new PhoneUnits(f);

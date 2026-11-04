@@ -17,7 +17,7 @@ namespace Kichikuou.Game.Strategy;
 /// graph's cell keeps it at its scale. While a graph waits for the click a tap is told the screen (<see cref="Tapped"/>),
 /// which queues the original's clicks: Back the left click that leaves the graph, a chip the right click and the scale menu
 /// answered with it, another graph's cell the left click and the menu answered with that graph; a tap on the frame stays the
-/// original's. Held upright the same menus and taps on our own page (PG2m, PG2; <c>AllDataView.Upright.cs</c>); on no other
+/// original's. Held upright the same menus and taps on our own page (PG2m, PG2; <c>AllDataView.Portrait.cs</c>); on no other
 /// device it shows. Drawn in the frame's layout pixels over the whole screen (<see cref="PhoneUnits"/>), the places
 /// <see cref="PhoneData"/>'s.
 /// </summary>
@@ -168,7 +168,7 @@ internal sealed partial class AllDataView : Control
     }
 
     /// <summary>A part's box in layout pixels.</summary>
-    private Rect2 RectOf(PhoneUnits u, int part) => u.Frame.IsUpright ? UprightRectOf(u, part)
+    private Rect2 RectOf(PhoneUnits u, int part) => u.Frame.IsPortrait ? PortraitRectOf(u, part)
         : u.Rect(part < ChipBase ? PhoneData.Graph(u.Frame, part)
             : part < BackPart ? PhoneData.Chip(u.Frame, part - ChipBase) : PhoneData.Back(u.Frame));
 
@@ -193,7 +193,7 @@ internal sealed partial class AllDataView : Control
     /// original's; held upright our page every press.
     /// </summary>
     public override bool _HasPoint(Vector2 point) =>
-        Visible && (_answer is not null || _phone is { IsUpright: true } || PartAt(point) >= 0);
+        Visible && (_answer is not null || _phone is { IsPortrait: true } || PartAt(point) >= 0);
 
     public override void _GuiInput(InputEvent e)
     {
@@ -263,9 +263,9 @@ internal sealed partial class AllDataView : Control
             return;
         var u = new PhoneUnits(f);
         DrawSetTransform(Vector2.Zero, 0, new Vector2(u.K, u.K));
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(u, s);
+            DrawPortrait(u, s);
             return;
         }
         var (gx, gy) = PhoneData.GraphsHeading(f);

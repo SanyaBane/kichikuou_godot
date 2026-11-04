@@ -69,7 +69,7 @@ needs a phone layout of its own** (as phone.md, §1 measured), chosen by one liv
 
 Built in step F (landscape) and completed in step P0 (upright).
 
-- **The device, decided live.** One `DeviceLayout` — `Pc`, `Tablet`, `PhoneLandscape`, `PhoneUpright` — decided from
+- **The device, decided live.** One `DeviceLayout` — `Pc`, `Tablet`, `PhoneLandscape`, `PhonePortrait` — decided from
   the touch mode, the screen's physical size and the window's shape, and **read live** wherever a view lays itself out
   (the frozen reads above become reads of it; `TouchMode.On` stays the input's switch: no hover, the long press). A
   phone is a touch screen whose short side is under ~90 mm (`ScreenGetSize` / `ScreenGetDpi`: the Poco 69.5 mm, the
@@ -729,13 +729,13 @@ Poco** (every step's look above, the agent's choices with them), and the tablet'
 **Step P0, where it stands (2026-10-29):** built, awaiting the owner's look on the Poco (the orientation's four ways
 and System's rotation lock).
 
-- **The frame upright**: `PhoneFrame.Upright` (tested, `PhoneFrameTests`): the safe insets — the system's when it reports
+- **The frame upright**: `PhoneFrame.Portrait` (tested, `PhoneFrameTests`): the safe insets — the system's when it reports
   them, else the reference's hole of 110 px at the top and nothing at the sides — and at least the gesture zone's 50 px
   at the foot; the `Room` our layouts may take (the screen less the insets); `PictureAt(top)`, the engine's picture at
   the room's width wherever a screen puts it (0.953 reference pixels a layout pixel, 762.5 high); `Frame`, its default
   place in the room's middle; `Unit` the screen's width over 1220, so the free height flexes with a longer screen.
   `PhoneFrame.For` picks the way by the shape (a square one landscape). `Device.Frame` hands out either,
-  `Device.Upright(view)` the upright one as `Device.Landscape(view)` the landscape one; `ScreenFrame.In` puts the
+  `Device.Portrait(view)` the upright one as `Device.Landscape(view)` the landscape one; `ScreenFrame.In` puts the
   picture at the upright `Frame`, and `GameScreen.UpdateDevice` the view there.
 - **Until P8 a screen not built yet shows the tablet's layout fitted to the width**: every view whose phone branch is
   keyed by `PhoneLandscape` falls through to the tablet's path upright and lays itself over the picture, as on the
@@ -782,7 +782,7 @@ and System's rotation lock).
 - **The frame** (`PhoneFrame`, tested): `Bar`, the bar at the room's foot (PK1: 148 high, 16 from the sides, 10 over the
   gesture zone; reference 16, 2504, 1188 × 148), and the picture's default place `Frame` now in the middle between the
   room's top and the bar (mock_phone.py's `SCENE_Y`, 925.75) — every upright screen not built yet moves up with it.
-- **The model** (`PhoneScenes`, `PhoneMenu`, tested in `PhoneScenesUprightTests`): Menu, Log and Skip are the bar's cells
+- **The model** (`PhoneScenes`, `PhoneMenu`, tested in `PhoneScenesPortraitTests`): Menu, Log and Skip are the bar's cells
   at its left (170 wide, 14 apart); `Window` places a message window — across the screen (16 from the sides), 64 from the
   picture, 420 high (five of the script's lines at their type, so the picture never moves; 131 330), above the picture for
   the left portrait's while it shows, else under it; the glyphs at their cells from the text box's corner (the window's
@@ -799,7 +799,7 @@ and System's rotation lock).
   the word at the left, "…" after a command that asks, a switch's pill reading On or Off, a page's ›), `SceneMenuView`
   (upright over the whole screen, the rows in the bar's place), `MessageLogView` (PR2: the paper, the names over the
   lines, the narration at 2.5 mm, Close in Log's place), `WeekReportView` (PW1: the card at the bar's width in the
-  frame's middle). `MessageWindowView` (keyed by `Device.Upright`) draws the window over or under the picture with its
+  frame's middle). `MessageWindowView` (keyed by `Device.Portrait`) draws the window over or under the picture with its
   tail or bubbles at the portrait (`Portraits`, from `Ui_PortraitL`/`R`, set by `GameScreen`), 131's plate larger and the
   original's bar at the picture's foot hidden, a place's title scaled into the panel; Option → Messages's preview stays
   in its sheet (`Leaves = false`). `GameScreen.Phone.cs`: the Menu cell and the drawer show upright as held landscape
@@ -819,20 +819,20 @@ and System's rotation lock).
 
 **Step P2, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
 
-- **The map's view** (`godot/Strategy/UprightMapView`): while the screen shows `COMMAND`'s map (the map's room,
+- **The map's view** (`godot/Strategy/PortraitMapView`): while the screen shows `COMMAND`'s map (the map's room,
   `_mapStrip`) the map's whole height lies at the screen's width under the status band, down to 12 over the bar (2.63
   reference pixels a map pixel on the Poco's shape: 464 of the map's 1920 columns), drawn by us from the state's six tiles
   and its markers as `WAO_MAP.ADV` op 3 draws the script's tile area (a CG over 10000 less 10000, 18 higher), cached by
   them. A finger's drag scrolls it sideways, whole columns: our own camera. The script's camera stays its own; ours
   centres on it when the script moves it (the map wait's start, its own scrolls), never after our own tap's drag.
 - **A tap** on a plate (upright the plates take no input, the map under them does: `MapMarkersView.PlateAt`) or within
-  4 mm of a marker's point, the nearest (PM1a's note; `PhoneMapUpright.MarkerAt`), is the marker's still click. The
+  4 mm of a marker's point, the nearest (PM1a's note; `PhoneMapPortrait.MarkerAt`), is the marker's still click. The
   script adds the pressed point to its view's corner unbounded (`COMMAND.ADV:94-158`), so a marker its own 640 × 400 view
   does not show is reached as a player reaches it: first the drag that brings it to the view's middle (the corner moves
   by the drag's start less its end, `WAO_MAP.ADV:20-51`; one step, no coasting), then the still click there
   (`MapMarkers.PressAnywhere`, tested in `MapMarkersTests`; `GesturePoints.MapAt` takes a corner). The script's camera
   so moves as the player's drag would move it; no rule changes.
-- **The model** (`Original.Content/Devices/PhoneMapUpright`, tested in `PhoneMapUprightTests`): the status band from 10
+- **The model** (`Original.Content/Devices/PhoneMapPortrait`, tested in `PhoneMapPortraitTests`): the status band from 10
   over the room's top, 290 high at least (two rows of tags), the date and the budget on its first line, the troops under
   them, the week's uses as tags across it in rows (48 high, 58 apart, 22 more between groups); the map's box; Commands at
   the bar's right (440 wide), Close and Return in its place; the command panel's sheet (PM1b: two columns 586 wide from the
@@ -840,12 +840,12 @@ and System's rotation lock).
   would come within 240 of the band); a province's sheet (PM1c: the city's picture 420 wide at its top left, the name,
   the army and the figures beside it, the commands across it 128 high, the dungeon's place's caption over them); the
   lift that keeps a ringed province's ring over the sheet (whole map rows, at most the sheet's height) and off the sides.
-- **The views**, keyed by `Device.Held` or `Device.Upright` (the landscape paths unchanged): `StatusStripView` draws the
-  band (`UprightBand`, which the map and the sheets take; the building's tooltip under its tag by a long press);
+- **The views**, keyed by `Device.Held` or `Device.Portrait` (the landscape paths unchanged): `StatusStripView` draws the
+  band (`PortraitBand`, which the map and the sheets take; the building's tooltip under its tag by a long press);
   `CommandsButton` at the bar's right, its icon beside its word (`SideCells.DrawBarButton`); `CommandMenuView` the sheet,
   the map over it dimmed, its rows on one line (`SideCells.DrawLineRow`); `ProvinceMenuView` the sheet, the ring on the
   map as drawn, Return at the bar's right, the map lifted while it is open (`Map`, `MapPointOf`); `MapMarkersView` takes
-  the view's size (the whole height). `GameScreen.UprightMap.cs` lays them out each frame; the map's room under the PC's
+  the view's size (the whole height). `GameScreen.PortraitMap.cs` lays them out each frame; the map's room under the PC's
   strip stays off on the phone either way. Menu, Log and Skip stay at the bar's left on the map's wait; over the command
   panel and a province's sheet the bar holds Close or Return alone (PM1b, PM1c).
 - **The agent's choices**, for the owner to confirm: a province's sheet only as tall as its card and rows (PM1c's 120
@@ -863,7 +863,7 @@ and System's rotation lock).
 
 **Step P3, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
 
-- **The model** (`Original.Content/Devices/PhoneBattleUpright`, tested in `PhoneBattleUprightTests`): the board is laid out
+- **The model** (`Original.Content/Devices/PhoneBattlePortrait`, tested in `PhoneBattlePortraitTests`): the board is laid out
   1280 layout pixels wide over the room's width (the frame's own scale, 1.049 layout pixels a reference pixel), its corner
   the room's, as high as the room (`Height`; `OnScreen` turns a board box into the canvas's units). From the top: the
   scene at the width (1280 × 512.5, 1.25 of the PC's; no blurred sides); our army's name 6 under it; the cards 586 × 230
@@ -876,13 +876,13 @@ and System's rotation lock).
   Retreat's, its tip at it, the answers 270 × 138 side by side. A card's insides (PB3's slim card): padding 8, the face 174
   with its figures' row 40 at 28 under it, the name 36, the troop type and the state 28, the troops and HP 32, an own card's
   toggles 38 high across the text column's foot (their words 24), the exchange's pill 42 high.
-- **The views**, keyed by the live device (`DeviceLayout.PhoneUpright`; the PC's, the tablet's and the landscape phone's
+- **The views**, keyed by the live device (`DeviceLayout.PhonePortrait`; the PC's, the tablet's and the landscape phone's
   paths unchanged): `BattleBoardView` places itself over the room whatever origin it is given (the game's `Frame()` and
   the gallery's picture both), the board's height its own (`_height`; the panel, the spotlight and the layers over it), the
   cards in rows (`CardArea`: the landscape's columns are the rows), the enemy's name at the left with its advantage after
   it, the gauge drawn across (`DrawGaugeAcross`: the tube, the spent rounds dark from the left, "4 TURNS LEFT" on one line),
   the stones down to the deck, the deck's panel its own (`_deck`, empty while an exchange plays, PB3x), the counters the
-  PC's over the scene at its scale; `CardPortrait` the slim card's face; `BattleCommandLayer.Upright.cs` the deck (the
+  PC's over the scene at its scale; `CardPortrait` the slim card's face; `BattleCommandLayer.Portrait.cs` the deck (the
   tablet's buttons, the forecast on the attack's strip); `BattleDialogLayer.Phone.cs` the retreat question (PB3r: the
   screen dimmed, Retreat lit, the callout's type its own); `TouchPill` the battle's Skip as the side's cell on its strip
   (`GameScreen.Skip.cs`, the gallery's board).
@@ -901,11 +901,11 @@ and System's rotation lock).
 - **After the build: the retreat question in the middle** (owner, 2026-11-04): upright the question no longer stands over
   the deck's right column beside Retreat: it is centred on the screen across the board (40 in from its sides, 330 high,
   the answers 544 × 138), without its tip, over the whole screen dimmed 65% (Retreat under the dim, not lit)
-  (`PhoneBattleUpright.RetreatQuestion`, `BattleDialogLayer.Phone.cs`). Held landscape keeps LB2r1.
+  (`PhoneBattlePortrait.RetreatQuestion`, `BattleDialogLayer.Phone.cs`). Held landscape keeps LB2r1.
 
 **Step P4, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
 
-- **The model** (`Original.Content/Devices/PhoneBattleStatesUpright`, tested in `PhoneBattleStatesUprightTests`): the board's
+- **The model** (`Original.Content/Devices/PhoneBattleStatesPortrait`, tested in `PhoneBattleStatesPortraitTests`): the board's
   places in its layout pixels at the mock-ups' figures — the opening's plate (840 × 176 from 16, the place 2.6 mm, the
   limit 2.1 mm, the turns 1.9 mm), the names' rooms at its sides (centred on 230 from their edge, 420 wide, their lines on
   304, at most 4.1 mm), the advantage's and VS's middles, the seam 50 off the middle; the results plate (24 in from the
@@ -918,12 +918,12 @@ and System's rotation lock).
   cards two a row (the front row first) with the rows' captions, Rance at the foot on the bar with his answer beside him;
   the cut-in round the middle between the room's top and the bar (the announcement, the title, the band across the screen,
   the strategist's portrait, what it does beside it, the line's balloon under it).
-- **The views**, keyed by the live device (`DeviceLayout.PhoneUpright`; the PC's, the tablet's and the landscape phone's
+- **The views**, keyed by the live device (`DeviceLayout.PhonePortrait`; the PC's, the tablet's and the landscape phone's
   paths unchanged): `BattleOpeningLayer` covers the board's scene, its plate, VS and the names at the phone's type
-  (`DrawUprightText`); `BattleInfoLayer.Upright.cs` the results plate and the panel over the whole board dimmed, the ribbon
-  and the caption in `DrawDefence`; `SpeechBalloon.DrawUpright` the balloon, `BattleBoardView` the speaker's portrait at the
-  model's place; `ScoutReportView.Upright.cs` the report over the whole screen (`Device.Held`, the cards
-  `PhoneCommanderCard` as held landscape); `StrategyCutInView.Upright.cs` the cut-in over the whole screen, the backdrop
+  (`DrawPortraitText`); `BattleInfoLayer.Portrait.cs` the results plate and the panel over the whole board dimmed, the ribbon
+  and the caption in `DrawDefence`; `SpeechBalloon.DrawPortrait` the balloon, `BattleBoardView` the speaker's portrait at the
+  model's place; `ScoutReportView.Portrait.cs` the report over the whole screen (`Device.Held`, the cards
+  `PhoneCommanderCard` as held landscape); `StrategyCutInView.Portrait.cs` the cut-in over the whole screen, the backdrop
   left at the picture's place under it, the line's balloon with its tail up (`SpeechBalloon.DrawBalloonTailUp`);
   `BattleCommandLayer`'s card menu at the upright rows.
 - **The agent's choices**, for the owner to confirm: a level-up's rows stay on the results plate (as held landscape), the
@@ -946,7 +946,7 @@ and System's rotation lock).
 
 **Step P5, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
 
-- **The model** (`Original.Content/Devices/PhoneLedgerUpright`, tested in `PhoneLedgerUprightTests`): the places at the
+- **The model** (`Original.Content/Devices/PhoneLedgerPortrait`, tested in `PhoneLedgerPortraitTests`): the places at the
   mock-ups' figures (`title_band`, `pd2_base`, `pd2d`, `pu1_base`, `sideways_ledger`, `party_card`, `bar_budget`) — the
   title band under the hole (156 high: the title, the date at the right, the subtitle, a divider); the deployment's party
   panel under it (600 high: "Party" and the budget, the back row's cards on top and the front row's under them, 587 × 170,
@@ -959,14 +959,14 @@ and System's rotation lock).
   scrolls (`Scrolled`: its own but №, the name and the type, the groups indexed again); a party card's insides
   (`PhoneLedger.CardInsides`, held landscape's the former constants); a unit's picture sheet over the screen's foot (PD2d);
   the order note's place.
-- **The views**, keyed by the live device (`Device.Held` or `Device.Upright`; the PC's, the tablet's and the landscape
-  phone's paths unchanged): `DeploymentTableView.Upright.cs` lays the ledger in two-line rows (`PlaceUpright`) — the tree
+- **The views**, keyed by the live device (`Device.Held` or `Device.Portrait`; the PC's, the tablet's and the landscape
+  phone's paths unchanged): `DeploymentTableView.Portrait.cs` lays the ledger in two-line rows (`PlacePortrait`) — the tree
   keeps its rows, its sort and its gestures; its first column is the fixed part's room, which two overlays cover (the
   header's and the rows', clipped under the header), so the columns scrolled sideways pass under it; a shadow at its edge
   while columns have passed under it, a shadow and ▶ at the view's right while some lie beyond it; each tab keeps its own
   sideways scroll; the fixed headings (№, Name, Type) sort and show their tips as the columns' do; a long press raises the
-  unit's picture as held landscape. `DeploymentPanels.Upright.cs` draws the band, the party and the totals (the cards by the
-  shared `DrawPhoneCard` at the upright insides) and the bar (`PhoneLedgerUpright.Bar`); `SubordinatesView.Upright.cs` the
+  unit's picture as held landscape. `DeploymentPanels.Portrait.cs` draws the band, the party and the totals (the cards by the
+  shared `DrawPhoneCard` at the upright insides) and the bar (`PhoneLedgerPortrait.Bar`); `SubordinatesView.Portrait.cs` the
   band, the orders, the steps, Talk with "With …", the budget in the bar and End; `UnitPictureView` the sheet (the name, the
   type and the troops over the panel at the screen's width); `TreasureCallout.PlaceOnDevice` lays the deployment's Refill
   question at the phone's sizes either way; `OrderResultPlate` upright over the whole screen dimmed, the plate at the room's
@@ -991,7 +991,7 @@ and System's rotation lock).
 
 **Step P6, where it stands (2026-10-29):** built, **awaiting the owner's look on the Poco**.
 
-- **The model** (`Original.Content/Devices/PhoneAttackUpright`, tested in `PhoneAttackUprightTests`): the places at the
+- **The model** (`Original.Content/Devices/PhoneAttackPortrait`, tested in `PhoneAttackPortraitTests`): the places at the
   mock-ups' figures (`attack_head`, `pa1_base`, `pa1n`, `attacker_card`, `maris`, `attack_answers`) from the room's top and
   the bar — the head under the hole (186 high: the flag 78 wide, the title, the date at the right, the news in one line, the
   divider at 172); the province's panel (540 high: the picture 600 wide at the left, the PC's 3:2, its four figures beside
@@ -1003,7 +1003,7 @@ and System's rotation lock).
   Intercept the bar; Ninja Scout's list 30 over its button, its rows 150 high (8.5 mm) — one ninja from 440 in, as PA1n
   drew, more across the room two a row.
 - **The views**, keyed by the live device (`Device.Held`: the screen's `Place` now lays it out held either way; the PC's,
-  the tablet's and the landscape phone's paths unchanged): `EnemyAttackView.Upright.cs` draws the head, the province's
+  the tablet's and the landscape phone's paths unchanged): `EnemyAttackView.Portrait.cs` draws the head, the province's
   panel, "VS", the army's panel and Maris's question over the whole screen on the wave backdrop; the answers, the list, the
   cards (`PhoneCommanderCard`, the unknown and empty places) and the totals are held landscape's
   (`EnemyAttackView.Phone.cs`; Intercept's two lines placed as Ninja Scout's when the button is as high as the bar);
@@ -1024,7 +1024,7 @@ and System's rotation lock).
 **Step P7, where it stands (2026-10-30):** split as L7 was — P7a Harem and Treasure (PH2, PT2), P7b Save/Load (PL2) with
 the comment's editing (PY2). **Both are built, awaiting the owner's look on the Poco.** P7a:
 
-- **The model** (`Original.Content/Devices/PhonePickersUpright`, tested in `PhonePickersUprightTests`), for both pickers:
+- **The model** (`Original.Content/Devices/PhonePickersPortrait`, tested in `PhonePickersPortraitTests`), for both pickers:
   the places at the mock-ups' figures (`plain_title`, `ph2`, `girl_details`, `picker_grid`, `harem_cell`, `end_and`) from
   the room's top and the bar — the title band under the hole (112 high: the title, the date at the right, the divider at
   100); the picture at the room's width less 32 in the PC's shape (1188 × 742; the mock's dump crop was 663 × 412), the
@@ -1038,8 +1038,8 @@ the comment's editing (PY2). **Both are built, awaiting the owner's look on the 
   (6.7 mm; 5.4 mm since 2026-11-04, eleven in view), nine rows in view too; a wide cell's insides (an item's name 18 in, its holder at the right in one line); a
   callout about the red button standing across the room on 40 over the bar (`BesideAction`).
 - **The views**, keyed by the live device (`Device.Held`; the PC's, the tablet's and the landscape phone's paths
-  unchanged): `HaremView.Upright.cs` draws the band, her picture, her details, the grid in view and its bar, End | Summon;
-  `TreasureView.Upright.cs` the band, the entry's picture, its details at the room's width, Characters | Items or the
+  unchanged): `HaremView.Portrait.cs` draws the band, her picture, her details, the grid in view and its bar, End | Summon;
+  `TreasureView.Portrait.cs` the band, the entry's picture, its details at the room's width, Characters | Items or the
   prompt and Back, the grid, End | the touch mode's red button (greyed with the refusal under its word). The details,
   the cells, Summon, the red button, the prompt and the tabs are held landscape's, drawn at the places given
   (`DrawDetails`, `DrawGirlCell`, `DrawSummon` in `HaremView.Phone.cs`; `DrawDetails`, `DrawAction`, `DrawPrompt`,
@@ -1063,7 +1063,7 @@ the comment's editing (PY2). **Both are built, awaiting the owner's look on the 
 
 P7b:
 
-- **The model** (`Original.Content/Devices/PhoneSavesUpright`, tested in `PhoneSavesUprightTests`): the places at the
+- **The model** (`Original.Content/Devices/PhoneSavesPortrait`, tested in `PhoneSavesPortraitTests`): the places at the
   mock-ups' figures (`save_title`, `save_list`, `save_row`, `save_page` compact, `back_and`, `pl2`, `comment_card`, `py2`)
   from the room's top and the bar — the title band (the title, Load | Save 210 × 88 at its right (160 × 88 since 2026-11-04, owner), the divider at 116), the
   lists' tabs (104 high from 134), the heading with the sweep (470 × 64) and the rows (104 high, 10 apart, from 340 down
@@ -1077,10 +1077,10 @@ P7b:
   (130 high) at its foot. The field's words wrap after a space, a word wider than the field between its letters (`Wrap`);
   the caret's line and place, and a tap's letter (`CaretAt`, `ColumnAt`). A longer screen gives the list more rows.
 - **The views**: `SaveLoadView` is keyed by `Device.Held`; the places a press, unattended play and the finger's scroll
-  look at are the orientation's (`Places` in `SaveLoadView.Upright.cs` picks `PhoneSaves`' or `PhoneSavesUpright`'), and
+  look at are the orientation's (`Places` in `SaveLoadView.Portrait.cs` picks `PhoneSaves`' or `PhoneSavesPortrait`'), and
   held landscape's drawing of the tabs, the list, the rows, the page, the questions and the bar serves both
   (`SaveLoadView.Phone.cs`, the landscape pass same). Upright's own: the title band, the divider over the page, the
-  sweep's tip pointing up, and the comment's card (`UprightCard`). In the card the line edit takes the keys and Android's
+  sweep's tip pointing up, and the comment's card (`PortraitCard`). In the card the line edit takes the keys and Android's
   keyboard as held landscape's (its ✓ Done keeps, Back cancels) but draws nothing: its words are drawn wrapped by the
   view at the largest type that keeps them to two lines (down to two thirds), the caret a bar at its column; a tap in the
   field puts the caret at the letter nearest it.
@@ -1102,7 +1102,7 @@ ladder (PF1, PF1e), P8c All Data (PG2m, PG2), P8d the title, the import screen a
 PIp, PIr, PXf, PXc, PXm, PXr). **P8a-P8d are built, awaiting the owner's look on the Poco** (P8c and P8d installed with
 P9, 2026-10-30). P8a:
 
-- **The model** (`Original.Content/Devices/PhoneOptionsUpright`, tested in `PhoneOptionsUprightTests`): the places at the
+- **The model** (`Original.Content/Devices/PhoneOptionsPortrait`, tested in `PhoneOptionsPortraitTests`): the places at the
   mock-ups' figures (`po1`, `po1o`, `defaults_close`) from the room's top and the bar — the title (the brush face, 62) 30
   in, 4 under the room's top; the five tabs 112 under it across the room less 24 each side, 8 apart, 110 high (one not
   chosen 12 lower); the sheet from their foot to 20 over the bar, 24 in; the column 30 in from the sheet's sides from 40
@@ -1112,10 +1112,10 @@ P9, 2026-10-30). P8a:
   name 96 in at 52 down, the hint at 104); Defaults (404) | Close in the bar; a question the PC's box at the parts' scale
   as wide as the sheet allows (less 20 a side) over its middle. A longer screen gives the column more room. The parts'
   scale is held landscape's (`PhoneOptions.PartScale`, PO1's type).
-- **The view** (`OptionsView.Upright.cs`; `OptionsView` is keyed by `Device.Held`, held landscape's drawing untouched):
+- **The view** (`OptionsView.Portrait.cs`; `OptionsView` is keyed by `Device.Held`, held landscape's drawing untouched):
   each tab in one column — Messages: the text speed, its preview centred under it, the message skip, the read text (held
   landscape's part, `ReadTextSection`); Display: the orientation's rows, the font, the palette, the thousands one under
-  another, the unit tables' row heights two a row (`RowsUpright`); Battle: the effects (the hint wrapped), the nine timings
+  another, the unit tables' row heights two a row (`RowsPortrait`); Battle: the effects (the hint wrapped), the nine timings
   one under another; Game: the folder; Tweaks: held landscape's two columns one after the other. **What scrolls past the
   sheet's margins is cut there**: the view's canvas item is clipped to the column's view
   (`RenderingServer.CanvasItemSetClip` with a custom rect, set in its `_Draw` after the Control's own) and the backdrop,
@@ -1149,14 +1149,14 @@ P8b:
   screen to black before the picture (`DungeonCommand.ArriveAsync`, `EC 0`), on the PC too; before a search (no `EC`)
   the map stays round the picture. The only precedent for drawing part of the engine's picture elsewhere was
   `MessageWindowView` (the menu box from the engine's texture).
-- **The model** (`Original.Content/Devices/PhoneLadderUpright`, tested in `PhoneLadderUprightTests`): the places at the
+- **The model** (`Original.Content/Devices/PhoneLadderPortrait`, tested in `PhoneLadderPortraitTests`): the places at the
   mock-ups' figures (`pf1`, `pf1e`, `pf_frame`, `floor_rail`, `info_window`) — the rail 440 wide 16 in from the room's
   right standing on the bar's foot: Descend (150) in the corner, the floor's block (110), Ascend, Retreat, 14 apart;
   before a search Start Search in Descend's place, the other items over it, Return on top (`Top` the rail's top); window
   113 from 16 in to 16 left of the rail, from the rail's top to the bar's foot, its lines 34 in and 30 down at 58 (3.3 mm),
   1.2 apart; the floor's picture (`Source`, 552 × 328 at (364, 204) of the layout) at the room's width less 16 a side in
   its shape, its foot 40 over the rail's top (the mock's 38 and 46). The rungs' insides are held landscape's.
-- **The view** (`FloorLadderView.Upright.cs`; `FloorLadderView` is keyed by `Device.Held`, the places dispatched by the
+- **The view** (`FloorLadderView.Portrait.cs`; `FloorLadderView` is keyed by `Device.Held`, the places dispatched by the
   orientation, held landscape's drawing untouched): over the whole screen the black, the floor's picture cut from the
   engine's texture (`Screen`, which `GameScreen` hands it each frame) in a gold frame, window 113's lines in a lacquer
   panel left of the rail (`TakeWindow`: held upright and open the view takes the window from the message windows, as our
@@ -1177,9 +1177,9 @@ P8b:
 
 P8c:
 
-- **The model** (`Original.Content/Devices/PhoneDataUpright`, tested in `PhoneDataUprightTests`): the places at the
+- **The model** (`Original.Content/Devices/PhoneDataPortrait`, tested in `PhoneDataPortraitTests`): the places at the
   mock-ups' figures (`pg2_top`, `pg2m`, `pg2`, `graph_tabs`, `scale_chips`, `funds_plot`, `end_alone`) from the room's
-  sides, its top and the bar — the title band the pickers' (`PhonePickersUpright.Band`); the map in miniature (the
+  sides, its top and the bar — the title band the pickers' (`PhonePickersPortrait.Band`); the map in miniature (the
   engine's layout (0, 134)-(1280, 666), `各種DATA.ADV:1-11`) 12 under it at the room's width less 16 a side, in its shape;
   the sheet 20 under it to 24 over the bar; over the menu of graphs the four rows (150 high, 18 apart, 48 in; the names
   52 at 24 in) in the sheet's middle; over a graph the tabs 26 under the sheet's top (124 high, 12 apart, 40 in; two
@@ -1192,7 +1192,7 @@ P8c:
   entry, the spending stacked in a funds' bar, its figure and its "OV"), `DataTitle`, `DataCaption` — and leaves the
   whole graph off the screen while `DataGraphCovered`, which keeps the miniature under it whole (tested in
   `GamePresenterTests.All_data_keeps_the_bars_and_leaves_the_graph_off_for_the_phone_upright`).
-- **The view** (`AllDataView.Upright.cs`; `AllDataView` is keyed by `Device.Held`, the parts' places dispatched by the
+- **The view** (`AllDataView.Portrait.cs`; `AllDataView` is keyed by `Device.Held`, the parts' places dispatched by the
   orientation, held landscape's drawing untouched): over the whole screen the wave backdrop, the title band with the
   date, the miniature cut from the engine's texture (`Screen`, which `GameScreen` hands it each frame; the gallery hands
   it the composed picture) in a thin frame, a lacquer sheet; over the menu of graphs the rows (a row answers it with its
@@ -1215,8 +1215,8 @@ P8c:
 P8d:
 
 - **The title** (PE2 as the owner changed it; since 2026-10-31 PE6 in its place, "After the build: the title upright as
-  PE6" below — what follows is PE2 as it was built): the model `Original.Content/Devices/PhoneTitleUpright` (tested in
-  `PhoneTitleUprightTests`) — a row for each button the title draws (`MenuItems[n].MenuItem` 1, `ｽﾀMENU.ADV:87-96`: a
+  PE6" below — what follows is PE2 as it was built): the model `Original.Content/Devices/PhoneTitlePortrait` (tested in
+  `PhoneTitlePortraitTests`) — a row for each button the title draws (`MenuItems[n].MenuItem` 1, `ｽﾀMENU.ADV:87-96`: a
   first launch Alice, Load and Start; a clear Destiny, B.G.M and C.G; the rolls Please and Spy), top down Spy, Please,
   Destiny, B.G.M, C.G, Alice, Load, Start (`TITLE_ORDER`), each the picture's own word alone (the brush face, 52) in a row
   130 high, 12 apart, 40 in, the last 20 over the bar, in a lacquer panel 28 over the first and 6 over the bar; the picture
@@ -1225,15 +1225,15 @@ P8d:
   `ｽﾀMENU` runs with its boxes loaded (`GameScreen.Title.cs`), so the picture keeps its own targets and a button's
   description (window 113, PEd) and the requests slip (PEr) stand by it as the scenes' do. The rows
   (`godot/Strategy/TitleRowsView`) show while it polls the mouse (not at a key wait, under a window or a menu); a row is a
-  click in the middle of its button's box as the title loaded it (`PhoneTitleUpright.Centre`, through `_titlePointer` in
+  click in the middle of its button's box as the title loaded it (`PhoneTitlePortrait.Centre`, through `_titlePointer` in
   the title's own reads).
-- **The import screen** (PI, PIp, PIr as drawn): the model `Original.Content/Devices/PhoneImportUpright` (tested in
-  `PhoneImportUprightTests`) — the card 1560 high in the middle between the room's top and the bar (less on a shorter
+- **The import screen** (PI, PIp, PIr as drawn): the model `Original.Content/Devices/PhoneImportPortrait` (tested in
+  `PhoneImportPortraitTests`) — the card 1560 high in the middle between the room's top and the bar (less on a shorter
   screen), 16 in, the paper 26 in, its head as held landscape's (90, 166, the rule 206, the steps 262), the steps one
   under another (the seal 76 in, the words 140 in to 40 from the paper's right), the field under the first, the next step
   70 under the field, Play 30 under the check or 180 under the decompile's bar, the tick 20 and the words 60 from the
   right, the stamp 140 from the right and 360 under the field's top; Back | the red button in the bar as Save/Load's. The
-  view `godot/ImportScreen.Upright.cs` (keyed by `Device.Held`; held landscape's steps, field, bar, hashes and stamp shared,
+  view `godot/ImportScreen.Portrait.cs` (keyed by `Device.Held`; held landscape's steps, field, bar, hashes and stamp shared,
   their places dispatched by the orientation), the wave backdrop round the card.
 - **The original's own screens** (PXf, PXc, PXm, PXr): as they are in the room's middle since P0/P1, Menu at the bar's left
   (Log and Skip at the report's key waits); a long press is now the right click upright too
@@ -1322,10 +1322,10 @@ mock-ups (phone.md) had the act at the right thumb; the build swaps each pair, t
   Cancel (`PhoneSaves.Keep`, `Cancel`); the import's red button at the right column's left and Back right of it to the
   column's right (`PhoneImport.Button`, `Back`; Import 460 wide, was 520, so "Back to the title" fits beside it; at a
   first launch, with no way back, Import alone at the column's right as before).
-- **Upright**: the harem's and the treasure's red button | End (`PhonePickersUpright.Action`, `End`); the deployment's
-  sends | Stop (`PhoneLedgerUpright.Bar`, Stop 404 at the bar's right); Save/Load's and the import's red button | Back
-  (`PhoneSavesUpright.Button`, `Back`; the import's red button alone at the bar's right at a first launch,
-  `PhoneImportUpright.Button(f, back)`) and the comment's card Keep | Cancel.
+- **Upright**: the harem's and the treasure's red button | End (`PhonePickersPortrait.Action`, `End`); the deployment's
+  sends | Stop (`PhoneLedgerPortrait.Bar`, Stop 404 at the bar's right); Save/Load's and the import's red button | Back
+  (`PhoneSavesPortrait.Button`, `Back`; the import's red button alone at the bar's right at a first launch,
+  `PhoneImportPortrait.Button(f, back)`) and the comment's card Keep | Cancel.
 - **Both**: the questions in the house's callout (`TreasureCallout`: the Refill and troop orders' questions, Treasure's,
   the enemy attack's Abandon) Yes | No and Abandon | Keep, as on the PC (they were No | Yes, the first nearer the
   thumb); the Menu sheet's Restart / Exit questions the red button | Cancel (`PhoneMenu.QuestionAt`).
@@ -1344,7 +1344,7 @@ and Close where they stand. On the tablet too (docs/ui/touch.md, "The sides swap
 - **Held landscape** (`PhoneMap`): the items from the foot up in the left side under the status's figures (`LinkRows`, at
   most 30 under `HeaderBox`); Turn END on the right's top, "This week" 26 under it (`CaptionBox`), the commands from the
   foot up over Close under the caption (`CommandRows`).
-- **Upright** (`PhoneMapUpright.Commands`): the items in the left column, the commands in the right, both from the foot
+- **Upright** (`PhoneMapPortrait.Commands`): the items in the left column, the commands in the right, both from the foot
   up; Turn END on the right column's top, "This week" in a band 56 high between it and the commands, so the sheet is 56
   taller (the top-left beside Turn END left empty).
 
@@ -1369,11 +1369,11 @@ The owner, looking at the gallery's `subordinates-result` upright: the plate aft
 780×150 scaled to the width, too low, its lines 1.1-2.4 mm. Rounds P22-P23 (phone.md, §30): the owner chose PU1r1 with
 the rest of the screen dimmed 65% (PU1r1d2). Built:
 
-- **The model**: `PhoneLedgerUpright.ResultPlate` — the room's width less 16 a side, 800 high, in the middle between the
+- **The model**: `PhoneLedgerPortrait.ResultPlate` — the room's width less 16 a side, 800 high, in the middle between the
   room's top and the bar — and its lines (`Result…`, the mock-up's figures);
   `SubordinateResult.Bar` (`TroopsBar`: the troops kept, the men gained or lost to CMD-20, a raised maximum ticked, the
   kept part's share for the ledger's colour) and `TroopsNow`; `SubordinateResult.AddPreview` for the gallery's R5.
-- **The view**: `OrderResultPlate.Upright.cs` draws the card in the frame's layout pixels over the whole screen — the
+- **The view**: `OrderResultPlate.Portrait.cs` draws the card in the frame's layout pixels over the whole screen — the
   title (fitted), the face (230), the name and troop type, the troops before → after with the gain (under them where a
   long R5 line leaves no room), the bar with the troops after under it, Cost | Budget in Cinzel 700, the click's triangle
   at the mock-up's size. The PC's, the tablet's and the landscape phone's plates keep their layout; the deployment
@@ -1390,13 +1390,13 @@ The owner, looking at the gallery's `enemy-attack` upright: no telling which way
 the gold pointer says it, upright only a 0.9 mm triangle beside "FRONT ROW". Rounds P24-P25 (phone.md, §31): the owner
 chose the PC's bracket turned up with "FRONT ROW" under it, in the middle (PA1f2a). Built:
 
-- **The model**: `PhoneAttackUpright.Bracket` — the line 30 over "FRONT ROW"'s middle from the front row's outer sides
+- **The model**: `PhoneAttackPortrait.Bracket` — the line 30 over "FRONT ROW"'s middle from the front row's outer sides
   (1 in), its ends down to 4.5 over the cards — and the bracket's figures (`BracketOver` … `HeadHalf`, the PC's
   `DrawArmyBracket` scaled as the cards are, 573 / 252). The cards' block stands 20 lower than the panel's middle (the
   cards 20 lower than before), its front row at least 149 under the panel's top (the head's tip 20 under it); the
   mock-up drew the cards 40 lower, but then the list of all five ninjas would cover the back row's foot
-  (`PhoneAttackUprightTests`).
-- **The view**: `EnemyAttackView.UprightBracket` draws the line in gold (5.7 wide) and the head in the name's gold, as
+  (`PhoneAttackPortraitTests`).
+- **The view**: `EnemyAttackView.PortraitBracket` draws the line in gold (5.7 wide) and the head in the name's gold, as
   the PC's; the small triangle beside "FRONT ROW" is gone. The PC's and the landscape phone's screens are unchanged.
 
 ### After the build: the party's bracket upright (owner, 2026-10-31)
@@ -1405,13 +1405,13 @@ The deployment table upright marked its party's front row as the enemy attack ha
 (phone.md, §32): the owner chose PD2f2, the same bracket turned down, as the party faces as our army in the battle.
 Built:
 
-- **The shared bracket**: its figures `Devices/PhoneBracket` (taken out of `PhoneAttackUpright`), its drawing
+- **The shared bracket**: its figures `Devices/PhoneBracket` (taken out of `PhoneAttackPortrait`), its drawing
   `godot/Strategy/FacingBracket` (the head up or down), both screens on them.
-- **The model**: `PhoneLedgerUpright` — the panel 645 high (600 before), the front row 14 under the back row (38 higher),
+- **The model**: `PhoneLedgerPortrait` — the panel 645 high (600 before), the front row 14 under the back row (38 higher),
   "Front row" 24 under its cards, the totals' middle 592, beside the head; `Bracket(f, places)` — the line 30 under the
   caption's middle from the front row's outer sides (1 in), or over place 1's card alone when the party has one place
   (the dungeon search), its middle where "Front row" stands. The tabs and the ledger 45 lower, the ledger as much shorter.
-- **The view**: `DeploymentPanels.Upright.cs` draws the bracket head down and "Front row" on its middle; the ▼ is gone.
+- **The view**: `DeploymentPanels.Portrait.cs` draws the bracket head down and "Front row" on its middle; the ▼ is gone.
   The PC's, the tablet's and the landscape phone's deployment screens are unchanged.
 
 ### After the build: the scout report's bracket upright (owner, 2026-10-31)
@@ -1419,11 +1419,11 @@ Built:
 The scout report upright showed the enemy's front row with no mark of its facing. Rounds P27-P28 (phone.md, §33-§34):
 the owner chose PB4sf2m2. Built:
 
-- **The model**: `PhoneBattleStatesUpright` — Kanami's portrait, her report and the cards one block 1134 high (the front
+- **The model**: `PhoneBattleStatesPortrait` — Kanami's portrait, her report and the cards one block 1134 high (the front
   row 580 under its top, 60 lower than before), in the middle between the room's top and `BlockFoot` (Rance's portrait's
   top, a row higher with Maris's comment; the bar when nobody answers), at least 20 under the room's top; the places take
   that foot. `Bracket(f, foot)`: PA1f2a's, its line 30 over "FRONT ROW"'s middle.
-- **The view**: `ScoutReportView.Upright.cs` draws the bracket head up through `FacingBracket`. The PC's, the tablet's
+- **The view**: `ScoutReportView.Portrait.cs` draws the bracket head up through `FacingBracket`. The PC's, the tablet's
   and the landscape phone's reports are unchanged.
 
 ### After the build: a battle's windows upright (owner, 2026-10-31)
@@ -1444,7 +1444,7 @@ of its name in every tab, and a bar of its troops (no figures) under the name he
 type upright (phone.md, §35). Built as asked, no mock-up round:
 
 - **The model**: `DeploymentRow.FaceCg` (the unit's face, as the party cards'). `PhoneLedger.NameFace` and `NameFaceGap`
-  — held landscape the face 88 (5 mm) in the row's middle, 14 before the name. `PhoneLedgerUpright` — the face 108
+  — held landscape the face 88 (5 mm) in the row's middle, 14 before the name. `PhoneLedgerPortrait` — the face 108
   (6.2 mm) at 156, after №, in the row's middle; the name and the type at 280 / 282, their middles 44 and 92 (50 and 108
   before); the bar at 118, 8 high, from the name's left to the fixed part's right margin; the fixed part 518 wide (404
   before: the name keeps its 226), so the columns scrolled sideways have 114 less; "Name · Type" in the header over the
@@ -1457,7 +1457,7 @@ type upright (phone.md, §35). Built as asked, no mock-up round:
   bar faded. The PC's and the tablet's ledgers are unchanged.
 - **The commander's HP** (rounds P29-P30, the owner's H4 darker; phone.md, §36-§38): under the troops' bar a bar of the
   HP as thick, as a battle card stacks its gauges — held landscape `PhoneLedger.NameBarGap` (3) under it, upright at
-  `PhoneLedgerUpright.HpTop` (130, the troops' at 118, both 8 high). The Name cell's troops in a battle card's blue, the
+  `PhoneLedgerPortrait.HpTop` (130, the troops' at 118, both 8 high). The Name cell's troops in a battle card's blue, the
   HP in its green, both darker for the paper (`UiPalette.GaugeTroops`, `GaugeHp`; `DeploymentTableView.DrawGauge`); the
   Troops column keeps its green, amber and red (`DrawStrength`).
 
@@ -1471,7 +1471,7 @@ The owner asked for the ledger's № no wider than its figures (two at most) and
   `DrawTitles` ending at the column's right and reaching left past it. Subordinates' first column holds the chosen row's
   bar alone, and the talks' bubbles while any unit has one; the diamond is gone. On the deployment table № was about 90
   reference pixels wide, now about 61; Subordinates' first two columns about 220, now about 96.
-- **Upright** (`PhoneLedgerUpright.Places(seals)`): № two figures wide (46), 10 right of the party's seal on the deployment
+- **Upright** (`PhoneLedgerPortrait.Places(seals)`): № two figures wide (46), 10 right of the party's seal on the deployment
   table, from the paper's left on Subordinates; the face, the name and the type follow, the fixed part 504 wide on the
   deployment table (518 before) and 434 on Subordinates; the chosen row's diamond is gone.
 - Then the owner asked for the same on the PC and the tablet: `Compact` is now any table with a tab (docs/ui/unit-ledger.md,
@@ -1487,7 +1487,7 @@ upright:
   in, at least 60 long, as long as the share in view; the list it scrolls stands 10 left of it (`Room`: 30). Drawn by
   `UiPalette.DrawScrollBar`: the groove a capsule of `Groove` in a `DimGold` rim, the thumb a capsule of `Gold` with a
   lit edge in `Name` down its left. A sign only: the finger scrolls the list anywhere.
-- **The pickers upright** (`PhonePickersUpright`): while the grid scrolls it is 30 narrower (1158 on the reference, each
+- **The pickers upright** (`PhonePickersPortrait`): while the grid scrolls it is 30 narrower (1158 on the reference, each
   cell 10), the groove's right at the picture's, the tabs' and End's (16 in from the screen's edge) and as tall as the
   rows in view (the thin bar ran on to the grid area's foot); a grid with every row in view keeps the room's width.
   `ScrolledGrid.Scrolled` is the grid and the bar's room: a finger or the wheel there scrolls it (`PickerGridScroll`).
@@ -1497,14 +1497,14 @@ took the reference, both ways:
 
 - **On the paper** (`UiPalette.DrawScrollBar(…, paper: true)`): the groove the paper's head in an `InkFaint` rim, the
   thumb `VermilionInk` with its edge lightened.
-- **The save lists** (`PhoneSaves`, `PhoneSavesUpright`): the groove in the thin one's room, its right at the list's (the
+- **The save lists** (`PhoneSaves`, `PhoneSavesPortrait`): the groove in the thin one's room, its right at the list's (the
   sweep's), the rows the reference's `Room` short of it (upright 2 wider than before); its groove stays when every save
   fits, as before (`SaveLoadView.Phone.cs`).
-- **The options' sheet upright** (`PhoneOptionsUpright`): the groove 6 in from the sheet's right along `View`; the column
+- **The options' sheet upright** (`PhoneOptionsPortrait`): the groove 6 in from the sheet's right along `View`; the column
   36 from the sheet's right (30 before), whether its tab scrolls or not; on the paper.
 - **The message log** (`MessageLogView`, held either way): the groove 12 in from the paper's edge, from the body's top to
   the paper's foot less its margin, the rules ending the gap before it; on the paper.
-- **The ledgers** (`DeploymentTableView.StyleBars`, from `PlacePhone` and `PlaceUpright`): Godot's own bars styled as the
+- **The ledgers** (`DeploymentTableView.StyleBars`, from `PlacePhone` and `PlacePortrait`): Godot's own bars styled as the
   reference, both ways — the groove a rounded `StyleBoxFlat` in the rim, as thick as the reference (its content margins),
   the thumb inset by a transparent border, the vermilion lightened while hovered or dragged; no lit edge (a style box
   draws none).
@@ -1525,20 +1525,20 @@ mouse. Built:
   logo from CG 301 by the palette entries the texture never uses (groups of 300 pixels or more), with a dark edge 2 wide;
   the texture between the friezes (rows 16-379) with the logo's band (124-275) filled from rows 40-115 and 290-365, and the
   two friezes.
-- **The layout** (`PhoneTitleUpright`, tested in `PhoneTitleUprightTests`): the texture at the screen's width (×1.91 on
+- **The layout** (`PhoneTitlePortrait`, tested in `PhoneTitlePortraitTests`): the texture at the screen's width (×1.91 on
   the reference) down the whole screen, every second copy mirrored, the friezes at the screen's top and foot; the logo
   at ×2.2 in the middle between the room's top + 40 and the rows' top − 40; the rows 208 high, 14 apart, 40 in, the
   last 20 over the bar, the plates the row's colour at 88% (Start the red button); each character at most twice its CG
   pixels in 230 × 186, in a column as wide as the widest of the eight (Alice's, 221) with their middles on its middle;
   the words in the brush face (66) left-aligned 44 right of it; the column and the widest word centred on the screen,
   the same at every count of rows. The panel round the rows and `PictureTop` (the picture over the rows) are gone.
-- **The view** (`godot/Strategy/TitleUprightView`, which `TitleRowsView` became; `GameScreen.Title.cs`): over the engine's
+- **The view** (`godot/Strategy/TitlePortraitView`, which `TitleRowsView` became; `GameScreen.Title.cs`): over the engine's
   picture and under the message windows (`MoveChild` to `_messageView`'s place, as Treasure's); while the title polls the
   mouse it shows the rows and takes every press — a tap on a row its button's click as before, a long press (0.5 s, as
   `GameScreen.Touch`'s) or a right click its right click (`PointerScript.RightClick` through `_titlePointer`), the
   button's description; a press off the rows does nothing, the picture under it being hidden. Under a description the
   view stays without its rows and lets every press through to the key wait, and the picture stands centred on the logo
-  (`PhoneTitleUpright.DescriptionPictureTop`, `Device.PictureTop`), so window 113 comes under the logo as under a
+  (`PhoneTitlePortrait.DescriptionPictureTop`, `Device.PictureTop`), so window 113 comes under the logo as under a
   scene's picture. At the requests slip (no window) the view hides and the slip stands in the room's middle as a
   scene's picture. The pictures are cut once a library (the game's screen and the gallery's entries share them).
 - **The agent's choices**, for the owner to confirm: the rows hidden under a description, the window under the logo;
@@ -1604,14 +1604,14 @@ The owner's mock-up A2 (`tools/ui/mock_rows_under_type.py`, rounds 1-2): on the 
 column's content moves into the fixed part, under the troop type at its size and in its quiet ink, so the scrolled part
 gains Rows' width (Refill and Cost come into view); the heading "Name · Type" stays.
 
-- **The rows' layout** (`PhoneLedgerUpright.RowLayout`, `DeploymentRows` beside `SubordinatesRows`): the row 166 high
+- **The rows' layout** (`PhoneLedgerPortrait.RowLayout`, `DeploymentRows` beside `SubordinatesRows`): the row 166 high
   (9.4 mm, was 150), the name 44 (12 % smaller), the face from the name's top to the HP bar's foot (136, was 108; the
   fixed part 30.3 mm wide), the bars under the rows' line. Subordinates took the same the same day without the rows'
   line (`SubordinatesRows`: the row 132, 7.5 mm, the face 102); the other modes too (docs/ui/unit-ledger.md, §10).
 - **One left edge**: the type and the rows from the name's left (`Places`' `TypeX`; the type stood 2 further), on
   Subordinates too.
 - **Every tab**: the fixed part is the same in each, so the rows stand under the type in Troops and Commander too;
-  `PhoneLedgerUpright.Scrolled` leaves Rows out of the scrolled part (sorting by Rows goes with it).
+  `PhoneLedgerPortrait.Scrolled` leaves Rows out of the scrolled part (sorting by Rows goes with it).
 - **Refill's buttons** 30 % taller (`RefillChip` 83, was 64).
 - **Checks**: the build, the ledger and phone tests; the gallery's upright pass for the deployment and Subordinates entries.
   The look on the Poco is the owner's.

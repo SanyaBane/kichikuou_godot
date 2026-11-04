@@ -604,7 +604,7 @@ consistent with the panel but sends the finger across the screen and back; B spl
 (docs/ui/command-screen.md, "The province menu", "Fifteen commands"). The rail holds twelve from the foot up under
 the status strip; at fifteen the top three rows are above the screen. On the phone held landscape the side's rows
 (`PhoneMap.Stack`) are lowered to fit, about 4 mm at fifteen, and the side's 14.5 mm width caps a long name ("Demon
-Lord's Room") at 1.4 mm whatever the row's height. Upright (`PhoneMapUpright.Rows`) fits as it is. Mock-up round 2
+Lord's Room") at 1.4 mm whatever the row's height. Upright (`PhoneMapPortrait.Rows`) fits as it is. Mock-up round 2
 (`tools/ui/mock_province_long.py`, over the gallery's touch and landscape dumps of `province-menu-own-all`; at a usual
 six every variant but PS is today's):
 

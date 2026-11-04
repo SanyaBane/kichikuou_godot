@@ -271,13 +271,13 @@ internal sealed partial class MenuSheetView : Control
         var boxes = PhoneMenu.Tiles(f, _tiles);
         for (int i = 0; i < _tiles.Count; i++)
         {
-            if (f.IsUpright)
+            if (f.IsPortrait)
                 DrawRow(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
             else
                 DrawTile(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null);
         }
         int sound = _tiles.ToList().FindIndex(t => t.Command == PhoneMenu.Command.Sound);
-        if (f.IsUpright && sound >= 0 && sound + 1 < _tiles.Count && _tiles[sound + 1].Command == PhoneMenu.Command.Screenshot)
+        if (f.IsPortrait && sound >= 0 && sound + 1 < _tiles.Count && _tiles[sound + 1].Command == PhoneMenu.Command.Screenshot)
         {
             // The rule between Save Screenshot and the switches (PN1).
             float y = (boxes[sound].Y + boxes[sound + 1].Bottom) / 2 / u.K;

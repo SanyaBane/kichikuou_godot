@@ -11,7 +11,7 @@ namespace Kichikuou.Game.Battles;
 // (Cease Retreat), as on the tablet. In the layer's layout pixels (the frame's); the places are PhoneBattle's.
 // Held upright (docs/ui/phone-build.md, step P3; docs/ui/phone.md, §6, PB3r) the same callout without its tip in the
 // screen's middle across the board, the whole screen dimmed 65% under it, Retreat too (owner, 2026-11-04; it stood over
-// the deck's right column beside Retreat). In the board's layout pixels; the places are PhoneBattleUpright's.
+// the deck's right column beside Retreat). In the board's layout pixels; the places are PhoneBattlePortrait's.
 internal sealed partial class BattleDialogLayer
 {
     private PhoneFrame? _phone;                         // the phone held either way: the question beside Retreat
@@ -44,14 +44,14 @@ internal sealed partial class BattleDialogLayer
     private static Rect2 B(PhoneFrame.Box b) => new(b.X, b.Y, b.W, b.H);
 
     /// <summary>The question upright: in the screen's middle (the screen in the board's layout pixels, as the dim covers it).</summary>
-    private PhoneFrame.Box UprightQuestion()
+    private PhoneFrame.Box PortraitQuestion()
     {
         var f = _phone!;
-        return PhoneBattleUpright.RetreatQuestion(-f.Room.Y / f.Scale, (f.Screen.H - f.Room.Y) / f.Scale);
+        return PhoneBattlePortrait.RetreatQuestion(-f.Room.Y / f.Scale, (f.Screen.H - f.Room.Y) / f.Scale);
     }
 
     /// <summary>The dim upright, stronger than beside the button: the question stands alone in the middle (owner, 2026-11-04).</summary>
-    private static readonly Color UprightDim = new(0, 0, 0, 0.65f);
+    private static readonly Color PortraitDim = new(0, 0, 0, 0.65f);
 
     /// <summary>The callout's type and insides in layout pixels, held landscape (LB2r1) or upright (PB3r).</summary>
     private readonly record struct Callout(float OnButton, float TipHalf, float TipLength, float TextIn, float TextOut, float QuestionTop,
@@ -63,15 +63,15 @@ internal sealed partial class BattleDialogLayer
         DrawSetTransform(Vector2.Zero, 0, new Vector2(s, s));               // in layout pixels below
         Rect2? retreat;
         Callout c;
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            static float U(float reference) => PhoneBattleUpright.Layout(reference);
-            DrawRect(new Rect2(0, -f.Room.Y / f.Scale, PhoneBattleUpright.Width, f.Screen.H / f.Scale), UprightDim);   // the whole screen
+            static float U(float reference) => PhoneBattlePortrait.Layout(reference);
+            DrawRect(new Rect2(0, -f.Room.Y / f.Scale, PhoneBattlePortrait.Width, f.Screen.H / f.Scale), PortraitDim);   // the whole screen
             retreat = null;                                                 // the question alone in the middle, Retreat under the dim
-            c = new Callout(U(PhoneBattleUpright.RetreatText), 0, 0,
-                U(PhoneBattleUpright.QuestionIn), U(PhoneBattleUpright.QuestionIn + 20), U(PhoneBattleUpright.QuestionTop),
-                U(PhoneBattleUpright.QuestionText), U(PhoneBattleUpright.NoteTop), U(PhoneBattleUpright.NoteText),
-                U(PhoneBattleUpright.QuestionRule), U(24), U(PhoneBattleUpright.AnswerText), U(PhoneBattleUpright.RetreatText));
+            c = new Callout(U(PhoneBattlePortrait.RetreatText), 0, 0,
+                U(PhoneBattlePortrait.QuestionIn), U(PhoneBattlePortrait.QuestionIn + 20), U(PhoneBattlePortrait.QuestionTop),
+                U(PhoneBattlePortrait.QuestionText), U(PhoneBattlePortrait.NoteTop), U(PhoneBattlePortrait.NoteText),
+                U(PhoneBattlePortrait.QuestionRule), U(24), U(PhoneBattlePortrait.AnswerText), U(PhoneBattlePortrait.RetreatText));
         }
         else
         {

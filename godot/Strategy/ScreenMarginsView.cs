@@ -42,11 +42,11 @@ internal sealed partial class ScreenMarginsView : Control
         SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
     }
 
-    private static bool Upright => Device.HeldUpright;
+    private static bool Portrait => Device.HeldPortrait;
 
-    private MarginsCalibration Layout => MarginsCalibration.For(Size.X, Size.Y, Device.Margins, Device.PerMillimetre, Upright);
+    private MarginsCalibration Layout => MarginsCalibration.For(Size.X, Size.Y, Device.Margins, Device.PerMillimetre, Portrait);
 
-    private static ScreenMargins Current => ScreenMarginsChoice.For(Upright);
+    private static ScreenMargins Current => ScreenMarginsChoice.For(Portrait);
 
     /// <summary>Closes the calibration: the options window shows again.</summary>
     public void Close()
@@ -75,7 +75,7 @@ internal sealed partial class ScreenMarginsView : Control
     }
 
     private static void Step(MarginsCalibration.Target target) =>
-        ScreenMarginsChoice.Set(Upright, Current.Stepped(target.Edge, target.Kind == MarginsCalibration.Kind.Plus ? 1 : -1));
+        ScreenMarginsChoice.Set(Portrait, Current.Stepped(target.Edge, target.Kind == MarginsCalibration.Kind.Plus ? 1 : -1));
 
     public override void _GuiInput(InputEvent e)
     {
@@ -92,7 +92,7 @@ internal sealed partial class ScreenMarginsView : Control
             case InputEventMouseButton { ButtonIndex: MouseButton.Left } release:
                 var at = Layout.Hit(release.Position.X, release.Position.Y);
                 if (_pressed.Kind == MarginsCalibration.Kind.Reset && at.Kind == MarginsCalibration.Kind.Reset)
-                    ScreenMarginsChoice.Set(Upright, ScreenMargins.None);
+                    ScreenMarginsChoice.Set(Portrait, ScreenMargins.None);
                 else if (_pressed.Kind == MarginsCalibration.Kind.Done && at.Kind == MarginsCalibration.Kind.Done)
                     Close();
                 _pressed = default;
@@ -104,7 +104,7 @@ internal sealed partial class ScreenMarginsView : Control
                 if (_pressed.Kind == MarginsCalibration.Kind.Tab)
                 {
                     var moved = motion.Position - _dragFrom;
-                    ScreenMarginsChoice.Set(Upright, MarginsCalibration.Dragged(_dragStart, _pressed.Side, moved.X, moved.Y, Device.PerMillimetre));
+                    ScreenMarginsChoice.Set(Portrait, MarginsCalibration.Dragged(_dragStart, _pressed.Side, moved.X, moved.Y, Device.PerMillimetre));
                 }
                 _hover = TouchMode.On ? default : Layout.Hit(motion.Position.X, motion.Position.Y);
                 break;
@@ -180,7 +180,7 @@ internal sealed partial class ScreenMarginsView : Control
         int title = Pt(c, MarginsCalibration.TitleText), orientation = Pt(c, MarginsCalibration.OrientationText);
         var (tx, ty) = c.Title;
         var (ox, oy) = c.Orientation;
-        if (c.IsUpright)
+        if (c.IsPortrait)
         {
             Centred(_cinzel, "SCREEN MARGINS", tx, ty, title, Ui.Name);
             Centred(_gothic, c.OrientationName, ox, oy, orientation, Ui.Quiet);
@@ -197,7 +197,7 @@ internal sealed partial class ScreenMarginsView : Control
         foreach (var edge in ScreenMargins.Edges)
         {
             var (lx, ly) = c.Label(edge);
-            if (c.IsUpright)
+            if (c.IsPortrait)
                 DrawString(_gothic, new Vector2(lx, PhonePickerParts.Middle(_gothic, label, ly)), ScreenMargins.Name(edge),
                     fontSize: label, modulate: Ui.Text);
             else

@@ -83,10 +83,10 @@ public class PhoneFrameTests
     }
 
     [Fact]
-    public void Upright_at_the_reference_phones_own_pixels_the_picture_is_at_the_width_between_the_hole_and_the_bar()
+    public void Portrait_at_the_reference_phones_own_pixels_the_picture_is_at_the_width_between_the_hole_and_the_bar()
     {
-        var phone = PhoneFrame.Upright(1220, 2712);
-        Assert.True(phone.IsUpright);
+        var phone = PhoneFrame.Portrait(1220, 2712);
+        Assert.True(phone.IsPortrait);
         Assert.Equal(1, phone.Unit, Close);
         Assert.Equal(new PhoneFrame.Insets(0, 110, 0, 50), phone.Safe);       // the hole at the top, the gesture zone at the foot
         Equal(new(0, 110, 1220, 2552), phone.Room);
@@ -97,11 +97,11 @@ public class PhoneFrameTests
     }
 
     [Fact]
-    public void Upright_on_the_canvas_the_reference_pixel_is_scaled_by_the_screens_width()
+    public void Portrait_on_the_canvas_the_reference_pixel_is_scaled_by_the_screens_width()
     {
         // The project's canvas (1280×800, aspect "expand") on the reference phone held upright: 1280 wide, 2712 / 0.953 high.
         float height = 2712 * 1280f / 1220;
-        var phone = PhoneFrame.Upright(1280, height);
+        var phone = PhoneFrame.Portrait(1280, height);
         Assert.Equal(1280f / 1220, phone.Unit, Close);
         Assert.Equal(1, phone.Scale, Close);
         Assert.Equal(1280, phone.Frame.W, Close);
@@ -112,22 +112,22 @@ public class PhoneFrameTests
     }
 
     [Fact]
-    public void Upright_a_longer_screen_has_more_free_height_and_the_same_picture()
+    public void Portrait_a_longer_screen_has_more_free_height_and_the_same_picture()
     {
-        var phone = PhoneFrame.Upright(1220, 2520 * 1220f / 1080);              // 21:9 at the reference's width
+        var phone = PhoneFrame.Portrait(1220, 2520 * 1220f / 1080);              // 21:9 at the reference's width
         Assert.Equal(1220, phone.Frame.W, Close);
         Assert.Equal(762.5f, phone.Frame.H, Close);
         Assert.True(phone.Room.H > 2552);
     }
 
     [Fact]
-    public void Upright_the_systems_insets_are_read_and_the_gesture_zone_kept()
+    public void Portrait_the_systems_insets_are_read_and_the_gesture_zone_kept()
     {
-        var phone = PhoneFrame.Upright(1220, 2712, new PhoneFrame.Insets(0, 120, 0, 0));   // the Poco's hole, no gesture zone
+        var phone = PhoneFrame.Portrait(1220, 2712, new PhoneFrame.Insets(0, 120, 0, 0));   // the Poco's hole, no gesture zone
         Assert.Equal(new PhoneFrame.Insets(0, 120, 0, 50), phone.Safe);
         Equal(new(0, 120, 1220, 2542), phone.Room);
 
-        var sides = PhoneFrame.Upright(1220, 2712, new PhoneFrame.Insets(20, 0, 20, 80));
+        var sides = PhoneFrame.Portrait(1220, 2712, new PhoneFrame.Insets(20, 0, 20, 80));
         Equal(new(20, 0, 1180, 2632), sides.Room);
         Assert.Equal(1180, sides.Frame.W, Close);                              // the picture at the room's width
         Assert.Equal(20, sides.Frame.X, Close);
@@ -136,10 +136,10 @@ public class PhoneFrameTests
     [Fact]
     public void A_frame_for_a_screen_is_held_as_its_shape_says()
     {
-        Assert.False(PhoneFrame.For(2712, 1220).IsUpright);
-        Assert.True(PhoneFrame.For(1220, 2712).IsUpright);
-        Assert.False(PhoneFrame.For(1000, 1000).IsUpright);
-        Equal(PhoneFrame.Upright(1220, 2712).Frame, PhoneFrame.For(1220, 2712).Frame);
+        Assert.False(PhoneFrame.For(2712, 1220).IsPortrait);
+        Assert.True(PhoneFrame.For(1220, 2712).IsPortrait);
+        Assert.False(PhoneFrame.For(1000, 1000).IsPortrait);
+        Equal(PhoneFrame.Portrait(1220, 2712).Frame, PhoneFrame.For(1220, 2712).Frame);
     }
 
     [Theory]
@@ -159,7 +159,7 @@ public class PhoneFrameTests
         Assert.Equal(DeviceLayout.Tablet, DeviceLayouts.Decide(touch: true, phone: false, 2340, 1080));
         Assert.Equal(DeviceLayout.Tablet, DeviceLayouts.Decide(touch: true, phone: false, 1080, 2340));
         Assert.Equal(DeviceLayout.PhoneLandscape, DeviceLayouts.Decide(touch: true, phone: true, 2712, 1220));
-        Assert.Equal(DeviceLayout.PhoneUpright, DeviceLayouts.Decide(touch: true, phone: true, 1220, 2712));
+        Assert.Equal(DeviceLayout.PhonePortrait, DeviceLayouts.Decide(touch: true, phone: true, 1220, 2712));
         Assert.Equal(DeviceLayout.PhoneLandscape, DeviceLayouts.Decide(touch: true, phone: true, 1000, 1000));
     }
 }

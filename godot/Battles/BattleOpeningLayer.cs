@@ -24,16 +24,16 @@ internal sealed partial class BattleOpeningLayer : Control
     private static bool Phone => Device.Layout == DeviceLayout.PhoneLandscape;
 
     // Held upright (docs/ui/phone-build.md, step P4; PB4o3) it covers the scene at the board's top, laid out again at the
-    // phone's type: the plate on top, the names at its sides, VS between them (PhoneBattleStatesUpright's places).
-    private static bool Upright => Device.Layout == DeviceLayout.PhoneUpright;
+    // phone's type: the plate on top, the names at its sides, VS between them (PhoneBattleStatesPortrait's places).
+    private static bool Portrait => Device.Layout == DeviceLayout.PhonePortrait;
 
     /// <summary>The scene's band the layer covers: the PC's 410, the phone's lower one, upright the board's scene.</summary>
-    private static float Height => Phone ? PhoneBattle.SceneBand : Upright ? PhoneBattleUpright.SceneFoot : 410;
+    private static float Height => Phone ? PhoneBattle.SceneBand : Portrait ? PhoneBattlePortrait.SceneFoot : 410;
     private static Vector2 AreaSize => new(1280, Height);
     private const float SeamTop = 680, SeamBottom = 600;
 
     /// <summary>The seam's x at the area's top and foot: upright the mock-up's split.</summary>
-    private static (float Top, float Foot) Seam => Upright ? PhoneBattleStatesUpright.Seam : (SeamTop, SeamBottom);
+    private static (float Top, float Foot) Seam => Portrait ? PhoneBattleStatesPortrait.Seam : (SeamTop, SeamBottom);
     private const float NameEdge = 50, NameGap = 90, NameBase = 330, NameSize = 64, NameMin = 24, AdvantageSize = 28;
     private const float VsSize = 84, VsY = 300, Leave = 700, PlateRise = 200;
     private static readonly Rect2 Plate = new(400, 16, 480, 134);
@@ -98,10 +98,10 @@ internal sealed partial class BattleOpeningLayer : Control
     private float _taller;
 
     /// <summary>The title's type and middle on the plate (layout pixels), the plate and its bar's inset.</summary>
-    private static float TitleSize => Phone ? P(PhoneBattleStates.PlaceText) : Upright ? U(PhoneBattleStatesUpright.PlaceText) : 30;
-    private static float TitleMiddle => Phone ? P(PhoneBattleStates.PlaceMiddle) : Upright ? U(PhoneBattleStatesUpright.PlaceMiddle) : 33;
-    private static Rect2 PlateArea => Phone ? R(PhoneBattleStates.OpeningPlate) : Upright ? R(PhoneBattleStatesUpright.OpeningPlate) : Plate;
-    private static float BarInset => Phone ? P(PhoneBattleStates.BarInset) : Upright ? U(PhoneBattleStatesUpright.BarInset) : 8;
+    private static float TitleSize => Phone ? P(PhoneBattleStates.PlaceText) : Portrait ? U(PhoneBattleStatesPortrait.PlaceText) : 30;
+    private static float TitleMiddle => Phone ? P(PhoneBattleStates.PlaceMiddle) : Portrait ? U(PhoneBattleStatesPortrait.PlaceMiddle) : 33;
+    private static Rect2 PlateArea => Phone ? R(PhoneBattleStates.OpeningPlate) : Portrait ? R(PhoneBattleStatesPortrait.OpeningPlate) : Plate;
+    private static float BarInset => Phone ? P(PhoneBattleStates.BarInset) : Portrait ? U(PhoneBattleStatesPortrait.BarInset) : 8;
 
     /// <summary>The title as its place over its kind ("Oaks" / "Offensive Battle"); a duel's and a dungeon's on one line.</summary>
     private void SplitTitle()
@@ -238,13 +238,13 @@ internal sealed partial class BattleOpeningLayer : Control
         float shown = 1 - _left;
         _top.DrawLine(new Vector2(Seam.Top, 0) * s, new Vector2(Seam.Foot, Height) * s, new Color(Colors.White, shown), width, true);
         var vs = Phone ? new Vector2(PhoneBattleStates.OpeningVs.X, PhoneBattleStates.OpeningVs.Y)
-            : Upright ? new Vector2(PhoneBattleStatesUpright.OpeningVs.X, PhoneBattleStatesUpright.OpeningVs.Y) : new Vector2(640, VsY);
+            : Portrait ? new Vector2(PhoneBattleStatesPortrait.OpeningVs.X, PhoneBattleStatesPortrait.OpeningVs.Y) : new Vector2(640, VsY);
         if (Phone)
             vs.Y += _taller;                                                // under the plate there: lowered with it
-        else if (Upright)
+        else if (Portrait)
             vs.Y += _taller / 2;                                            // between the names, whose room lost its top
-        Outlined(_top, _names, vs * s, "VS", Px(Phone ? P(PhoneBattleStates.VsText) : Upright ? U(PhoneBattleStatesUpright.VsText) : VsSize),
-            new Color(Ui.HoverLine, shown), new Color(VsInk, shown), Px(Phone || Upright ? 10 : 8), HorizontalAlignment.Center, centreY: true);
+        Outlined(_top, _names, vs * s, "VS", Px(Phone ? P(PhoneBattleStates.VsText) : Portrait ? U(PhoneBattleStatesPortrait.VsText) : VsSize),
+            new Color(Ui.HoverLine, shown), new Color(VsInk, shown), Px(Phone || Portrait ? 10 : 8), HorizontalAlignment.Center, centreY: true);
 
         var area = PlateArea;
         area.Size += new Vector2(0, _taller);
@@ -264,7 +264,7 @@ internal sealed partial class BattleOpeningLayer : Control
         var bar = new StyleBoxFlat { BgColor = Ui.Row.Darkened(0.2f) };
         bar.SetCornerRadiusAll(Px(6));
         float inset = BarInset;
-        float barHeight = (Phone ? P(PhoneBattleStates.BarHeight) : Upright ? U(PhoneBattleStatesUpright.BarHeight) : 50) + _taller;
+        float barHeight = (Phone ? P(PhoneBattleStates.BarHeight) : Portrait ? U(PhoneBattleStatesPortrait.BarHeight) : 50) + _taller;
         _top.DrawStyleBox(bar, new Rect2(plate.Position + new Vector2(inset, inset) * s, new Vector2(area.Size.X - 2 * inset, barHeight) * s));
         void Line(string text, float y, int size, Color colour) =>
             _top.DrawString(_plate, new Vector2(plate.Position.X, plate.Position.Y + y * s + Centred(_plate, size)), text,
@@ -288,11 +288,11 @@ internal sealed partial class BattleOpeningLayer : Control
                 Line(turnsText, P(PhoneBattleStates.TurnsMiddle) + down, Px(P(PhoneBattleStates.TurnsText)), Ui.Quiet);
             return;
         }
-        if (Upright)
+        if (Portrait)
         {
-            Line(o.Limit, U(PhoneBattleStatesUpright.LimitMiddle) + down, Px(U(PhoneBattleStatesUpright.LimitText)), Ui.Text);
+            Line(o.Limit, U(PhoneBattleStatesPortrait.LimitMiddle) + down, Px(U(PhoneBattleStatesPortrait.LimitText)), Ui.Text);
             if (turnsText is not null)
-                Line(turnsText, U(PhoneBattleStatesUpright.TurnsMiddle) + down, Px(U(PhoneBattleStatesUpright.TurnsText)), Ui.Quiet);
+                Line(turnsText, U(PhoneBattleStatesPortrait.TurnsMiddle) + down, Px(U(PhoneBattleStatesPortrait.TurnsText)), Ui.Quiet);
             return;
         }
         Line(o.Limit, 84 + down, Px(22), Ui.Text);
@@ -321,7 +321,7 @@ internal sealed partial class BattleOpeningLayer : Control
     private static float P(float reference) => PhoneBattle.Layout(reference);
 
     /// <summary>A length of <paramref name="reference"/> reference pixels in the upright board's layout pixels.</summary>
-    private static float U(float reference) => PhoneBattleUpright.Layout(reference);
+    private static float U(float reference) => PhoneBattlePortrait.Layout(reference);
 
     private static Rect2 R(PhoneFrame.Box b) => new(b.X, b.Y, b.W, b.H);
 
@@ -425,9 +425,9 @@ internal sealed partial class BattleOpeningLayer : Control
                 DrawPhoneText();
                 return;
             }
-            if (Upright)
+            if (Portrait)
             {
-                DrawUprightText();
+                DrawPortraitText();
                 return;
             }
             var font = _layer._names;
@@ -492,33 +492,33 @@ internal sealed partial class BattleOpeningLayer : Control
         /// Held upright (PB4o3): the name centred in its room at the plate's side (the fewest lines up to three, balanced, at
         /// the largest size that fits), its lines centred on the room's middle; the advantage centred under it.
         /// </summary>
-        private void DrawUprightText()
+        private void DrawPortraitText()
         {
             var font = _layer._names;
             float s = _scale;
-            var room = R(PhoneBattleStatesUpright.OpeningNames(_left));
+            var room = R(PhoneBattleStatesPortrait.OpeningNames(_left));
             // Under a taller plate the room starts lower and keeps its foot over the advantage: its lines fit its height too.
             float taller = _layer._taller;
             room = new Rect2(room.Position + new Vector2(0, taller), room.Size - new Vector2(0, taller));
-            float size = U(PhoneBattleStatesUpright.NameText), least = U(PhoneBattleStatesUpright.NameMin);
+            float size = U(PhoneBattleStatesPortrait.NameText), least = U(PhoneBattleStatesPortrait.NameMin);
             IReadOnlyList<string>? lines = null;
             for (; size >= least; size -= 2)
             {
                 int px = (int)Math.Round(size * s);
                 lines = BattleOpening.Wrap(_name, 3, line => font.GetStringSize(line, HorizontalAlignment.Left, -1, px).X / s, room.Size.X);
-                if (lines is not null && (taller <= 0 || lines.Count * (size + U(PhoneBattleStatesUpright.NameGap)) <= room.Size.Y))
+                if (lines is not null && (taller <= 0 || lines.Count * (size + U(PhoneBattleStatesPortrait.NameGap)) <= room.Size.Y))
                     break;
             }
             lines ??= [_name];
             size = Math.Max(size, least);
-            float pitch = size + U(PhoneBattleStatesUpright.NameGap);
+            float pitch = size + U(PhoneBattleStatesPortrait.NameGap);
             float cx = room.GetCenter().X, first = room.GetCenter().Y - (lines.Count - 1) * pitch / 2;
             for (int i = 0; i < lines.Count; i++)
                 Outlined(_text, font, new Vector2(cx, first + i * pitch) * s, lines[i], (int)Math.Round(size * s), Colors.White, Ink,
                     (int)Math.Round(10 * s), HorizontalAlignment.Center, centreY: true);
             if (_advantage != "")
-                Outlined(_text, font, new Vector2(cx, PhoneBattleStatesUpright.OpeningAdvantage) * s, _advantage,
-                    (int)Math.Round(U(PhoneBattleStatesUpright.AdvantageText) * s), AdvantageColour, Ink, (int)Math.Round(6 * s),
+                Outlined(_text, font, new Vector2(cx, PhoneBattleStatesPortrait.OpeningAdvantage) * s, _advantage,
+                    (int)Math.Round(U(PhoneBattleStatesPortrait.AdvantageText) * s), AdvantageColour, Ink, (int)Math.Round(6 * s),
                     HorizontalAlignment.Center, centreY: true);
         }
     }

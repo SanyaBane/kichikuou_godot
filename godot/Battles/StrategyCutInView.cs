@@ -97,15 +97,15 @@ internal sealed partial class StrategyCutInView : Control
     /// <summary>Lays the cut-in out over the area whose layout pixel (0, 0) is at <paramref name="origin"/>, <paramref name="scale"/> window pixels to a layout pixel.</summary>
     public void Place(Vector2 origin, float scale)
     {
-        var upright = Device.Upright(this);
-        if (origin == _backdrop.Position && scale == _scale && upright == _upright && _sheet.Size != Vector2.Zero)
+        var held = Device.Portrait(this);
+        if (origin == _backdrop.Position && scale == _scale && held == _portraitFrame && _sheet.Size != Vector2.Zero)
             return;
         _scale = scale;
-        _upright = upright;
+        _portraitFrame = held;
         _backdrop.Position = origin;
         _backdrop.Size = new Vector2(1280, 800) * scale;
-        _sheet.Position = upright is null ? origin : Vector2.Zero;      // held upright stacked over the whole screen (PB4c)
-        _sheet.Size = upright is null ? _backdrop.Size : new Vector2(upright.Screen.W, upright.Screen.H);
+        _sheet.Position = held is null ? origin : Vector2.Zero;      // held upright stacked over the whole screen (PB4c)
+        _sheet.Size = held is null ? _backdrop.Size : new Vector2(held.Screen.W, held.Screen.H);
         _sheet.ClipContents = Device.Landscape(this) is null;        // the phone's band runs on across the black sides (LB3c)
         _sheet.QueueRedraw();
     }
@@ -151,9 +151,9 @@ internal sealed partial class StrategyCutInView : Control
     {
         if (_strategy is not { } strategy || _bold.BaseFont is null)
             return;
-        if (_upright is { } upright)
+        if (_portraitFrame is { } frame)
         {
-            DrawUpright(strategy, upright);
+            DrawPortrait(strategy, frame);
             return;
         }
         float s = _scale;

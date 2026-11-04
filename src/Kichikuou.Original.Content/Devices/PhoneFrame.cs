@@ -3,7 +3,7 @@ namespace Kichikuou.Original.Content.Devices;
 /// <summary>
 /// The phone's frame (docs/ui/phone-build.md, §3). Held landscape (<see cref="Landscape"/>; docs/ui/phone.md, §12) the
 /// engine's 1280×800 picture — and our layouts in it — is fitted to the screen's height and centred, the black sides left
-/// and right of it ours to draw in. Held upright (<see cref="Upright"/>; step P0) the picture stands at the screen's width
+/// and right of it ours to draw in. Held upright (<see cref="Portrait"/>; step P0) the picture stands at the screen's width
 /// wherever a screen puts it (<see cref="PictureAt"/>; <see cref="Frame"/> is its default place, the middle of the room),
 /// and the layout area is apart from it: the whole <see cref="Room"/>, over and under the picture, the <see cref="Bar"/>
 /// at its foot (step P1). A phone layout is
@@ -51,13 +51,13 @@ public sealed record PhoneFrame
     /// <summary>The layout's own size: the engine's picture at 2×.</summary>
     private const float LayoutWidth = 1280, LayoutHeight = 800;
 
-    private PhoneFrame(float unit, Box screen, Box frame, Insets safe, bool upright)
+    private PhoneFrame(float unit, Box screen, Box frame, Insets safe, bool portrait)
     {
         Unit = unit;
         Screen = screen;
         Frame = frame;
         Safe = safe;
-        IsUpright = upright;
+        IsPortrait = portrait;
     }
 
     /// <summary>The canvas's units a reference pixel.</summary>
@@ -74,7 +74,7 @@ public sealed record PhoneFrame
     public Box Frame { get; }
 
     /// <summary>Whether the phone is held upright: the picture at the width, the room over and under it the layout's.</summary>
-    public bool IsUpright { get; }
+    public bool IsPortrait { get; }
 
     /// <summary>What our layouts may take of the screen: all of it less the safe insets.</summary>
     public Box Room => new(Safe.Left, Safe.Top, Math.Max(0, Screen.W - Safe.Left - Safe.Right),
@@ -84,7 +84,7 @@ public sealed record PhoneFrame
     /// The bar at the foot of the room held upright (docs/ui/phone.md, §21, PK1): the scenes' Menu, Log and Skip at its
     /// left, a screen's main button at its right; empty held landscape, where the sides hold them.
     /// </summary>
-    public Box Bar => IsUpright
+    public Box Bar => IsPortrait
         ? new(Room.X + Px(BarSide), Room.Bottom - Px(BarFoot + BarHeight), Math.Max(0, Room.W - 2 * Px(BarSide)), Px(BarHeight))
         : default;
 
@@ -96,7 +96,7 @@ public sealed record PhoneFrame
     /// that stands the picture elsewhere than the room's middle (the title over its rows, PE2), so that what is placed by
     /// the picture follows it; held landscape this frame.
     /// </summary>
-    public PhoneFrame WithPictureAt(float top) => IsUpright ? new(Unit, Screen, PictureAt(top), Safe, upright: true) : this;
+    public PhoneFrame WithPictureAt(float top) => IsPortrait ? new(Unit, Screen, PictureAt(top), Safe, portrait: true) : this;
 
     /// <summary>The canvas's units a layout pixel (of the 1280×800 frame).</summary>
     public float Scale => Frame.W / LayoutWidth;
@@ -139,7 +139,7 @@ public sealed record PhoneFrame
         var safe = Within(new Insets(side, reported?.Top ?? 0, side, Math.Max(reported?.Bottom ?? 0, GestureZone * whole)), margins);
         float scale = Math.Min(height / LayoutHeight, Math.Max(0, width - safe.Left - safe.Right) / LayoutWidth);
         float w = LayoutWidth * scale, h = LayoutHeight * scale;
-        return new PhoneFrame(unit, new Box(0, 0, width, height), new Box((width - w) / 2, (height - h) / 2, w, h), safe, upright: false);
+        return new PhoneFrame(unit, new Box(0, 0, width, height), new Box((width - w) / 2, (height - h) / 2, w, h), safe, portrait: false);
     }
 
     /// <summary>
@@ -149,16 +149,16 @@ public sealed record PhoneFrame
     /// width in the middle between the room's top and the bar. The player's <paramref name="margins"/> as
     /// <see cref="Landscape"/>'s.
     /// </summary>
-    public static PhoneFrame Upright(float width, float height, Insets? reported = null, Insets? margins = null)
+    public static PhoneFrame Portrait(float width, float height, Insets? reported = null, Insets? margins = null)
     {
         float unit = width / ReferenceShort;
         float whole = (width + (margins?.Left ?? 0) + (margins?.Right ?? 0)) / ReferenceShort;     // the hole and the zone are the screen's
         var safe = Within(new Insets(reported?.Left ?? 0, reported?.Top ?? Hole * whole, reported?.Right ?? 0,
             Math.Max(reported?.Bottom ?? 0, GestureZone * whole)), margins);
-        var phone = new PhoneFrame(unit, new Box(0, 0, width, height), default, safe, upright: true);
+        var phone = new PhoneFrame(unit, new Box(0, 0, width, height), default, safe, portrait: true);
         var room = phone.Room;
         float h = room.W * LayoutHeight / LayoutWidth;
-        return new PhoneFrame(unit, phone.Screen, phone.PictureAt((room.Y + phone.Bar.Y - h) / 2), safe, upright: true);
+        return new PhoneFrame(unit, phone.Screen, phone.PictureAt((room.Y + phone.Bar.Y - h) / 2), safe, portrait: true);
     }
 
     /// <summary>
@@ -166,8 +166,8 @@ public sealed record PhoneFrame
     /// landscape. With <paramref name="margins"/> the size is the room inside them, the screen's own shape telling how it is
     /// held, so the caller passes the room's size and the device's turn alike (<see cref="Landscape"/>).
     /// </summary>
-    public static PhoneFrame For(float width, float height, Insets? reported = null, Insets? margins = null, bool? upright = null) =>
-        upright ?? width < height ? Upright(width, height, reported, margins) : Landscape(width, height, reported, margins);
+    public static PhoneFrame For(float width, float height, Insets? reported = null, Insets? margins = null, bool? portrait = null) =>
+        portrait ?? width < height ? Portrait(width, height, reported, margins) : Landscape(width, height, reported, margins);
 
     /// <summary>
     /// The edges' safe insets of the whole screen, <paramref name="safe"/>, within a room inside the player's

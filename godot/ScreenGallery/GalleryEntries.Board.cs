@@ -222,7 +222,7 @@ internal static partial class GalleryEntries
         state?.Invoke(s);                                                   // the held moment made up, as the entry asks
         var board = g.Add(new BattleBoardView(g.Font, g.Faces) { Visible = true });
         board.LoadCrops();
-        var skip = PhoneLandscape || Device.Layout == DeviceLayout.PhoneUpright
+        var skip = PhoneLandscape || Device.Layout == DeviceLayout.PhonePortrait
             ? g.Add(new TouchPill(TouchPill.Icon.Skip, "Skip") { Visible = true }) : null;   // the left rail's top (LB2); upright its strip (PB3)
         board.Commands.Forecast = forecast;
         if (then is not null && moment.Menu is { } menu)
@@ -253,7 +253,7 @@ internal static partial class GalleryEntries
             board.Place(area.Position, area.Size.X / 1280f);
             if (skip is not null && Device.Held(skip) is { } phone)
             {
-                var cell = phone.IsUpright ? PhoneBattleUpright.OnScreen(phone, PhoneBattleUpright.Skip) : PhoneBattle.SkipCell(phone);
+                var cell = phone.IsPortrait ? PhoneBattlePortrait.OnScreen(phone, PhoneBattlePortrait.Skip) : PhoneBattle.SkipCell(phone);
                 skip.Phone = phone;
                 skip.Place(new Rect2(cell.X, cell.Y, cell.W, cell.H), area.Size.X / 1280f, 20);
             }

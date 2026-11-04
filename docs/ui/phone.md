@@ -1227,7 +1227,7 @@ landscape keep their plate's layout over the screen dimmed as upright.
 Looking at the gallery's `enemy-attack` upright, the owner found no telling which way the attacking army faces: held
 landscape the gold pointer left of its cards says it (`PhoneAttack.Pointer`, 30 × 68 reference pixels), on the PC the
 bracket holding its front row (docs/ui/enemy-attack.md, §8), but upright (PA1) the only mark is the triangle beside
-"FRONT ROW", 16 px (0.9 mm; `EnemyAttackView.UprightArmy`). The round (`tools/ui/mock_attack_facing.py`, over the
+"FRONT ROW", 16 px (0.9 mm; `EnemyAttackView.PortraitArmy`). The round (`tools/ui/mock_attack_facing.py`, over the
 upright pass's `enemy-attack-scouted` and `enemy-attack`) draws the facing as plainly, the small triangle gone in each:
 
 - **PA1f1 — the landscape's pointer, turned up**: a gold pointer (5.2 mm wide, 2.3 mm deep) in the panel's middle
@@ -1274,7 +1274,7 @@ bracket upright").
 
 ## 33. Round P27: the scout report's facing upright (2026-10-31)
 
-The ninja's scout report upright (PB4s, `ScoutReportView.Upright.cs`) shows the enemy's cards as the enemy attack does,
+The ninja's scout report upright (PB4s, `ScoutReportView.Portrait.cs`) shows the enemy's cards as the enemy attack does,
 the front row on top facing up, with no mark of the facing at all: "FRONT ROW" alone. With PA1f2a and PD2f2 built the
 owner asked for the same there. The round (the same script, over the upright pass's `scout-report`) draws PA1f2a's
 bracket as built — its line 30 px over "FRONT ROW"'s middle, the head up:
@@ -1353,8 +1353,8 @@ drawn.
 ## 40. Round P31: a larger scroll bar upright (2026-10-31)
 
 Going through the gallery's touch and phone screens, the owner found the scroll bars almost unseen: a player cannot tell
-that a list scrolls. Upright, Treasure's and the Harem's grids (`PhonePickersUpright.ScrollBar`) and the options' column
-(`PhoneOptionsUpright.ScrollBar`) have a bar 6 px wide (0.3 mm on the reference phone), the thumb in the cells' own dim
+that a list scrolls. Upright, Treasure's and the Harem's grids (`PhonePickersPortrait.ScrollBar`) and the options' column
+(`PhoneOptionsPortrait.ScrollBar`) have a bar 6 px wide (0.3 mm on the reference phone), the thumb in the cells' own dim
 gold on a faint track, 5 px from the screen's edge — it reads as one more cell line. The owner asked for a larger bar,
 drawn first on Treasure upright, its size then the reference for the others (the save lists' 12 px bars, the message
 log's, the ledgers' Godot scroll bars, held landscape and the tablet).

@@ -5,8 +5,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// (<c>EnemyAttackView.DrawArmyBracket</c>, docs/ui/enemy-attack.md, §8) turned to face up or down and scaled as the
 /// cards are (573 / 252). Its line runs across the row's outer side from the row's one end to the other, its ends turn to
 /// the cards, its arms bend to a head in the middle that points the way the army faces: up at the province on the enemy
-/// attack (the owner's PA1f2a, <see cref="PhoneAttackUpright.Bracket"/>), down as our army in the battle on the deployment
-/// table (PD2f2, <see cref="PhoneLedgerUpright.Bracket"/>). Held landscape it holds a column of cards from its side as the
+/// attack (the owner's PA1f2a, <see cref="PhoneAttackPortrait.Bracket"/>), down as our army in the battle on the deployment
+/// table (PD2f2, <see cref="PhoneLedgerPortrait.Bracket"/>). Held landscape it holds a column of cards from its side as the
 /// PC's does (docs/ui/phone.md, §47): right on the deployment table (LD2f1, <see cref="PhoneLedger.Bracket"/>), left at the
 /// province on the enemy attack (LA2f1, <see cref="PhoneAttack.Bracket"/>) and on the scout report (LB3sf1,
 /// <see cref="PhoneBattleStates.ScoutBracket"/>). Its figures in the reference phone's pixels, from its line.

@@ -18,7 +18,7 @@ namespace Kichikuou.Game.Strategy;
 /// owner's B): Start Search where Descend stands once the search begins, Return on top as Retreat, the other items
 /// between them, the rail growing upwards. On the phone held landscape the tablet's rail stays in the frame at the phone's
 /// sizes (LF2, LF2e; <c>FloorLadderView.Phone.cs</c>); held upright it stands at the right thumb on the bar's foot, window
-/// 113 left of it and the floor's picture at the width over them (PF1, PF1e; <c>FloorLadderView.Upright.cs</c>).
+/// 113 left of it and the floor's picture at the width over them (PF1, PF1e; <c>FloorLadderView.Portrait.cs</c>).
 /// </summary>
 internal sealed partial class FloorLadderView : Control
 {
@@ -97,7 +97,7 @@ internal sealed partial class FloorLadderView : Control
     /// <summary>
     /// Lays the layer over the screen's picture (<paramref name="area"/>, in its parent's coordinates); on the phone held
     /// landscape over the whole screen in its frame's layout pixels, the rail at the phone's sizes (LF2, <see cref="PhoneLadder"/>;
-    /// upright PF1, <see cref="PhoneLadderUpright"/>).
+    /// upright PF1, <see cref="PhoneLadderPortrait"/>).
     /// </summary>
     public void Place(Rect2 area)
     {

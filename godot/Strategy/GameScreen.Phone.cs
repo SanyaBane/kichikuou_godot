@@ -34,7 +34,7 @@ public partial class GameScreen
     private static bool PhoneLandscape => Device.Layout == DeviceLayout.PhoneLandscape;
 
     /// <summary>The phone held upright: the scenes' parts (step P1) in the bar at the foot and over or under the picture.</summary>
-    private static bool PhoneUpright => Device.Layout == DeviceLayout.PhoneUpright;
+    private static bool PhonePortrait => Device.Layout == DeviceLayout.PhonePortrait;
 
     private PhoneMenu.Settings PhoneMenuSettings() =>
         new(_skip.Activated, _skip.Enabled, SoundChoice.On, OS.IsDebugBuild(), MapNamesChoice.HideDimmed);
@@ -47,8 +47,8 @@ public partial class GameScreen
     /// </summary>
     private void UpdatePhone()
     {
-        _menuSheet.Visible = (PhoneLandscape || PhoneUpright) && (_menuSheet.IsOpen
-            || MenuCellShown && !(PhoneUpright && _provinceView.Visible));     // PM1c: the sheet's bar holds Return alone
+        _menuSheet.Visible = (PhoneLandscape || PhonePortrait) && (_menuSheet.IsOpen
+            || MenuCellShown && !(PhonePortrait && _provinceView.Visible));     // PM1c: the sheet's bar holds Return alone
         if (_menuSheet.Visible)
             _menuSheet.Place();
     }
@@ -57,7 +57,7 @@ public partial class GameScreen
         && !ScoutReportShown && !StrategyCutInShown && !_saveView.Visible && !_commandView.Visible;
 
     /// <summary>The week report on the phone: the left side, or the bar, as in the scenes (LW1, PW1), Skip and Log with it.</summary>
-    private bool PhoneWeekReport => _weekView.Visible && (PhoneLandscape || PhoneUpright);
+    private bool PhoneWeekReport => _weekView.Visible && (PhoneLandscape || PhonePortrait);
 
 
     /// <summary>A tile of the Menu sheet acted (Restart's and Exit's questions answered already), as the menu bar's item.</summary>

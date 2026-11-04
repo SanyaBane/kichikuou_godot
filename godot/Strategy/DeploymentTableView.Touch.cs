@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Strategy;
 // bars are too thin for a finger, so a finger dragged over the table scrolls it both ways, a flick going on after the
 // release (owner, 2026-10-26; FingerScroll). A row's or a Refill button's press is therefore a tap: it acts at the release.
 // On the phone (held either way) a row held as long raises the unit's picture (RowHeld; docs/ui/phone.md, PD2d), the PC's
-// hover, and is no tap. Upright the fixed part's headings (№, the name, the type) sort and show their tips as the columns'.
+// hover, and is no tap. Portrait the fixed part's headings (№, the name, the type) sort and show their tips as the columns'.
 internal sealed partial class DeploymentTableView
 {
     /// <summary>A row held as a long press on the phone (the unit's number): the screen raises its picture (PD2d).</summary>
@@ -102,7 +102,7 @@ internal sealed partial class DeploymentTableView
                     ShowHeaderTip(column, _touchFrom.X);            // no vibration (owner, 2026-10-24)
                 };
             }
-            else if (_touchUnit > 0 && _touchRefill == 0 && Device.Layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright)
+            else if (_touchUnit > 0 && _touchRefill == 0 && Device.Layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhonePortrait)
             {
                 int unit = _touchUnit;
                 GetTree().CreateTimer(LongPressSeconds).Timeout += () =>

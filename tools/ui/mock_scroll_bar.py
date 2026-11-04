@@ -2,7 +2,7 @@
 
 The scroll bars of our phone screens are 6 reference pixels wide (0.3 mm on the Poco X6 Pro) and drawn in the cells'
 own dim gold, at the screen's very edge: a player hardly sees that a list scrolls. The owner asked for a larger bar,
-drawn first on Treasure upright (PhonePickersUpright.ScrollBar), its size then the reference for the others.
+drawn first on Treasure upright (PhonePickersPortrait.ScrollBar), its size then the reference for the others.
 
 These draw it wider, in the lacquer's gold on a groove of its own, its right edge at the picture's, the tabs' and End's
 (the room's side margin, 16 px in from the screen's edge, out of Android's back gesture at the edge); the grid is narrowed
@@ -37,7 +37,7 @@ SIZE = (1220, 2712)                     # the reference phone upright; the dump 
 GOLD, NAME, DIM_GOLD, OFF_LINE = (196, 160, 86), (232, 199, 122), (110, 86, 46), (66, 58, 48)
 GROOVE = (24, 20, 16)
 
-# PhonePickersUpright: the grid's sides (SideIn) and the gap between its cells (CellGap), its rows; the bar now.
+# PhonePickersPortrait: the grid's sides (SideIn) and the gap between its cells (CellGap), its rows; the bar now.
 SIDE_IN, CELL_GAP, ROWS, SHOWN, ROW_PITCH, ROW_GAP = 16, 8, 17, 9, 124, 6
 NOW_WIDTH, NOW_IN, THUMB_LEAST = 6, 11, 60
 BAR_GAP = 10                            # the new bar's distance from the grid

@@ -54,7 +54,7 @@ internal sealed partial class OptionsView
     private Rect2 PhonePreviewRect(PhoneFrame f)
     {
         var (x, top, w) = ColumnPlace();
-        if (!f.IsUpright)
+        if (!f.IsPortrait)
         {
             var left = Part(PhoneOptions.Column(f, 0));
             (x, w) = (left.Position.X, left.Size.X);
@@ -74,9 +74,9 @@ internal sealed partial class OptionsView
 
     private void DrawPhone(PhoneFrame f)
     {
-        if (f.IsUpright)
+        if (f.IsPortrait)
         {
-            DrawUpright(f);
+            DrawPortrait(f);
             return;
         }
         BeginClip();
@@ -102,8 +102,8 @@ internal sealed partial class OptionsView
     /// <summary>The paper tabs at the mock-up's places (held landscape's or upright's), the chosen one joined to the sheet with its vermilion edge.</summary>
     private void DrawPhoneTabs(PhoneFrame f)
     {
-        bool upright = f.IsUpright;
-        PhoneFrame.Box Place(int i, bool chosen) => upright ? PhoneOptionsUpright.Tab(f, i, chosen) : PhoneOptions.Tab(f, i, chosen);
+        bool portrait = f.IsPortrait;
+        PhoneFrame.Box Place(int i, bool chosen) => portrait ? PhoneOptionsPortrait.Tab(f, i, chosen) : PhoneOptions.Tab(f, i, chosen);
         Rect2 current = default;
         for (int i = 0; i < Tabs.Length; i++)
         {
@@ -116,20 +116,20 @@ internal sealed partial class OptionsView
             if (on)
                 current = rect;
             var font = on ? _cinzelBold : _cinzel;
-            int size = upright
-                ? SideCells.Fit(font, name, Ref(PhoneOptionsUpright.TabText), rect.Size.X - P(PhoneOptionsUpright.TabTextRoom))
+            int size = portrait
+                ? SideCells.Fit(font, name, Ref(PhoneOptionsPortrait.TabText), rect.Size.X - P(PhoneOptionsPortrait.TabTextRoom))
                 : SideCells.Fit(font, name, Ref(PhoneOptions.TabText), rect.Size.X - P(PhoneOptions.TabTextRoom));
             float middle = Part(Place(i, chosen: true)).GetCenter().Y + P(6);    // the words level on every tab
             Text(font, new Vector2(rect.Position.X, middle + (font.GetAscent(size) - font.GetDescent(size)) / 2), name,
                 HorizontalAlignment.Center, rect.Size.X, size, on ? Ui.HeadInk : Ui.InkQuiet);
             _spots.Add(new Spot("tab-" + name, rect, () => ShowTab(tab)));
         }
-        var sheet = Part(upright ? PhoneOptionsUpright.Sheet(f) : PhoneOptions.Sheet(f));
+        var sheet = Part(portrait ? PhoneOptionsPortrait.Sheet(f) : PhoneOptions.Sheet(f));
         DrawRect(sheet, Ui.Paper);
         DrawRect(sheet, Ui.PaperHead, false, Line(1));
         DrawRect(new Rect2(current.Position.X + 1, sheet.Position.Y - 4, current.Size.X - 2, 8), Ui.Paper);
         DrawRect(new Rect2(current.Position.X, current.Position.Y, current.Size.X,
-            P(upright ? PhoneOptionsUpright.TabEdge : PhoneOptions.TabEdge)), Ui.Vermilion);
+            P(portrait ? PhoneOptionsPortrait.TabEdge : PhoneOptions.TabEdge)), Ui.Vermilion);
     }
 
     /// <summary>Defaults, a paper button (deaf on Game, whose folder has no default), and Close, red, at the right thumb.</summary>
@@ -219,7 +219,7 @@ internal sealed partial class OptionsView
         OrientationSection(x, y, w);
         y += 118;
         SectionHead(x, y, "Screen margins", w);
-        float field = P(PhoneOptionsUpright.OrientationRow);
+        float field = P(PhoneOptionsPortrait.OrientationRow);
         MarginsField(new Rect2(x, y + 36, w, field));
         y += 36 + field + 40;
         return DisplaySections(x, y, w);

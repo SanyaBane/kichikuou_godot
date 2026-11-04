@@ -22,16 +22,16 @@ internal sealed partial class CardPortrait : Control
     // face gives way so that the card's text keeps its size. Read live (docs/ui/phone-build.md, §3).
     // On the phone held landscape the face is the PC's again (160 reference pixels, docs/ui/phone.md, §12, LB2), the four
     // figures in a row of 52 under it at 32.
-    // Upright (docs/ui/phone.md, §6, PB3) the same at the slim card's sizes: the face 174, the figures' row 40 at 28.
+    // Portrait (docs/ui/phone.md, §6, PB3) the same at the slim card's sizes: the face 174, the figures' row 40 at 28.
     private static bool Phone => Device.Layout == DeviceLayout.PhoneLandscape;
-    private static bool Upright => Device.Layout == DeviceLayout.PhoneUpright;
-    public static float Width => Phone || Upright ? Face : Device.TouchLayout ? 70 : 118;
-    public static float Face => Phone ? PhoneBattle.Layout(PhoneBattle.Face) : Upright ? PhoneBattleUpright.Layout(PhoneBattleUpright.Face)
+    private static bool Portrait => Device.Layout == DeviceLayout.PhonePortrait;
+    public static float Width => Phone || Portrait ? Face : Device.TouchLayout ? 70 : 118;
+    public static float Face => Phone ? PhoneBattle.Layout(PhoneBattle.Face) : Portrait ? PhoneBattlePortrait.Layout(PhoneBattlePortrait.Face)
         : Device.TouchLayout ? 66 : 112;
     public static float Height => Face + (Phone ? PhoneBattle.Layout(PhoneBattle.StatsRow)
-        : Upright ? PhoneBattleUpright.Layout(PhoneBattleUpright.StatsRow) : 28);
+        : Portrait ? PhoneBattlePortrait.Layout(PhoneBattlePortrait.StatsRow) : 28);
     private static float StatsText => Phone ? PhoneBattle.Layout(PhoneBattle.StatsText)
-        : Upright ? PhoneBattleUpright.Layout(PhoneBattleUpright.StatsText) : Device.TouchLayout ? 14 : 17;
+        : Portrait ? PhoneBattlePortrait.Layout(PhoneBattlePortrait.StatsText) : Device.TouchLayout ? 14 : 17;
     private static float StatsSpan => Device.TouchLayout ? Width : Face;  // the touch mode's numbers across the whole width
     private const float FaceTop = 2, LevelText = 14, BadgeRadius = 10;
     private static readonly Color Up = new(120 / 255f, 210 / 255f, 120 / 255f), Down = new(235 / 255f, 110 / 255f, 100 / 255f);

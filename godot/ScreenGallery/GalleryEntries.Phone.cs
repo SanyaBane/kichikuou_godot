@@ -20,7 +20,7 @@ internal static partial class GalleryEntries
     private static bool PhoneLandscape => Device.Layout == DeviceLayout.PhoneLandscape;
 
     /// <summary>The phone held either way: the scenes' parts (the Menu cell, the drawer, the Menu sheet) serve both (step P1).</summary>
-    private static bool PhoneHeld => Device.Layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright;
+    private static bool PhoneHeld => Device.Layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhonePortrait;
 
     /// <summary>On the phone held landscape the Menu cell, closed, as <c>GameScreen.UpdatePhone</c> shows it; else null.</summary>
     private static MenuSheetView? MenuCell(GalleryStage g) =>

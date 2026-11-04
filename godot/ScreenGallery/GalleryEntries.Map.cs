@@ -103,7 +103,7 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         var corner = Room(backdrop, p);
         var markers = p.MapMarkers();
-        var map = UprightMap(g, s, p);
+        var map = PortraitMap(g, s, p);
         var view = g.Add(new MapMarkersView(g.Font) { Visible = true });
         view.SetCoveredTop(PhoneHeld ? 0 : MapHeadroom.Strip);              // the phone's status is in the sides or on top
         view.SetHideDimmed(hideDimmed);
@@ -118,8 +118,8 @@ internal static partial class GalleryEntries
         {
             GalleryStage.Fill(backdrop, area);
             bar.Place(StripArea(area));
-            if (map is not null && PlaceUpright(map, bar) is var (box, scale, width))
-                view.Place(box, scale, map.Corner, (width, PhoneMapUpright.MapHeight));
+            if (map is not null && PlacePortrait(map, bar) is var (box, scale, width))
+                view.Place(box, scale, map.Corner, (width, PhoneMapPortrait.MapHeight));
             else
                 view.Place(area, area.Size.X / Surface.ScreenWidth, corner);
             button?.Place(area);
@@ -134,11 +134,11 @@ internal static partial class GalleryEntries
     /// The phone held upright (docs/ui/phone-build.md, step P2): the map's whole height under the status band, our own view
     /// of it centred on the script's, as <c>GameScreen</c> shows it under its plates and menus; null elsewhere.
     /// </summary>
-    private static UprightMapView? UprightMap(GalleryStage g, GameState s, GamePresenter p)
+    private static PortraitMapView? PortraitMap(GalleryStage g, GameState s, GamePresenter p)
     {
-        if (Device.Layout != DeviceLayout.PhoneUpright)
+        if (Device.Layout != DeviceLayout.PhonePortrait)
             return null;
-        var map = g.Add(new UprightMapView(g.Faces));
+        var map = g.Add(new PortraitMapView(g.Faces));
         map.Show(s, p.MapViewShown ?? throw new InvalidOperationException("The map was not shown."));
         return map;
     }
@@ -147,11 +147,11 @@ internal static partial class GalleryEntries
     /// The upright map laid under <paramref name="bar"/>'s band (placed already); returns the map's box, its scale and the
     /// columns it shows, where the plates go; null off an upright phone.
     /// </summary>
-    private static (Rect2 Box, float Scale, int Width)? PlaceUpright(UprightMapView map, StatusStripView bar)
+    private static (Rect2 Box, float Scale, int Width)? PlacePortrait(PortraitMapView map, StatusStripView bar)
     {
-        if (Device.Upright(map) is not { } f)
+        if (Device.Portrait(map) is not { } f)
             return null;
-        map.Place(bar.UprightBand(f));
+        map.Place(bar.PortraitBand(f));
         var view = map.View;
         return (new Rect2(view.Box.X, view.Box.Y, view.Box.W, view.Box.H), view.Scale, (int)MathF.Ceiling(view.Width));
     }
@@ -233,7 +233,7 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         Room(backdrop, p);
         var menu = Opened(p, CommandPhase.MenuItems(s), q => q.CommandMenu, "COMMAND's menu");
-        var map = UprightMap(g, s, p);
+        var map = PortraitMap(g, s, p);
         var panel = g.Add(new CommandMenuView(g.Font));
         panel.Open(menu);
         var button = TouchCommandsButton(g, closes: true);
@@ -244,8 +244,8 @@ internal static partial class GalleryEntries
         {
             GalleryStage.Fill(backdrop, area);
             bar.Place(StripArea(area));
-            if (map is not null && PlaceUpright(map, bar) is not null && Device.Upright(map) is { } f)
-                panel.UprightBand = bar.UprightBand(f);
+            if (map is not null && PlacePortrait(map, bar) is not null && Device.Portrait(map) is { } f)
+                panel.PortraitBand = bar.PortraitBand(f);
             panel.Place(area);
             button?.Place(area);
         };
@@ -262,7 +262,7 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         var corner = Room(backdrop, p);
         var menu = Opened(p, items, q => q.ProvinceMenu, "a city's first menu");
-        var map = UprightMap(g, s, p);
+        var map = PortraitMap(g, s, p);
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces) { Map = map });
         view.Open(menu, ProvinceMenuView.PointOf(s, province, corner), ProvinceMenuView.MapPointOf(s, province));
         var bar = Strip(g, p, StatusStripView.SideMode.Province);
@@ -271,8 +271,8 @@ internal static partial class GalleryEntries
         {
             GalleryStage.Fill(backdrop, area);
             bar.Place(StripArea(area));
-            if (map is not null && PlaceUpright(map, bar) is not null && Device.Upright(map) is { } f)
-                view.UprightBand = bar.UprightBand(f);
+            if (map is not null && PlacePortrait(map, bar) is not null && Device.Portrait(map) is { } f)
+                view.PortraitBand = bar.PortraitBand(f);
             view.Place(area);
             cell?.Place();
         };
@@ -288,7 +288,7 @@ internal static partial class GalleryEntries
         var p = g.Bound(s);
         Room(backdrop, p);
         var menu = Opened(p, GalleryStates.CellsMenuItems(s), q => q.ProvinceMenu, "the cells' menu");
-        var map = UprightMap(g, s, p);
+        var map = PortraitMap(g, s, p);
         var view = g.Add(new ProvinceMenuView(g.Font, g.Faces) { Map = map });
         view.Open(menu);
         var bar = Strip(g, p, StatusStripView.SideMode.Province);
@@ -297,8 +297,8 @@ internal static partial class GalleryEntries
         {
             GalleryStage.Fill(backdrop, area);
             bar.Place(StripArea(area));
-            if (map is not null && PlaceUpright(map, bar) is not null && Device.Upright(map) is { } f)
-                view.UprightBand = bar.UprightBand(f);
+            if (map is not null && PlacePortrait(map, bar) is not null && Device.Portrait(map) is { } f)
+                view.PortraitBand = bar.PortraitBand(f);
             view.Place(area);
             cell?.Place();
         };
