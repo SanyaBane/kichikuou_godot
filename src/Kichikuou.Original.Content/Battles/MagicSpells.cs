@@ -118,13 +118,24 @@ public static class MagicSpells
     public static MagicElement OfCaster(GameState s, BattleSide side)
     {
         bool player = side == BattleSide.Player;
-        int record = player ? s.Unit_Cur.Value : s.Cmdr_Cur.Value;
-        if ((player ? Units : Commanders).TryGetValue(record, out var element))
+        if (player)
+            return OfUnit(s, s.Unit_Cur.Value);
+        int record = s.Cmdr_Cur.Value;
+        if (Commanders.TryGetValue(record, out var element))
             return element;
         if (record <= 0)
             return MagicElement.Fire;
-        int troopClass = player ? s.Units[s.Unit_Cur].Class.Value : s.Cmdrs[s.Cmdr_Cur].Class.Value;
-        return troopClass == DemonMagic ? MagicElement.Dark : MagicElement.Fire;
+        return s.Cmdrs[s.Cmdr_Cur].Class.Value == DemonMagic ? MagicElement.Dark : MagicElement.Fire;
+    }
+
+    /// <summary>The player's unit <paramref name="unit"/>'s own element, as <see cref="OfCaster"/> reads it for the player.</summary>
+    public static MagicElement OfUnit(GameState s, int unit)
+    {
+        if (Units.TryGetValue(unit, out var element))
+            return element;
+        if (unit <= 0)
+            return MagicElement.Fire;
+        return s.Units[unit].Class.Value == DemonMagic ? MagicElement.Dark : MagicElement.Fire;
     }
 
     /// <summary>The spell lines of the table, for the tests that read them in the player's scenario.</summary>

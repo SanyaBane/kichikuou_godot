@@ -14,11 +14,12 @@ internal enum EffectGroup { Attacks, Magic, Specials, Ninjas, Defence }
 /// One of our exchange effects as Debug → Effects and the screen gallery's Combat VFX tab show it: the list's name, the
 /// saved frames' prefix, the builder, laid over dark, the users to pick from (the first the default: the army on the
 /// player's side), the enemy's army, whether the enemy casts it (the picture mirrored), its length in frames, and
-/// whether play never shows it.
+/// whether play never shows it; a plain attack's or a magic element's <see cref="Plain"/> kind, by which Debug → Effects
+/// lists every unit of the game that plays it (<see cref="EffectUsers"/>) in place of <see cref="Users"/>.
 /// </summary>
 internal sealed record EffectShow(string Name, string Prefix, EffectGroup Group, Func<int, IReadOnlyList<Particle>> Build, bool Dark,
     IReadOnlyList<EffectArmy> Users, EffectArmy? Enemy = null, bool EnemyCasts = false, int Frames = EffectCanvas.Frames,
-    bool Unused = false)
+    bool Unused = false, ExchangeEffectKind? Plain = null)
 {
     /// <summary>The enemy's army: <see cref="Enemy"/>, else Ex's (commander 1) Leazas Knights.</summary>
     public EffectArmy EnemyArmy => Enemy ?? EffectCatalog.Ex;
@@ -58,19 +59,23 @@ internal static class EffectCatalog
 
     public static readonly IReadOnlyList<EffectShow> All =
     [
-        new("Melee (after 40000)", "melee", EffectGroup.Attacks, MeleeEffect.Build, false, [RanceKnights]),
-        new("Bow (after 40260)", "bow", EffectGroup.Attacks, BowEffect.Build, false, [new("Isoroku (unit 27), JAPAN Archers", 1209)]),
-        new("Magic: fire (after 40360)", "magic", EffectGroup.Magic, MagicEffect.Build, false, [Mages("Sill (unit 2)")]),
-        new("Ice Magic (after 40730)", "ice-magic", EffectGroup.Magic, IceEffect.Build, false, [Mages("Melfeis (unit 13)")]),
+        new("Melee (after 40000)", "melee", EffectGroup.Attacks, MeleeEffect.Build, false, [RanceKnights], Plain: ExchangeEffectKind.Melee),
+        new("Bow (after 40260)", "bow", EffectGroup.Attacks, BowEffect.Build, false, [new("Isoroku (unit 27), JAPAN Archers", 1209)],
+            Plain: ExchangeEffectKind.Bow),
+        new("Magic: fire (after 40360)", "magic", EffectGroup.Magic, MagicEffect.Build, false, [Mages("Sill (unit 2)")],
+            Plain: ExchangeEffectKind.Magic),
+        new("Ice Magic (after 40730)", "ice-magic", EffectGroup.Magic, IceEffect.Build, false, [Mages("Melfeis (unit 13)")],
+            Plain: ExchangeEffectKind.IceMagic),
         new("Lightning Magic (after 40630)", "lightning-magic", EffectGroup.Magic, LightningEffect.Build, false,
-            [new("Somita (unit 46), Kalars", 1450), new("Eleanor (unit 23), Magic Warriors", 1173), new("Hanty (unit 19), Freak Robots", 1240)]),
+            [new("Somita (unit 46), Kalars", 1450), new("Eleanor (unit 23), Magic Warriors", 1173), new("Hanty (unit 19), Freak Robots", 1240)],
+            Plain: ExchangeEffectKind.LightningMagic),
         new("Dark Magic (after 47030)", "dark-magic", EffectGroup.Magic, DarkEffect.Build, true,
-            [new("Satella (unit 29), Guardians", 1316), Mages("Chizuko (unit 38)"), Mages("Miki (unit 32)")]),
+            [new("Satella (unit 29), Guardians", 1316), Mages("Chizuko (unit 38)"), Mages("Miki (unit 32)")], Plain: ExchangeEffectKind.DarkMagic),
         new("Light Magic (after 40430)", "light-magic", EffectGroup.Magic, LightEffect.Build, false,
-            [new("Seizel Sisters (unit 42), False Angels", 1514), new("Hanny King (unit 48)", 1517)]),
+            [new("Seizel Sisters (unit 42), False Angels", 1514), new("Hanny King (unit 48)", 1517)], Plain: ExchangeEffectKind.LightMagic),
         // No unit of ours casts poison: Papaya (commander 104) and Ragarl (commander 109) do (docs/ui/mage-lines.md).
         new("Poison Magic (after 41300)", "poison-magic", EffectGroup.Magic, PoisonEffect.Build, false, [RanceKnights],
-            new("Papaya (commander 104), Zeth Mages", 1343), EnemyCasts: true),
+            new("Papaya (commander 104), Zeth Mages", 1343), EnemyCasts: true, Plain: ExchangeEffectKind.PoisonMagic),
         new("Rance Attack (after 40500)", "rance-attack", EffectGroup.Specials, RanceAttackEffect.Build, false, [new("Rance (unit 1)", 1520)]),
         new("Kentarou-kun Slash (after 40800)", "kentarou-slash", EffectGroup.Specials, KentarouSlashEffect.Build, false, [new("Kentarou (unit 31)", 1222)]),
         new("White Beam: Shizuka (after 40460)", "white-beam-shizuka", EffectGroup.Specials, ShizukaBeamEffect.Build, false, [new("Shizuka (unit 17)", 1522)]),

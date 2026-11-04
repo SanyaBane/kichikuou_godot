@@ -105,7 +105,8 @@ public readonly record struct ExchangeEffect(ExchangeEffectKind Kind, BattleSide
         return KindOf(action) is { } kind ? new ExchangeEffect(kind, side) : null;
     }
 
-    private static ExchangeEffectKind MagicKindOf(MagicElement element) => element switch
+    /// <summary>The magic effect of <paramref name="element"/>.</summary>
+    public static ExchangeEffectKind MagicKindOf(MagicElement element) => element switch
     {
         MagicElement.Ice => ExchangeEffectKind.IceMagic,
         MagicElement.Lightning => ExchangeEffectKind.LightningMagic,

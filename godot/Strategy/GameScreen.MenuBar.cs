@@ -302,7 +302,7 @@ public partial class GameScreen
             return;
         _modal = true;
         _input.Clear();
-        var viewer = new EffectViewer(GameData.Cgs());
+        var viewer = new EffectViewer(GameData.Cgs(), _presenter.State);
         viewer.TreeExiting += () => _modal = false;
         AddChild(viewer);
         viewer.Popup();     // where the viewer fits itself

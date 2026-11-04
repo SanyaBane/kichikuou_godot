@@ -859,6 +859,12 @@ picture, the slot panels) is not shown. How it is built:
   Miki (unit 32, 1529), C. War Dance Patton (unit 18, 1530), Chuhai Asuka (unit 11, 1121), T2 Goliath none (record 51,
   no sprite: the battlefield bare on the player's side, as in the battle), T2 Soaring Wave Rolex (unit 47, 1252).
   The table is `EffectCatalog`, shared with the screen gallery's Combat VFX tab; the stage `EffectStage`.
+  The plain attacks and the magic elements list in the viewer every unit of the game that plays them instead (owner,
+  2026-11-04: to check each unit's effect), from the game's state as it is (`Original.Content/Battles/EffectUsers`): a
+  unit has one attack type, by its troop class (`FIGT.ADV:600-623`) — Archers the bow, Mages, Magic Warriors and Demon
+  Magic the magic of their caster's element (`MagicSpells.OfUnit`; a shouted spell may play another), any other melee —
+  each over its own sprite (`Unit_CgFull`). At the boot the bow is Maria (unit 16), Mill (unit 25) and Isoroku
+  (unit 27). The poison has no unit and keeps Papaya; the gallery and `--effects` keep the table's first users.
   `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
   (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `ice-magic-NN.png`, `lightning-magic-NN.png`, `light-magic-NN.png`,
   `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `kanami-NN.png`, `freya-NN.png`, `kaoru-NN.png`, `wichita-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,

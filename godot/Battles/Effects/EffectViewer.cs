@@ -1,5 +1,7 @@
 using Godot;
 using Kichikuou.Content.Graphics;
+using Kichikuou.Original.Content.Battles;
+using Kichikuou.Original.State;
 
 namespace Kichikuou.Game.Battles.Effects;
 
@@ -22,6 +24,8 @@ internal sealed partial class EffectViewer : Window
     private const int Margin = 16, Pad = 12;
 
     private readonly CgLibrary _cgs;
+    private readonly GameState? _state;
+    private IReadOnlyList<EffectArmy> _users = [];
     private VBoxContainer _root = null!;
     private EffectStage _stage = null!;
     private TextureRect _field = null!;
@@ -36,9 +40,11 @@ internal sealed partial class EffectViewer : Window
     private bool _sliding;
 
     /// <param name="cgs">The player's CGs.</param>
-    public EffectViewer(CgLibrary cgs)
+    /// <param name="state">The game's state, whose units the plain attacks list (null: the catalog's users alone).</param>
+    public EffectViewer(CgLibrary cgs, GameState? state = null)
     {
         _cgs = cgs;
+        _state = state;
         Title = "Effects (debug)";
         Exclusive = true;
         Transient = true;
@@ -194,22 +200,35 @@ internal sealed partial class EffectViewer : Window
         _time.Text = $"frame {Math.Min(Math.Floor(_player.Frame), EffectCanvas.Frames - 1),2} · {_player.Frame * EffectCanvas.FrameSeconds * 1000,5:0} ms";
     }
 
-    /// <summary>The selected effect's users in the user list (<see cref="EffectShow.Users"/>).</summary>
+    /// <summary>
+    /// The selected effect's users in the user list: for a plain attack or a magic element every unit of the game that
+    /// plays it (<see cref="EffectUsers"/>, owner, 2026-11-04), else <see cref="EffectShow.Users"/>.
+    /// </summary>
     private void FillUsers()
     {
         _user.Clear();
-        foreach (var user in Effects[_effect.Selected].Users)
+        _users = UsersOf(Effects[_effect.Selected]);
+        foreach (var user in _users)
             _user.AddItem(user.Name);
         _user.Disabled = _user.ItemCount < 2;
         _user.Select(0);
         ShowField();
     }
 
+    /// <summary>The users of <paramref name="effect"/> listed: the game's units that play it where there are any, else the catalog's.</summary>
+    private IReadOnlyList<EffectArmy> UsersOf(EffectShow effect)
+    {
+        if (_state is null || effect.Plain is not { } kind)
+            return effect.Users;
+        var units = EffectUsers.Of(_state, kind);
+        return units.Count == 0 ? effect.Users : [.. units.Select(u => new EffectArmy(u.Label, u.Sprite))];
+    }
+
     /// <summary>The battlefield with the selected user on the player's side.</summary>
     private void ShowField()
     {
         var effect = Effects[_effect.Selected];
-        _stage.ShowField(_cgs, effect.Users[Math.Max(0, _user.Selected)], effect.EnemyArmy);
+        _stage.ShowField(_cgs, _users[Math.Max(0, _user.Selected)], effect.EnemyArmy);
     }
 
     private void Restart()
