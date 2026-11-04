@@ -2,7 +2,7 @@
 docs/ui/touch.md, "The province menu within the thumbs' reach"). The owner's doubt: the tap on a province already takes
 the hand out of the thumb's comfort, so the menu may belong where the finger is rather than at the rails.
 
-The dumps: tools/ui/gallery.ps1 -Touch -Only map,province-menu,province-menu-own-five (docs/ui/gallery.md). Then, from the
+The dumps: tools/ui/gallery.ps1 -Tablet -Only map,province-menu,province-menu-own-five (docs/ui/gallery.md). Then, from the
 repository's root (Pillow; godot/fonts; the parts are mock_touch_panel.py's):
   python -I tools/ui/mock_touch_province.py <gallery dir> <out dir> < /dev/null
 The images hold the provinces' pictures: keep <out dir> outside the repository.
@@ -35,12 +35,12 @@ OAKS = dict(
 
 
 def frame():
-    return Frame(load('touch', 'current', 'map.png'))
+    return Frame(load('tablet', 'current', 'map.png'))
 
 
 def picture(f, p, r):
     """The province's picture from its menu's dump, in a dim gold frame."""
-    part = load('touch', 'current', p['dump']).crop(PICTURE)
+    part = load('tablet', 'current', p['dump']).crop(PICTURE)
     part = part.resize((round((r[2] - r[0]) * S), round((r[3] - r[1]) * S))).convert('RGBA')
     f.img.paste(part, (round(r[0] * S), round(r[1] * S)))
     rect(f, (r[0] - 2, r[1] - 2, r[2] + 2, r[3] + 2), outline=GOLD)

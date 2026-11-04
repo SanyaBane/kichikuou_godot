@@ -1,7 +1,7 @@
 # The phone — the build plan (2026-10-28)
 
 The phone's base versions are drawn and chosen in both orientations (docs/ui/phone.md, rounds P1-P19; the screen
-gallery's tabs **Smartphone, upright** and **Smartphone, landscape**, docs/ui/gallery.md, §9). This document is the plan
+gallery's tabs **Smartphone, portrait** and **Smartphone, landscape**, docs/ui/gallery.md, §9). This document is the plan
 for building them: what the code has today, the owner's answers that set the order, the foundation, and the steps. It is
 the implementation's governing document; each step records here what was built and where it stands.
 
@@ -18,7 +18,7 @@ change**: every phone step leaves the screen gallery's PC and touch passes "same
    screen (21:9) gets wider black sides in landscape and more free height upright. 19.5:9 nearly fits (landscape sides
    13.4 mm against 14.5). 18:9 and shorter are put off (docs/backlog.md): their landscape sides are ~7.6 mm, too narrow
    for LM1's rails, and need mock-ups of their own.
-3. **The tablet stays landscape.** The orientation choice in Option → Display (System, Upright, Landscape 1,
+3. **The tablet stays landscape.** The orientation choice in Option → Display (System, Portrait, Landscape 1,
    Landscape 2; PO1o) is a phone's only; the tablet keeps its sensor landscape and its layout.
 4. **The missing base versions are drawn before any build** (the owner's rule of 2026-10-27, "base versions first"):
    three screens of ours have no phone mock-up in either orientation — the **Menu sheet** (the menu bar's File, Screen,
@@ -741,7 +741,7 @@ and System's rotation lock).
   keyed by `PhoneLandscape` falls through to the tablet's path upright and lays itself over the picture, as on the
   tablet. Until P1 the upright phone has **no Menu** (the menu bar is gone on a phone and the bar with Menu, Log and Skip
   comes with P1): Option is reached held landscape (System turns the game with the phone).
-- **The orientation** (§3; PO1o): `godot/Strategy/OrientationChoice` — System (the default), Upright, Landscape 1 (the
+- **The orientation** (§3; PO1o): `godot/Strategy/OrientationChoice` — System (the default), Portrait, Landscape 1 (the
   phone's top at the left), Landscape 2 (at the right), kept in `[display] orientation`, applied on an Android phone at
   the launch and at each change (`DisplayServer.ScreenSetOrientation`: Sensor, Portrait, Landscape, ReverseLandscape —
   `fullUser`, `portrait`, `landscape`, `reverseLandscape` to Android). The tablet keeps the project's sensor landscape
@@ -752,7 +752,7 @@ and System's rotation lock).
 - **`--phone upright`** on the PC: the window at the reference's upright shape fitted to the monitor's usable area
   (608 × 1352 on the owner's 2560 × 1440 monitor), headless the canvas at half the reference (610 × 1356). `Device`
   reads the root window's size (headless has no window to ask) and logs each change of the layout on the PC.
-- **The gallery's pass** `phone-upright` ("Smartphone, upright"; `gallery.ps1 -PhoneUp`), beside the mock-up tab `phone`,
+- **The gallery's pass** `phone-portrait` ("Smartphone, portrait"; `gallery.ps1 -PhonePortrait`, `-PhoneUp` before 2026-11-04), beside the mock-up tab `phone-portrait-mockups`,
   which stays as it is: every entry dumped with `--phone upright --window 610x1356` — the whole window at **half the
   reference's pixels** (two thirds, 813 × 1808, would not fit a 1440-pixel-tall monitor). At P0 it shows the tablet's
   layout at the width in the room's middle (111 entries): the baseline P1-P8 change entry by entry. The Lacquer and

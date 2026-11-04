@@ -5,7 +5,7 @@ upright under the name and the type (phone.md, §35). A commander's HP comes bac
 (MAIN.ADV:134-167) and a commander at 0 falls, but the ledger shows HP only in the Commander tab; these draw it in the
 Name cell too, under the troops' bar, in a colour of its own (an indigo ink: the troops' bar is green, amber or red).
 
-The dumps: the screen gallery's phone passes (tools/ui/gallery.ps1 -PhoneLand -PhoneUp -Only deployment,subordinates;
+The dumps: the screen gallery's phone passes (tools/ui/gallery.ps1 -PhoneLand -PhonePortrait -Only deployment,subordinates;
 docs/ui/gallery.md), after the Name cell's build. Then, from the repository's root (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_hp_bar.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository: the dumps hold the player's CGs.
@@ -76,7 +76,7 @@ class Held:
 # bar is the Troops cell's held landscape (about 5 px), PhoneLedgerUpright.BarHeight upright (8).
 LAND = Held('phone-landscape', (2712, 1220), bar=5, search={'deployment': (400, 560), 'subordinates': (730, 890)},
             gap=4, line=6, pip=10, pip_gap=3, battle_gap=3)
-UP = Held('phone-upright', (1220, 2712), bar=8, search={'deployment': (280, 530), 'subordinates': (280, 530)},
+UP = Held('phone-portrait', (1220, 2712), bar=8, search={'deployment': (280, 530), 'subordinates': (280, 530)},
           gap=4, line=6, pip=10, pip_gap=4, battle_gap=4)
 
 

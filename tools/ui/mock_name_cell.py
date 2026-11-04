@@ -6,7 +6,7 @@ type is to the mode's ledger text as on the upright phone (34 to 46): the PC's a
 landscape's 26 (the dumps' pixels). Troops is cut from each dump; Refill (its button half the row, as upright),
 Cost and Item are drawn after it with the week-18 save's figures.
 
-Drawn over the screen gallery's `deployment` dumps (lacquer, touch, phone-landscape); the faces from the landscape
+Drawn over the screen gallery's `deployment` dumps (pc, tablet, phone-landscape); the faces from the landscape
 dump, Asuka's (unit 11) from her CG 430, the bars from the landscape dump too.
 
 Usage: python mock_name_cell.py <screen-gallery folder> <out dir> <cg_png folder>
@@ -58,10 +58,10 @@ LAND = dict(top=130, pitch=74, face=(183, 8, 243, 67), bars=(254, 50, 438, 60)) 
 # header's band and titles' baseline, the rows' top, pitch and the view's foot, Troops' columns in the dump, the text's
 # size, the header's size, the Refill button's height now.
 MODES = {
-    'pc': dict(file='lacquer/current/deployment.png', paper=(32, 686), seal=(34, 60), number=88, cell=90,
+    'pc': dict(file='pc/current/deployment.png', paper=(32, 686), seal=(34, 60), number=88, cell=90,
                head=(118, 139), head_base=134, top=141, pitch=24, foot=762, troops=(457, 562), text=17, head_size=12.5,
                chip=20, title='PC'),
-    'tablet': dict(file='touch/current/deployment.png', paper=(32, 686), seal=(34, 60), number=88, cell=90,
+    'tablet': dict(file='tablet/current/deployment.png', paper=(32, 686), seal=(34, 60), number=88, cell=90,
                    head=(126, 151), head_base=146, top=153, pitch=36, foot=762, troops=(457, 562), text=17,
                    head_size=12.5, chip=26, title='Tablet'),
     'land': dict(file='phone-landscape/current/deployment.png', paper=(80, 1055), seal=(84, 122), number=170, cell=174,

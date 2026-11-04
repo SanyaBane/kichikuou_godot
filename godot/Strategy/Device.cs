@@ -137,19 +137,19 @@ internal static class Device
         _layout is DeviceLayout.PhoneLandscape or DeviceLayout.PhoneUpright ? Frame(room) : null;
 
     /// <summary>
-    /// <c>--phone landscape</c> or <c>--phone upright</c> on a PC: the window at the reference phone's shape held so
+    /// <c>--phone landscape</c> or <c>--phone portrait</c> (also <c>upright</c>, its former name) on a PC: the window at the reference phone's shape held so
     /// (<see cref="TurnWindow"/>). False when the switch asks for something else.
     /// </summary>
     public static bool OpenPhoneWindow()
     {
         if (OS.GetName() == "Android" || PhoneSwitch is not { } held)
             return true;
-        if (held is not ("landscape" or "upright"))
+        if (held is not ("landscape" or "portrait" or "upright"))
         {
-            GD.PushError($"Kichikuou: --phone takes landscape or upright, not \"{held}\".");
+            GD.PushError($"Kichikuou: --phone takes landscape or portrait, not \"{held}\".");
             return false;
         }
-        TurnWindow(held == "upright");
+        TurnWindow(held is "portrait" or "upright");
         return true;
     }
 
@@ -175,7 +175,7 @@ internal static class Device
         var size = new Vector2I((int)(wide * scale), (int)(high * scale));
         DisplayServer.WindowSetSize(size);
         DisplayServer.WindowSetPosition(usable.Position + (usable.Size - size) / 2);
-        GD.Print($"Kichikuou: a phone held {(upright ? "upright" : "landscape")}, window {size.X}×{size.Y}.");
+        GD.Print($"Kichikuou: a phone held {(upright ? "in portrait" : "landscape")}, window {size.X}×{size.Y}.");
     }
 
     /// <summary>Whether a PC plays a phone (<c>--phone</c>), whose window a choice of the orientation turns.</summary>

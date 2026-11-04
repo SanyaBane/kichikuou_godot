@@ -3,7 +3,7 @@
 panel's and the province menu's by the kind of command (CommandMenuView.TagOf, ProvinceMenuView.TagOf): of the commands
 that spend the own city's action (Ui_CmdOwnCityAvail) only Levy has its colour, and Merchant and Dungeon share one teal.
 
-The dumps: the screen gallery's lacquer pass (tools/ui/gallery.ps1; docs/ui/gallery.md). Then, from the repository's
+The dumps: the screen gallery's PC pass (tools/ui/gallery.ps1; docs/ui/gallery.md). Then, from the repository's
 root (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_tag_colours.py <gallery dir> <out dir> [round] < /dev/null
 Keep <out dir> outside the repository: the dumps hold the player's map and CGs. The round is 2 unless given.
@@ -62,7 +62,7 @@ BUSY_TOPS = (QUIET, DIM_GOLD)           # a busy tag's
 
 
 def load(name):
-    return Image.open(os.path.join(GALLERY, 'lacquer', 'current', name + '.png')).convert('RGB')
+    return Image.open(os.path.join(GALLERY, 'pc', 'current', name + '.png')).convert('RGB')
 
 
 def components(mask):

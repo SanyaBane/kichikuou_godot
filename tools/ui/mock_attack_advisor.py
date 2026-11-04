@@ -2,7 +2,7 @@
 cards show (UnitFaces, Debug -> Portraits) instead of the top of her 192x256 portrait squeezed into 122x120. Drawn over
 the screen gallery's dump of the screen as built (docs/ui/gallery.md; tools/ui/gallery.ps1 -Only enemy-attack),
 1280x800, with her CG read from the extract. From the repository's root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_attack_advisor.py <screen-gallery>/lacquer/current/enemy-attack.png <cg_png dir> <out dir>
+  python -I tools/ui/mock_attack_advisor.py <screen-gallery>/pc/current/enemy-attack.png <cg_png dir> <out dir>
 Round M: M1 the square in the portrait's place, 120x120; M2 the square at the army's cards' face size (88), the line
 moved left; M3 a 100 square with her name on a plate under it, the line given the foot's height; M4 M2 with the line in
 a speech box whose tail points at her, the name on a plate across its top as message window 131's speaker. Each full

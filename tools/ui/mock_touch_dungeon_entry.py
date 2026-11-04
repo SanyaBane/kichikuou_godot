@@ -2,7 +2,7 @@
 Bring Pink Cow, God's Door, Return) within the right thumb's reach (owner, 2026-10-26; docs/ui/dungeon-menu.md, §6).
 Today it is our plain `]` menu at the boot's selection box, over the dungeon's picture at the screen's top.
 
-The dumps: tools/ui/gallery.ps1 -Touch -Only map,dungeon-entry (docs/ui/gallery.md). Then, from the repository's root
+The dumps: tools/ui/gallery.ps1 -Tablet -Only map,dungeon-entry (docs/ui/gallery.md). Then, from the repository's root
 (Pillow; godot/fonts; the parts are mock_touch_panel.py's):
   python -I tools/ui/mock_touch_dungeon_entry.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository.
@@ -28,8 +28,8 @@ RUINS = dict(name='Ancient Ruins', state='(Search in Progress)', extras=['Bring 
 def screen(d):
     """The gallery's dungeon-entry with our `]` menu taken away: the map under it from the gallery's map, the picture
     frame's top line carried across from its left of the menu (its centre ornament, under the menu, is lost)."""
-    img = load('touch', 'current', 'dungeon-entry.png')
-    under = load('touch', 'current', 'map.png')
+    img = load('tablet', 'current', 'dungeon-entry.png')
+    under = load('tablet', 'current', 'map.png')
     img.paste(under.crop((480, 80, 830, 193)), (480, 80))
     strip = img.crop((470, 193, 471, 204))
     for x in range(480, 830):

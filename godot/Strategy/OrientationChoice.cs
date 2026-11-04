@@ -22,7 +22,7 @@ internal static class OrientationChoice
     public static readonly (Way Way, string Name, string Hint)[] All =
     [
         (Way.System, "System", "As the phone is held, unless its rotation lock holds it."),
-        (Way.Upright, "Upright", "Always, however the phone is held."),
+        (Way.Upright, "Portrait", "Always, however the phone is held."),
         (Way.Landscape1, "Landscape 1", "Always, the phone's top at the left."),
         (Way.Landscape2, "Landscape 2", "Always, the phone's top at the right."),
     ];

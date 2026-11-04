@@ -133,10 +133,10 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   rises into place waits `Settle` seconds of frames first (the exchange's counters). While it dumps, the window takes
   no input (`GuiDisableInput`; the entries' clicks go to the views directly): the real pointer over it dropped the
   hover of `treasure-hover` and `treasure-items` once (2026-10-25).
-- `tools/ui/gallery.ps1 [-Touch] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild] [-IndexOnly]` builds the game; for each pass
-  (Lacquer; `-Touch` adds its own — the Steel pass is gone, owner, 2026-11-04; `-Vfx` the Combat VFX tab, only when asked for, §11) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
+- `tools/ui/gallery.ps1 [-Tablet] [-PhoneLand] [-PhonePortrait] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild] [-IndexOnly]` builds the game; for each pass
+  (PC; `-Tablet` adds its own — the Steel pass is gone, owner, 2026-11-04; the passes' names §13; `-Vfx` the Combat VFX tab, only when asked for, §11) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: a tab for each pass dumped so far, one shown at a time (the owner,
-  2026-10-25; `#touch` or an entry's `#touch-treasure` opens its pass), a pass not dumped this time marked old on its
+  2026-10-25; `#tablet` or an entry's `#tablet-treasure` opens its pass), a pass not dumped this time marked old on its
   tab and above its pictures; in a pass the sections, each entry in its own place at full size whatever changed (the
   owner, 2026-10-26: a screen should be where it always is, not jump to the top after a commit) — a changed one carries
   a small badge with the pixels that differ, which opens the former picture, a new one a badge alone (until then the
@@ -411,7 +411,7 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
 ## 9. The phone's mock-ups (owner, 2026-10-27)
 
 The owner's request: the phone's mock-ups already chosen (docs/ui/phone.md) in the gallery too, on a tab of their own,
-marked as not built. `gallery.ps1 -Phone` adds the tab **Smartphone, upright (mock-ups)**; `-PhoneOnly` draws it and the
+marked as not built. `gallery.ps1 -Phone` adds the tab **Smartphone, portrait (mock-ups)**; `-PhoneOnly` draws it and the
 index alone, with no build and no game pass (the other tabs left as they were, not marked old). They are not dumps:
 `tools/ui/mock_phone.py --gallery <gallery dir> <extract dir>` draws the owner's chosen base versions — the map PM1 (its
 wait, the command panel, a province), the battle PB3 (the player's turn, the retreat question, an exchange, and round
@@ -421,7 +421,7 @@ attack PA1, the week report PW1, Harem PH2, Treasure PT2, Save/Load PL2, the opt
 PO1o, the dungeon's ladder PF1; round P18's All Data PG2, the title PE2 and the import screen PI, 2026-10-28; round P20's
 Menu sheet PN1 with PN1q, the log PR2, the comment's editing PY2 and the original's own screens PXf, PXc, PXm, PXr) — from
 the touch and lacquer passes' current pictures and the map's own pictures, without the mock-ups' pink notes, each in a
-phone's body, into `phone/current` with a `manifest.json` as a pass writes it (`"mockup": true`). Each drawing is compared
+phone's body, into `phone-portrait-mockups/current` with a `manifest.json` as a pass writes it (`"mockup": true`). Each drawing is compared
 with the former one as a dump is (`GalleryScreen.Compare`: a channel more than 8 apart, changed past 600 pixels), so a
 mock-up that changes, or one whose source dumps changed, gets its badge. The tab's heading says **Not built yet**; its
 grid is narrower for the phone's tall pictures. The Python is `KICHIKUOU_PYTHON` in local.env (one with Pillow and
@@ -437,7 +437,7 @@ when a phone screen is built, its mock-up leaves the tab for a pass of its own.
 The landscape phone's choices (from round P8, 2026-10-27: the map LM1, the battle LB2, the deployment table LD2,
 Subordinates LU1; round P19's All Data LG2, the title LE1 and the import screen LI, 2026-10-28; round P21's Menu sheet
 LN3, the log LR2, the comment's editing LY1 and the original's own screens LXf, LXc, LXm, LXr) are a second tab,
-**Smartphone, landscape (mock-ups)**, drawn by the same run into `phone-land/current` (`GALLERY_ENTRIES_LAND`), its grid
+**Smartphone, landscape (mock-ups)**, drawn by the same run into `phone-landscape-mockups/current` (`GALLERY_ENTRIES_LAND`), its grid
 wider for the wide pictures; `-Phone` and `-PhoneOnly` draw both tabs.
 
 The phone's real pass (step F, 2026-10-28; docs/ui/phone-build.md, "Step F, where it stands"): `gallery.ps1 -PhoneLand`
@@ -489,8 +489,8 @@ button at the right thumb, Back at the sheet's left foot or, refused, left of th
 storage (`import-…`); LI, LIp and LIr left the mock-up tab.
 
 The phone held upright's real pass (step P0, 2026-10-29; docs/ui/phone-build.md, "Step P0, where it stands"):
-`gallery.ps1 -PhoneUp` dumps every entry as the phone held upright (`--phone upright --window 610x1356`) into
-`phone-upright/current`, the tab **Smartphone, upright** — the whole window at **half** the reference phone's pixels
+`gallery.ps1 -PhonePortrait` dumps every entry as the phone in portrait (`--phone portrait --window 610x1356`) into
+`phone-portrait/current`, the tab **Smartphone, portrait** — the whole window at **half** the reference phone's pixels
 (two thirds would be 1808 high, more than a 1440-pixel monitor holds), its grid as narrow as the upright mock-ups'. Until
 a screen's upright layout is built (P1-P8) its entry shows the tablet's layout at the picture's width between the hole
 and the bar; each built screen's mock-up then leaves `GALLERY_ENTRIES` as the landscape ones left `GALLERY_ENTRIES_LAND`.
@@ -639,3 +639,13 @@ than the screen in every pass where it can scroll at all, so its bar shows. Made
 
 What never scrolls stays as it is: the pickers' grid on the PC, the tablet and held landscape (folded to fit), the
 options' window there, Ninja Scout's list (five ninjas at most) and the menus.
+
+## 13. The passes' names (owner, 2026-11-04)
+
+The tabs are named by the device they show: **PC** (was Lacquer: the palette is Option → Display's choice, not a
+device), **Tablet, landscape** (was Touch (Lacquer)), **Smartphone, landscape**, **Smartphone, portrait** (was
+upright) and the two mock-up tabs after them. Their folders are `pc`, `tablet`, `phone-landscape`, `phone-portrait`,
+`phone-portrait-mockups` and `phone-landscape-mockups` (were `lacquer`, `touch`, `phone-upright`, `phone`,
+`phone-land`); the switches `-Tablet` and `-PhonePortrait` (`-Touch` and `-PhoneUp` still work), the game's
+`--phone portrait` (`upright` still works). The player sees Portrait in Option → Display too. The code's own names
+(`PhoneFrame.Upright`, `*.Upright.cs`, …) stay as they are.

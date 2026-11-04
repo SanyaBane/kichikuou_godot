@@ -13,7 +13,7 @@ in the quiet ink). These draw the reference's look over them in two widths:
      agent's recommendation; the ledgers' bars keep their thickness.
 
 The rim is one tablet pixel, the thumb two in from the groove (the reference's 0.1 and 0.2 mm). The dumps: the screen
-gallery's touch pass (tools/ui/gallery.ps1 -Touch; docs/ui/gallery.md): save-load (twelve manual saves), message-log
+gallery's tablet pass (tools/ui/gallery.ps1 -Tablet; docs/ui/gallery.md): save-load (twelve manual saves), message-log
 (scrolled to its foot) and deployment (the gallery's long roster). Then, from the repository's root (Pillow; godot/fonts):
   python -I tools/ui/mock_scroll_bar_tablet.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository: the dumps hold the player's CGs.
@@ -55,7 +55,7 @@ GOTHIC = lambda size: font('BIZUDGothic-Regular.ttf', size)
 
 
 def dump(name):
-    small = Image.open(os.path.join(GALLERY, 'touch', 'current', name + '.png')).convert('RGB')
+    small = Image.open(os.path.join(GALLERY, 'tablet', 'current', name + '.png')).convert('RGB')
     return small.resize((small.width * K, small.height * K), Image.LANCZOS)
 
 

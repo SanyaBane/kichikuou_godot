@@ -1,9 +1,9 @@
 """Mock-ups of the touch mode's way to the message log from the map (owner, 2026-10-26: on the PC the wheel up opens it
 on COMMAND's waiting map; docs/ui/messages.md, §5 step 6), which a finger has no wheel for — docs/ui/touch.md, "The
-message log from the map, round L". Drawn over the screen gallery's touch pass (docs/ui/gallery.md): the map's wait with
+message log from the map, round L". Drawn over the screen gallery's tablet pass (docs/ui/gallery.md): the map's wait with
 its plates and the Commands button (map-markers), the command panel on its rails (command-menu).
 
-  powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 -Touch
+  powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 -Tablet
   python -I tools/ui/mock_map_log.py <gallery dir> <out dir> < /dev/null
 
 (Pillow; godot/fonts.) <gallery dir> is screen-gallery at the root unless KICHIKUOU_UI_GALLERY_DIR says otherwise; keep
@@ -206,7 +206,7 @@ VARIANTS = [
 
 
 def main():
-    touch = os.path.join(GALLERY, 'touch', 'current')
+    touch = os.path.join(GALLERY, 'tablet', 'current')
     frames = []
     for name, dump, lines in VARIANTS:
         f = Frame(os.path.join(touch, dump + '.png'))

@@ -1,8 +1,8 @@
 """Mock-ups of our Treasure screen in the touch mode (owner, 2026-10-27: no hover on Android, so a tap only selects —
 the entry's picture and figures in the panel — and a button under the picture acts; docs/ui/pickers.md, "Round X"),
-drawn over the screen gallery's touch dumps of the week-18 save (docs/ui/gallery.md).
+drawn over the screen gallery's tablet dumps of the week-18 save (docs/ui/gallery.md).
 
-The dumps: tools/ui/gallery.ps1 -Touch -Only treasure-hover,treasure-items,treasure-which-item. Then, from the
+The dumps: tools/ui/gallery.ps1 -Tablet -Only treasure-hover,treasure-items,treasure-which-item. Then, from the
 repository's root (Pillow; godot/fonts; the parts are mock_touch_panel.py's):
   python -I tools/ui/mock_touch_treasure.py <gallery dir> <out dir> <cg_png dir> < /dev/null
 <cg_png dir> is the extract's cg_png (By Lord's picture, CG 757, which no dump shows). Keep <out dir> outside the
@@ -41,7 +41,7 @@ def cell(n):
 
 
 def dump(name):
-    return load('touch', 'current', name + '.png')
+    return load('tablet', 'current', name + '.png')
 
 
 def frame(base, *patches):

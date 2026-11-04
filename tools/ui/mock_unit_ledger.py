@@ -10,7 +10,7 @@ boot figures, the troops made up); SET_CHR.ADV and SET_ITEM.ADV are read from th
     python -I tools/ui/mock_unit_ledger.py <extract dir> <gallery dump dir> <out dir> [round] < /dev/null
 Round a (the default): A1-A5; round b: B1-B5, the owner's A1-A4 with the first tab named Overview; round c: C1-C3
 and C-sheet, the kept order's note made seen; round d: D1, D2 and D-sheet, C2 in C3's colours; round e: E0-E4 and
-E-sheet, the rows made taller for a finger, over the touch pass's dumps (<gallery dump dir> its folder).
+E-sheet, the rows made taller for a finger, over the tablet pass's dumps (<gallery dump dir> its folder).
 The images hold the player's CGs: keep <out dir> outside the repository.
 Everything is in the 1280x800 screen's pixels (plus a caption band below); drawn at 2x and scaled down.
 """
@@ -665,8 +665,8 @@ def sheet(crops, name):
 
 
 # ---------------------------------------------------------------- round E: taller rows for a finger (2026-10-26)
-# The owner (2026-10-26): on the tablet the ledger's rows are too small to choose with a finger. Over the touch pass's
-# dumps of the built screens (tools/ui/gallery.ps1 -Touch: deployment.png, subordinates.png) the ledger's paper is
+# The owner (2026-10-26): on the tablet the ledger's rows are too small to choose with a finger. Over the tablet pass's
+# dumps of the built screens (tools/ui/gallery.ps1 -Tablet: deployment.png, subordinates.png) the ledger's paper is
 # drawn again as built (DeploymentTableView: the game's font at 17, Cinzel headers, the rules, the seals, Refill's
 # chips, the 8-pixel scroll bar) with a roster of 33 units, so that the rows reach the paper's foot; the rows 24 pixels
 # (as built), 32, 36, 42 and 48, the text as built. A grey disc 9 mm across stands for a fingertip.

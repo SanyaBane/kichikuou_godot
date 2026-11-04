@@ -1,8 +1,8 @@
 """Mock-ups of the frame rate as an option (owner, 2026-11-03; docs/ui/options.md, "Frame rate"): 30, 60 or the screen's own
 rate, 30 by default on Android and 60 on the PC, to save the phone's battery (docs/memory.md).
 
-Drawn over the screen gallery's dumps of the options window (docs/ui/gallery.md; tools/ui/gallery.ps1 -PhoneLand -PhoneUp):
-options-display.png and options-game.png of the lacquer, phone-landscape and phone-upright passes.
+Drawn over the screen gallery's dumps of the options window (docs/ui/gallery.md; tools/ui/gallery.ps1 -PhoneLand -PhonePortrait):
+options-display.png and options-game.png of the pc, phone-landscape and phone-portrait passes.
     python -I tools/ui/mock_frame_rate.py <gallery dir> <out dir> < /dev/null
 A: in Display, which is full to its buttons on the PC and the phone held landscape: on the PC the palette's row shared
 with the frame rate, held landscape the margins' field halved and the frame rate's tiles beside it, held upright a section
@@ -109,7 +109,7 @@ HINT = 'Fewer frames draw less power; more move more smoothly.'
 
 def pc_a():
     """The palette's row on the PC halved: the palette at the left, the frame rate at the right."""
-    c = Canvas(os.path.join(GALLERY, 'lacquer', 'current', 'options-display.png'))
+    c = Canvas(os.path.join(GALLERY, 'pc', 'current', 'options-display.png'))
     c.rect((166, 286, 1116, 312), fill=PAPER)
     head(c, 166, 303, 586, 'Palette', 13)
     x = 636
@@ -126,7 +126,7 @@ def pc_a():
 
 def pc_b():
     """A section of its own in Game on the PC; Defaults is lit, it has something to reset."""
-    c = Canvas(os.path.join(GALLERY, 'lacquer', 'current', 'options-game.png'))
+    c = Canvas(os.path.join(GALLERY, 'pc', 'current', 'options-game.png'))
     head(c, 166, 301, 1114, 'Frame rate', 13)
     c.text((1114, 301), HINT, font(13), INK_QUIET, 'rs')
     x, f = 176, font(17)
@@ -190,7 +190,7 @@ def boxes(c, y):
 
 def up_a():
     """Held upright: a section after the margins; what follows moves down, the sheet scrolls."""
-    c = Canvas(os.path.join(GALLERY, 'phone-upright', 'current', 'options-display.png'), caption=120)
+    c = Canvas(os.path.join(GALLERY, 'phone-portrait', 'current', 'options-display.png'), caption=120)
     top, end = 690, 1240
     c.shift(top, end, 297, keep_right=30)
     c.rect((12, top, 580, top + 297), fill=PAPER)
@@ -201,7 +201,7 @@ def up_a():
 
 
 def up_b():
-    c = Canvas(os.path.join(GALLERY, 'phone-upright', 'current', 'options-game.png'), caption=120)
+    c = Canvas(os.path.join(GALLERY, 'phone-portrait', 'current', 'options-game.png'), caption=120)
     head(c, 27, 395, 581, 'Frame rate', 14)
     boxes(c, 414)
     c.rect((14, 1270, 204, 1306), fill=LACQUER)
@@ -256,7 +256,7 @@ PC_RATES = (('30 fps', 'Draws half as often: the least power.', False), ('60 fps
 
 def pc_a2():
     """The PC: the frame rate on top, the font, the palette, the thousands and the row heights under it as now; the wheel scrolls."""
-    path = os.path.join(GALLERY, 'lacquer', 'current', 'options-display.png')
+    path = os.path.join(GALLERY, 'pc', 'current', 'options-display.png')
     pristine = Canvas(path)
     sheet = Sheet(pristine.w, 860)
     head(sheet, 166, 171, 1114, 'Frame rate', 13)

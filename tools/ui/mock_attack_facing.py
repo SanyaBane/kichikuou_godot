@@ -6,7 +6,7 @@ triangle beside "FRONT ROW" (EnemyAttackView.UprightArmy: 16 reference pixels, 0
 gold bracket whose head points at the "VS" (docs/ui/enemy-attack.md, §8), the phone held landscape has a gold pointer
 left of the cards (PhoneAttack.Pointer: 30 deep, 68 wide). These draw the facing upright as plainly.
 
-The dumps: the screen gallery's upright pass (tools/ui/gallery.ps1 -PhoneUp -Only enemy-attack,enemy-attack-scouted;
+The dumps: the screen gallery's portrait pass (tools/ui/gallery.ps1 -PhonePortrait -Only enemy-attack,enemy-attack-scouted;
 docs/ui/gallery.md). Then, from the repository's root (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_attack_facing.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository: the dumps hold the player's CGs.
@@ -44,7 +44,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 GALLERY, OUT = sys.argv[1:3]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-UP = os.path.join(GALLERY, 'phone-upright', 'current')
+UP = os.path.join(GALLERY, 'phone-portrait', 'current')
 os.makedirs(OUT, exist_ok=True)
 
 PW, PH = 1220, 2712                     # the Poco X6 Pro upright, reference pixels (the dump doubled)

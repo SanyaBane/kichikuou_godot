@@ -28,7 +28,7 @@ button.on { border-color: #d8b060; background: #3a2c1c; color: #f0d890; }
 button:disabled { opacity: 0.35; cursor: default; }
 .stale { color: #e0b050; } p.stale { border: 1px solid #806020; background: #2a2010; padding: 8px; }
 .mockup .grid { --base: 300px; }
-.upright .grid { --base: 300px; }
+.portrait .grid { --base: 300px; }
 .landscape .grid { --base: 640px; }
 p.mockup { border: 1px solid #7a5a9a; background: #221a2a; color: #e4d4f0; padding: 8px; }
 p.empty { color: #a89878; font-style: italic; }

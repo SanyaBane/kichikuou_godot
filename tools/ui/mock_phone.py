@@ -3,8 +3,8 @@ Poco X6 Pro the reference; docs/ui/phone.md, round P1), drawn at the phone's own
 
 From the repository's root (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_phone.py <gallery dir> <look dir> <extract dir> <out dir> < /dev/null
-- <gallery dir>: the screen gallery (`screen-gallery` at the root; tools/ui/gallery.ps1 -Touch and the Lacquer pass):
-  touch/current (battle-turn, province-menu, scene-menu, command-menu-building) and lacquer/current (battle-turn).
+- <gallery dir>: the screen gallery (`screen-gallery` at the root; tools/ui/gallery.ps1 -Tablet and the Lacquer pass):
+  tablet/current (battle-turn, province-menu, scene-menu, command-menu-building) and pc/current (battle-turn).
 - <look dir>: the key waits of the week-18 look in a window, our interface, without --touch (CLAUDE.md, "A look at one
   screen", `--until battle`): Ex's scene before the attack on Oaks (6) — 00058 (Ex's "I see...", our speech window at the
   top right), 00059 (the narration under it), 00060 (Ex's "Intercept them..."). Frames of another run may be numbered
@@ -14,16 +14,16 @@ From the repository's root (Pillow and numpy; godot/fonts):
 Keep <out dir> outside the repository.
 
 The map is drawn from the map's pictures and flags at the phone's scale; the owners at week 18 are read from the
-gallery's touch `map` dump where it shows them (the camera at map x 1280-1920, y 208-608), elsewhere the game's first
+gallery's tablet `map` dump where it shows them (the camera at map x 1280-1920, y 208-608), elsewhere the game's first
 owners (made up for the mock-up). The plates are ours, drawn larger.
 
 Variants (docs/ui/phone.md): P0 today's layout turned upright; PS1-PS3 the scenes; PM1-PM2 the map; PB1-PB2 the
 battle (P for portrait: touch.md's B1, M1… are the landscape phone's). Round P2: PB3 (PB1 with the owner's changes —
 our army on top, Skip between the cards and the deck), PB3r the retreat question, PB3x an exchange; the battle's inputs
-also touch/current's exchange-counters. Round P3: PD1-PD3 the deployment table, PU1-PU2 the Subordinates screen; their
-inputs touch/current's deployment and the units' face CGs from <extract dir>/cg_png. Round P4: PA1-PA2 the
-enemy attack (touch/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report. Round P5: PH1-PH2
-Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (touch/current's harem, treasure-items, save-load). Round
+also tablet/current's exchange-counters. Round P3: PD1-PD3 the deployment table, PU1-PU2 the Subordinates screen; their
+inputs tablet/current's deployment and the units' face CGs from <extract dir>/cg_png. Round P4: PA1-PA2 the
+enemy attack (tablet/current's enemy-attack-scouted, Maris's and Kanami's face CGs), PW1-PW2 the week report. Round P5: PH1-PH2
+Harem, PT1-PT2 Treasure, PL1-PL2 Save/Load (tablet/current's harem, treasure-items, save-load). Round
 P6: PO1-PO2 the options window, PF1-PF2 the dungeon's menus (options-messages, options-tweaks, floor-ladder-middle).
 Round P7: PB4o1-PB4o2 the opening, PB4s the scout report, PB4c the strategy's cut-in, PB4r the results plate,
 PB4b a fighter's line (opening, scout-report, strategy, battle-speech).
@@ -39,26 +39,26 @@ line (battle-turn, exchange-counters, opening, scout-report, strategy, info-resu
 Round P14, the scenes again: PS2 as the owner changed it — the picture in the screen's middle, the upper speaker's
 window above it (PS2), the lower one's under it (PS2l), and PS2b, PS2m with the picture there too (the look dir).
 Round P15, the scenes landscape: LS1 the frame as on the PC (LS1b window 131, LS1m a dialogue menu at the thumb), LS2
-upright's PS2 laid sideways (the look dir; lacquer/current's message-cg-bar-speech and scene-menu).
+upright's PS2 laid sideways (the look dir; pc/current's message-cg-bar-speech and scene-menu).
 Round P16, the open questions upright: PB4o3 the opening at the scene's place laid out again (with PB4o1-PB4o2);
 PD2s1, PD2s1x, PD2s2, PU1s1, PU1s2 the ledger scrolled sideways (one-line and two-line rows; PD2s1x a late game's
 roster, made up); PU1e1-PU1e3 Subordinates' End. Round P17, the frame upright: PK1s, PK1m, PK2s, PK2m the bar's cells
 at the left or the right (on PS2 and PM1; the look dir), PO1o the orientation in Option → Display (a sketch).
 Round P18, the three screens left upright: PG1-PG2 All Data (PG1g, PG1s, PG2m; all-data, all-data-funds and the map's
-pictures under the PC's menu box), PE1-PE2 the title (PEd its description, PEr the requests slip; lacquer/current's
+pictures under the PC's menu box), PE1-PE2 the title (PEd its description, PEr the requests slip; pc/current's
 title-clears, title-hover, title-description, title-requests), PI, PIp, PIr the import screen (drawn: the gallery's
 import entries' words). Round P19 the same landscape: LG1-LG2 (LG1g, LG2m), LE1-LE2 (LEd), LI, LIp, LIr.
 Round P20, the last screens upright: PN1-PN3 the Menu sheet (PN1q Restart's question; on PS2, the look dir), PR1-PR3
 the message log (the gallery's message-log pages), PY1-PY3 the comment's editing with Android's keyboard (on PL2), and
-the original's own screens as they are, PXf, PXc, PXm, PXr (lacquer/current's fortune-check, cg-gallery, music-room;
+the original's own screens as they are, PXf, PXc, PXm, PXr (pc/current's fortune-check, cg-gallery, music-room;
 <look dir>/ending-report.png, frame 00002 of `--ending 11 --auto --fast --quit --shots <dir>`). Round P21 the same
-landscape: LN1-LN3, LR1-LR2 (touch/current's message-log), LY1-LY2 (on LL1), LXf, LXc, LXm, LXr.
+landscape: LN1-LN3, LR1-LR2 (tablet/current's message-log), LY1-LY2 (on LL1), LXf, LXc, LXm, LXr.
 `--round P3` before the arguments draws only that round's variants (the look dir then unread, '-' will do; P14, P15,
 P17, P20 and P21 read it).
 The pink lines and text are the mock-ups' notes, not part of a screen.
 
 For the screen gallery's phone tabs (tools/ui/gallery.ps1 -Phone; docs/ui/gallery.md, §9) only the owner's chosen base
-versions, without the notes, into <gallery dir>/phone/current (upright) and <gallery dir>/phone-land/current
+versions, without the notes, into <gallery dir>/phone-portrait-mockups/current (upright) and <gallery dir>/phone-landscape-mockups/current
 (landscape), each with a manifest.json as the game's passes write it; the scenes' PS2, PS2l and LS1 only when the
 look's frames (LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT) are copied into <gallery dir>/phone-look (with them PN1,
 PN1q, PR2, LN3 and LR2; PXr and LXr when LOOK_ENDING is there too):
@@ -76,13 +76,13 @@ GALLERY_MODE = ARGS[0] == '--gallery'
 LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT = '00058-message-speech-left.png', '00059-key.png', '00060-key.png'
 if GALLERY_MODE:                        # the scenes' look frames, if copied beside the passes (<gallery dir>/phone-look)
     GALLERY, EXTRACT = ARGS[1:3]
-    LOOK, OUT = os.path.join(GALLERY, 'phone-look'), os.path.join(GALLERY, 'phone', 'current')
+    LOOK, OUT = os.path.join(GALLERY, 'phone-look'), os.path.join(GALLERY, 'phone-portrait-mockups', 'current')
     if not all(os.path.exists(os.path.join(LOOK, f)) for f in (LOOK_SPEECH, LOOK_NARRATION, LOOK_INTERCEPT)):
         LOOK = None
 else:
     GALLERY, LOOK, EXTRACT, OUT = ARGS[0:4]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-TOUCH, LACQ = os.path.join(GALLERY, 'touch', 'current'), os.path.join(GALLERY, 'lacquer', 'current')
+TOUCH, LACQ = os.path.join(GALLERY, 'tablet', 'current'), os.path.join(GALLERY, 'pc', 'current')
 os.makedirs(OUT, exist_ok=True)
 
 PW, PH = 1220, 2712                     # the Poco X6 Pro's screen upright: 69.5 × 154.5 mm
@@ -292,7 +292,7 @@ GALLERY_ENTRIES = {
     'PXr': ('px-report', 'The original\'s screens', 'An ending\'s Completion Report', 'as it is (ending 11); Log and '
                                                                                  'Skip at its key waits'),
 }
-# The gallery's landscape phone tab (phone-land): the owner's chosen landscape base versions (round P8 on), those not
+# The gallery's landscape phone tab (phone-landscape-mockups): the owner's chosen landscape base versions (round P8 on), those not
 # built yet; a built one leaves for the real pass "Smartphone, landscape" (docs/ui/phone-build.md: L1 took LS1, LS1b,
 # LS1m, LW1, LEd, LN3 and LR2; L2 LM1a, LM1b and LM1c; L3 LB2, LB2r1 and LB2x; L4 LB3o1, LB3s, LB3c, LB3r and LB3b;
 # L5 LD2, LU1 and LU1q; L6 LA2 and LA2n; L7a LH2 and LT2; L7b LL1 and LY1).
@@ -313,12 +313,12 @@ DUMPED_LAND = []
 def save_gallery(img, name):
     """The phone's screen in its body, as the gallery's entry; compared with the former picture as the game's passes do
     (GalleryScreen.Compare: a channel more than 8 apart, changed past 600 pixels). A landscape entry goes to its own
-    tab's folder (phone-land)."""
+    tab's folder (phone-landscape-mockups)."""
     landscape = name in GALLERY_ENTRIES_LAND
     if name not in GALLERY_ENTRIES and not landscape:
         return
     ident, section, title, note_ = (GALLERY_ENTRIES_LAND if landscape else GALLERY_ENTRIES)[name]
-    tab = 'phone-land' if landscape else 'phone'
+    tab = 'phone-landscape-mockups' if landscape else 'phone-portrait-mockups'
     out = os.path.join(GALLERY, tab, 'current')
     os.makedirs(out, exist_ok=True)
     B = 34
@@ -7246,7 +7246,7 @@ def main():
         pg2m(); pg2(); pe2(); ped(); per(); pi(); pip(); pir()
         lg2m(); lg2(); le1(); led(); li(); lip(); lir()
         py2(); ly1(); p20_originals(); p21_originals()
-        for tab, entries in (('phone', DUMPED), ('phone-land', DUMPED_LAND)):
+        for tab, entries in (('phone-portrait-mockups', DUMPED), ('phone-landscape-mockups', DUMPED_LAND)):
             manifest = {'written': datetime.datetime.now().strftime('%Y-%m-%d %H:%M:%S'), 'palette': 'lacquer',
                         'font': 'BizUdGothic', 'touch': True, 'mockup': True, 'entries': entries}
             with open(os.path.join(GALLERY, tab, 'current', 'manifest.json'), 'w', encoding='utf-8') as f:

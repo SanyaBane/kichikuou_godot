@@ -97,7 +97,7 @@
     setTimeout(() => f.classList.remove('flash'), 1600);
   }
 
-  // The pass the address names (#touch, or an entry's #touch-treasure), else the first; an entry is scrolled to.
+  // The pass the address names (#tablet, or an entry's #tablet-treasure), else the first; an entry is scrolled to.
   function show(hash) {
     const target = hash ? document.getElementById(hash) : null;
     const next = target?.closest('.pass') ?? panes[0];

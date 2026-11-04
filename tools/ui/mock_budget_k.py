@@ -103,11 +103,11 @@ def week_report(src, variant):
 
 
 SCREENS = [
-    ('subordinates', 'Subordinates, the orders\' header (PC)', 'lacquer/current/subordinates.png', subordinates_pc,
+    ('subordinates', 'Subordinates, the orders\' header (PC)', 'pc/current/subordinates.png', subordinates_pc,
      (1000, 368, 1262, 412), 3),
     ('subordinates-upright', 'Subordinates, the budget at the bar (phone upright)',
-     'phone-upright/current/subordinates.png', subordinates_upright, (0, 1250, 390, 1330), 2),
-    ('week-report', 'The week report\'s treasury (PC)', 'lacquer/current/week-report.png', week_report,
+     'phone-portrait/current/subordinates.png', subordinates_upright, (0, 1250, 390, 1330), 2),
+    ('week-report', 'The week report\'s treasury (PC)', 'pc/current/week-report.png', week_report,
      (360, 288, 920, 500), 2),
 ]
 

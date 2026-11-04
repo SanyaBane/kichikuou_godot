@@ -2,7 +2,7 @@
 neutral row box — drawn over the screen gallery's dump of the screen as built (Ninja Scout already as tall as
 Intercept). The dump is the gallery's "enemy-attack" entry (docs/ui/gallery.md; tools/ui/gallery.ps1 -Only
 enemy-attack), 1280x800. From the repository's root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_attack_buttons.py <screen-gallery>/lacquer/current/enemy-attack.png <out dir>
+  python -I tools/ui/mock_attack_buttons.py <screen-gallery>/pc/current/enemy-attack.png <out dir>
 Round P: P1 Abandon City as the danger button (dark red lacquer in vermilion, a white flag before its label), Intercept
 red as it is; P2 the same with Abandon City as tall as the others; P3 Abandon City red and Intercept gold; P4 Abandon
 City red and Intercept in the player's blue. Each full screen, then one sheet of the foot as it is and hovered.

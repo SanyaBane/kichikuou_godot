@@ -3,7 +3,7 @@ menu"; docs/ui/touch.md, "The province menu within the thumbs' reach"). Leazas C
 (Cｼﾊｲﾄｼ.ADV:39-290) can hold fifteen commands and Return at once: the PC's panel then runs past the screen's foot, the
 tablet's rail past its top, and the phone's rows are squeezed to about 4 mm.
 
-The dumps: tools/ui/gallery.ps1 -Touch -PhoneLand -Only map,province-menu-own-all (docs/ui/gallery.md). Then, from the
+The dumps: tools/ui/gallery.ps1 -Tablet -PhoneLand -Only map,province-menu-own-all (docs/ui/gallery.md). Then, from the
 repository's root (Pillow; godot/fonts):
   python -I tools/ui/mock_province_long.py <gallery dir> <extract cg_png dir> <out dir> < /dev/null
 Keep <out dir> outside the repository: the mock-ups hold the player's CGs (Leazas Castle's picture is CG 1001, Prov.BgCg).
@@ -183,8 +183,8 @@ PC_RETURN = (120, 36)
 
 
 def pc_base():
-    m = load('lacquer', 'current', 'map.png')
-    m.paste(load('lacquer', 'current', 'province-menu-own-all.png').crop((0, 0, 1280, STRIP + 2)), (0, 0))
+    m = load('pc', 'current', 'map.png')
+    m.paste(load('pc', 'current', 'province-menu-own-all.png').crop((0, 0, 1280, STRIP + 2)), (0, 0))
     return Frame(m)
 
 
@@ -409,8 +409,8 @@ REACH, GRIP_Y = 345, 640
 
 
 def t_base():
-    m = load('touch', 'current', 'map.png')
-    dump = load('touch', 'current', 'province-menu-own-all.png')
+    m = load('tablet', 'current', 'map.png')
+    dump = load('tablet', 'current', 'province-menu-own-all.png')
     m.paste(dump.crop((0, 0, 1280, STRIP + 2)), (0, 0))
     m.paste(dump.crop(CARD_CROP), CARD_CROP[:2])
     return Frame(m)

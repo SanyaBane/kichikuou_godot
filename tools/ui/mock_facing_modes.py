@@ -7,7 +7,7 @@ DeploymentPanels.DrawFacing, EnemyAttackView.DrawArmyBracket) but mark nothing o
 landscape marks the deployment table's with an 18 px triangle at the caption row's right end, the enemy attack's with a
 lone pointer (PhoneAttack.Pointer) and the scout report's with nothing. These draw the bracket there too.
 
-The dumps: the screen gallery's lacquer and landscape passes (tools/ui/gallery.ps1 -PhoneLand -Only deployment,
+The dumps: the screen gallery's PC and landscape passes (tools/ui/gallery.ps1 -PhoneLand -Only deployment,
 deployment-search,enemy-attack,enemy-attack-scouted,scout-report; docs/ui/gallery.md). Then, from the repository's root
 (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_facing_modes.py <gallery dir> <out dir> < /dev/null
@@ -29,7 +29,7 @@ from PIL import Image, ImageDraw, ImageFont
 GALLERY, OUT = sys.argv[1:3]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LAND = os.path.join(GALLERY, 'phone-landscape', 'current')
-PC = os.path.join(GALLERY, 'lacquer', 'current')
+PC = os.path.join(GALLERY, 'pc', 'current')
 os.makedirs(OUT, exist_ok=True)
 
 LW, LH = 2712, 1220                     # the Poco X6 Pro held landscape, reference pixels (the dump times 1.5)

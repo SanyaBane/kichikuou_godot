@@ -175,13 +175,13 @@ public sealed class MarginsCalibration
         ? (Panel.X + Panel.W / 2, Panel.Y + Px(UprightTitle))
         : (Panel.X + Px(LandIn), Panel.Y + Px(LandTitle));
 
-    /// <summary>The orientation's name ("Upright", "Landscape"): upright its middle under the title, landscape its right end's middle.</summary>
+    /// <summary>The orientation's name ("Portrait", "Landscape"): upright its middle under the title, landscape its right end's middle.</summary>
     public (float X, float Y) Orientation => IsUpright
         ? (Panel.X + Panel.W / 2, Panel.Y + Px(UprightOrientation))
         : (Panel.Right - Px(LandIn), Panel.Y + Px(LandTitle));
 
     /// <summary>The orientation's name for the panel.</summary>
-    public string OrientationName => IsUpright ? "Upright" : "Landscape";
+    public string OrientationName => IsUpright ? "Portrait" : "Landscape";
 
     /// <summary>
     /// <paramref name="edge"/>'s row: upright the panel's width less its sides, one under another; landscape a column of

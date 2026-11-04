@@ -1,7 +1,7 @@
 """Mock-ups of the damage forecast at the battle's attack banners (owner's request 2026-10-26; docs/ui/damage-forecast.md):
 an option that shows, beside a target's banners, what the attack is likely to do, as Heroes of Might and Magic V does.
 
-The dumps: tools/ui/gallery.ps1 -Touch -Only banners-E1,battle-turn (docs/ui/gallery.md). Then, from the repository's
+The dumps: tools/ui/gallery.ps1 -Tablet -Only banners-E1,battle-turn (docs/ui/gallery.md). Then, from the repository's
 root (Pillow; godot/fonts; the parts are mock_touch_panel.py's):
   python -I tools/ui/mock_damage_forecast.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository.
@@ -595,20 +595,20 @@ def layout_f(dump, turn):
 
 GALLERY = sys.argv[1]
 if sys.argv[3:] == ['E']:                       # round E alone (it needs round C's C1 in the out dir for its sheet)
-    layout_e(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+    layout_e(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
     sys.exit()
 if sys.argv[3:] == ['F']:                       # round F alone (it needs round E's E1 in the out dir for its sheet)
-    layout_f(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+    layout_f(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
     sys.exit()
-layout_d(load('touch', 'current', 'battle-turn.png'))
-layout_c(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_b1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_b2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_b3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_b2_sakanaku(load('lacquer', 'current', 'battle-turn.png'))
-layout_a1(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_a2(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_a3(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_t1(load('touch', 'current', 'battle-turn.png'))
-layout_e(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
-layout_f(load('lacquer', 'current', 'banners-E1.png'), load('lacquer', 'current', 'battle-turn.png'))
+layout_d(load('tablet', 'current', 'battle-turn.png'))
+layout_c(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_b1(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_b2(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_b3(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_b2_sakanaku(load('pc', 'current', 'battle-turn.png'))
+layout_a1(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_a2(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_a3(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_t1(load('tablet', 'current', 'battle-turn.png'))
+layout_e(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))
+layout_f(load('pc', 'current', 'banners-E1.png'), load('pc', 'current', 'battle-turn.png'))

@@ -285,7 +285,7 @@ our full screens upright; the owner chose PD2, PU1, PA1, PW1, PH2, PT2, PL2, PO1
 other states (docs/ui/phone.md, §5). The open questions upright (rounds P16-P17, 2026-10-28; its §20-§21): the opening
 PB4o3 at the scene's place, the unit ledger in two-line rows scrolled sideways (PD2s2: № and name over the type fixed),
 Subordinates' End at the thumb with the budget beside it (PU1e3), the bar's cells at the left (PK1), the orientation a
-choice in Option → Display (System, Upright, Landscape 1, Landscape 2; PO1o), the script's line breaks kept. The landscape phone (round P8 on, the L… variants): the
+choice in Option → Display (System, Portrait, Landscape 1, Landscape 2; PO1o), the script's line breaks kept. The landscape phone (round P8 on, the L… variants): the
 frame keeps the layout, our controls go to the black sides; the owner chose the map LM1, the battle LB2, the deployment
 table LD2 and Subordinates LU1 (both changed), the enemy attack LA2 (changed), the week report LW1, Harem LH2 and Treasure LT2
 (the pickers' grid folded in two after its ninth row, every cell in view), Save/Load LL1 (the PC's split), the options
@@ -370,8 +370,8 @@ Step L10 is done but the owner's play (phone-build.md, "Step L10, where it stand
 (phone.md, touch.md, style.md §6, backlog). **The landscape phone is built, awaiting the owner's play on the Poco**;
 upright (P0-P9) is next. Step P0 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P0, where it
 stands"): `PhoneFrame.Upright` (the picture at the width wherever a screen puts it, `PictureAt`; the room apart from it),
-Option → Display's orientation on a phone (`godot/Strategy/OrientationChoice`: System — Android's `fullUser` —, Upright,
-Landscape 1, Landscape 2), `--phone upright`, the gallery's `-PhoneUp` pass; a screen without an upright layout yet
+Option → Display's orientation on a phone (`godot/Strategy/OrientationChoice`: System — Android's `fullUser` —, Portrait,
+Landscape 1, Landscape 2), `--phone portrait` (or `upright`), the gallery's `-PhonePortrait` pass; a screen without an upright layout yet
 shows the tablet's at the width between the hole and the bar. Step P1 is built, awaiting the owner's look on the Poco
 (phone-build.md, "Step P1, where it stands"): the scenes upright — `PhoneFrame.Bar` at the foot with Menu, Log and Skip at
 its left (PK1), the picture between the hole and it, the left portrait's window above the picture while it shows and every
@@ -885,7 +885,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - **The screen gallery** (docs/ui/gallery.md): our screens in their states from the kept saves, no playing to them, the
   battle board from a golden capture replayed into a presenter and held at a moment (`ScreenGallery/GalleryBattle`), the
   title run from the player's files after a fresh boot and held the same way (`GalleryTitle`), the import screen held in each phase —
-  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Touch] [-PhoneLand] [-Phone] [-Vfx | -VfxOnly] [-Only id,…]`
+  `powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 [-Tablet] [-PhoneLand] [-PhonePortrait] [-Phone] [-Vfx | -VfxOnly] [-Only id,…]`
   (`-Vfx`: the Combat VFX tab, each exchange effect as six frames, `--combat-vfx`; **only when the owner asks for it or the
   tab itself changes**, owner 2026-10-29; docs/ui/gallery.md, §11) builds, dumps every
   entry (`-Only`: those, into the passes as they are) into `screen-gallery/` at the root (git ignores it; `KICHIKUOU_UI_GALLERY_DIR` elsewhere) in a window, ~33 s a
@@ -900,7 +900,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   mock-ups, not built (docs/ui/gallery.md, §9; `-PhoneOnly` draws that tab and the index alone, no build, no window;
   its Python `KICHIKUOU_PYTHON` in local.env). `-PhoneLand` is the real pass of the phone held landscape (`--phone
   landscape --window 1808x813`, the whole window dumped at two thirds of the reference's pixels; the dump's window is
-  `--window WxH`, else 1280×800), `-PhoneUp` the phone held upright's (`--phone upright --window 610x1356`, half the
+  `--window WxH`, else 1280×800), `-PhonePortrait` the one in portrait (`--phone portrait --window 610x1356`, half the
   reference's pixels). For the owner's website, `tools/ui/gallery-deploy.ps1` copies the current pictures as
   WebP with the page into a new `screen-gallery-deploy/<time>/` at the root (git ignores it), the gallery unchanged
   (docs/ui/gallery.md, §10).

@@ -9,7 +9,7 @@ These draw it wider, in the lacquer's gold on a groove of its own, its right edg
 by the bar and a gap, each cell giving up the same width from its middle. The bar stays a sign only, as now: the finger
 scrolls the grid anywhere.
 
-The dump: the screen gallery's upright pass (tools/ui/gallery.ps1 -PhoneUp -Only treasure; docs/ui/gallery.md) from before
+The dump: the screen gallery's portrait pass (tools/ui/gallery.ps1 -PhonePortrait -Only treasure; docs/ui/gallery.md) from before
 S2 was built (2026-10-31: the thin bar at the screen's edge, which track_rows finds). Then,
 from the repository's root (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_scroll_bar.py <gallery dir> <out dir> < /dev/null
@@ -55,7 +55,7 @@ def mm(px):
 
 
 def dump(name):
-    return Image.open(os.path.join(GALLERY, 'phone-upright', 'current', name + '.png')).convert('RGB')
+    return Image.open(os.path.join(GALLERY, 'phone-portrait', 'current', name + '.png')).convert('RGB')
 
 
 def track_rows(small):

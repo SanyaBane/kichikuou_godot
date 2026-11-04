@@ -2,7 +2,7 @@
 held in landscape with both hands, and the thumbs should not have to reach up; docs/ui/touch.md, "The battle within the
 thumbs' reach"), drawn over the screen gallery's dumps of round 1's first turn (Rance's, the target Ex).
 
-The dumps: tools/ui/gallery.ps1 -Touch (docs/ui/gallery.md), its entries battle-turn (both passes) and retreat. Then, from
+The dumps: tools/ui/gallery.ps1 -Tablet (docs/ui/gallery.md), its entries battle-turn (both passes) and retreat. Then, from
 the repository's root (Pillow; godot/fonts):
   python -I tools/ui/mock_battle_low.py <gallery dir> <out dir> < /dev/null
 The images hold the units' portraits: keep <out dir> outside the repository.
@@ -194,7 +194,7 @@ def gold_rule(f, y):
 # ------------------------------------------------------------------------------------------------- the layouts
 def layout_a(retreat=False):
     """A: the scene as now, full width; the rails moved down beside the cards, the board between them narrower."""
-    pc, touch = load('lacquer', 'current', 'battle-turn.png'), load('touch', 'current', 'battle-turn.png')
+    pc, touch = load('pc', 'current', 'battle-turn.png'), load('tablet', 'current', 'battle-turn.png')
     f = Frame()
     f.put(pc, (0, 0, 1280, 414), (0, 0))
     f.put(touch, BOARD_SRC, (0, 414), (1280, 386), blur=6, dim=0.35)       # the stones behind, as the board's own
@@ -246,7 +246,7 @@ def layout_a(retreat=False):
 
 def layout_b():
     """B: the scene 80% as large, the board raised under it, a bar along the screen's foot with a group at each thumb."""
-    pc, touch = load('lacquer', 'current', 'battle-turn.png'), load('touch', 'current', 'battle-turn.png')
+    pc, touch = load('pc', 'current', 'battle-turn.png'), load('tablet', 'current', 'battle-turn.png')
     f = Frame()
     sh = 322
     f.put(pc, SCENE_SRC, (0, 0), (1280, sh), blur=10, dim=0.3)                # the sides: the scene blurred
@@ -273,7 +273,7 @@ def layout_b():
 
 def layout_c():
     """C: the halves swapped — the cards on top, the scene with today's rails under them."""
-    touch = load('touch', 'current', 'battle-turn.png')
+    touch = load('tablet', 'current', 'battle-turn.png')
     f = Frame()
     f.put(touch, BOARD_SRC, (0, 0))
     gold_rule(f, 388)

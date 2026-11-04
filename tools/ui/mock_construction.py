@@ -7,7 +7,7 @@ CommandMenuView draw them, the Construction tag in the new state. The building i
 Academy (16 weeks), 5 weeks left.
 
   powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 -Only command-menu
-  python -I tools/ui/mock_construction.py screen-gallery/lacquer/current <out dir> < /dev/null
+  python -I tools/ui/mock_construction.py screen-gallery/pc/current <out dir> < /dev/null
 
 Keep <out dir> outside the repository. Variant A: the tag half-lit (its colour halfway to the spent grey, a dim gold
 rim) with the weeks left on a chip. Variant B: the tag spent-grey with a gold bar along its foot (weeks built of the

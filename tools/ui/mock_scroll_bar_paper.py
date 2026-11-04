@@ -11,7 +11,7 @@ and shape over the paper in three inks:
      chosen tab's top, the seals) with a lighter edge — the agent's recommendation;
   PC brown ink: the same groove, the thumb in the quiet ink (the ledger's bars now) with a grey edge.
 
-The dumps: the screen gallery's upright pass (tools/ui/gallery.ps1 -PhoneUp; docs/ui/gallery.md): message-log (scrolled
+The dumps: the screen gallery's portrait pass (tools/ui/gallery.ps1 -PhonePortrait; docs/ui/gallery.md): message-log (scrolled
 to its foot), options-display (the one tab that scrolls on the reference phone, at its top) and deployment (the week-18
 save's ledger, scrolled neither way: its rows a little past the foot, its columns past the right). Then, from the
 repository's root (Pillow and numpy; godot/fonts):
@@ -64,7 +64,7 @@ def mm(px):
 
 
 def dump(name):
-    small = Image.open(os.path.join(GALLERY, 'phone-upright', 'current', name + '.png')).convert('RGB')
+    small = Image.open(os.path.join(GALLERY, 'phone-portrait', 'current', name + '.png')).convert('RGB')
     return small.resize(SIZE, Image.LANCZOS)
 
 

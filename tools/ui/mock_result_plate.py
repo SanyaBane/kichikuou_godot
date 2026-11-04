@@ -3,7 +3,7 @@
 The plate (godot/Strategy/OrderResultPlate.cs, the owner's R4/R5 of docs/ui/subordinates.md, §6) is the PC's 780×150
 scaled to the room's width: 230 reference pixels high, its lines 1.1-2.4 mm. These redraw it at the phone's type.
 
-The dumps: the screen gallery's upright pass (tools/ui/gallery.ps1 -PhoneUp -Only subordinates,subordinates-result;
+The dumps: the screen gallery's portrait pass (tools/ui/gallery.ps1 -PhonePortrait -Only subordinates,subordinates-result;
 docs/ui/gallery.md). Then, from the repository's root (Pillow and numpy; godot/fonts):
   python -I tools/ui/mock_result_plate.py <gallery dir> <extract dir> <out dir> < /dev/null
 <extract dir> is KICHIKUOU_EXTRACT_DIR (cg_png: Haurein's face). Keep <out dir> outside the repository: the dumps hold
@@ -26,7 +26,7 @@ from PIL import Image, ImageDraw, ImageFont
 
 GALLERY, EXTRACT, OUT = sys.argv[1:4]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-UP = os.path.join(GALLERY, 'phone-upright', 'current')
+UP = os.path.join(GALLERY, 'phone-portrait', 'current')
 os.makedirs(OUT, exist_ok=True)
 
 PW, PH = 1220, 2712                     # the Poco X6 Pro upright, reference pixels

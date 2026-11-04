@@ -659,7 +659,7 @@ internal sealed partial class OptionsView : Control
         const string adjust = "Adjust…";
         float adjustW = _gothic.GetStringSize(adjust, fontSize: 15).X;
         float textX = field.Position.X + 12, textW = field.Size.X - adjustW - 40;
-        static string Set(bool upright) => (upright ? "Upright: " : "Landscape: ") + ScreenMarginsChoice.For(upright).Words;
+        static string Set(bool upright) => (upright ? "Portrait: " : "Landscape: ") + ScreenMarginsChoice.For(upright).Words;
         bool upright = Device.HeldUpright;
         if (Device.Phone)
         {

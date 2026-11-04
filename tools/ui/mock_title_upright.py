@@ -19,8 +19,8 @@ What the title's CGs hold (ｽﾀMENU.ADV:10-14, :62-75, :805):
 
 From the repository's root (Pillow, numpy and scipy; godot/fonts):
   python -I tools/ui/mock_title_upright.py <gallery dir> <extract dir> <out dir> < /dev/null
-- <gallery dir>: the screen gallery (`screen-gallery` at the root): phone-upright/current's title and title-clears, the
-  build as it stands (tools/ui/gallery.ps1 -PhoneUp -Only title,title-clears).
+- <gallery dir>: the screen gallery (`screen-gallery` at the root): phone-portrait/current's title and title-clears, the
+  build as it stands (tools/ui/gallery.ps1 -PhonePortrait -Only title,title-clears).
 - <extract dir>: KICHIKUOU_EXTRACT_DIR — cg_png/CG0301.png, CG0302.png, CG0303.png.
 Keep <out dir> outside the repository: the sheets hold the player's CGs.
 
@@ -438,7 +438,7 @@ def pe6(buttons, name, layout):
 
 
 def gallery_dump(name):
-    return Image.open(os.path.join(GALLERY, 'phone-upright', 'current', name + '.png')).convert('RGB').resize(
+    return Image.open(os.path.join(GALLERY, 'phone-portrait', 'current', name + '.png')).convert('RGB').resize(
         (PW, PH), Image.LANCZOS)
 
 

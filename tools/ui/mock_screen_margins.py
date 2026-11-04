@@ -4,8 +4,8 @@ On Android a screen's rounded corners and a protective film whose edges are not 
 system's safe area does not report. The player sets margins from the screen's edges, upright and landscape each its own,
 and the game lays every screen out inside them as if the screen were that much smaller.
 
-The dumps: the screen gallery's phone passes (tools/ui/gallery.ps1 -PhoneLand -PhoneUp; docs/ui/gallery.md) —
-phone-landscape/current (1808×813, two thirds of the reference) and phone-upright/current (610×1356, half of it):
+The dumps: the screen gallery's phone passes (tools/ui/gallery.ps1 -PhoneLand -PhonePortrait; docs/ui/gallery.md) —
+phone-landscape/current (1808×813, two thirds of the reference) and phone-portrait/current (610×1356, half of it):
 map-markers and options-display. Then, from the repository's root (Pillow; godot/fonts):
   python -I tools/ui/mock_screen_margins.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository: the dumps hold the player's CGs.
@@ -31,7 +31,7 @@ from PIL import Image, ImageDraw, ImageFont
 GALLERY, OUT = sys.argv[1:3]
 REPO = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 LAND = os.path.join(GALLERY, 'phone-landscape', 'current')
-UP = os.path.join(GALLERY, 'phone-upright', 'current')
+UP = os.path.join(GALLERY, 'phone-portrait', 'current')
 os.makedirs(OUT, exist_ok=True)
 
 LONG, SHORT = 2712, 1220                # the reference phone's screen

@@ -9,7 +9,7 @@ A row is as tall as its taller column; the plate grows with its rows (the PC's f
 held landscape about its middle, upright up from its foot). Drawn over the gallery's dumps of the PC, the phone held
 landscape and upright.
 
-The dumps: tools/ui/gallery.ps1 -PhoneLand -PhoneUp -Only info-level-up (docs/ui/gallery.md). Then, from the
+The dumps: tools/ui/gallery.ps1 -PhoneLand -PhonePortrait -Only info-level-up (docs/ui/gallery.md). Then, from the
 repository's root (Pillow; godot/fonts):
   python -I tools/ui/mock_level_ups.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository. A plate that runs past the screen is reported.
@@ -46,7 +46,7 @@ DEVICES = {
                             height=44, line=2, blank=508, word=20, name=27, gains=23, left=20, pad=8, right=16, gap=30,
                             between=5, place='middle', whole_names=True,
                             bands=[(110, 124), (156, 166), (188, 198), (380, 405), (448, 485)]),
-    'phone-upright': dict(file='phone-upright', plate=(12, 256, 599, 870), rows=(31, 579), top=635, pitch=46, height=39, line=2,
+    'phone-portrait': dict(file='phone-portrait', plate=(12, 256, 599, 870), rows=(31, 579), top=635, pitch=46, height=39, line=2,
                           blank=626, word=15, name=20, gains=17, left=12, pad=6, right=10, gap=16, between=7, place='foot'),
 }
 

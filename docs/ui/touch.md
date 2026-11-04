@@ -453,7 +453,7 @@ The lower half alone is not quite the measure: on the 12.4" tablet a thumb reach
 round the point its hand holds the side at (about y 640), so the reachable places are the two lower corners and the
 sides; the middle of the screen's foot (x ~400-880) needs a hand let go. The mock-ups draw that reach as pink arcs.
 
-The mock-ups are `tools/ui/mock_battle_low.py`, over the screen gallery's dumps (`gallery.ps1 -Touch`; the command in
+The mock-ups are `tools/ui/mock_battle_low.py`, over the screen gallery's dumps (`gallery.ps1 -Tablet`; the command in
 its docstring); the images stay outside the repository. Round 1:
 
 - **A — the rails moved down beside the cards.** The scene as now, full width, nothing over it. The rails stand at the

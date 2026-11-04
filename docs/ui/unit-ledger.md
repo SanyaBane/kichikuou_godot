@@ -161,7 +161,7 @@ The owner (2026-10-26): on the tablet the rows of both ledgers are too small to 
 24 layout pixels, 4.9 mm on the owner's tablet (0.203 mm a pixel, docs/ui/touch.md); a finger needs 7-9 mm.
 
 **Round E** (`tools/ui/mock_unit_ledger.py`, round `e`, over the touch pass's dumps `deployment` and `subordinates`,
-`tools/ui/gallery.ps1 -Touch`): the ledger's paper drawn again as built — the game's font at 17, the headers, the
+`tools/ui/gallery.ps1 -Tablet`): the ledger's paper drawn again as built — the game's font at 17, the headers, the
 seals, Refill's chips, the 8-pixel scroll bar — with a made-up roster of 33 units, so that the rows reach the paper's
 foot and the scroll bar shows; the text as built. A grey disc 9 mm across stands for a fingertip. `E-sheet` sets the
 ten ledgers side by side.

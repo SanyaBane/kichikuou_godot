@@ -10,7 +10,7 @@ lacquer, read poorly; so three ways:
 The dumps: the screen gallery's battle lines (a window; nothing moves the pointer):
   powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 -Only battle-speech,battle-speech-enemy
 Then, from the repository's root (Pillow; the fonts of godot/fonts):
-  python -I tools/ui/mock_battle_read.py screen-gallery/lacquer/current <out dir> < /dev/null
+  python -I tools/ui/mock_battle_read.py screen-gallery/pc/current <out dir> < /dev/null
 The images hold the player's pictures: keep <out dir> outside the repository. No capture the gallery replays has a
 thought, so the thought is the player's balloon redrawn dark (SpeechBalloon's ThinkFill, ThinkEdge, ThinkInk).
 """

@@ -4,9 +4,9 @@ Dumps the screen gallery (our screens from the kept saves) and writes an index m
 
 .DESCRIPTION
 Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gallery.md) in a window for each pass
-asked for: Lacquer always, -Touch adds its own, -PhoneLand the phone held landscape (--phone landscape: the
+asked for: PC always, -Tablet the tablet held landscape (--touch), -PhoneLand the phone held landscape (--phone landscape: the
 whole window dumped at two thirds of the reference phone's 2712×1220, 1808×813, its black sides with it;
--PhoneUp the phone held upright (--phone upright: the whole window at half the reference's 1220×2712, 610×1356, as two
+-PhonePortrait the phone in portrait (--phone portrait: the whole window at half the reference's 1220×2712, 610×1356, as two
 thirds would not fit a common monitor's height; docs/ui/phone-build.md). A pass's former pictures move from
 <pass>\current to <pass>\previous first, and the gallery compares every new picture with them (manifest.json says new,
 changed or same).
@@ -23,8 +23,8 @@ inlined. -IndexOnly writes the index alone, the passes' "old" marks as the last 
 The folder is -Out, else KICHIKUOU_UI_GALLERY_DIR (its environment variable, else its line in local.env), else
 screen-gallery at the repository's root, which git ignores; one inside the repository must be ignored by git (the
 pictures hold the player's CGs). Nothing moves the system pointer; a window opens for each pass.
--Phone adds two tabs of mock-ups, not dumps: the phone held upright and held landscape as docs/ui/phone.md's chosen
-base versions, drawn by tools/ui/mock_phone.py from the touch and lacquer passes' pictures, compared with their former
+-Phone adds two tabs of mock-ups, not dumps: the phone in portrait and held landscape as docs/ui/phone.md's chosen
+base versions, drawn by tools/ui/mock_phone.py from the tablet and PC passes' pictures, compared with their former
 drawings the same way; -PhoneOnly draws those tabs and the index alone, with no build and no game pass.
 -Vfx adds the Combat VFX tab's pass (--combat-vfx: each exchange effect as a grid of its frames, docs/ui/gallery.md, §11),
 -VfxOnly dumps it alone. Only when asked for (owner, 2026-10-29: the effects hardly ever change): a run without it leaves
@@ -34,7 +34,7 @@ the tab as it was, unmarked.
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1
 
 .EXAMPLE
-powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Touch -Only treasure,treasure-replace
+powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Tablet -Only treasure,treasure-replace
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -PhoneOnly
@@ -45,14 +45,16 @@ powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -IndexOnly
 param(
     # The gallery's folder; default KICHIKUOU_UI_GALLERY_DIR, else screen-gallery at the repository's root.
     [string]$Out = '',
-    # Also dump every entry in the touch mode (--touch).
-    [switch]$Touch,
+    # Also dump every entry on the tablet (--touch); -Touch is its former name.
+    [Alias('Touch')]
+    [switch]$Tablet,
     # Also dump every entry on the phone held landscape (--phone landscape, the window 1808×813).
     [switch]$PhoneLand,
-    # Also dump every entry on the phone held upright (--phone upright, the window 610×1356).
-    [switch]$PhoneUp,
+    # Also dump every entry on the phone in portrait (--phone portrait, the window 610×1356); -PhoneUp is its former name.
+    [Alias('PhoneUp')]
+    [switch]$PhonePortrait,
     # Also draw the phone's mock-ups, not built yet (tools/ui/mock_phone.py --gallery: the owner's chosen base versions
-    # of docs/ui/phone.md, from this gallery's touch and lacquer dumps; a Python with Pillow and numpy, KICHIKUOU_PYTHON).
+    # of docs/ui/phone.md, from this gallery's tablet and PC dumps; a Python with Pillow and numpy, KICHIKUOU_PYTHON).
     [switch]$Phone,
     # Only the phone's mock-ups and the index: no build, no game pass.
     [switch]$PhoneOnly,
@@ -116,20 +118,21 @@ if (-not $NoBuild) {
 }
 
 $allPasses = @(
-    @{ Name = 'lacquer'; Title = 'Lacquer'; Args = @() },
-    @{ Name = 'touch'; Title = 'Touch (Lacquer)'; Args = @('--touch') },
+    @{ Name = 'pc'; Title = 'PC'; Args = @() },
+    @{ Name = 'tablet'; Title = 'Tablet, landscape'; Args = @('--touch'); Switch = 'Tablet' },
     @{ Name = 'phone-landscape'; Title = 'Smartphone, landscape'; Args = @('--phone', 'landscape', '--window', '1808x813');
        Held = 'landscape'; Switch = 'PhoneLand' },
-    @{ Name = 'phone-upright'; Title = 'Smartphone, upright'; Args = @('--phone', 'upright', '--window', '610x1356');
-       Held = 'upright'; Switch = 'PhoneUp' },
-    @{ Name = 'phone'; Title = 'Smartphone, upright (mock-ups)'; Mockup = $true; Held = 'upright'; Size = '1220&times;2712' },
-    @{ Name = 'phone-land'; Title = 'Smartphone, landscape (mock-ups)'; Mockup = $true; Held = 'landscape';
+    @{ Name = 'phone-portrait'; Title = 'Smartphone, portrait'; Args = @('--phone', 'portrait', '--window', '610x1356');
+       Held = 'portrait'; Switch = 'PhonePortrait' },
+    @{ Name = 'phone-portrait-mockups'; Title = 'Smartphone, portrait (mock-ups)'; Mockup = $true; Held = 'portrait';
+       Size = '1220&times;2712' },
+    @{ Name = 'phone-landscape-mockups'; Title = 'Smartphone, landscape (mock-ups)'; Mockup = $true; Held = 'landscape';
        Size = '2712&times;1220' },
     @{ Name = 'combat-vfx'; Title = 'Combat VFX'; Args = @('--combat-vfx'); Switch = 'Vfx'; OnRequest = $true })
 $passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or ($_.Name -eq 'combat-vfx' -and $Vfx) -or
     (-not $PhoneOnly -and -not $VfxOnly -and -not $IndexOnly -and
-    ($_.Name -eq 'lacquer' -or ($_.Name -eq 'touch' -and $Touch) -or
-     ($_.Name -eq 'phone-landscape' -and $PhoneLand) -or ($_.Name -eq 'phone-upright' -and $PhoneUp))) })
+    ($_.Name -eq 'pc' -or ($_.Name -eq 'tablet' -and $Tablet) -or
+     ($_.Name -eq 'phone-landscape' -and $PhoneLand) -or ($_.Name -eq 'phone-portrait' -and $PhonePortrait))) })
 
 $failed = $false
 foreach ($pass in $passes) {
@@ -174,7 +177,7 @@ if ($Phone) {
     $python = Get-LocalPath 'KICHIKUOU_PYTHON'
     if (-not $python) { $python = 'python' }
     $extract = Get-LocalPath 'KICHIKUOU_EXTRACT_DIR'
-    foreach ($tab in @('phone', 'phone-land')) {
+    foreach ($tab in @('phone-portrait-mockups', 'phone-landscape-mockups')) {
         $folder = Join-Path $Out $tab
         $current = Join-Path $folder 'current'
         $previous = Join-Path $folder 'previous'
@@ -188,7 +191,7 @@ if ($Phone) {
     Write-Host 'The phone mock-ups ...'
     & $python -I (Join-Path $root 'tools\ui\mock_phone.py') --gallery $Out $extract
     if ($LASTEXITCODE -ne 0) {
-        Write-Warning "The phone mock-ups ended with exit code $LASTEXITCODE (the touch and lacquer passes dumped? Pillow and numpy in $python?)."
+        Write-Warning "The phone mock-ups ended with exit code $LASTEXITCODE (the tablet and PC passes dumped? Pillow and numpy in $python?)."
         $failed = $true
     }
 }
@@ -233,7 +236,7 @@ foreach ($pass in $allPasses) {
     [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`" data-title=`"$(Html $pass.Title)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
         "font $(Html $manifest.font) &middot; $($entries.Count) entries, $($changed.Count) changed or new</small></h2>")
     if ($pass.Mockup) {
-        [void]$body.Append("<p class=mockup><b>Not built yet.</b> Mock-ups of the phone held $($pass.Held) (Xiaomi Poco X6 Pro, " +
+        [void]$body.Append("<p class=mockup><b>Not built yet.</b> Mock-ups of the phone $(if ($pass.Held -eq 'portrait') { 'in portrait' } else { 'held landscape' }) (Xiaomi Poco X6 Pro, " +
             "$($pass.Size)): the owner&rsquo;s chosen base versions of <code>docs/ui/phone.md</code>, drawn by " +
             '<code>tools/ui/mock_phone.py</code> over this gallery&rsquo;s dumps.</p>')
     }
@@ -242,8 +245,9 @@ foreach ($pass in $allPasses) {
             'of its frames over the battlefield, the armies of <code>docs/ui/gallery.md</code>, &sect;11.</p>')
     }
     if ($isStale) {
+        $again = if ($pass.Mockup) { 'gallery.ps1 -Phone' } elseif ($pass.Switch) { "gallery.ps1 -$($pass.Switch)" } else { 'gallery.ps1' }
         [void]$body.Append("<p class=stale>Not dumped by the last run: these pictures are from $(Html $manifest.written) and may be " +
-            "out of date (<code>gallery.ps1 -$(if ($pass.Mockup) { 'Phone' } elseif ($pass.Switch) { $pass.Switch } else { $pass.Name.Substring(0, 1).ToUpper() + $pass.Name.Substring(1) })</code> dumps them again).</p>")
+            "out of date (<code>$again</code> dumps them again).</p>")
     }
     # The sections in the order they first come, each entry in its own place at full size whatever changed (the owner,
     # 2026-10-26): a changed one's badge opens the former picture, a new one's is a badge alone. The figure's data are

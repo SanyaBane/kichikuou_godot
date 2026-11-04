@@ -1,11 +1,11 @@
-"""Mock-ups of more room between the touch mode's Skip and Log (owner, 2026-10-25: in the gallery's Touch tab the two
+"""Mock-ups of more room between the touch mode's Skip and Log (owner, 2026-10-25: in the gallery's Tablet tab the two
 cells sit too close together; docs/ui/touch.md, "The dialogue buttons, round 2"), drawn over the screen gallery's dumps
-(docs/ui/gallery.md): the PC pass's windows, which have no drawer, and the touch pass's 131 with its dock.
+(docs/ui/gallery.md): the PC pass's windows, which have no drawer, and the tablet pass's 131 with its dock.
 
 Every variant keeps Skip where it is (its cell 50x84 at y 592, the same over every window and on 131's dock, the owner's
 B1/B2) and grows the drawer downwards, so the room never moves Skip and still fits 131's dock (its frame y 588-790).
 
-  powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 -Touch
+  powershell -ExecutionPolicy Bypass -File tools/ui/gallery.ps1 -Tablet
   python -I tools/ui/mock_drawer_gap.py <gallery dir> <out dir> < /dev/null
 
 (Pillow; godot/fonts.) <gallery dir> is screen-gallery at the root unless KICHIKUOU_UI_GALLERY_DIR says otherwise; keep
@@ -163,8 +163,8 @@ def draw_variant(f, cell_h, gap, separate, docked):
 
 
 def main():
-    pc = os.path.join(GALLERY, 'lacquer', 'current')
-    touch = os.path.join(GALLERY, 'touch', 'current')
+    pc = os.path.join(GALLERY, 'pc', 'current')
+    touch = os.path.join(GALLERY, 'tablet', 'current')
     frames = []
     for name, cell_h, gap, separate, lines in VARIANTS:
         for docked in (False, True):

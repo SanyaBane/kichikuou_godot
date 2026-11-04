@@ -3,7 +3,7 @@ card of the player's army offers Auto-Atk or Auto-Def in the room under its stat
 orders on the cards"). Today the touch mode reaches them only by a long press (BattleCommands.ContextMenu(own): Manual,
 Auto-Atk, Auto-Def, FIGT_SEL's 50-52).
 
-The dump: tools/ui/gallery.ps1 -Touch -Only battle-turn (docs/ui/gallery.md). Then, from the repository's root (Pillow;
+The dump: tools/ui/gallery.ps1 -Tablet -Only battle-turn (docs/ui/gallery.md). Then, from the repository's root (Pillow;
 godot/fonts; the parts are mock_touch_panel.py's):
   python -I tools/ui/mock_card_orders.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository.
@@ -84,7 +84,7 @@ def strip_b(f, c, order):
 
 
 def board(strip, rick_order):
-    f = Frame(load('touch', 'current', 'battle-turn.png'))
+    f = Frame(load('tablet', 'current', 'battle-turn.png'))
     state_line(f, RANCE)
     state_line(f, RICK)
     strip(f, RICK, rick_order)

@@ -2,13 +2,13 @@
 screen's lower left and right, as the battle's rails; docs/ui/touch.md, "The command panel within the thumbs' reach"),
 drawn over the screen gallery's dumps of the week-18 COMMAND save with the Military Academy under way, 5 weeks left.
 
-The dumps: tools/ui/gallery.ps1 -Touch -Only map,command-menu-building (docs/ui/gallery.md). Then, from the repository's
+The dumps: tools/ui/gallery.ps1 -Tablet -Only map,command-menu-building (docs/ui/gallery.md). Then, from the repository's
 root (Pillow; godot/fonts):
   python -I tools/ui/mock_touch_panel.py <gallery dir> <out dir> < /dev/null
 Keep <out dir> outside the repository.
 
 The map is the gallery's `map` (no plates: GameScreen.UpdateMapMarkers hides them while a menu is open), the status strip
-the touch pass's command-menu-building's.
+the tablet pass's command-menu-building's.
 
 Three layouts: A two rails at the sides' lower halves (the battle's), B a bar along the screen's foot, C a fan at each
 lower corner, along the thumb's arc. The pink arcs are the thumbs' reach on the owner's tablet (Galaxy Tab S7 FE, 0.203 mm
@@ -204,8 +204,8 @@ def reach(f):
 
 
 def base():
-    m = load('touch', 'current', 'map.png')
-    strip = load('touch', 'current', 'command-menu-building.png').crop((0, 0, W, 52))
+    m = load('tablet', 'current', 'map.png')
+    strip = load('tablet', 'current', 'command-menu-building.png').crop((0, 0, W, 52))
     m.paste(strip, (0, 0))
     return m
 
