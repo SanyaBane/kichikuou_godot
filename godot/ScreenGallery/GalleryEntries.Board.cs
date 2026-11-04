@@ -54,8 +54,8 @@ internal static partial class GalleryEntries
                 if (board.Commands.ItemCentre(1) is { } second)
                     board.Commands.Move(second);
             }));
-        yield return new("order-toggles", Battle, "Battle: the touch mode's order toggles", null,
-            CaptureNote + " Made up: a unit not acting set to Auto-Def; in the touch mode its Auto-Atk toggle tapped (its choice checked) and held.",
+        yield return new("order-toggles", Battle, "Battle: the order toggles", null,
+            CaptureNote + " Made up: a unit not acting set to Auto-Def; its Auto-Atk toggle clicked or tapped (its choice checked) and held.",
             g => Board(g, Turn, then: (p, m, board) =>
             {
                 var s = p.State!;
@@ -66,14 +66,12 @@ internal static partial class GalleryEntries
                     throw new InvalidOperationException("The turn's party has one unit.");
                 SetOrder(s, other.Slot, StandingOrder.AutoDefend);
                 board.Commands.Begin(model, s, p.Battle.Text, TouchMode.On ? TouchTarget(s, model) : null);
-                if (!TouchMode.On)
-                    return;
                 var attack = model.ContextMenu(other, StandingOrder.AutoDefend).First(c => c.Choice.Command == FigtSelCommand.OrderAttack).Choice;
                 var at = board.Commands.RailCentre(attack) ?? throw new InvalidOperationException($"No Auto-Atk toggle on {other}'s card.");
                 Click(board.Commands, at, right: false);
                 if (board.Commands.Result != attack)
                     throw new InvalidOperationException($"The Auto-Atk toggle answered {board.Commands.Result}, not {attack}.");
-                board.Commands.Begin(model, s, p.Battle.Text, TouchTarget(s, model));
+                board.Commands.Begin(model, s, p.Battle.Text, TouchMode.On ? TouchTarget(s, model) : null);
                 board.Commands.Move(at);
                 board.Commands.Press(false, at);
             }));

@@ -681,6 +681,13 @@ floated). Built, in the touch mode only:
   `order-toggles` (made up: Auto-Def lit, Auto-Atk held; the tap's choice checked), `exchange-counters` (Rance's card
   with the pill, no toggles). Not yet on the tablet, nor in unattended play.
 
+**On the acting card and on the PC too** (owner, 2026-11-04): the toggles stand on every own card, the acting one
+included, in every layout (`BattleBoardView.ShowsOrders`). The acting card's give `FIGT_SEL`'s Auto-Atk and Auto-Def
+(8/9), the rail's and its menu's: they hand its turn to the automaton, as an order for the acting unit does in the script
+(`FIGT.ADV:776-833`). On the PC a toggle lights under the pointer and is chosen at a left click's release over it (the
+right click's menu stays); the state line has no order word on any own card. Looked at in the gallery's PC and upright
+passes (`order-toggles`).
+
 ## The dungeon's floor ladder within the thumb's reach (owner, 2026-10-26)
 
 The ladder (docs/ui/dungeon-menu.md) stood right of the dungeon's picture at the screen's middle height. Mock-up round

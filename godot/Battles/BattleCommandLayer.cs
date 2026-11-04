@@ -164,6 +164,11 @@ internal sealed partial class BattleCommandLayer : Control
         (_forecasts, _forecastsDrawn) = (null, -1);
         if (Touch)
             BeginTouch(target);
+        else
+        {
+            _toggles = [.. OrderToggleChoices()];                   // the PC's order toggles, hovered and clicked
+            (_hotToggle, _pressedToggle) = (-1, -1);
+        }
         StartForecasts();
         QueueRedraw();
     }
@@ -226,9 +231,9 @@ internal sealed partial class BattleCommandLayer : Control
         _scale = scale;
         _phone = phone;
         _height = height;
-        if (turned && _commands is not null && Touch)
+        if (turned && _commands is not null)
         {
-            if (_menu is not null)
+            if (_menu is not null && Touch)
                 CloseMenu();                                        // a turn: the cards' menu stood at the old layout's point
             _toggles = [.. OrderToggleChoices()];                   // the order toggles where the board draws them now
             (_hotToggle, _pressedToggle) = (-1, -1);
@@ -254,6 +259,8 @@ internal sealed partial class BattleCommandLayer : Control
             SetHotToggle(_pressedToggle >= 0 && ToggleAt(p) == _pressedToggle ? _pressedToggle : -1);
             return;                                                 // no hover: the target is a tap's
         }
+        int toggle = ToggleAt(p);                                   // the PC's toggles light under the pointer, the pressed one alone
+        SetHotToggle(_pressedToggle < 0 || toggle == _pressedToggle ? toggle : -1);
         var place = _hovered is { Side: BattleSide.Enemy } target && BannerAt(target, p) >= 0 ? target : CardAt(p);
         if (place != _hovered)
         {
@@ -281,7 +288,7 @@ internal sealed partial class BattleCommandLayer : Control
     {
         if (_commands is null)
             return;
-        _pressedItem = -1;
+        (_pressedItem, _pressedToggle) = (-1, -1);
         if (_menu is { } menu)
         {
             int item = ItemAt(menu, p);
@@ -308,6 +315,8 @@ internal sealed partial class BattleCommandLayer : Control
         {
             if (_hovered is { } target && BannerAt(target, p) is var b and >= 0)
                 Result = _banners[b].Choice;
+            else if ((_pressedToggle = ToggleAt(p)) >= 0)
+                SetHotToggle(_pressedToggle);                       // an order toggle: chosen at its release there
             return;
         }
         var place = _hovered is { Side: BattleSide.Enemy } t && BannerAt(t, p) >= 0 ? t : CardAt(p);
@@ -329,6 +338,10 @@ internal sealed partial class BattleCommandLayer : Control
         if (_menu is { } menu && _pressedItem >= 0 && ItemAt(menu, p) == _pressedItem)
             Result = menu.Items[_pressedItem].Choice;
         _pressedItem = -1;
+        int toggle = _pressedToggle;
+        _pressedToggle = -1;
+        if (_menu is null && toggle >= 0 && ToggleAt(p) == toggle)
+            Result = _toggles[toggle].Choice;
     }
 
     /// <summary>Esc: closes the open menu (true), else does nothing (false).</summary>
@@ -454,12 +467,17 @@ internal sealed partial class BattleCommandLayer : Control
             if (_hotToggle >= 0 && _menu is null)
                 DrawHeldToggle(_toggles[_hotToggle].Rect);
         }
-        else if (_hovered is { } target && _menu is null)
+        else if (_menu is null)
         {
-            if (target.Side == BattleSide.Enemy && _banners.Count > 0)
-                DrawTargetFrame(_cardArea(target));
-            for (int i = 0; i < _banners.Count; i++)
-                DrawBanner(BannerRect(target, i), _banners[i].Text, i == _hotBanner, font, DamageOf(_banners[i].Choice));
+            if (_hovered is { } target)
+            {
+                if (target.Side == BattleSide.Enemy && _banners.Count > 0)
+                    DrawTargetFrame(_cardArea(target));
+                for (int i = 0; i < _banners.Count; i++)
+                    DrawBanner(BannerRect(target, i), _banners[i].Text, i == _hotBanner, font, DamageOf(_banners[i].Choice));
+            }
+            if (_hotToggle >= 0)
+                DrawHeldToggle(_toggles[_hotToggle].Rect);
         }
         if (_menu is { } menu)
             DrawMenu(menu, font);

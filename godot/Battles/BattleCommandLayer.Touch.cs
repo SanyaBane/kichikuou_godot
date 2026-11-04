@@ -60,9 +60,10 @@ internal sealed partial class BattleCommandLayer
     private IReadOnlyList<(string Text, FigtSelChoice Choice)> _railCommands = [];
     private (bool Right, int Index) _hotRail = (false, -1), _pressedRail = (false, -1);
 
-    // The order toggles on the own cards but the acting one (BattleBoardView.OrderToggleArea, which draws them; owner's B,
-    // 2026-10-25): each gives its order, the lit one Manual back — the choices the card's long press offers (FIGT_SEL
-    // 50-52), chosen at the release over the toggle as a rail button.
+    // The order toggles on the own cards (BattleBoardView.OrderToggleArea, which draws them; owner's B, 2026-10-25; on the
+    // PC and the acting card too, owner 2026-11-04): each gives its order, the lit one Manual back — the choices the card's
+    // long press or right click offers (FIGT_SEL 50-52; the acting card's Auto-Atk and Auto-Def, 8/9) —, chosen at the
+    // release over the toggle as a rail button.
     private IReadOnlyList<(Rect2 Rect, FigtSelChoice Choice)> _toggles = [];
     private int _hotToggle = -1, _pressedToggle = -1;
 
@@ -103,14 +104,15 @@ internal sealed partial class BattleCommandLayer
     {
         foreach (var place in SlotSnapshot.Places)
         {
-            if (place.Side != BattleSide.Player || place == _commands!.Acting || BattleBoard.Card(_state!, place) is not { } card
-                || !BattleBoardView.ShowsOrders(place, card, acting: false))
+            if (place.Side != BattleSide.Player || BattleBoard.Card(_state!, place) is not { } card || !BattleBoardView.ShowsOrders(place, card))
                 continue;
+            bool acting = place == _commands!.Acting;
             var items = _commands.ContextMenu(place, card.Order);
             for (int i = 0; i < BattleBoardView.OrderToggles.Length; i++)
             {
                 var order = BattleBoardView.OrderToggles[i].Order;
-                var gives = card.Order == order ? FigtSelCommand.OrderManual
+                var gives = acting ? (order == StandingOrder.AutoAttack ? FigtSelCommand.AutoAttack : FigtSelCommand.AutoDefend)
+                    : card.Order == order ? FigtSelCommand.OrderManual
                     : order == StandingOrder.AutoAttack ? FigtSelCommand.OrderAttack : FigtSelCommand.OrderDefend;
                 if (items.FirstOrDefault(c => c.Choice.Command == gives) is { } item)
                     yield return (BattleBoardView.OrderToggleArea(place, i), item.Choice);

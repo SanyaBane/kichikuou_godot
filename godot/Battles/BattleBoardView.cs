@@ -98,16 +98,17 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
         : Phone ? R(PhoneBattle.Card(ColumnOf(place), (place.Slot - 1) % 2))
         : new(Column(place), CardRows[(place.Slot - 1) % 2], CardSize.X, CardSize.Y);
 
-    // The touch mode's standing orders at an own card's foot (owner's B, 2026-10-25; docs/ui/touch.md, "The standing orders
-    // on the cards"): Auto-Atk and Auto-Def side by side across the text column, under the state line; the order's lit,
-    // Manual when neither is. Not on the acting card, whose rail's Auto-Atk and Auto-Def hand its turn over instead.
+    // The standing orders at an own card's foot (owner's B, 2026-10-25; docs/ui/touch.md, "The standing orders on the
+    // cards"; on the PC and on the acting card too, owner 2026-11-04): Auto-Atk and Auto-Def side by side across the text
+    // column, under the state line; the order's lit, Manual when neither is. The acting card's hand its turn over, as its
+    // rail's (FIGT_SEL 8/9: the script turns an order for the acting unit into these, FIGT.ADV:776-833).
     internal static readonly (StandingOrder Order, string Text)[] OrderToggles = [(StandingOrder.AutoAttack, "Auto-Atk"), (StandingOrder.AutoDefend, "Auto-Def")];
     private const float OrderHeight = 32, OrderBottom = 8, OrderGap = 5;
     private static float OrderText => CardType(PhoneBattle.StatsText, PhoneBattleUpright.TogglesText) ?? 14;
 
-    /// <summary>Whether <paramref name="card"/> at <paramref name="place"/> shows the order toggles (the touch mode's own cards but the acting one).</summary>
-    internal static bool ShowsOrders(BattlePlace place, BattleCard card, bool acting) =>
-        Narrow && place.Side == BattleSide.Player && !acting && card.Order is StandingOrder.Manual or StandingOrder.AutoAttack or StandingOrder.AutoDefend;
+    /// <summary>Whether <paramref name="card"/> at <paramref name="place"/> shows the order toggles (every own card).</summary>
+    internal static bool ShowsOrders(BattlePlace place, BattleCard card) =>
+        place.Side == BattleSide.Player && card.Order is StandingOrder.Manual or StandingOrder.AutoAttack or StandingOrder.AutoDefend;
 
     /// <summary>Order toggle <paramref name="toggle"/> (<see cref="OrderToggles"/>) on <paramref name="place"/>'s card, in layout pixels.</summary>
     internal static Rect2 OrderToggleArea(BattlePlace place, int toggle)
@@ -1122,7 +1123,7 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
                 child.QueueFree();
             }
             panel.AddChild(card is null ? new Control { MouseFilter = MouseFilterEnum.Ignore } : Contents(card, acting, pad));
-            if (card is not null && ShowsOrders(place, card, acting))
+            if (card is not null && ShowsOrders(place, card))
                 panel.AddChild(OrderStrip(place, card));                    // over the contents, the panel's size
         }
         if (actingPlace != _actingPlace)
@@ -1517,8 +1518,8 @@ internal sealed partial class BattleBoardView : Control, IUiPaletteUser
             if (Phone || Upright)                                           // as large as its widest figures let it be (LB2's fit)
                 label.AddThemeFontSizeOverride("font_size", Fitted(Widest(card, gauge), (int)Math.Round(TextSize * _scale), TextRoom(pad)));
         }
-        // The touch mode's own cards show their order on the toggles (OrderStrip), the acting one none: it is choosing.
-        string order = Narrow && card.Place.Side == BattleSide.Player ? "" : card.Order switch
+        // The own cards show their order on the toggles (OrderStrip).
+        string order = card.Place.Side == BattleSide.Player ? "" : card.Order switch
         {
             StandingOrder.AutoAttack => "Auto-Atk",
             StandingOrder.AutoDefend => "Auto-Def",
