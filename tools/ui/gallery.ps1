@@ -4,7 +4,7 @@ Dumps the screen gallery (our screens from the kept saves) and writes an index m
 
 .DESCRIPTION
 Builds godot/Kichikuou.csproj, then runs the game's screen gallery (docs/ui/gallery.md) in a window for each pass
-asked for: Lacquer always, -Steel and -Touch add theirs, -PhoneLand the phone held landscape (--phone landscape: the
+asked for: Lacquer always, -Touch adds its own, -PhoneLand the phone held landscape (--phone landscape: the
 whole window dumped at two thirds of the reference phone's 2712×1220, 1808×813, its black sides with it;
 -PhoneUp the phone held upright (--phone upright: the whole window at half the reference's 1220×2712, 610×1356, as two
 thirds would not fit a common monitor's height; docs/ui/phone-build.md). A pass's former pictures move from
@@ -34,7 +34,7 @@ the tab as it was, unmarked.
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1
 
 .EXAMPLE
-powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Steel -Only treasure,treasure-replace
+powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -Touch -Only treasure,treasure-replace
 
 .EXAMPLE
 powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -PhoneOnly
@@ -45,8 +45,6 @@ powershell -ExecutionPolicy Bypass -File tools\ui\gallery.ps1 -IndexOnly
 param(
     # The gallery's folder; default KICHIKUOU_UI_GALLERY_DIR, else screen-gallery at the repository's root.
     [string]$Out = '',
-    # Also dump every entry in the Steel palette.
-    [switch]$Steel,
     # Also dump every entry in the touch mode (--touch).
     [switch]$Touch,
     # Also dump every entry on the phone held landscape (--phone landscape, the window 1808×813).
@@ -119,7 +117,6 @@ if (-not $NoBuild) {
 
 $allPasses = @(
     @{ Name = 'lacquer'; Title = 'Lacquer'; Args = @() },
-    @{ Name = 'steel'; Title = 'Steel'; Args = @('--palette', 'steel') },
     @{ Name = 'touch'; Title = 'Touch (Lacquer)'; Args = @('--touch') },
     @{ Name = 'phone-landscape'; Title = 'Smartphone, landscape'; Args = @('--phone', 'landscape', '--window', '1808x813');
        Held = 'landscape'; Switch = 'PhoneLand' },
@@ -131,7 +128,7 @@ $allPasses = @(
     @{ Name = 'combat-vfx'; Title = 'Combat VFX'; Args = @('--combat-vfx'); Switch = 'Vfx'; OnRequest = $true })
 $passes = @($allPasses | Where-Object { ($_.Mockup -and $Phone) -or ($_.Name -eq 'combat-vfx' -and $Vfx) -or
     (-not $PhoneOnly -and -not $VfxOnly -and -not $IndexOnly -and
-    ($_.Name -eq 'lacquer' -or ($_.Name -eq 'steel' -and $Steel) -or ($_.Name -eq 'touch' -and $Touch) -or
+    ($_.Name -eq 'lacquer' -or ($_.Name -eq 'touch' -and $Touch) -or
      ($_.Name -eq 'phone-landscape' -and $PhoneLand) -or ($_.Name -eq 'phone-upright' -and $PhoneUp))) })
 
 $failed = $false

@@ -133,10 +133,10 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   rises into place waits `Settle` seconds of frames first (the exchange's counters). While it dumps, the window takes
   no input (`GuiDisableInput`; the entries' clicks go to the views directly): the real pointer over it dropped the
   hover of `treasure-hover` and `treasure-items` once (2026-10-25).
-- `tools/ui/gallery.ps1 [-Steel] [-Touch] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild] [-IndexOnly]` builds the game; for each pass
-  (Lacquer; `-Steel`, `-Touch` add theirs; `-Vfx` the Combat VFX tab, only when asked for, §11) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
+- `tools/ui/gallery.ps1 [-Touch] [-Vfx | -VfxOnly] [-Only id,…] [-Out dir] [-NoBuild] [-IndexOnly]` builds the game; for each pass
+  (Lacquer; `-Touch` adds its own — the Steel pass is gone, owner, 2026-11-04; `-Vfx` the Combat VFX tab, only when asked for, §11) it moves `<dir>\<pass>\current` to `previous`, dumps into `current`
   compared with it, and writes `<dir>\index.html`: a tab for each pass dumped so far, one shown at a time (the owner,
-  2026-10-25; `#steel` or an entry's `#steel-treasure` opens its pass), a pass not dumped this time marked old on its
+  2026-10-25; `#touch` or an entry's `#touch-treasure` opens its pass), a pass not dumped this time marked old on its
   tab and above its pictures; in a pass the sections, each entry in its own place at full size whatever changed (the
   owner, 2026-10-26: a screen should be where it always is, not jump to the top after a commit) — a changed one carries
   a small badge with the pixels that differ, which opens the former picture, a new one a badge alone (until then the
@@ -396,7 +396,7 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
 ## 8. Questions for the owner
 
 - ~~Dump both palettes and the touch mode by default, or Lacquer alone with the others on request?~~ Lacquer alone,
-  `-Steel` and `-Touch` on request (owner, 2026-10-25; as built).
+  `-Steel` and `-Touch` on request (owner, 2026-10-25; as built); the Steel pass dropped (owner, 2026-11-04).
 - ~~The gallery in the release build's Debug menu too, or development runs only?~~ Wherever the Debug menu is, the
   release included (owner, 2026-10-25; as built).
 - ~~The scene menu over a 111 speech covering its question (`scene-menu-top`)?~~ The entry removed (owner,
