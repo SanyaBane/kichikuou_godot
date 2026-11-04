@@ -151,21 +151,44 @@ public static class PhoneLedgerUpright
     /// A ledger's row (8.5 mm) and its type: № (2.6 mm), the name (2.8 mm, smaller when it would not fit), the type under it
     /// (1.9 mm), the scrolled figures (2.6 mm), the headings (1.6 mm); the room between the columns.
     /// </summary>
-    public const float Row = 150, NumberText = 46, NameText = 50, TypeText = 34, Text = 46, HeadText = 28, ColumnGap = 24;
+    public const float NumberText = 46, TypeText = 34, Text = 46, HeadText = 28, ColumnGap = 24;
 
     /// <summary>
     /// The fixed part's places from the paper's left that stay: the party's seal (its left and size), the chosen row's bar
-    /// (its width; no diamond, the row's tint tells it — owner, 2026-10-31), the unit's face's side (6.2 mm, in the row's
-    /// middle), the name's and the type's middles, the bars of the troops and of the commander's HP under them both (their
-    /// tops and height, from the name's left to the name's right margin; no figures; the owner's H4, docs/ui/phone.md
-    /// §37-§38); in the header the party's dot (its middle). The rest moves with № (<see cref="Places"/>).
+    /// (its width; no diamond, the row's tint tells it — owner, 2026-10-31), the bars' height (no figures; the owner's H4,
+    /// docs/ui/phone.md §37-§38), the name's right margin; in the header the party's dot (its middle). The rest moves with №
+    /// (<see cref="Places"/>) or is the row's (<see cref="RowLayout"/>).
     /// </summary>
-    public const float SealX = 12, Seal = 60, ChosenBar = 8, Face = 108, NameMiddle = 44, TypeMiddle = 92, BarTop = 118,
-        HpTop = 130, BarHeight = 8, NameRight = 12, DotX = 42;
+    public const float SealX = 12, Seal = 60, ChosenBar = 8, BarHeight = 8, NameRight = 12, DotX = 42;
+
+    /// <summary>
+    /// A row's layout from its top: its height, the name's type and middle, the type's middle, the rows' middle (0: no
+    /// line), the face's top and side (the face at №'s right), the tops of the troops' bar and of the commander's HP bar
+    /// under the text (from the name's left to the name's right margin).
+    /// </summary>
+    public sealed record RowLayout(float Row, float NameText, float NameMiddle, float TypeMiddle, float RowsMiddle, float FaceTop,
+        float Face, float BarTop, float HpTop);
+
+    /// <summary>
+    /// Subordinates' rows (8.5 mm): the name (2.8 mm, smaller when it would not fit), the type under it (1.9 mm), the face
+    /// (6.2 mm) in the row's middle, the bars under the type.
+    /// </summary>
+    public static RowLayout SubordinatesRows { get; } = new(150, 50, 44, 92, 0, 21, 108, 118, 130);
+
+    /// <summary>
+    /// The deployment table's rows (owner, 2026-11-04, mock-up A2 — <c>tools/ui/mock_rows_under_type.py</c>): the rows a
+    /// unit fights from (the Rows column, out of the scrolled part) under the type at its size and from its left, the name
+    /// 12 % smaller, the face from the name's top to the HP bar's foot, the row a line taller (9.4 mm).
+    /// </summary>
+    public static RowLayout DeploymentRows { get; } = new(166, 44, 38, 78, 112, 16, 136, 132, 144);
+
+    /// <summary>The rows' layout of the deployment table (<paramref name="deployment"/>) or of Subordinates.</summary>
+    public static RowLayout Rows(bool deployment) => deployment ? DeploymentRows : SubordinatesRows;
 
     /// <summary>
     /// № as wide as two figures (fewer than a hundred units; half-width figures, an em of <see cref="NumberText"/>), this
-    /// far right of the seal; the face this far right of №, the name this far right of the face, the type 2 further; the
+    /// far right of the seal; the face this far right of №, the name this far right of the face, the type and the rows from
+    /// the name's left (owner, 2026-11-04: they were 2 further and stood out of line); the
     /// room from the name's left to the fixed part's right (the name's 226 and its margin); the header's № 4 left of the
     /// figures'.
     /// </summary>
@@ -180,13 +203,14 @@ public static class PhoneLedgerUpright
 
     /// <summary>
     /// The fixed part's places (owner, 2026-10-31: № no wider than its figures): the deployment table's
-    /// (<paramref name="seals"/>) after the party's seal (the part 28.7 mm wide), Subordinates' from the paper's left (no
-    /// seal; 24.7 mm).
+    /// (<paramref name="seals"/>) after the party's seal, its face <see cref="DeploymentRows"/>' (the part 30.3 mm wide),
+    /// Subordinates' from the paper's left (no seal; 24.7 mm).
     /// </summary>
     public static FixedPlaces Places(bool seals)
     {
-        float number = (seals ? SealX + Seal + NumberGap : SealX) + NumberText, face = number + FaceGap, name = face + Face + NameGap;
-        return new FixedPlaces(name + NameRoom, number, face, name, name + 2, number - HeadNumberIn, name);
+        float number = (seals ? SealX + Seal + NumberGap : SealX) + NumberText, face = number + FaceGap;
+        float name = face + Rows(seals).Face + NameGap;
+        return new FixedPlaces(name + NameRoom, number, face, name, name, number - HeadNumberIn, name);
     }
 
     /// <summary>
@@ -195,8 +219,8 @@ public static class PhoneLedgerUpright
     /// </summary>
     public const float Shadow = 26, MoreBox = 40, MoreArrow = 9;
 
-    /// <summary>A Refill button's height in its row (the deployment table's).</summary>
-    public const float RefillChip = 64;
+    /// <summary>A Refill button's height in its row (the deployment table's; 30 % taller since 2026-11-04, the owner's A2).</summary>
+    public const float RefillChip = 83;
 
     /// <summary>The columns in the fixed part, whatever the tab: №, the name and the type under it.</summary>
     public static IReadOnlyList<DeploymentColumn> FixedColumns { get; } =
@@ -204,11 +228,11 @@ public static class PhoneLedgerUpright
 
     /// <summary>
     /// What a tab scrolls sideways (<paramref name="shown"/>, <see cref="LedgerTabs.Of"/>'s): its columns but the fixed
-    /// part's, in their order, the groups over them indexed again.
+    /// part's and Rows (drawn under the type, <see cref="DeploymentRows"/>), in their order, the groups over them indexed again.
     /// </summary>
     public static LedgerTabColumns Scrolled(LedgerTabColumns shown)
     {
-        var columns = shown.Columns.Where(c => !FixedColumns.Contains(c.Column)).ToList();
+        var columns = shown.Columns.Where(c => !FixedColumns.Contains(c.Column) && c.Column != DeploymentColumn.Rows).ToList();
         var groups = new List<LedgerGroup>();
         foreach (var group in shown.Groups)
         {

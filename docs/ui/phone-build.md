@@ -1598,6 +1598,23 @@ tablet the scout report marked nothing and the dungeon search's bracket held an 
   and `scout-report-comment`: the PC's and the tablet's enemy attack changed only at "Front row", upright unchanged by the
   bracket's shared core. The look on the Poco is the owner's.
 
+### After the build: the rows under the type upright (owner, 2026-11-04)
+
+The owner's mock-up A2 (`tools/ui/mock_rows_under_type.py`, rounds 1-2): on the deployment table held upright the Rows
+column's content moves into the fixed part, under the troop type at its size and in its quiet ink, so the scrolled part
+gains Rows' width (Refill and Cost come into view); the heading "Name · Type" stays.
+
+- **The rows' layout** (`PhoneLedgerUpright.RowLayout`, `DeploymentRows` beside `SubordinatesRows`): the row 166 high
+  (9.4 mm, was 150), the name 44 (12 % smaller), the face from the name's top to the HP bar's foot (136, was 108; the
+  fixed part 30.3 mm wide), the bars under the rows' line. Subordinates' rows stay as they were (no Rows there).
+- **One left edge**: the type and the rows from the name's left (`Places`' `TypeX`; the type stood 2 further), on
+  Subordinates too.
+- **Every tab**: the fixed part is the same in each, so the rows stand under the type in Troops and Commander too;
+  `PhoneLedgerUpright.Scrolled` leaves Rows out of the scrolled part (sorting by Rows goes with it).
+- **Refill's buttons** 30 % taller (`RefillChip` 83, was 64).
+- **Checks**: the build, the ledger and phone tests; the gallery's upright pass for the deployment and Subordinates entries.
+  The look on the Poco is the owner's.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.

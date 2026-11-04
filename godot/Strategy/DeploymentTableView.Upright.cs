@@ -23,6 +23,9 @@ internal sealed partial class DeploymentTableView
     /// <summary>The fixed part's places: after the party's seals on the deployment table, from the paper's left on a chooser's.</summary>
     private PhoneLedgerUpright.FixedPlaces Fixed => PhoneLedgerUpright.Places(seals: !_chooser);
 
+    /// <summary>The rows' layout: the deployment table's (the rows under the type) or Subordinates'.</summary>
+    private PhoneLedgerUpright.RowLayout RowLayout => PhoneLedgerUpright.Rows(deployment: !_chooser);
+
     /// <summary>Over the rows under the header: the fixed part and the shadows (upright only).</summary>
     private readonly Overlay _fixedRows;
 
@@ -39,7 +42,7 @@ internal sealed partial class DeploymentTableView
     private int _pendingTop;
 
     /// <summary>
-    /// Covers <paramref name="rect"/> on the phone held upright (PD2s2): rows <see cref="PhoneLedgerUpright.Row"/> high, the
+    /// Covers <paramref name="rect"/> on the phone held upright (PD2s2): rows <see cref="RowLayout"/>'s height, the
     /// figures <see cref="PhoneLedgerUpright.Text"/>, the columns <see cref="PhoneLedgerUpright.ColumnGap"/> apart, the
     /// fixed part as wide as its <see cref="Fixed"/> places (reference pixels of <paramref name="phone"/>).
     /// </summary>
@@ -54,7 +57,7 @@ internal sealed partial class DeploymentTableView
             ShowColumns();
         int separation = (int)Math.Round(phone.Px(6));
         int size = (int)Math.Round(phone.Px(PhoneLedgerUpright.Text));
-        Lay(rect, size, separation, (int)Math.Round(phone.Px(PhoneLedgerUpright.Row)) - 2 * separation,
+        Lay(rect, size, separation, (int)Math.Round(phone.Px(RowLayout.Row)) - 2 * separation,
             (int)Math.Round(phone.Px(PhoneLedgerUpright.ColumnGap)));
         float right = rect.Size.X - (VScroll?.Size.X ?? 0), bottom = rect.Size.Y - (HScroll?.Size.Y ?? 0);
         _fixedRows.Position = new Vector2(0, HeaderBottom);
@@ -270,8 +273,9 @@ internal sealed partial class DeploymentTableView
 
     /// <summary>
     /// A row's fixed part (PD2s2): the paper (gilt for the party, tinted for the chosen row), the party's seal or the chosen
-    /// row's bar (no diamond: the tint tells it — owner, 2026-10-31), № and the name on the first line, the type under it, a
-    /// talk's bubble at the name's right; the unit's face between № and the name, under the name and the type a bar of the
+    /// row's bar (no diamond: the tint tells it — owner, 2026-10-31), № and the name on the first line, the type under it and
+    /// on the deployment table the rows under the type (owner, 2026-11-04, A2), a talk's bubble at the name's right; the
+    /// unit's face between № and the name (<see cref="PhoneLedgerUpright.RowLayout"/>), under the text a bar of the
     /// troops in a battle card's blue and one of the commander's HP in its green, no figures (owner, 2026-10-31; the owner's
     /// H4, docs/ui/phone.md §37-§38).
     /// </summary>
@@ -281,9 +285,10 @@ internal sealed partial class DeploymentTableView
         int place = _chooser ? 0 : row.PartyPlace;
         c.DrawRect(cell, chosen ? Ui.ChosenRow : place > 0 ? Ui.PartyRow : Ui.Paper);
         c.DrawLine(new Vector2(cell.Position.X, cell.End.Y - 0.5f), new Vector2(cell.End.X, cell.End.Y - 0.5f), Ui.PaperRule, 1);
+        var lay = RowLayout;
         float y = cell.Position.Y, h = cell.Size.Y, mid = y + h / 2;
-        float nameMid = y + h * PhoneLedgerUpright.NameMiddle / PhoneLedgerUpright.Row;
-        float typeMid = y + h * PhoneLedgerUpright.TypeMiddle / PhoneLedgerUpright.Row;
+        float At(float reference) => y + h * reference / lay.Row;
+        float nameMid = At(lay.NameMiddle), typeMid = At(lay.TypeMiddle);
         if (chosen)
             c.DrawRect(new Rect2(0, y, f.Px(PhoneLedgerUpright.ChosenBar), h), Ui.Vermilion);
         if (place > 0)
@@ -295,23 +300,28 @@ internal sealed partial class DeploymentTableView
         int number = (int)Math.Round(f.Px(PhoneLedgerUpright.NumberText));
         string no = row.Text(DeploymentColumn.Number);
         Middle(c, no, number, ink, f.Px(Fixed.NumberRight) - _font.GetStringSize(no, fontSize: number).X, nameMid);
-        float side = f.Px(PhoneLedgerUpright.Face);
-        DrawFace(c, new Rect2(f.Px(Fixed.FaceX), mid - side / 2, side, side), row.FaceCg, row.Grey);
+        float side = f.Px(lay.Face);
+        DrawFace(c, new Rect2(f.Px(Fixed.FaceX), At(lay.FaceTop), side, side), row.FaceCg, row.Grey);
         SceneMark? talk = _chooser && _talkMarks.TryGetValue(row.Unit, out var mark) ? mark : null;
-        float bubble = talk is null ? 0 : f.Px(PhoneLedgerUpright.NameText) * 1.4f;
+        float bubble = talk is null ? 0 : f.Px(lay.NameText) * 1.4f;
         float nameX = f.Px(Fixed.NameX), right = _fixedWidth - f.Px(PhoneLedgerUpright.NameRight);
         string name = row.Text(DeploymentColumn.Name);
-        Middle(c, name, SideCells.Fit(_font, name, (int)Math.Round(f.Px(PhoneLedgerUpright.NameText)), right - bubble - nameX), ink, nameX, nameMid);
-        string type = row.Text(DeploymentColumn.TroopType);
+        Middle(c, name, SideCells.Fit(_font, name, (int)Math.Round(f.Px(lay.NameText)), right - bubble - nameX), ink, nameX, nameMid);
         float typeX = f.Px(Fixed.TypeX);
-        Middle(c, type, SideCells.Fit(_font, type, (int)Math.Round(f.Px(PhoneLedgerUpright.TypeText)), right - typeX),
-            row.Grey ? Ui.InkGrey : Ui.InkQuiet, typeX, typeMid);
-        float barTop = y + h * PhoneLedgerUpright.BarTop / PhoneLedgerUpright.Row;
-        float hpTop = y + h * PhoneLedgerUpright.HpTop / PhoneLedgerUpright.Row, barHeight = f.Px(PhoneLedgerUpright.BarHeight);
+        var quiet = row.Grey ? Ui.InkGrey : Ui.InkQuiet;
+        int typeSize = (int)Math.Round(f.Px(PhoneLedgerUpright.TypeText));
+        string type = row.Text(DeploymentColumn.TroopType);
+        Middle(c, type, SideCells.Fit(_font, type, typeSize, right - typeX), quiet, typeX, typeMid);
+        if (lay.RowsMiddle > 0)
+        {
+            string rows = row.Text(DeploymentColumn.Rows);
+            Middle(c, rows, SideCells.Fit(_font, rows, typeSize, right - typeX), quiet, typeX, At(lay.RowsMiddle));
+        }
+        float barTop = At(lay.BarTop), hpTop = At(lay.HpTop), barHeight = f.Px(PhoneLedgerUpright.BarHeight);
         DrawGauge(c, new Rect2(nameX, barTop, right - nameX, barHeight), row.Troops, row.MaxTroops, Ui.GaugeTroops, row.Grey);
         DrawGauge(c, new Rect2(nameX, hpTop, right - nameX, barHeight), row.Hp, row.MaxHp, Ui.GaugeHp, row.Grey);
         if (talk is { } shown)
-            DrawBubble(c, new Vector2(right - bubble / 2, nameMid), f.Px(PhoneLedgerUpright.NameText) * 1.2f, shown);
+            DrawBubble(c, new Vector2(right - bubble / 2, nameMid), f.Px(lay.NameText) * 1.2f, shown);
     }
 
     /// <summary><paramref name="text"/> from <paramref name="x"/>, its middle at <paramref name="middle"/>, in the table's font.</summary>

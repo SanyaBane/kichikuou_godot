@@ -129,10 +129,10 @@ public class PhoneLedgerUprightTests
     }
 
     [Fact]
-    public void A_tab_scrolls_its_columns_but_No_the_name_and_the_type()
+    public void A_tab_scrolls_its_columns_but_No_the_name_the_type_and_the_rows()
     {
         var overview = PhoneLedgerUpright.Scrolled(LedgerTabs.Of(DeploymentTable.Columns, LedgerTab.Overview));
-        Assert.Equal([DeploymentColumn.Rows, DeploymentColumn.Troops, DeploymentColumn.Refill, DeploymentColumn.Cost,
+        Assert.Equal([DeploymentColumn.Troops, DeploymentColumn.Refill, DeploymentColumn.Cost,
             DeploymentColumn.Item],
             overview.Columns.Select(c => c.Column));
         var subordinates = PhoneLedgerUpright.Scrolled(LedgerTabs.Of(SubordinatesScreen.Columns, LedgerTab.Overview));
