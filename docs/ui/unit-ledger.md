@@ -231,3 +231,24 @@ widest figures, its title "№" with the sort's mark — wider than two figures 
 to its own title — drawn by `DrawTitles` ending at the column's right and reaching left past it; a chooser's first column
 holds the chosen row's bar alone, and the talks' bubbles while any unit has one. Checked in the screen gallery's
 Lacquer, Steel, touch and phone passes (`deployment…`, `subordinates…`).
+
+## 10. The Name · Type cell (owner, 2026-11-04)
+
+The deployment table held upright took the owner's mock-up A2 (`tools/ui/mock_rows_under_type.py`; docs/ui/phone-build.md,
+"After the build: the rows under the type upright"): the Rows column under the troop type in the fixed part, the name
+smaller, the face from the name's top to the HP bar's foot. The owner asked for the same design in the other modes; the
+mock-ups `tools/ui/mock_name_cell.py` (PC, tablet, phone held landscape) were built as drawn:
+
+- **One cell** in place of Name, Type and Rows, headed "Name · Type" (`Original.Content/Strategy/LedgerNameCell`:
+  `Merge` takes the type and the rows out of a tab's columns; `For` gives A2's places scaled so the ledger's text stands
+  for upright's, 46): the face (`DrawFace`), the name, the type and the rows in the quiet ink from one left edge, the
+  troops' and the HP bars under them (`DeploymentTableView.DrawStackedCell`); № at the name's line (`DrawNumberCell`).
+  Every tab has it, as upright.
+- **The rows**: 3.6 times the text (61 px on the PC and the tablet, ~10 rows in view for ~27 and ~17; 96 held
+  landscape for 74), more if Option's row height asks for more; what the cell frees in width brings Troops to Item into
+  view on the PC and the tablet.
+- **Refill's button** half the row, as upright (it grew with the row, 5/6 of it).
+- **Subordinates** keeps its columns: it has no Rows (and keeps them upright too). Sorting by the type or the rows goes
+  with their columns.
+- Checked in the screen gallery's four passes (`deployment…`); the build, the core tests, `LedgerNameCellTests` and the
+  ledger and phone layouts' tests.

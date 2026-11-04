@@ -192,7 +192,10 @@ public static class PhoneLedgerUpright
     /// room from the name's left to the fixed part's right (the name's 226 and its margin); the header's № 4 left of the
     /// figures'.
     /// </summary>
-    private const float NumberGap = 10, FaceGap = 14, NameGap = 16, NameRoom = 238, HeadNumberIn = 4;
+    private const float NumberGap = 10, FaceGap = 14, NameRoom = 238, HeadNumberIn = 4;
+
+    /// <summary>The room between the face and the name (the other modes' Name · Type cell takes it too, <c>LedgerNameCell</c>).</summary>
+    public const float NameGap = 16;
 
     /// <summary>
     /// The fixed part's width and the places that move with №, from the paper's left: №'s right, the face's left, the name's

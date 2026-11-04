@@ -235,6 +235,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         var shown = Tab is { } tab ? LedgerTabs.Of(_all, tab) : new LedgerTabColumns(_all, []);
         if (_upright is not null)
             shown = PhoneLedgerUpright.Scrolled(shown);
+        else if (!_chooser)
+            shown = LedgerNameCell.Merge(shown);                    // the Name · Type cell (Stacked)
         (_columns, _groups) = (shown.Columns, shown.Groups);
         _refillHovered = 0;
         if (_fontSize > 0)
@@ -347,7 +349,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             }
             else
             {
-                float lead = column == ItemColumn ? ItemLead : 0;           // over the item's text (DrawItem)
+                float lead = column == ItemColumn ? ItemLead                 // over the item's text (DrawItem)
+                    : column == NameColumn && Stacked ? Cell.TextX - 4 : 0;     // over the names (DrawStackedCell)
                 c.DrawString(_titleFont, new Vector2(x + 4 + lead, baseline), GetColumnTitle(column), GetColumnTitleAlignment(column),
                     w - 8 - lead, TitleSize, Ui.HeadInk);
             }
@@ -473,7 +476,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         int row = LedgerRowsChoice.Chosen;                                     // read each frame: Option's change shows at once
         int minimum = row > LedgerRowsChoice.TextRow                           // the tree adds the separation twice a row
             ? Math.Max(0, (int)Math.Round(row * pixelsPerScript / 2) - 2 * separation) : 0;
-        Lay(rect, size, separation, minimum, 6);
+        Lay(rect, size, separation, Math.Max(minimum, StackedMinimum(size, separation)), 6);
     }
 
     /// <summary>
@@ -488,8 +491,22 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         StyleBars(phone);
         int separation = (int)Math.Round(phone.Px(6));
         int size = (int)Math.Round(phone.Px(PhoneLedger.Text));
-        Lay(rect, size, separation, (int)Math.Round(phone.Px(PhoneLedger.Row)) - 2 * separation, (int)Math.Round(phone.Px(PhoneLedger.ColumnGap)));
+        Lay(rect, size, separation, Math.Max((int)Math.Round(phone.Px(PhoneLedger.Row)) - 2 * separation, StackedMinimum(size, separation)),
+            (int)Math.Round(phone.Px(PhoneLedger.ColumnGap)));
     }
+
+    /// <summary>
+    /// The deployment table's Name · Type cell (<see cref="LedgerNameCell"/>; owner, 2026-11-04) off the upright phone, which
+    /// has its own in the fixed part: the type and the rows under the name, the face beside them, the bars under them.
+    /// </summary>
+    private bool Stacked => !_chooser && _upright is null;
+
+    /// <summary>The cell's places at the text's size.</summary>
+    private LedgerNameCell Cell => LedgerNameCell.For(_fontSize);
+
+    /// <summary>A row's least height for the cell at text <paramref name="size"/> (the tree adds the separation twice), else 0.</summary>
+    private int StackedMinimum(int size, int separation) =>
+        Stacked ? (int)Math.Round(LedgerNameCell.For(size).Row) - 2 * separation : 0;
 
     /// <summary>The phone's frame held landscape while the table is laid out so (<see cref="PlacePhone"/>), else null.</summary>
     private PhoneFrame? _landscape;
@@ -794,7 +811,9 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
         if (ItemColumn > 0)
             widths[ItemColumn] += ItemLead;                                 // the room before the item (DrawItem)
-        if (_landscape is { } held && NameColumn > 0)
+        if (Stacked && NameColumn > 0)
+            widths[NameColumn] = StackedWidth();                            // the Name · Type cell (DrawStackedCell)
+        else if (_landscape is { } held && NameColumn > 0)
             widths[NameColumn] += held.Px(PhoneLedger.NameFace + PhoneLedger.NameFaceGap) + 2;   // the face left of the name
         for (int c = 0; c < Columns; c++)
             SetColumnCustomMinimumWidth(c, (int)Math.Ceiling(widths[c]) + separation + (Tab is null ? 6 : 3));
@@ -814,6 +833,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     {
         int chipColumn = -1;                                        // the Refill chip's cell: its row's tint drawn under the chip
         int nameColumn = -1;                                        // held landscape the Name cell's: its tint drawn under the face
+        int numberColumn = -1;                                      // with the Name · Type cell №'s: its tint drawn under it
         for (int c = 0; c < _columns.Count; c++)
         {
             var info = _columns[c];
@@ -851,7 +871,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 var (text, colour) = (row.Text(info.Column), row.Grey ? Ui.InkGrey : Ui.InkQuiet);
                 item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawItem(rect, text, colour)));
             }
-            if (info.Column == DeploymentColumn.Name && _landscape is not null)
+            if (info.Column == DeploymentColumn.Number && Stacked)
+            {
+                item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
+                Color? tint = chosen ? Ui.ChosenRow : place > 0 ? Ui.PartyRow : null;
+                var (text, colour) = (row.Text(info.Column), row.Grey ? Ui.InkGrey : Ui.Ink);
+                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawNumberCell(rect, text, colour, tint)));
+                numberColumn = c + 1;
+            }
+            if (info.Column == DeploymentColumn.Name && (_landscape is not null || Stacked))
             {
                 item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
                 Color? tint = chosen ? Ui.ChosenRow : place > 0 ? Ui.PartyRow : null;
@@ -870,7 +898,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         if (place > 0)
         {
             for (int c = 0; c < Columns; c++)
-                if (c != chipColumn && c != nameColumn)
+                if (c != chipColumn && c != nameColumn && c != numberColumn)
                     item.SetCustomBgColor(c, Ui.PartyRow);
             item.SetCellMode(0, TreeItem.TreeCellMode.Custom);
             item.SetCustomDrawCallback(0, Callable.From<TreeItem, Rect2>((_, cell) =>
@@ -954,6 +982,7 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         if (party)                                                  // the tree's tint reaches a separation left of the cell
             DrawRect(cell.GrowIndividual(GetThemeConstant("h_separation"), 0, 0, 0), Ui.PartyRow);
         float inset = _upright is { } upright ? (cell.Size.Y - upright.Px(PhoneLedgerUpright.RefillChip)) / 2   // upright: PD2s2's chip
+            : Stacked ? cell.Size.Y / 4                                     // with the Name · Type cell: half the row, as upright
             : _rowMinimum > 0 ? cell.Size.Y / 12 : 2;                       // a taller row's chip grows with it: a finger's button
         var chip = new Rect2(cell.Position.X + 3, cell.Position.Y + inset, cell.Size.X - 6, cell.Size.Y - 2 * inset);
         float corner = Math.Max(2, chip.Size.Y * 0.18f);
@@ -1029,10 +1058,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// </summary>
     private void DrawNameCell(Rect2 cell, DeploymentRow row, Color? tint)
     {
-        if (_landscape is not { } f)
-            return;
         if (tint is { } colour)                                     // the tree's tint reaches a separation left of the cell
             DrawRect(cell.GrowIndividual(GetThemeConstant("h_separation"), 0, 0, 0), colour);
+        if (Stacked)
+        {
+            DrawStackedCell(cell, row);
+            return;
+        }
+        if (_landscape is not { } f)
+            return;
         float side = f.Px(PhoneLedger.NameFace);
         var face = new Rect2(cell.Position.X + 2, cell.GetCenter().Y - side / 2, side, side);
         DrawFace(this, face, row.FaceCg, row.Grey);
@@ -1041,6 +1075,59 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
         DrawGauge(this, bar, row.Troops, row.MaxTroops, Ui.GaugeTroops, row.Grey);
         var hp = bar with { Position = bar.Position + new Vector2(0, bar.Size.Y + f.Px(PhoneLedger.NameBarGap)) };
         DrawGauge(this, hp, row.Hp, row.MaxHp, Ui.GaugeHp, row.Grey);
+    }
+
+    /// <summary>
+    /// The Name · Type cell (<see cref="LedgerNameCell"/>, the upright row's A2 at the ledger's text): the face from the
+    /// name's top to the HP bar's foot, the name, the type and the rows under it in the quiet ink from one left edge, the
+    /// troops' bar in a battle card's blue and the HP's in its green under them; the whole centred in a taller row.
+    /// </summary>
+    private void DrawStackedCell(Rect2 cell, DeploymentRow row)
+    {
+        var k = Cell;
+        float top = cell.Position.Y + Math.Max(0, (cell.Size.Y - k.Row) / 2), x = cell.Position.X;
+        DrawFace(this, new Rect2(x + 2, top + k.FaceTop, k.Face, k.Face), row.FaceCg, row.Grey);
+        float tx = x + k.TextX, room = Math.Max(1, cell.End.X - k.Right - tx);
+        int nameSize = (int)Math.Round(k.NameText), typeSize = (int)Math.Round(k.TypeText);
+        var quiet = row.Grey ? Ui.InkGrey : Ui.InkQuiet;
+        CellLine(row.Text(DeploymentColumn.Name), nameSize, row.Grey ? Ui.InkGrey : Ui.Ink, tx, top + k.NameMiddle, room);
+        CellLine(row.Text(DeploymentColumn.TroopType), typeSize, quiet, tx, top + k.TypeMiddle, room);
+        CellLine(row.Text(DeploymentColumn.Rows), typeSize, quiet, tx, top + k.RowsMiddle, room);
+        float h = Math.Max(2, k.BarHeight);
+        DrawGauge(this, new Rect2(tx, top + k.BarTop, room, h), row.Troops, row.MaxTroops, Ui.GaugeTroops, row.Grey);
+        DrawGauge(this, new Rect2(tx, top + k.HpTop, room, h), row.Hp, row.MaxHp, Ui.GaugeHp, row.Grey);
+    }
+
+    /// <summary>
+    /// № beside the Name · Type cell: at the name's line, ending at the cell's right, as upright (the tree would centre it in
+    /// the row); the row's <paramref name="tint"/> drawn here, the tree tinting over a custom cell.
+    /// </summary>
+    private void DrawNumberCell(Rect2 cell, string text, Color colour, Color? tint)
+    {
+        if (tint is { } back)
+            DrawRect(cell.GrowIndividual(GetThemeConstant("h_separation"), 0, 0, 0), back);
+        var k = Cell;
+        float top = cell.Position.Y + Math.Max(0, (cell.Size.Y - k.Row) / 2);
+        float w = _font.GetStringSize(text, fontSize: _fontSize).X;
+        CellLine(text, _fontSize, colour, cell.End.X - 2 - w, top + k.NameMiddle, w + 1);
+    }
+
+    /// <summary>One of the cell's lines: <paramref name="text"/> from <paramref name="x"/>, its middle at <paramref name="middle"/>.</summary>
+    private void CellLine(string text, int size, Color colour, float x, float middle, float room) =>
+        DrawString(_font, new Vector2(x, middle + (_font.GetAscent(size) - _font.GetDescent(size)) / 2), text,
+            HorizontalAlignment.Left, room, size, colour);
+
+    /// <summary>The cell's width: its widest line's, and room for its heading over the names.</summary>
+    private float StackedWidth()
+    {
+        var k = Cell;
+        int nameSize = (int)Math.Round(k.NameText), typeSize = (int)Math.Round(k.TypeText);
+        float widest = 0;
+        foreach (var row in _rows)
+            widest = Math.Max(widest, Math.Max(_font.GetStringSize(row.Text(DeploymentColumn.Name), fontSize: nameSize).X,
+                Math.Max(_font.GetStringSize(row.Text(DeploymentColumn.TroopType), fontSize: typeSize).X,
+                    _font.GetStringSize(row.Text(DeploymentColumn.Rows), fontSize: typeSize).X)));
+        return Math.Max(k.Width(widest), _titleFont.GetStringSize(LedgerNameCell.Header + _down, fontSize: TitleSize).X + k.TextX);
     }
 
     /// <summary>A unit's face in <paramref name="rect"/> on its back, framed in the quiet ink; faded in a grey row.</summary>
