@@ -87,26 +87,29 @@ public static class PhoneBattleStatesUpright
 
     /// <summary>
     /// A level-up's rows under the EXP line, on the same plate (as held landscape): a divider this far under the plate's 720,
-    /// the rows from under it, their height and pitch, the room under them for the click's triangle, their side room and type.
+    /// the rows from under it, the room under them for the click's triangle, their side room; their insides (docs/ui/messages.md,
+    /// §7, A2 with L2): the label's, the name's and the gains' type, the row's room at its left, right, top and foot, between
+    /// its columns and between the rows. A row is as tall as its text (the view lays it out).
     /// </summary>
-    public const float LevelDivider = 6, LevelTop = 40, LevelRow = 76, LevelPitch = 92, LevelFoot = 80, LevelSide = 40, LevelWord = 30,
-        LevelName = 40, LevelGains = 34;
+    public const float LevelDivider = 6, LevelTop = 40, LevelFoot = 80, LevelSide = 40, LevelLabel = 22, LevelName = 40, LevelGains = 34,
+        LevelLeft = 24, LevelRight = 20, LevelPad = 12, LevelGap = 32, LevelBetween = 14;
 
     /// <summary>
-    /// The results plate (layout pixels) with <paramref name="levelUps"/> level-ups' rows on the board of
-    /// <paramref name="height"/> layout pixels: a taller one grows up, its foot kept where the plate's is (over the battle's
-    /// Skip, which stands on its strip under the enemy's rows, <see cref="PhoneBattleUpright.Skip"/>), and over the board's foot.
+    /// The results plate (layout pixels) with level-up rows <paramref name="levelRows"/> layout pixels high (0: none) on the
+    /// board of <paramref name="height"/> layout pixels: a taller one grows up, its foot kept where the plate's is (over the
+    /// battle's Skip, which stands on its strip under the enemy's rows, <see cref="PhoneBattleUpright.Skip"/>), and over the
+    /// board's foot.
     /// </summary>
-    public static PhoneFrame.Box ResultsPlate(int levelUps, float height)
+    public static PhoneFrame.Box ResultsPlate(float levelRows, float height)
     {
-        float h = L(ResultsHeight + (levelUps > 0 ? LevelTop + levelUps * LevelPitch + LevelFoot : 0));
+        float h = L(ResultsHeight) + (levelRows > 0 ? L(LevelTop + LevelFoot) + levelRows : 0);
         float top = Math.Max(L(ResultsMargin), Math.Min(L(ResultsTop + ResultsHeight) - h, height - L(ResultsMargin) - h));
         return new PhoneFrame.Box(L(ResultsSide), top, PhoneBattleUpright.Width - 2 * L(ResultsSide), h);
     }
 
-    /// <summary>The level-up row <paramref name="i"/> on <paramref name="plate"/> (layout pixels).</summary>
-    public static PhoneFrame.Box LevelUpRow(PhoneFrame.Box plate, int i) =>
-        new(plate.X + L(LevelSide), plate.Y + L(ResultsHeight + LevelTop + i * LevelPitch), plate.W - 2 * L(LevelSide), L(LevelRow));
+    /// <summary>The level-up rows' box on <paramref name="plate"/>: their left, top and width (layout pixels).</summary>
+    public static (float X, float Y, float W) LevelRows(PhoneFrame.Box plate) =>
+        (plate.X + L(LevelSide), plate.Y + L(ResultsHeight + LevelTop), plate.W - 2 * L(LevelSide));
 
     /// <summary>
     /// Our narration panel (a fall's box too) the same way: centred where the plate is, at 2.6 mm, the sentences wrapped to

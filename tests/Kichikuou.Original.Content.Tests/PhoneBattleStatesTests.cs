@@ -45,14 +45,21 @@ public class PhoneBattleStatesTests
     {
         // lb3r: 1400 × 720 at (CX - 700, (LH - h) // 2 - 20).
         Equal(InFrame(656, 230, 1400, 720), PhoneBattleStates.ResultsPlate(0));
-        // Four level-ups: taller, still over the gesture zone.
-        var four = PhoneBattleStates.ResultsPlate(4);
-        Assert.True(four.H > PhoneBattleStates.ResultsPlate(1).H);
-        Assert.True(four.Bottom * 1.525f <= 1220 - 50 + Close);
-        Assert.True(four.Y >= 20 / 1.525f - Close);
-        var last = PhoneBattleStates.LevelUpRow(four, 3, 4);
-        Assert.True(last.Bottom <= four.Bottom);
-        Assert.True(PhoneBattleStates.LevelUpRow(four, 0, 4).Y * 1.525f >= four.Y * 1.525f + 720);
+        // Level-up rows: the plate as tall as its head and them, its head whole while they fit.
+        float rows = 200 / 1.525f;
+        var some = PhoneBattleStates.ResultsPlate(rows);
+        Assert.Equal(1, PhoneBattleStates.HeadScale(rows));
+        Assert.Equal((720 + 40 + 80) / 1.525f + rows, some.H, Close);
+        Assert.Equal(some.Y + (720 + 40) / 1.525f, PhoneBattleStates.LevelRows(some, rows).Y, Close);
+        // Four long rows (A2's 445): the head closes up, the plate still over the gesture zone.
+        float four = 445 / 1.525f;
+        var tall = PhoneBattleStates.ResultsPlate(four);
+        Assert.InRange(PhoneBattleStates.HeadScale(four), PhoneBattleStates.HeadSqueezeLeast, 0.99f);
+        Assert.True(tall.Bottom * 1.525f <= 1220 - 50 + Close);
+        Assert.True(tall.Y >= 20 / 1.525f - Close);
+        var (_, top, width) = PhoneBattleStates.LevelRows(tall, four);
+        Assert.True(top + four <= tall.Bottom - 80 / 1.525f + Close);
+        Assert.Equal((1400 - 2 * 60) / 1.525f, width, Close);
     }
 
     [Fact]

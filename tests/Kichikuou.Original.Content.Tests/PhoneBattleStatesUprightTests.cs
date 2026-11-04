@@ -57,14 +57,16 @@ public class PhoneBattleStatesUprightTests
         Equal(OnBoard(24, 890, 1172, 720), PhoneBattleStatesUpright.ResultsPlate(0, Height));
         // Over the battle's Skip, which stands under the enemy's rows.
         Assert.True(PhoneBattleStatesUpright.ResultsPlate(0, Height).Bottom <= PhoneBattleUpright.Skip.Y);
-        // Four level-ups: taller, grown up, its foot where the plate's is (still over Skip).
-        var four = PhoneBattleStatesUpright.ResultsPlate(4, Height);
+        // Level-up rows: taller by them, grown up, its foot where the plate's is (still over Skip).
+        float rows = L(400);
+        var four = PhoneBattleStatesUpright.ResultsPlate(rows, Height);
         Assert.Equal(L(890 + 720), four.Bottom, Close);
-        Assert.Equal(L(720 + 40 + 4 * 92 + 80), four.H, Close);
-        Assert.Equal(four.Y + L(720 + 40 + 3 * 92), PhoneBattleStatesUpright.LevelUpRow(four, 3).Y, Close);
-        Assert.True(PhoneBattleStatesUpright.LevelUpRow(four, 3).Bottom <= four.Bottom);
+        Assert.Equal(L(720 + 40 + 80) + rows, four.H, Close);
+        var (x, top, width) = PhoneBattleStatesUpright.LevelRows(four);
+        Assert.Equal(four.Y + L(720 + 40), top, Close);
+        Assert.Equal((four.X + L(40), four.W - L(80)), (x, width));
         // A short board: the plate rises to stay over its foot.
-        var short_ = PhoneBattleStatesUpright.ResultsPlate(4, L(1500));
+        var short_ = PhoneBattleStatesUpright.ResultsPlate(rows, L(1500));
         Assert.Equal(L(1500 - 20), short_.Bottom, Close);
     }
 

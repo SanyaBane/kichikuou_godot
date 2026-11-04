@@ -352,7 +352,9 @@ internal sealed partial class BattleInfoLayer : Control
             return;
         }
         DrawRect(new Rect2(128, 0, 1024, 410), new Color(0, 0, 0, 0.43f));
-        float h = 250 + (r.LevelUps.Count == 0 ? 0 : 30 + 44 * r.LevelUps.Count);
+        var levels = new LevelMetrics(11, 19, 16, Left: 20, Right: 14, Pad: 7, Gap: 24, Between: 8, Width: PlateWidth - 80, WholeNames: false);
+        var (rows, column, rowsHeight) = LevelRows(r.LevelUps, levels);
+        float h = 250 + (rows.Count == 0 ? 0 : 38 + rowsHeight);
         var plate = new Rect2(SceneCentreX - PlateWidth / 2, Math.Max(8, 200 - h / 2), PlateWidth, h);
         Ui.DrawPanel(this, plate, _k);
         float x = plate.Position.X, y = plate.Position.Y, cx = SceneCentreX;
@@ -369,21 +371,10 @@ internal sealed partial class BattleInfoLayer : Control
         }
         DrawLine(new Vector2(cx, y + 118), new Vector2(cx, y + 200), Ui.DimGold, Lacquer.Line(1, _k));
         Middle(_semi, cx, y + 234, r.Exp + " EXP obtained", 22, Ui.Name);
-        if (r.LevelUps.Count > 0)
+        if (rows.Count > 0)
         {
             Ui.DrawDivider(this, x + 60, plate.End.X - 60, y + 254, _k);
-            for (int i = 0; i < r.LevelUps.Count; i++)
-            {
-                var up = r.LevelUps[i];
-                var row = new Rect2(x + 40, y + 268 + i * 44, PlateWidth - 80, 36);
-                Ui.DrawRowBox(this, row, false, _k);
-                float baseline = Lacquer.Baseline(row, _semi, 18);
-                DrawString(_bold, new Vector2(row.Position.X + 20, baseline), "LEVEL UP", fontSize: 15, modulate: Accent);
-                DrawString(_semi, new Vector2(row.Position.X + 120, baseline), up.Unit, fontSize: 19, modulate: Ui.Name);
-                float gx = Math.Max(row.Position.X + 240, row.Position.X + 120 + _semi.GetStringSize(up.Unit, fontSize: 19).X + 20);
-                string gains = string.Join("  ·  ", up.Gains);
-                DrawString(_cinzel, new Vector2(gx, baseline), Fit(_cinzel, gains, 16, row.End.X - 14 - gx), fontSize: 16, modulate: Ui.Value);
-            }
+            DrawLevelRows(x + 40, y + 268, rows, column, levels);
         }
         if (_waiting)
             Ui.DrawTriangle(this, new Vector2(plate.End.X - 26, plate.End.Y - 22), _k);

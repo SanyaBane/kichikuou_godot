@@ -71,38 +71,43 @@ public static class PhoneBattleStates
         RuleTop = 290, RuleFoot = 540, ExpMiddle = 628, ExpText = 50, TriangleIn = 64, TriangleUp = 54, TriangleSize = 24;
 
     /// <summary>
-    /// A level-up's rows under the EXP line, on the same plate: a divider this far under the plate's 720, the rows from
-    /// under it, their height and pitch (lower when the plate would not fit the frame), the room under them for the click's
-    /// triangle, their side room and type.
+    /// A level-up's rows under the EXP line, on the same plate: a divider this far under the plate's head (720), the rows
+    /// from under it, the room under them for the click's triangle, their side room; their insides (docs/ui/messages.md, §7,
+    /// A2 with L2): the label's, the name's and the gains' type, the row's room at its left, right, top and foot, between its
+    /// columns and between the rows. A row is as tall as its text (the view lays it out); the names stand whole, the rows
+    /// being wide.
     /// </summary>
-    public const float LevelDivider = 6, LevelTop = 40, LevelRow = 76, LevelPitch = 92, LevelFoot = 80, LevelSide = 60, LevelWord = 30,
-        LevelName = 40, LevelGains = 34;
+    public const float LevelDivider = 6, LevelTop = 40, LevelFoot = 80, LevelSide = 60, LevelLabel = 22, LevelName = 40, LevelGains = 34,
+        LevelLeft = 30, LevelRight = 24, LevelPad = 12, LevelGap = 45, LevelBetween = 10;
 
-    /// <summary>The level-ups' pitch for <paramref name="levelUps"/> rows (reference pixels): the plate kept over the gesture zone.</summary>
-    public static float LevelUpPitch(int levelUps)
+    /// <summary>The least the head's lines may close up (<see cref="HeadScale"/>): its empty bands, never its type.</summary>
+    public const float HeadSqueezeLeast = 0.75f;
+
+    /// <summary>
+    /// How far the plate's head (its lines' places, <see cref="ResultsHeight"/>) closes up so that level-up rows
+    /// <paramref name="levelRows"/> layout pixels high fit the frame over the gesture zone: 1 while they fit, down to
+    /// <see cref="HeadSqueezeLeast"/> (the owner's A2: four rows of the longest names and gains).
+    /// </summary>
+    public static float HeadScale(float levelRows)
     {
-        if (levelUps <= 0)
-            return LevelPitch;
-        float room = PhoneFrame.ReferenceShort - PhoneFrame.GestureZone - 2 * ResultsMargin - ResultsHeight - LevelTop - LevelFoot;
-        return Math.Min(LevelPitch, room / levelUps);
+        if (levelRows <= 0)
+            return 1;
+        float room = L(PhoneFrame.ReferenceShort - PhoneFrame.GestureZone - 2 * ResultsMargin - LevelTop - LevelFoot) - levelRows;
+        return Math.Clamp(room / L(ResultsHeight), HeadSqueezeLeast, 1);
     }
 
-    /// <summary>The results plate (layout pixels) with <paramref name="levelUps"/> level-ups' rows.</summary>
-    public static PhoneFrame.Box ResultsPlate(int levelUps)
+    /// <summary>The results plate (layout pixels) with level-up rows <paramref name="levelRows"/> layout pixels high (0: none).</summary>
+    public static PhoneFrame.Box ResultsPlate(float levelRows)
     {
-        float h = ResultsHeight + (levelUps > 0 ? LevelTop + levelUps * LevelUpPitch(levelUps) + LevelFoot : 0);
-        float top = Math.Clamp((PhoneFrame.ReferenceShort - h) / 2 - ResultsLift, ResultsMargin,
-            Math.Max(ResultsMargin, PhoneFrame.ReferenceShort - PhoneFrame.GestureZone - ResultsMargin - h));
-        return new PhoneFrame.Box(L((FrameWidth - ResultsWidth) / 2), L(top), L(ResultsWidth), L(h));
+        float h = L(ResultsHeight) * HeadScale(levelRows) + (levelRows > 0 ? L(LevelTop + LevelFoot) + levelRows : 0);
+        float top = Math.Clamp((L(PhoneFrame.ReferenceShort) - h) / 2 - L(ResultsLift), L(ResultsMargin),
+            Math.Max(L(ResultsMargin), L(PhoneFrame.ReferenceShort - PhoneFrame.GestureZone - ResultsMargin) - h));
+        return new PhoneFrame.Box(L((FrameWidth - ResultsWidth) / 2), top, L(ResultsWidth), h);
     }
 
-    /// <summary>The level-up row <paramref name="i"/> of <paramref name="count"/> on <paramref name="plate"/> (layout pixels).</summary>
-    public static PhoneFrame.Box LevelUpRow(PhoneFrame.Box plate, int i, int count)
-    {
-        float pitch = LevelUpPitch(count), height = Math.Min(LevelRow, pitch - 8);
-        return new PhoneFrame.Box(plate.X + L(LevelSide), plate.Y + L(ResultsHeight + LevelTop + i * pitch), plate.W - 2 * L(LevelSide),
-            L(height));
-    }
+    /// <summary>The level-up rows' box on <paramref name="plate"/> with rows <paramref name="levelRows"/> high: their left, top and width.</summary>
+    public static (float X, float Y, float W) LevelRows(PhoneFrame.Box plate, float levelRows) =>
+        (plate.X + L(LevelSide), plate.Y + L(ResultsHeight) * HeadScale(levelRows) + L(LevelTop), plate.W - 2 * L(LevelSide));
 
     /// <summary>
     /// Our narration panel (a fall's box too) the same way: in the frame's middle at the plate's type, the sentences

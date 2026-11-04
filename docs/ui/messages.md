@@ -432,4 +432,11 @@ Round 3: LEVEL UP ran into the name (the owner): the label smaller, in another c
 - **L3** — a small gold badge (the order toggle's lit gradient) with the dark ink in it, at 2/3 of the type.
 - **L4** — another face: Oswald (condensed) at 0.85 of the type, spaced, the accent gold.
 
-Awaiting the owner's choice.
+**The owner's choice: L2** (2026-11-04). **Built**, A2 with L2 on every device (`godot/Battles/BattleInfoLayer.LevelUps.cs`:
+the rows laid out by their text, `LevelRows`, and drawn, `DrawLevelRows`; the label `Ui.Quiet` in Cinzel semibold at 3/4
+of the old word type, its letters 0.14 of its type apart). The plate is as tall as its rows: the PC's (and the tablet's)
+from its top down; held landscape `PhoneBattleStates.ResultsPlate(levelRows)`, its head closing up to 3/4 (`HeadScale`,
+its lines' places, never their type) while four long rows would not fit over the gesture zone, the names whole;
+upright `PhoneBattleStatesUpright.ResultsPlate(levelRows, height)`, its foot kept. The name column is as wide as the
+label or the plate's widest name word (held landscape its widest whole name). Looked at in every gallery pass
+(`info-level-up`, made up as the longest: the agent's dumps match the mock-ups).

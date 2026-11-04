@@ -26,7 +26,14 @@ internal sealed partial class BattleInfoLayer
     private void DrawUprightResults(BattleResults r)
     {
         DrawRect(Board, new Color(0, 0, 0, PhoneVeil));
-        var plate = R(PhoneBattleStatesUpright.ResultsPlate(r.LevelUps.Count, Board.Size.Y));
+        var (_, _, rowsWidth) = PhoneBattleStatesUpright.LevelRows(PhoneBattleStatesUpright.ResultsPlate(0, Board.Size.Y));
+        var levels = new LevelMetrics(UPx(PhoneBattleStatesUpright.LevelLabel), UPx(PhoneBattleStatesUpright.LevelName),
+            UPx(PhoneBattleStatesUpright.LevelGains), U(PhoneBattleStatesUpright.LevelLeft), U(PhoneBattleStatesUpright.LevelRight),
+            U(PhoneBattleStatesUpright.LevelPad), U(PhoneBattleStatesUpright.LevelGap), U(PhoneBattleStatesUpright.LevelBetween), rowsWidth,
+            WholeNames: false);
+        var (rows, column, rowsHeight) = LevelRows(r.LevelUps, levels);
+        var box = PhoneBattleStatesUpright.ResultsPlate(rowsHeight, Board.Size.Y);
+        var plate = R(box);
         Ui.DrawPanel(this, plate, _k);
         float y = plate.Position.Y, cx = plate.GetCenter().X;
         int title = UPx(PhoneBattleStatesUpright.TitleText);
@@ -57,22 +64,8 @@ internal sealed partial class BattleInfoLayer
         if (r.LevelUps.Count > 0)
         {
             Ui.DrawDivider(this, plate.Position.X + side, plate.End.X - side, y + U(720 + PhoneBattleStatesUpright.LevelDivider), _k);
-            int wordSize = UPx(PhoneBattleStatesUpright.LevelWord), nameSize = UPx(PhoneBattleStatesUpright.LevelName);
-            int gainsSize = UPx(PhoneBattleStatesUpright.LevelGains);
-            for (int i = 0; i < r.LevelUps.Count; i++)
-            {
-                var up = r.LevelUps[i];
-                var row = R(PhoneBattleStatesUpright.LevelUpRow(R(plate), i));
-                Ui.DrawRowBox(this, row, false, _k);
-                float x = row.Position.X + U(24);
-                DrawString(_bold, new Vector2(x, Lacquer.Baseline(row, _bold, wordSize)), "LEVEL UP", fontSize: wordSize, modulate: Accent);
-                x += _bold.GetStringSize("LEVEL UP", fontSize: wordSize).X + U(30);
-                DrawString(_semi, new Vector2(x, Lacquer.Baseline(row, _semi, nameSize)), up.Unit, fontSize: nameSize, modulate: Ui.Name);
-                float gx = Math.Max(row.Position.X + U(420), x + _semi.GetStringSize(up.Unit, fontSize: nameSize).X + U(30));
-                string gains = string.Join("  ·  ", up.Gains);
-                DrawString(_cinzel, new Vector2(gx, Lacquer.Baseline(row, _cinzel, gainsSize)), Fit(_cinzel, gains, gainsSize, row.End.X - U(16) - gx),
-                    fontSize: gainsSize, modulate: Ui.Value);
-            }
+            var (rx, ry, _) = PhoneBattleStatesUpright.LevelRows(box);
+            DrawLevelRows(rx, ry, rows, column, levels);
         }
         if (_waiting)
             UprightTriangleAt(new Vector2(plate.End.X - U(PhoneBattleStatesUpright.TriangleIn), plate.End.Y - U(PhoneBattleStatesUpright.TriangleUp)));

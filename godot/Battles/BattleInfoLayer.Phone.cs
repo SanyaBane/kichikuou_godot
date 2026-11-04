@@ -29,49 +29,43 @@ internal sealed partial class BattleInfoLayer
     private void DrawPhoneResults(BattleResults r)
     {
         DrawRect(new Rect2(0, 0, 1280, 800), new Color(0, 0, 0, PhoneVeil));
-        var plate = R(PhoneBattleStates.ResultsPlate(r.LevelUps.Count));
+        var (_, _, rowsWidth) = PhoneBattleStates.LevelRows(PhoneBattleStates.ResultsPlate(0), 0);
+        var levels = new LevelMetrics(Px(PhoneBattleStates.LevelLabel), Px(PhoneBattleStates.LevelName), Px(PhoneBattleStates.LevelGains),
+            P(PhoneBattleStates.LevelLeft), P(PhoneBattleStates.LevelRight), P(PhoneBattleStates.LevelPad), P(PhoneBattleStates.LevelGap),
+            P(PhoneBattleStates.LevelBetween), rowsWidth, WholeNames: true);
+        var (rows, column, rowsHeight) = LevelRows(r.LevelUps, levels);
+        var box = PhoneBattleStates.ResultsPlate(rowsHeight);
+        float k = PhoneBattleStates.HeadScale(rowsHeight);                  // the head closed up for four long rows
+        var plate = R(box);
         Ui.DrawPanel(this, plate, _k);
         float y = plate.Position.Y, cx = plate.GetCenter().X;
         int title = Px(PhoneBattleStates.TitleText);
-        Mid(_brush, cx + 2, y + P(PhoneBattleStates.TitleMiddle) + 2, r.Title, title, Colors.Black);
-        Mid(_brush, cx, y + P(PhoneBattleStates.TitleMiddle), r.Title, title, Ui.Name);
+        Mid(_brush, cx + 2, y + k * P(PhoneBattleStates.TitleMiddle) + 2, r.Title, title, Colors.Black);
+        Mid(_brush, cx, y + k * P(PhoneBattleStates.TitleMiddle), r.Title, title, Ui.Name);
         if (r.Reason.Length > 0)
         {
             int reason = Px(PhoneBattleStates.ReasonText);
-            Mid(_semi, cx, y + P(PhoneBattleStates.ReasonMiddle), Fit(_semi, r.Reason.ToUpperInvariant(), reason, plate.Size.X - P(120)), reason,
+            Mid(_semi, cx, y + k * P(PhoneBattleStates.ReasonMiddle), Fit(_semi, r.Reason.ToUpperInvariant(), reason, plate.Size.X - P(120)), reason,
                 Ui.Subtitle);
         }
         float side = P(PhoneBattleStates.DividerSide);
-        Ui.DrawDivider(this, plate.Position.X + side, plate.End.X - side, y + P(PhoneBattleStates.Divider), _k);
+        Ui.DrawDivider(this, plate.Position.X + side, plate.End.X - side, y + k * P(PhoneBattleStates.Divider), _k);
         float quarter = plate.Size.X / 4;
         int army = Px(PhoneBattleStates.ArmyText), damages = Px(PhoneBattleStates.DamagesText), word = Px(PhoneBattleStates.DamagesWordText);
         foreach (var (name, value, ax) in new[] { (r.PlayerArmy, r.PlayerDamages, cx - quarter), (r.EnemyArmy, r.EnemyDamages, cx + quarter) })
         {
-            Mid(_semi, ax, y + P(PhoneBattleStates.ArmyMiddle), Fit(_semi, name.ToUpperInvariant(), army, quarter * 2 - P(60)), army, Ui.Label);
-            Mid(_bold, ax, y + P(PhoneBattleStates.DamagesMiddle), Figures.Number(value), damages, Ui.Minus);
-            Mid(_semi, ax, y + P(PhoneBattleStates.DamagesWordMiddle), "DAMAGES", word, Ui.Subtitle);
+            Mid(_semi, ax, y + k * P(PhoneBattleStates.ArmyMiddle), Fit(_semi, name.ToUpperInvariant(), army, quarter * 2 - P(60)), army, Ui.Label);
+            Mid(_bold, ax, y + k * P(PhoneBattleStates.DamagesMiddle), Figures.Number(value), damages, Ui.Minus);
+            Mid(_semi, ax, y + k * P(PhoneBattleStates.DamagesWordMiddle), "DAMAGES", word, Ui.Subtitle);
         }
-        DrawLine(new Vector2(cx, y + P(PhoneBattleStates.RuleTop)), new Vector2(cx, y + P(PhoneBattleStates.RuleFoot)), Ui.DimGold,
+        DrawLine(new Vector2(cx, y + k * P(PhoneBattleStates.RuleTop)), new Vector2(cx, y + k * P(PhoneBattleStates.RuleFoot)), Ui.DimGold,
             Lacquer.Line(1, _k));
-        Mid(_bold, cx, y + P(PhoneBattleStates.ExpMiddle), (r.Exp + " EXP obtained").ToUpperInvariant(), Px(PhoneBattleStates.ExpText), Ui.Text);
-        if (r.LevelUps.Count > 0)
+        Mid(_bold, cx, y + k * P(PhoneBattleStates.ExpMiddle), (r.Exp + " EXP obtained").ToUpperInvariant(), Px(PhoneBattleStates.ExpText), Ui.Text);
+        if (rows.Count > 0)
         {
-            Ui.DrawDivider(this, plate.Position.X + side, plate.End.X - side, y + P(720 + PhoneBattleStates.LevelDivider), _k);
-            int wordSize = Px(PhoneBattleStates.LevelWord), nameSize = Px(PhoneBattleStates.LevelName), gainsSize = Px(PhoneBattleStates.LevelGains);
-            for (int i = 0; i < r.LevelUps.Count; i++)
-            {
-                var up = r.LevelUps[i];
-                var row = R(PhoneBattleStates.LevelUpRow(PhoneBattleStates.ResultsPlate(r.LevelUps.Count), i, r.LevelUps.Count));
-                Ui.DrawRowBox(this, row, false, _k);
-                float x = row.Position.X + P(30);
-                DrawString(_bold, new Vector2(x, Lacquer.Baseline(row, _bold, wordSize)), "LEVEL UP", fontSize: wordSize, modulate: Accent);
-                x += _bold.GetStringSize("LEVEL UP", fontSize: wordSize).X + P(40);
-                DrawString(_semi, new Vector2(x, Lacquer.Baseline(row, _semi, nameSize)), up.Unit, fontSize: nameSize, modulate: Ui.Name);
-                float gx = Math.Max(row.Position.X + P(500), x + _semi.GetStringSize(up.Unit, fontSize: nameSize).X + P(40));
-                string gains = string.Join("  ·  ", up.Gains);
-                DrawString(_cinzel, new Vector2(gx, Lacquer.Baseline(row, _cinzel, gainsSize)), Fit(_cinzel, gains, gainsSize, row.End.X - P(20) - gx),
-                    fontSize: gainsSize, modulate: Ui.Value);
-            }
+            Ui.DrawDivider(this, plate.Position.X + side, plate.End.X - side, y + k * P(720) + P(PhoneBattleStates.LevelDivider), _k);
+            var (rx, ry, _) = PhoneBattleStates.LevelRows(box, rowsHeight);
+            DrawLevelRows(rx, ry, rows, column, levels);
         }
         if (_waiting)
             PhoneTriangleAt(new Vector2(plate.End.X - P(PhoneBattleStates.TriangleIn), plate.End.Y - P(PhoneBattleStates.TriangleUp)));
