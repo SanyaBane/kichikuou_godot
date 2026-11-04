@@ -87,6 +87,7 @@ internal sealed class FacePictures(CgLibrary cgs)
             var (_, _, w, h) = PictureCut;
             texture = ImageTexture.CreateFromImage(Image.CreateFromData(w * Surface.Scale, h * Surface.Scale, false,
                 Image.Format.Rgba8, pixels));
+            PanelDescriptions.Register(texture, pictureCg, Cgs);
         }
         _panels[key] = texture;
         return texture;
@@ -112,8 +113,8 @@ internal sealed class FacePictures(CgLibrary cgs)
         return cut.ReadArea(0, 0, w, h);
     }
 
-    /// <summary>The picture panel on the original's screen (script pixels), <c>Sｱｲﾃﾑ.ADV:101-110</c>'s cut.</summary>
-    private static readonly (int X, int Y, int W, int H) PictureCut = (6, 6, 314, 196);
+    /// <summary>The picture panel on the original's screen (script pixels), <c>Sｱｲﾃﾑ.ADV:101-110</c>'s cut; its description is drawn over it by <see cref="PanelDescriptions"/>.</summary>
+    public static readonly (int X, int Y, int W, int H) PictureCut = (6, 6, 314, 196);
 
     /// <summary>
     /// <paramref name="image"/> resized to <paramref name="size"/>² without the colour key's magenta

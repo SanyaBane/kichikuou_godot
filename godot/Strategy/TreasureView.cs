@@ -405,7 +405,7 @@ internal sealed partial class TreasureView : Control
     {
         Shadowed(c, area);
         if (_picture is not null)
-            c.DrawTextureRect(_picture, area, false);
+            PanelDescriptions.Draw(c, _picture, area);
         else
             c.DrawRect(area, Colors.Black);
     }

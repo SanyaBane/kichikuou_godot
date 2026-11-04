@@ -66,8 +66,12 @@ public static partial class UnitDescription
         return result.Count == 0 ? null : result;
     }
 
-    /// <summary>The rows of the panel's inside: the CG 304×186 (600-612) has it at 1-184, the CG 304×196 at 6-189.</summary>
-    private static (int Top, int Bottom)? Rows(CgImage cg) => (cg.Width, cg.Height) switch
+    /// <summary>
+    /// The panel's inside in <paramref name="cg"/>'s pixels, from <see cref="Left"/> to <see cref="Right"/> and the rows
+    /// <c>Top</c> to <c>Bottom</c> (not included): the CG 304×186 (600-612) has it at rows 1-184, the CG 304×196 at 6-189;
+    /// null for a CG of another size.
+    /// </summary>
+    public static (int Top, int Bottom)? Rows(CgImage cg) => (cg.Width, cg.Height) switch
     {
         (Width, 186) => (1, 185),
         (Width, 196) => (6, 190),

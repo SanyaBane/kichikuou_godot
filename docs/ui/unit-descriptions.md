@@ -72,6 +72,13 @@ takes the accent colour where the variant has one.
 
 The owner chose **B** (2026-11-04).
 
-## Next
+## The drawing (built, 2026-11-04)
 
-The drawing, B, on every screen that shows such a picture.
+`godot/Strategy/PanelDescriptions`: `FacePictures.PicturePanel` registers the CG each picture-panel texture shows, and the
+screens draw the texture through `PanelDescriptions.Draw` — the deployment screen, Subordinates, Treasure (a unit or an
+item), Harem and the phone's long-press picture (`UnitPictureView`), on every device. Over the panel's inside (column
+207 to the CG's right edge, the panel's rows) it lays our lacquer (`Ui.Panel`, opaque) with a dim gold line two CG pixels
+in, and sets the text in Oswald 400, cream (`Ui.Text`), a quoted name gold (`Ui.Name`), word-wrapped, a paragraph's gap
+half a line. The size is one per panel size: the largest from ten CG pixels down to five that the longest text of all
+(CG 622) fits in, so every picture on a screen reads alike. A panel the reading does not know stays the original's.
+Nothing changes under `--interface original` (the script draws its own screens).

@@ -482,7 +482,7 @@ internal sealed partial class SubordinatesView : Control
         for (int i = 10; i >= 1; i--)
             c.DrawRect(new Rect2(p.Position.X - i + 3, p.Position.Y - i + 8, p.Size.X + 2 * i, p.Size.Y + 2 * i), new Color(0, 0, 0, 0.06f));
         if (_portrait is not null)
-            c.DrawTextureRect(_portrait, p, false);
+            PanelDescriptions.Draw(c, _portrait, p);
         else
             c.DrawRect(p, Colors.Black);
     }

@@ -88,7 +88,8 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   over a window (600, capitals).
 - **The game's font** (MS Gothic or BIZ UDGothic, the default; `GodotGlyphRenderer.Chosen`) — the script's text, at its
   own breaks and cells, never rewrapped (the battle's balloons the one exception), and our figures and ledgers.
-- **Oswald** — the exchange's big rolling counters only.
+- **Oswald** — the exchange's big rolling counters, and (weight 400) the descriptions set over the pictures' panels
+  (docs/ui/unit-descriptions.md): condensed, it fits the narrow panel at a readable size.
 - All bundled in `godot/fonts` under the SIL OFL with their licence files.
 - There is no type scale: sizes are set per screen. The one derived scale is the menu rows (`MenuRows`): 38 px rows on
   the PC, text 19 (text = 8 + 0.29 × row), a tag's word 4 smaller; the scene menus 40 px; touch rows 46 px

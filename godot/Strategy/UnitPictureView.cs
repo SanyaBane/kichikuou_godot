@@ -72,7 +72,7 @@ internal sealed partial class UnitPictureView : Control
         var area = new Rect2(b.X, b.Y, b.W, b.H);
         for (int i = 12; i >= 1; i--)
             DrawRect(area.Grow(i * f.Px(2)), new Color(0, 0, 0, 0.06f));
-        DrawTextureRect(_picture, area, false);
+        PanelDescriptions.Draw(this, _picture, area);
         DrawRect(area, Ui.DimGold, false, Math.Max(1, f.Px(3)));
     }
 
@@ -98,7 +98,7 @@ internal sealed partial class UnitPictureView : Control
         }
         var b = PhoneLedgerPortrait.Picture(f);
         var area = new Rect2(b.X, b.Y, b.W, b.H);
-        DrawTextureRect(_picture!, area, false);
+        PanelDescriptions.Draw(this, _picture!, area);
         DrawRect(area, Ui.Gold, false, Math.Max(1, f.Px(3)));
     }
 }

@@ -274,7 +274,7 @@ internal sealed partial class HaremView : Control
                 fontSize: size, modulate: Colors.White);
         }
         else if (_picture is not null)
-            c.DrawTextureRect(_picture, p, false);
+            PanelDescriptions.Draw(c, _picture, p);
         else
             c.DrawRect(p, Colors.Black);
     }
