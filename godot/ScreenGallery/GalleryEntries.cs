@@ -150,10 +150,12 @@ internal static partial class GalleryEntries
 
     private static IEnumerable<GalleryEntry> Harem()
     {
-        yield return new("harem", "Screens", "Harem", Week18, "", g =>
+        yield return new("harem", "Screens", "Harem", Week18,
+            "Royal Guards (13), the longest of Sﾊｰﾚﾑ's names (12 letters), put on offer and chosen, to see how it fits.", g =>
         {
             if (g.State(Week18) is not { } s)
                 return null;
+            LongestHaremName(s);
             var view = g.Add(new HaremView(g.Font, g.Faces) { Visible = true });
             var girls = g.Bound(s).HaremGirls();
             return area =>
@@ -162,6 +164,18 @@ internal static partial class GalleryEntries
                 view.Refresh(s, girls);
             };
         });
+    }
+
+    /// <summary>
+    /// The girl with the longest name of <c>Sﾊｰﾚﾑ</c>'s string table, Royal Guards (13; Sayori Unga next, 11 letters), put on
+    /// offer (<c>HaremAvail_*</c>, <c>VAR0249</c> + 12) and made the one chosen (<c>Harem_LastPick</c>), so the grid and the
+    /// panel show how it fits (owner, 2026-11-04).
+    /// </summary>
+    private static void LongestHaremName(GameState s)
+    {
+        const int royalGuards = 13;
+        s.Memory.Var(249 + royalGuards - 1) = 1;
+        s.Harem_LastPick = royalGuards;
     }
 
     // ---------------------------------------------------------------- Subordinates (docs/ui/subordinates.md)
