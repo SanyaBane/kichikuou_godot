@@ -26,8 +26,9 @@ internal static partial class GalleryEntries
 
     private static IEnumerable<GalleryEntry> BoardScreens()
     {
-        yield return new("opening", Battle, "Battle: the opening", null, CaptureNote + " At the first round's header.",
-            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Opening is not null));
+        yield return new("opening", Battle, "Battle: the opening", null,
+            CaptureNote + " At the first round's header, its place made the longest province's name (Great Wall of Helman A (49)).",
+            g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Opening is not null, state: LongestPlace));
         yield return new("cards-sliding", Battle, "Battle: the cards sliding in", null,
             CaptureNote + " At the first round's header, the cards' slide begun and held at 0.6 of the front row's way in.",
             g => Board(g, (p, m) => m.Kind == MomentKind.Key && p.Opening is not null, then: (_, _, board) => board.HoldCardsSlide(0.6)));
@@ -152,6 +153,12 @@ internal static partial class GalleryEntries
         },
     };
 
+    /// <summary>
+    /// The battle's place (string 8, the opening's title) made the longest of SET_MAP's province names, 22 letters — the
+    /// Great Wall of Helman A (49), its B and C as long — to see whether "… — Offensive Battle" fits (owner, 2026-11-04).
+    /// </summary>
+    private static void LongestPlace(GameState s) => s.Strings[8] = "Great Wall of Helman A";
+
     private static bool Results(GamePresenter p, BattleMoment m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Results };
 
     /// <summary>A player's turn: <c>FIGT_SEL</c> with our battle screen up.</summary>
@@ -197,11 +204,11 @@ internal static partial class GalleryEntries
     /// on its menu and <paramref name="then"/> plays the pointer once the board is laid out — with <paramref name="forecast"/>
     /// the damage forecast on (else off, whatever the option), its figures waited for; with <paramref name="dialog"/>
     /// the retreat's confirmation is asked over it; with <paramref name="read"/> every message counts as read before;
-    /// <paramref name="info"/> makes up the info box shown from the capture's.
+    /// <paramref name="info"/> makes up the info box shown from the capture's; <paramref name="state"/> changes the held state.
     /// </summary>
     private static Action<Rect2>? Board(GalleryStage g, Func<GamePresenter, BattleMoment, bool> chosen, int nth = 1,
         Action<GamePresenter, BattleMoment, BattleBoardView>? then = null, bool dialog = false, string file = GalleryBattle.Capture,
-        bool read = false, bool forecast = false, Func<BattleInfoBox, BattleInfoBox>? info = null)
+        bool read = false, bool forecast = false, Func<BattleInfoBox, BattleInfoBox>? info = null, Action<GameState>? state = null)
     {
         GamePresenter Fresh()
         {
@@ -212,6 +219,7 @@ internal static partial class GalleryEntries
         }
         var (p, moment) = GalleryBattle.HeldAt(Fresh, chosen, nth, file);
         var s = p.State ?? throw new InvalidOperationException("The replay bound no state.");
+        state?.Invoke(s);                                                   // the held moment made up, as the entry asks
         var board = g.Add(new BattleBoardView(g.Font, g.Faces) { Visible = true });
         board.LoadCrops();
         var skip = PhoneLandscape || Device.Layout == DeviceLayout.PhoneUpright
