@@ -38,6 +38,9 @@ internal sealed partial class TreasureView : Control
     private const float TabX = 708, TabY = 726, TabW = 176, TabH = 40, TabStep = 182;
     private const int Columns = 3;
 
+    /// <summary>Every button's word on the PC and the tablet, the tabs' too: one size (docs/ui/style.md, "Buttons side by side").</summary>
+    private const int ButtonText = 17;
+
     private const int NoButton = -1, BackButton = -2, EndButton = -3, TabCharacters = -4, TabItems = -5, ActionButton = -6;   // a cell is its number
 
     private readonly FacePictures _faces;
@@ -447,7 +450,7 @@ internal sealed partial class TreasureView : Control
         }
         if (covered)
         {
-            DrawButton(c, BackArea, "Back", BackButton, 15);
+            DrawButton(c, BackArea, "Back", BackButton, ButtonText);
             return;
         }
         // A unit's face as the deployment screen cuts it; an item by its name alone (the original's shrunk picture with its
@@ -472,7 +475,7 @@ internal sealed partial class TreasureView : Control
             c.DrawString(_brush, new Vector2(tx, y + 196), p.Name, fontSize: 22, modulate: Ui.Name);
             c.DrawString(_gothic, new Vector2(tx, y + 222), "Which character?", fontSize: 16, modulate: Ui.Text);
         }
-        DrawButton(c, BackArea, "Back", BackButton, 15);
+        DrawButton(c, BackArea, "Back", BackButton, ButtonText);
     }
 
     /// <summary>
@@ -487,12 +490,12 @@ internal sealed partial class TreasureView : Control
         {
             bool hover = !Busy && _hovered == ActionButton;
             Ui.DrawRedButton(c, r, hover, hover && _pressed == ActionButton, _k);
-            Centred(c, _cinzel, b.Label, 18, Color.Color8(250, 226, 160), cx, Lacquer.Baseline(r, _cinzel, 18));
+            Centred(c, _cinzel, b.Label, ButtonText, Color.Color8(250, 226, 160), cx, Lacquer.Baseline(r, _cinzel, ButtonText));
             return;
         }
         c.DrawRect(r, Ui.OffButton);
         c.DrawRect(r, Ui.OffLine, false, Line(1));
-        Centred(c, _cinzel, b.Label, 18, Ui.OffText, cx, Lacquer.Baseline(new Rect2(r.Position.X, r.Position.Y + 6, r.Size.X, 34), _cinzel, 18));
+        Centred(c, _cinzel, b.Label, ButtonText, Ui.OffText, cx, Lacquer.Baseline(new Rect2(r.Position.X, r.Position.Y + 6, r.Size.X, 34), _cinzel, ButtonText));
         Centred(c, _gothic, b.Refusal, 14, Ui.Minus, cx, Lacquer.Baseline(new Rect2(r.Position.X, r.Position.Y + 38, r.Size.X, 24), _gothic, 14));
     }
 
@@ -559,9 +562,9 @@ internal sealed partial class TreasureView : Control
             c.DrawRect(r, on ? Ui.ChosenFill : hover ? Ui.RowHover : Ui.Row);
             c.DrawRect(r, on ? Ui.Gold : hover ? Ui.HoverLine : Ui.DimGold, false, Line(on || hover ? 2 : 1));
             string label = view == 0 ? "Characters" : "Items";
-            Centred(c, _cinzel, label, 15, on || hover ? Ui.Name : Ui.Quiet, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, 15));
+            Centred(c, _cinzel, label, ButtonText, on || hover ? Ui.Name : Ui.Quiet, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, ButtonText));
         }
-        DrawButton(c, EndArea, "End", EndButton, 17);
+        DrawButton(c, EndArea, "End", EndButton, ButtonText);
     }
 
     private void DrawButton(Control c, Rect2 r, string label, int button, int size)
