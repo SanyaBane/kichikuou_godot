@@ -224,8 +224,12 @@ public static class PhoneLedgerUpright
     /// <summary>The deployment's bar: Stop's width, the room between the buttons; their type (Stop's, a send's alone, two sends', a send's note).</summary>
     private const float StopWidth = 404, BarGap = 16;
 
-    /// <summary>The bar's type: Stop's, a send button's alone, two sends' (a defence's Plains and City), a send's note.</summary>
-    public const float StopText = 48, SendText = 60, SendsText = 46, NoteText = 28;
+    /// <summary>
+    /// The bar's type: Stop's, a send button's alone, two sends' (a defence's Plains and City), a send's note (a field's
+    /// limit: 32, 15 % over held landscape's, owner, 2026-11-04); the gap between a send's word and its note, as a part
+    /// of held landscape's (85 %).
+    /// </summary>
+    public const float StopText = 48, SendText = 60, SendsText = 46, NoteText = 32, NoteGap = 0.85f;
 
     /// <summary>
     /// The deployment's bar: the <paramref name="sends"/> buttons that send the party from the left, sharing the room, and

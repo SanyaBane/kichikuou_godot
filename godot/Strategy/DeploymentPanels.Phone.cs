@@ -150,9 +150,16 @@ internal sealed partial class DeploymentPanels
             }
             var top = new Rect2(rect.Position, new Vector2(rect.Size.X, rect.Size.Y * 0.62f));
             var bottom = new Rect2(rect.Position.X, rect.Position.Y + rect.Size.Y * 0.56f, rect.Size.X, rect.Size.Y * 0.38f);
-            int small = SideCells.Fit(_gothic, note, u.Size(PhoneLedger.NoteText), rect.Size.X - u.Px(24));
-            CentredString(c, _brush, label, size, ink, rect.GetCenter().X, Lacquer.Baseline(top, _brush, size));
-            CentredString(c, _gothic, note, small, Color.Color8(236, 206, 160), rect.GetCenter().X, Lacquer.Baseline(bottom, _gothic, small));
+            bool upright = u.Frame.IsUpright;
+            int small = SideCells.Fit(_gothic, note, u.Size(upright ? PhoneLedgerUpright.NoteText : PhoneLedger.NoteText), rect.Size.X - u.Px(24));
+            float wordLine = Lacquer.Baseline(top, _brush, size), noteLine = Lacquer.Baseline(bottom, _gothic, small);
+            if (upright)                                                   // the word and its note drawn together (owner, 2026-11-04)
+            {
+                float gap = noteLine - _gothic.GetAscent(small) - wordLine, pull = gap * (1 - PhoneLedgerUpright.NoteGap) / 2;
+                (wordLine, noteLine) = (wordLine + pull, noteLine - pull);
+            }
+            CentredString(c, _brush, label, size, ink, rect.GetCenter().X, wordLine);
+            CentredString(c, _gothic, note, small, Color.Color8(236, 206, 160), rect.GetCenter().X, noteLine);
         }
     }
 
