@@ -7,7 +7,7 @@ namespace Kichikuou.Original.Content.Tests;
 public class EffectUsersTests(ITestOutputHelper output)
 {
     /// <summary>
-    /// In the booted game (<c>SET_CHR</c>) Maria (unit 16) and Isoroku (unit 27) shoot (Archers), Melfeis (unit 13) casts
+    /// In the booted game (<c>SET_CHR</c>) Maria (unit 16) fires her cannons, Isoroku (unit 27) shoots, Melfeis (unit 13) casts
     /// ice, Rance (unit 1) strikes; every named unit is in exactly one list.
     /// </summary>
     [ScenarioFact]
@@ -15,7 +15,8 @@ public class EffectUsersTests(ITestOutputHelper output)
     {
         var s = (await EndGame.BootAsync()).State;
         var bow = EffectUsers.Of(s, ExchangeEffectKind.Bow).Select(u => u.Unit).ToList();
-        Assert.Contains(16, bow);
+        Assert.Contains(16, EffectUsers.Of(s, ExchangeEffectKind.Cannon).Select(u => u.Unit));
+        Assert.DoesNotContain(16, bow);
         Assert.Contains(27, bow);
         Assert.Contains(13, EffectUsers.Of(s, ExchangeEffectKind.IceMagic).Select(u => u.Unit));
         Assert.Contains(1, EffectUsers.Of(s, ExchangeEffectKind.Melee).Select(u => u.Unit));

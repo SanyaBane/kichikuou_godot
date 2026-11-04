@@ -838,6 +838,14 @@ picture, the slot panels) is not shown. How it is built:
   bands. Its multi-target variant (49060, 152×78, a card's size) is not used: a Defend is one unit's. Over the sand
   battlefield the curtain runs through the defender's ranks and the wall stands at their front, faint under screen
   blending but for the wall's peak (frames 9-11).
+  **The cannon** (owner, 2026-11-04): Maria's (unit 16) troops carry portable cannons, not bows, so her Indirect attack
+  plays its own effect (`ExchangeEffect.IndirectOf`, `ExchangeEffectKind.Cannon`; any other Indirect attack, Isoroku's
+  (unit 27) included, the bow; Mill's (unit 25) Phantom Beasts later, an effect of our own), ours after Sengoku Rance's
+  Cannoneer effect 40330 — her Tulip has no entry of its own there and plays its troop type's (`T_EFFDAT.JAF.jam`,
+  `add3(40330, 30, …, 12)`) — not traced (`CannonEffect`): on the actor's half a flash at each barrel's mouth where her
+  sprites hold them (frames 0-2) and pale gunsmoke swelling back and up, thinning by ~22, shells streaking right
+  (1-6); on the target's half the main burst (from 5) and a smaller one beside it (8) — a white flash, fire billows
+  burning from white to soot until ~24, spark streaks thrown up and falling, embers.
   **Debug → Effects** (`EffectViewer`) plays them over our scene's battlefield (CG 900 and its overlay, with Ex's
   (commander 1) army, CG 1131) or black, in a window over the game's whole screen with the scene scaled to its width
   (owner, 2026-10-29; until then the scene at its own 1024×410, the controls' right end cut off): the effect and its

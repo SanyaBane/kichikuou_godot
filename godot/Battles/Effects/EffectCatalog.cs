@@ -86,6 +86,8 @@ internal static class EffectCatalog
         new("Melee (after 40000)", "melee", EffectGroup.Attacks, MeleeEffect.Build, false, [RanceKnights], Plain: ExchangeEffectKind.Melee),
         new("Bow (after 40260)", "bow", EffectGroup.Attacks, BowEffect.Build, false, [new("Isoroku (unit 27), JAPAN Archers", 1209)],
             Plain: ExchangeEffectKind.Bow),
+        new("Cannon (after 40330)", "cannon", EffectGroup.Attacks, CannonEffect.Build, false, [new("Maria (unit 16), Maria's Pupils", 1168)],
+            Plain: ExchangeEffectKind.Cannon),
         new("Magic: fire (after 40360)", "magic", EffectGroup.Magic, MagicEffect.Build, false, [Mages("Sill (unit 2)")],
             Plain: ExchangeEffectKind.Magic),
         new("Ice Magic (after 40730)", "ice-magic", EffectGroup.Magic, IceEffect.Build, false, [Mages("Melfeis (unit 13)")],

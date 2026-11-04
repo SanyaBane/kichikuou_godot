@@ -34,6 +34,21 @@ public class ExchangeEffectTests
         Assert.Equal(new ExchangeEffect(kind, side), ExchangeEffect.Of(s));
     }
 
+    /// <summary>Maria's (unit 16) Indirect attack fires her cannons; Isoroku's (unit 27) and the enemy's shoot the bow.</summary>
+    [Theory]
+    [InlineData(16, 1, 99, 3, ExchangeEffectKind.Cannon)]
+    [InlineData(27, 1, 99, 3, ExchangeEffectKind.Bow)]
+    [InlineData(16, 99, 1, 4, ExchangeEffectKind.Bow)]
+    public void Marias_shots_are_cannon_fire(int unit, int player, int enemy, int msgMode, ExchangeEffectKind kind)
+    {
+        var s = new GameState();
+        s.Bt_PlayerAction = (Sys3Int)player;
+        s.Bt_EnemyAction = (Sys3Int)enemy;
+        s.Bt_MsgMode = (Sys3Int)msgMode;
+        s.Unit_Cur = (Sys3Int)unit;
+        Assert.Equal(kind, ExchangeEffect.Of(s)!.Value.Kind);
+    }
+
     /// <summary>
     /// Special 1 is Rance Attack by Rance (unit 1), Kentarou-kun Slash's by Kentarou (unit 31), By la Way by Rick
     /// (unit 7), Rance Attack's in red.

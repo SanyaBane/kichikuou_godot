@@ -31,7 +31,7 @@ public static class EffectUsers
     /// <summary>The effect unit <paramref name="unit"/>'s plain attack plays, by its class in <paramref name="state"/>.</summary>
     public static ExchangeEffectKind KindOf(GameState state, int unit) => state.Units[unit].Class.Value switch
     {
-        1 => ExchangeEffectKind.Bow,
+        1 => ExchangeEffect.IndirectOf(unit),
         2 or 3 or 11 => ExchangeEffect.MagicKindOf(MagicSpells.OfUnit(state, unit)),
         _ => ExchangeEffectKind.Melee,
     };
