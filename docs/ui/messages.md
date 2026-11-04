@@ -400,3 +400,20 @@ as it is. Where to start:
 
 1. ~~Point 2: monospace as now, or a proportional face with the lines rewrapped?~~ Answered (2026-10-18):
    monospace at the script's breaks, §3 item 2.
+
+## 7. The results plate's longest level-ups (owner, 2026-11-04)
+
+The gallery's `info-level-up` shows the longest the results plate can hold, in every pass: four rows (a party's four
+units), the longest names of `SET_CHR` (Mars the Great, Seizel Sisters) and the longest gains `FIGT.ADV:3065-3160`
+prints after "Leader Attacks +1" (the Popularity Staff's "The Popularity Staff increased troops by N.", Mill (unit 25)'s
+"Summoned 50 more phantom beasts.", a modifier's "Def in Dungeons UP"). The gains are cut with "…" on every device.
+
+Mock-ups (`tools/ui/mock_level_ups.py`, over the gallery's PC, landscape and upright dumps):
+
+- **A — two lines a row**: LEVEL UP and the name, "Leader Attacks +1" at the row's right; the rest of the gains whole on
+  the second line under the name. The plate grows: on the PC over the cards' top row, held landscape to the screen's
+  foot (the band under the EXP taken out), upright up over the scene so that its foot stays.
+- **B — our shorter words**, one line a row as now: "Leader Atk +1 · Troops +250", "· Dungeon Def +1", "· Beasts +50"
+  (the modifier rises by 1); the gains closer (" · "), on the PC the name right after LEVEL UP as on the phones.
+
+Awaiting the owner's choice.
