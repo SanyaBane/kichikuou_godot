@@ -12,6 +12,7 @@ namespace Kichikuou.Game.Strategy;
 internal sealed partial class HaremView
 {
     private readonly PickerGridScroll _grid = new();
+    private readonly PickerMoreCells _more = new();      // the hint at filled cells out of view (the owner's 3)
 
     /// <summary>The button at <paramref name="at"/> (the screen's units): Summon, End, or a girl's cell in view.</summary>
     private int UprightButtonAt(PhoneFrame f, Vector2 at)
@@ -44,13 +45,27 @@ internal sealed partial class HaremView
                 PhonePickerParts.DrawEmptyCell(c, u.Rect(cell), _k);
         }
         PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
+        _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
         bool hoverEnd = !Busy && _hovered == EndButton;
         PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickersUpright.End(f)), _brush, "End", hoverEnd);
         DrawSummon(c, u, u.Rect(PhonePickersUpright.Action(f)));
     }
 
+    /// <summary>The cells a girl holds: the hint's (<see cref="PickerMoreCells"/>).</summary>
+    private int[] FilledCells => [.. _girls.Select(g => g.Number)];
+
     private bool GridTouch(InputEvent e) =>
-        _phone is { } f && !Busy && _grid.Touch(e, PhonePickersUpright.HaremGrid(f), StartScroll, _face.QueueRedraw);
+        _phone is { } f && !Busy
+        && (_more.Touch(e, cell => _grid.Show(PhonePickersUpright.HaremGrid(f), cell), _face.QueueRedraw)
+            || _grid.Touch(e, PhonePickersUpright.HaremGrid(f), StartScroll, _face.QueueRedraw));
+
+    /// <summary>The grid scrolled the least that shows cell <paramref name="number"/> (the screen gallery's scrolled look).</summary>
+    public void ShowCell(int number)
+    {
+        if (_phone is { IsUpright: true } f)
+            _grid.Show(PhonePickersUpright.HaremGrid(f), number);
+        _face.QueueRedraw();
+    }
 
     /// <summary>The press scrolls from here on: no tap, no cell lit (the rows move under the finger).</summary>
     private void StartScroll()

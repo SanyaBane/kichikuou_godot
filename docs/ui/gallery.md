@@ -537,6 +537,11 @@ bar, docs/ui/phone.md §41) and Summon | End in the bar;
 `treasure…` the item's or the character's picture at the width, its details, Characters | Items (`-which-item` Rance's
 prompt and Back in their place), the grid in rows of 6.7 mm, the red button | End (`-refusal` greyed with its reason),
 `-question` and `-replace` the questions across the room over the button. PH2 and PT2 left `GALLERY_ENTRIES`.
+Since 2026-11-04 the rows are 20 % lower (5.8 / 5.4 mm, the owner's B), and the grids hint at filled cells out of view
+(the owner's 3, `tools/ui/mock_more_cells.py`; `godot/Strategy/PickerMoreCells`): a pill over the rows' edge, "▼ 3 more
+below" / "▲ 3 more above", a press scrolling to the nearest, and a tick on the scroll bar at each row holding one. `harem`
+has Royal Guards (13), the longest name, chosen, and Kaoru (41), Rebecca (47) and Saitou (50) on offer far down;
+`harem-scrolled` the same with the grid scrolled down, both pills showing.
 
 Step P7b (2026-10-30) built Save/Load: on this pass `save-load…` show the title band with Load | Save at its right
 (`-title` without them), the lists' tabs, the heading with the sweep, the list in one-line rows above the page (nine in

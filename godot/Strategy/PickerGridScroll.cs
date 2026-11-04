@@ -28,6 +28,13 @@ internal sealed class PickerGridScroll
         _finger.Cancel();
     }
 
+    /// <summary>The grid scrolled the least that shows cell <paramref name="number"/> (the hint's pill pressed), a flick stopped.</summary>
+    public void Show(PhonePickersUpright.ScrolledGrid grid, int number)
+    {
+        _finger.Cancel();
+        Scroll = grid.Reveal(number, Scroll);
+    }
+
     /// <summary>Entry <paramref name="chosen"/> (a cell's number, 0 none) newly chosen out of view is scrolled into it; the scroll kept within <paramref name="grid"/>.</summary>
     public void Reveal(PhonePickersUpright.ScrolledGrid grid, int chosen)
     {

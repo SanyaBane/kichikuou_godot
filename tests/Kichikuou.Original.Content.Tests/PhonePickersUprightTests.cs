@@ -82,6 +82,31 @@ public class PhonePickersUprightTests
     }
 
     [Fact]
+    public void The_hint_counts_the_filled_cells_out_of_view_and_finds_the_nearest()
+    {
+        // Twelve rows in view of 17: at scroll 0 rows 12-16 (cells 37-51) are below; at scroll 4 rows 0-3 (cells 1-12) above.
+        var grid = PhonePickersUpright.HaremGrid(Reference);
+        int[] filled = [13, 1, 10, 11, 41, 47, 50];
+        Assert.Equal((0, 3, 0, 41), grid.Hidden(filled, 0));
+        Assert.Equal((3, 1, 11, 50), grid.Hidden(filled, 4));
+        Assert.Equal((0, 0, 0, 0), grid.Hidden([], 2));
+        Assert.Equal("3 more below", PhonePickersUpright.MoreText(3, above: false));
+    }
+
+    [Fact]
+    public void The_hint_s_pill_stands_centred_inside_the_rows_edge()
+    {
+        // mock_more_cells.py: 68 high, 8 in from the rows' top or foot, as wide as its text and 2 × 36 + 36 of room.
+        var grid = PhonePickersUpright.HaremGrid(Reference);
+        var top = PhonePickersUpright.MorePill(Reference, grid, above: true, 200);
+        Equal(new(16 + (1158 - 308) / 2f, grid.Area.Y + 8, 308, 68), top);
+        var foot = PhonePickersUpright.MorePill(Reference, grid, above: false, 200);
+        Assert.Equal(grid.Area.Y + 12 * 108 - 6 - 8, foot.Bottom, Close);
+        var (track, _) = PhonePickersUpright.ScrollBar(Reference, grid, 0);
+        Assert.Equal(track.Y + 0.5f * track.H / 17, PhonePickersUpright.TickY(track, 0), Close);
+    }
+
+    [Fact]
     public void A_grid_with_every_row_in_view_keeps_the_room_s_width()
     {
         var grid = PhonePickersUpright.HaremGrid(PhoneFrame.Upright(1220, 5000));

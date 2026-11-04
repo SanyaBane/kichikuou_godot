@@ -112,7 +112,65 @@ public static class PhonePickersUpright
                 return Math.Min(row, MaxScroll);
             return row >= scroll + Shown ? Math.Min(MaxScroll, row - Shown + 1) : Math.Clamp(scroll, 0, MaxScroll);
         }
+
+        /// <summary>
+        /// The filled cells (<paramref name="filled"/>, their numbers) out of view at <paramref name="scroll"/>: how many are
+        /// above the rows shown and how many below, and the nearest of each (0: none) — the hint's (the owner's 3, 2026-11-04).
+        /// </summary>
+        public (int Above, int Below, int NearestAbove, int NearestBelow) Hidden(IEnumerable<int> filled, int scroll)
+        {
+            int above = 0, below = 0, nearestAbove = 0, nearestBelow = 0;
+            foreach (int n in filled.Order())
+            {
+                int row = (n - 1) / Columns;
+                if (row < scroll)
+                {
+                    above++;
+                    nearestAbove = n;                               // the last above is the nearest
+                }
+                else if (row >= scroll + Shown)
+                {
+                    below++;
+                    if (nearestBelow == 0)
+                        nearestBelow = n;
+                }
+            }
+            return (above, below, nearestAbove, nearestBelow);
+        }
     }
+
+    // ------------------------------------------------------------------ the hint at cells out of view (mock_more_cells.py, 3)
+
+    /// <summary>
+    /// The pill over the grid's edge row that tells of filled cells out of view ("▼ 2 more below", "▲ 3 more above"; the
+    /// owner's 3, 2026-11-04): 68 high, 8 in from the rows' edge, its text's type, the room each side of the arrow and the
+    /// text, the arrow's room and its half width; its shadow this far down.
+    /// </summary>
+    public const float PillHeight = 68, PillEdge = 8, PillText = 28, PillPad = 36, PillArrow = 36, PillArrowHalf = 11,
+        PillShadow = 8;
+
+    /// <summary>
+    /// The pill at the grid's top (<paramref name="above"/>) or foot, centred over its rows, as wide as its text
+    /// (<paramref name="textWidth"/>, the canvas's units) needs.
+    /// </summary>
+    public static PhoneFrame.Box MorePill(PhoneFrame f, ScrolledGrid grid, bool above, float textWidth)
+    {
+        float h = f.Px(PillHeight), w = textWidth + f.Px(2 * PillPad + PillArrow);
+        float y = above ? grid.Area.Y + f.Px(PillEdge) : grid.Area.Y + grid.Shown * grid.Pitch - grid.Gap - f.Px(PillEdge) - h;
+        return new PhoneFrame.Box(grid.Area.X + (grid.Area.W - w) / 2, y, w, h);
+    }
+
+    /// <summary>The pill's words: "2 more below", "1 more above".</summary>
+    public static string MoreText(int count, bool above) => $"{count} more {(above ? "above" : "below")}";
+
+    /// <summary>
+    /// The ticks on the scroll bar at the rows holding a filled cell (the owner's 3): reaching this far left of the groove,
+    /// this thick, an ink rim round them this wide.
+    /// </summary>
+    public const float TickOut = 6, TickThick = 5, TickRim = 2;
+
+    /// <summary>A tick's middle for row <paramref name="row"/> (0-16): the whole list laid along <paramref name="track"/>.</summary>
+    public static float TickY(PhoneFrame.Box track, int row) => track.Y + (row + 0.5f) * track.H / Rows;
 
     /// <summary>The harem's grid: 190 under the details' top, down to 20 over the bar, its rows 102 high (5.8 mm; 128 till the owner's B, 2026-11-04, `tools/ui/mock_picker_rows.py`: 20 % lower, more rows in view).</summary>
     private const float HaremDetails = 190, HaremRow = 102;

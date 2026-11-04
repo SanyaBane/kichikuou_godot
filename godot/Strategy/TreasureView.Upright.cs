@@ -15,6 +15,7 @@ namespace Kichikuou.Game.Strategy;
 internal sealed partial class TreasureView
 {
     private readonly PickerGridScroll _grid = new();
+    private readonly PickerMoreCells _more = new();      // the hint at filled cells out of view (the owner's 3)
     private int _gridView = -1;
 
     /// <summary>The button at <paramref name="at"/> (the screen's units): End, the red button, Back or a tab, or an entry's cell in view.</summary>
@@ -70,13 +71,19 @@ internal sealed partial class TreasureView
                 PhonePickerParts.DrawEmptyCell(c, u.Rect(cell), _k);
         }
         PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
+        _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
         PhonePickerParts.DrawButton(c, u, u.Rect(PhonePickersUpright.End(f)), _brush, "End", !Busy && _hovered == EndButton);
         if (_button is { } button)
             DrawAction(c, u, button, u.Rect(PhonePickersUpright.Action(f)));
     }
 
+    /// <summary>The cells an entry holds in the view shown: the hint's (<see cref="PickerMoreCells"/>).</summary>
+    private int[] FilledCells => [.. _entries.Select(e => e.Number)];
+
     private bool GridTouch(InputEvent e) =>
-        _phone is { } f && !Busy && _grid.Touch(e, PhonePickersUpright.TreasureGrid(f), StartScroll, _face.QueueRedraw);
+        _phone is { } f && !Busy
+        && (_more.Touch(e, cell => _grid.Show(PhonePickersUpright.TreasureGrid(f), cell), _face.QueueRedraw)
+            || _grid.Touch(e, PhonePickersUpright.TreasureGrid(f), StartScroll, _face.QueueRedraw));
 
     /// <summary>The press scrolls from here on: no tap, no cell lit (the rows move under the finger).</summary>
     private void StartScroll()

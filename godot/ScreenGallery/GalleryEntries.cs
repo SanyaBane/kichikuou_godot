@@ -150,20 +150,44 @@ internal static partial class GalleryEntries
 
     private static IEnumerable<GalleryEntry> Harem()
     {
-        yield return new("harem", "Screens", "Harem", Week18,
-            "Royal Guards (13), the longest of Sﾊｰﾚﾑ's names (12 letters), put on offer and chosen, to see how it fits.", g =>
+        yield return new("harem", "Screens", "Harem", Week18, HaremNote, g => HaremScreen(g, scrolled: false));
+        yield return new("harem-scrolled", "Screens", "Harem: scrolled down", Week18,
+            HaremNote + " Held upright the grid is scrolled down to show the hint above it too (the owner's 3).",
+            g => HaremScreen(g, scrolled: true));
+    }
+
+    private const string HaremNote = "Royal Guards (13), the longest of Sﾊｰﾚﾑ's names (12 letters), put on offer and chosen, to "
+        + "see how it fits; Kaoru (41), Rebecca (47) and Saitou (50) on offer too, far down the grid, for the hint at cells out of view.";
+
+    /// <summary>
+    /// The harem from the week-18 save with <see cref="LongestHaremName"/> and <see cref="HaremBelow"/>; with
+    /// <paramref name="scrolled"/>, held upright, the grid scrolled to its foot — the chosen girl's row then shown again
+    /// as the screen keeps her in view — so the hint shows above as well as below.
+    /// </summary>
+    private static Action<Rect2>? HaremScreen(GalleryStage g, bool scrolled)
+    {
+        if (g.State(Week18) is not { } s)
+            return null;
+        LongestHaremName(s);
+        HaremBelow(s);
+        var view = g.Add(new HaremView(g.Font, g.Faces) { Visible = true, MaskPicture = true });
+        var girls = g.Bound(s).HaremGirls();
+        bool first = true;
+        return area =>
         {
-            if (g.State(Week18) is not { } s)
-                return null;
-            LongestHaremName(s);
-            var view = g.Add(new HaremView(g.Font, g.Faces) { Visible = true, MaskPicture = true });
-            var girls = g.Bound(s).HaremGirls();
-            return area =>
-            {
-                view.Place(area.Position, PixelsPerScript(area));
-                view.Refresh(s, girls);
-            };
-        });
+            view.Place(area.Position, PixelsPerScript(area));
+            view.Refresh(s, girls);
+            if (scrolled && first)
+                view.ShowCell(50);                                          // the last girl's cell: the grid's foot
+            first = false;
+        };
+    }
+
+    /// <summary>Kaoru (41), Rebecca (47) and Saitou (50) put on offer: rows 13, 15 and 16, out of view held upright (owner, 2026-11-04).</summary>
+    private static void HaremBelow(GameState s)
+    {
+        foreach (int girl in (int[])[41, 47, 50])
+            s.Memory.Var(249 + girl - 1) = 1;
     }
 
     /// <summary>
