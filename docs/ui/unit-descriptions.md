@@ -81,4 +81,4 @@ item), Harem and the phone's long-press picture (`UnitPictureView`), on every de
 in, and sets the text in Oswald 400, cream (`Ui.Text`), a quoted name gold (`Ui.Name`), word-wrapped, a paragraph's gap
 half a line. The size is one per panel size: the largest from ten CG pixels down to five that the longest text of all
 (CG 622) fits in, so every picture on a screen reads alike. A panel the reading does not know stays the original's.
-Nothing changes under `--interface original` (the script draws its own screens).
+Nothing changes under `--interface original` (the script draws its own screens). Looked at and accepted by the owner in a window (2026-11-04).

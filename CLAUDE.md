@@ -485,7 +485,7 @@ built, not measured on the Poco yet (docs/backlog.md).
 Then (owner, 2026-11-04) the units' descriptions as text, drawn in our font over the status CG's panel: the reading is
 built — `Original.Content/Strategy/UnitDescription` reads the patch's pixel font exactly from the player's CG, its pieces
 by hash (`UnitDescriptionGlyphs`), 157 panels: the units', the harem's and the items' (docs/ui/unit-descriptions.md); the
-owner chose mock-up B (lacquer, Oswald), built: `godot/Strategy/PanelDescriptions` draws it over every picture panel of ours.
+owner chose mock-up B (lacquer, Oswald), built: `godot/Strategy/PanelDescriptions` draws it over every picture panel of ours, accepted by the owner.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
