@@ -318,6 +318,15 @@ public static class PhoneBattleStatesUpright
         return (player ? f.Room.Right - w / 2 : f.Room.X + w / 2, CutInMiddle(f) + f.Px(LabelMiddle));
     }
 
+    /// <summary>
+    /// The widest what the strategy does may be (canvas units): the band beside the portrait's column, <see cref="LabelEdge"/>
+    /// clear of the screen's side and the portrait's column; a wider label (a great success's "Strategy +50%") is set smaller.
+    /// </summary>
+    public static float CutInLabelWidth(PhoneFrame f) => f.Room.W - f.Px(LabelIn + 2 * LabelEdge);
+
+    /// <summary>What the strategy does: its room from the screen's side and from the portrait's column (reference pixels).</summary>
+    public const float LabelEdge = 24;
+
     /// <summary>The strategist's line's balloon, <paramref name="textHeight"/> canvas units of text in it, growing down.</summary>
     public static PhoneFrame.Box CutInBalloon(PhoneFrame f, float textHeight) =>
         new(f.Room.X + f.Px(LineEdge), CutInMiddle(f) + f.Px(LineTop), f.Room.W - f.Px(2 * LineEdge),

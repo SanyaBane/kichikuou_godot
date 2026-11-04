@@ -68,8 +68,11 @@ internal sealed partial class StrategyCutInView
         if (strategy.Label != "")
         {
             var (lx, ly) = PhoneBattleStatesUpright.CutInLabel(f, player);
-            Centred(_title, new Vector2(lx * k, ly * k), strategy.Label,
-                u.Size(strategy.Great ? PhoneBattleStatesUpright.GreatLabelText : PhoneBattleStatesUpright.LabelText), Ui.HoverLine, Ink, u.Size(7));
+            int size = u.Size(strategy.Great ? PhoneBattleStatesUpright.GreatLabelText : PhoneBattleStatesUpright.LabelText);
+            float room = PhoneBattleStatesUpright.CutInLabelWidth(f) * k, wide = _title.GetStringSize(strategy.Label, HorizontalAlignment.Left, -1, size).X;
+            if (wide > room)                                            // set smaller to fit beside the portrait
+                size = Math.Max(1, (int)(size * room / wide));
+            Centred(_title, new Vector2(lx * k, ly * k), strategy.Label, size, Ui.HoverLine, Ink, u.Size(7));
         }
 
         // The line in our balloon under the band, its tail up at the portrait.
