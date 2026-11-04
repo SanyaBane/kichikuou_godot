@@ -1031,11 +1031,11 @@ the comment's editing (PY2). **Both are built, awaiting the owner's look on the 
   details 14 under it and 14 in (their insides held landscape's); the grid (`ScrolledGrid`: three cells a row, 8 apart,
   rows 6 apart, scrolled by whole rows — `Shown`, `MaxScroll`, `Cell` at a scroll or null out of view, `CellAt`, `Reveal`
   the least scroll that shows a cell), the harem's 190 under the details' top down to 20 over the bar in rows of 128
-  (7.3 mm): nine of the 17 rows in view on the reference; a thin scroll bar (6 wide) in the room's right margin (since
+  (7.3 mm; 5.8 mm since the owner's B, 2026-11-04, `tools/ui/mock_picker_rows.py`, twelve rows in view): nine of the 17 rows in view on the reference; a thin scroll bar (6 wide) in the room's right margin (since
   2026-10-31 the reference bar, "After the build: the reference scroll bar"); End (412)
   | the red button (760) in the bar; the treasure's tabs (`pt2`, `lacquer_tabs`, `treasure_cell`) 180 under the details'
   top, 110 high, 12 apart, a first pick's prompt and Back (220) in their place, its grid 14 under them in rows of 118
-  (6.7 mm), nine rows in view too; a wide cell's insides (an item's name 18 in, its holder at the right in one line); a
+  (6.7 mm; 5.4 mm since 2026-11-04, eleven in view), nine rows in view too; a wide cell's insides (an item's name 18 in, its holder at the right in one line); a
   callout about the red button standing across the room on 40 over the bar (`BesideAction`).
 - **The views**, keyed by the live device (`Device.Held`; the PC's, the tablet's and the landscape phone's paths
   unchanged): `HaremView.Upright.cs` draws the band, her picture, her details, the grid in view and its bar, End | Summon;

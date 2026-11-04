@@ -36,21 +36,21 @@ public class PhonePickersUprightTests
     }
 
     [Fact]
-    public void The_harem_s_grid_shows_nine_rows_of_its_seventeen()
+    public void The_harem_s_grid_shows_twelve_rows_of_its_seventeen()
     {
-        // ph2: the grid 190 under the details' top to BAR[0] - 20, rows of 128, 6 apart; three cells a row, 8 apart; the
+        // ph2: the grid 190 under the details' top to BAR[0] - 20, rows of 102 (128 till 2026-11-04), 6 apart; three cells a row, 8 apart; the
         // scroll bar's 20 and its gap of 10 off the grid's right (the owner's S2, docs/ui/phone.md §41).
         var grid = PhonePickersUpright.HaremGrid(Reference);
         float top = 232 + 1188 * 416f / 666 + 14 + 190;
         Equal(new(16, top, 1158, 2484 - top), grid.Area);
         Equal(new(16, top, 1188, 2484 - top), grid.Scrolled);
-        Assert.Equal(9, grid.Shown);
-        Assert.Equal(8, grid.MaxScroll);
+        Assert.Equal(12, grid.Shown);
+        Assert.Equal(5, grid.MaxScroll);
         float w = (1158 - 16) / 3f;
-        Equal(new(16, top, w, 128), grid.Cell(1, 0));
-        Equal(new(16 + 2 * (w + 8), top + 8 * 134, w, 128), grid.Cell(27, 0));
-        Assert.Null(grid.Cell(28, 0));
-        Equal(new(16, top + 8 * 134, w, 128), grid.Cell(28, 1));
+        Equal(new(16, top, w, 102), grid.Cell(1, 0));
+        Equal(new(16 + 2 * (w + 8), top + 11 * 108, w, 102), grid.Cell(36, 0));
+        Assert.Null(grid.Cell(37, 0));
+        Equal(new(16, top + 11 * 108, w, 102), grid.Cell(37, 1));
         Assert.Null(grid.Cell(1, 1));
         Assert.Equal(1, grid.CellAt(0, 20, top + 2));
         Assert.Equal(4, grid.CellAt(1, 20, top + 2));
@@ -61,23 +61,23 @@ public class PhonePickersUprightTests
     public void A_cell_out_of_view_is_revealed_by_the_least_scroll()
     {
         var grid = PhonePickersUpright.HaremGrid(Reference);
-        Assert.Equal(5, grid.Reveal(40, 0));                                            // row 13 the last shown
+        Assert.Equal(2, grid.Reveal(40, 0));                                            // row 14 the last shown
         Assert.Equal(0, grid.Reveal(2, 5));
         Assert.Equal(3, grid.Reveal(30, 3));                                            // row 9 already shown
-        Assert.Equal(8, grid.Reveal(51, 20));
+        Assert.Equal(5, grid.Reveal(51, 20));
     }
 
     [Fact]
     public void The_scroll_bar_stands_right_of_the_grid_as_tall_as_its_rows()
     {
         // mock_scroll_bar.py, S2: the groove 20 wide, its right at the picture's (1204), 10 right of the grid, as tall as the
-        // nine rows in view; the thumb 3 in, as long as 9 of the 17 rows.
+        // twelve rows in view; the thumb 3 in, as long as 12 of the 17 rows.
         var grid = PhonePickersUpright.HaremGrid(Reference);
         var (track, top) = PhonePickersUpright.ScrollBar(Reference, grid, 0);
-        Equal(new(1184, grid.Area.Y, 20, 9 * 134 - 6), track);
+        Equal(new(1184, grid.Area.Y, 20, 12 * 108 - 6), track);
         Assert.Equal(10, track.X - grid.Area.Right, Close);
-        Equal(new(1187, track.Y + 3, 14, (track.H - 6) * 9 / 17), top);
-        var (_, bottom) = PhonePickersUpright.ScrollBar(Reference, grid, 8);
+        Equal(new(1187, track.Y + 3, 14, (track.H - 6) * 12 / 17), top);
+        var (_, bottom) = PhonePickersUpright.ScrollBar(Reference, grid, 5);
         Assert.Equal(track.Bottom - 3, bottom.Bottom, Close);
     }
 
@@ -94,7 +94,7 @@ public class PhonePickersUprightTests
     public void The_treasure_s_tabs_and_grid_stand_under_its_details()
     {
         // pt2: the tabs 180 under the details' top, (16, y, PW - 16, y + 110) halved 12 apart; the grid 14 under them to
-        // BAR[0] - 20 in rows of 118: nine of 17 rows in view.
+        // BAR[0] - 20 in rows of 94 (118 till 2026-11-04): eleven of 17 rows in view.
         float details = 232 + 1188 * 416f / 666 + 14, tabs = details + 180;
         Equal(new(16, tabs, 588, 110), PhonePickersUpright.Tab(Reference, 0));
         Equal(new(616, tabs, 588, 110), PhonePickersUpright.Tab(Reference, 1));
@@ -102,8 +102,8 @@ public class PhonePickersUprightTests
         Equal(new(984, tabs, 220, 110), PhonePickersUpright.Back(Reference));
         var grid = PhonePickersUpright.TreasureGrid(Reference);
         Equal(new(16, tabs + 124, 1158, 2484 - tabs - 124), grid.Area);
-        Assert.Equal(124, grid.Pitch, Close);
-        Assert.Equal(9, grid.Shown);
+        Assert.Equal(100, grid.Pitch, Close);
+        Assert.Equal(11, grid.Shown);
         Equal(new(16, 232, 1188, 2504 - 40 - 232), PhonePickersUpright.BesideAction(Reference));
     }
 
@@ -123,6 +123,6 @@ public class PhonePickersUprightTests
         Assert.True(PhonePickersUpright.HaremGrid(longer).Shown > PhonePickersUpright.HaremGrid(Reference).Shown);
         var poco = PhoneFrame.Upright(1220, 2712, new PhoneFrame.Insets(0, 120, 0, 0));
         Assert.Equal(124, PhonePickersUpright.Band(poco).Y, Close);
-        Assert.Equal(9, PhonePickersUpright.HaremGrid(poco).Shown);
+        Assert.Equal(12, PhonePickersUpright.HaremGrid(poco).Shown);
     }
 }

@@ -114,8 +114,8 @@ public static class PhonePickersUpright
         }
     }
 
-    /// <summary>The harem's grid: 190 under the details' top, down to 20 over the bar, its rows 128 high (7.3 mm).</summary>
-    private const float HaremDetails = 190, HaremRow = 128;
+    /// <summary>The harem's grid: 190 under the details' top, down to 20 over the bar, its rows 102 high (5.8 mm; 128 till the owner's B, 2026-11-04, `tools/ui/mock_picker_rows.py`: 20 % lower, more rows in view).</summary>
+    private const float HaremDetails = 190, HaremRow = 102;
 
     /// <summary>The harem's grid under her details.</summary>
     public static ScrolledGrid HaremGrid(PhoneFrame f) => Grid(f, Details(f).Y + f.Px(HaremDetails), HaremRow);
@@ -138,8 +138,8 @@ public static class PhonePickersUpright
 
     // ------------------------------------------------------------------ the treasure's tabs and grid (pt2, lacquer_tabs, treasure_cell)
 
-    /// <summary>The treasure's tabs: 180 under the details' top, 110 high, 12 apart; Back's width in their row while a first pick waits; the grid 14 under them in rows of 118 (6.7 mm).</summary>
-    private const float TabsUnder = 180, TabsHeight = 110, TabsGap = 12, BackWidth = 220, TreasureGridUnder = 14, TreasureRow = 118;
+    /// <summary>The treasure's tabs: 180 under the details' top, 110 high, 12 apart; Back's width in their row while a first pick waits; the grid 14 under them in rows of 94 (5.4 mm; 118 till the owner's B, 2026-11-04).</summary>
+    private const float TabsUnder = 180, TabsHeight = 110, TabsGap = 12, BackWidth = 220, TreasureGridUnder = 14, TreasureRow = 94;
 
     private static PhoneFrame.Box TabsRow(PhoneFrame f) =>
         new(f.Room.X + f.Px(SideIn), Details(f).Y + f.Px(TabsUnder), f.Room.W - f.Px(2 * SideIn), f.Px(TabsHeight));

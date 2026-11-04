@@ -422,7 +422,7 @@ over Intercept in the bar; Ninja Scout's list and Abandon City's question above 
 totals shared with `EnemyAttackView.Phone.cs`).
 Step P7 is split as L7 was (phone-build.md, "Step P7, where it stands"): P7a is built, awaiting the owner's look on the
 Poco — Harem and Treasure upright: the title band, the picture at the width, the details, (Treasure's tabs or a first
-pick's prompt and Back,) the picker's grid in rows of 7.3 / 6.7 mm scrolled by a finger with the reference scroll bar
+pick's prompt and Back,) the picker's grid in rows of 5.8 / 5.4 mm (7.3 / 6.7 till the owner's B, 2026-11-04) scrolled by a finger with the reference scroll bar
 (since 2026-10-31 the owner's S2 from round P31, phone.md §40-§43: `Devices/PhoneScrollBar`, `UiPalette.DrawScrollBar`;
 every phone scroll bar takes it since, on the paper in PB's vermilion; the PC's and the tablet's 8 layout px wide, round T's T2,
 docs/ui/touch.md, `Devices/LayoutScrollBar`), the red button |
