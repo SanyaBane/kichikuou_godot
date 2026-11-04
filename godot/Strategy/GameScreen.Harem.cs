@@ -19,7 +19,7 @@ public partial class GameScreen
 
     private void ReadyHarem(FacePictures faces)
     {
-        _harem = new HaremView(GodotGlyphRenderer.Chosen, faces);
+        _harem = new HaremView(GodotGlyphRenderer.Chosen, faces) { MaskPicture = _options.ScreenshotDirectory is not null };
         _harem.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
         _harem.SummonPressed += HaremSummonPressed;
         _harem.EndPressed += HaremEndPressed;

@@ -156,7 +156,7 @@ internal static partial class GalleryEntries
             if (g.State(Week18) is not { } s)
                 return null;
             LongestHaremName(s);
-            var view = g.Add(new HaremView(g.Font, g.Faces) { Visible = true });
+            var view = g.Add(new HaremView(g.Font, g.Faces) { Visible = true, MaskPicture = true });
             var girls = g.Bound(s).HaremGirls();
             return area =>
             {

@@ -45,7 +45,13 @@ internal sealed partial class HaremView : Control
     private float _k = 1;
     private IReadOnlyList<HaremGirl> _girls = [];
     private string _key = "", _date = "";
-    private int _chosen, _pictureKey = -1;
+    private int _chosen, _pictureKey = -1, _pictureCg;
+
+    /// <summary>
+    /// Her picture greyed out with its CG's number, as the agent's dumps mask an event CG (<c>GamePresenter.MaskEventCgs</c>;
+    /// owner, 2026-11-04: the harem's pictures are as explicit): on in a screenshot run and in the screen gallery.
+    /// </summary>
+    public bool MaskPicture { get; set; }
     private ImageTexture? _picture;
     private int _hovered = NoButton, _pressed = NoButton;
 
@@ -118,6 +124,7 @@ internal sealed partial class HaremView : Control
         var (screen, empty) = HaremRoster.Background(state);
         var girl = girls.FirstOrDefault(g => g.Number == _chosen);
         int picture = girl?.PictureCg ?? 0;
+        _pictureCg = picture;
         if (picture * 10000 + screen != _pictureKey)
         {
             _pictureKey = picture * 10000 + screen;
@@ -257,7 +264,14 @@ internal sealed partial class HaremView : Control
     {
         for (int i = 10; i >= 1; i--)
             c.DrawRect(new Rect2(p.Position.X - i + 3, p.Position.Y - i + 8, p.Size.X + 2 * i, p.Size.Y + 2 * i), new Color(0, 0, 0, 0.06f));
-        if (_picture is not null)
+        if (MaskPicture && _pictureCg != 0)
+        {
+            c.DrawRect(p, Color.Color8(96, 96, 96));                    // the presenter's mask: grey, the CG's number
+            int size = Math.Max(10, (int)(p.Size.Y / 14));
+            c.DrawString(_gothic, new Vector2(p.Position.X + size, p.Position.Y + size + _gothic.GetAscent(size)), $"CG {_pictureCg} (masked)",
+                fontSize: size, modulate: Colors.White);
+        }
+        else if (_picture is not null)
             c.DrawTextureRect(_picture, p, false);
         else
             c.DrawRect(p, Colors.Black);
