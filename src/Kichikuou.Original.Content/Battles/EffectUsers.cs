@@ -8,7 +8,11 @@ namespace Kichikuou.Original.Content.Battles;
 /// <param name="Name">The unit's name.</param>
 /// <param name="TroopType">Its troop type's name.</param>
 /// <param name="Sprite">Its battle sprite with its troops full (<c>Unit_CgFull</c>), else alone; 0 none.</param>
-public readonly record struct EffectUser(int Unit, string Name, string TroopType, int Sprite)
+/// <param name="WithCommander">
+/// The one below the battle's limit (<c>Unit_CgPartial</c>, <c>FIGT.ADV:1651</c>): fewer troops, the commander among them.
+/// </param>
+/// <param name="Alone">The commander without troops (<c>Unit_CgAlone</c>, <c>:1655</c>).</param>
+public readonly record struct EffectUser(int Unit, string Name, string TroopType, int Sprite, int WithCommander, int Alone)
 {
     /// <summary>"Maria (unit 16), Cannon Corps".</summary>
     public string Label => TroopType.Length > 0 ? $"{Name} (unit {Unit}), {TroopType}" : $"{Name} (unit {Unit})";
@@ -43,7 +47,7 @@ public static class EffectUsers
                 continue;
             var u = state.Units[n];
             int sprite = u.CgFull != 0 ? u.CgFull.Value : u.CgAlone.Value;
-            users.Add(new EffectUser(n, name, DeploymentTable.TroopType(state, n).Trim(), sprite));
+            users.Add(new EffectUser(n, name, DeploymentTable.TroopType(state, n).Trim(), sprite, u.CgPartial.Value, u.CgAlone.Value));
         }
         return users;
     }

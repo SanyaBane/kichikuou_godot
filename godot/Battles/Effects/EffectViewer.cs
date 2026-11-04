@@ -37,6 +37,7 @@ internal sealed partial class EffectViewer : Window
     private SpinBox _seed = null!;
     private OptionButton _effect = null!;
     private OptionButton _user = null!;
+    private OptionButton _sprite = null!;
     private bool _sliding;
 
     /// <param name="cgs">The player's CGs.</param>
@@ -89,6 +90,12 @@ internal sealed partial class EffectViewer : Window
         _user = new OptionButton();
         _user.ItemSelected += _ => ShowField();
         row.AddChild(_user);
+        // A unit of the game's three sprites (owner, 2026-11-04): with its commander among the troops by default.
+        _sprite = new OptionButton();
+        _sprite.AddItem("With commander", (int)EffectSprite.WithCommander);
+        _sprite.AddItem("Full troops", (int)EffectSprite.Full);
+        _sprite.AddItem("Commander alone", (int)EffectSprite.Alone);
+        _sprite.ItemSelected += _ => ShowField();             // in the second row, the first being full
         var play = new Button { Text = "Play", FocusMode = Control.FocusModeEnum.None };
         play.Pressed += () =>
         {
@@ -111,6 +118,7 @@ internal sealed partial class EffectViewer : Window
 
         var place = new HBoxContainer();
         place.AddThemeConstantOverride("separation", 10);
+        place.AddChild(_sprite);
         var blend = new OptionButton();
         blend.AddItem("Screen");
         blend.AddItem("Add");
@@ -221,14 +229,19 @@ internal sealed partial class EffectViewer : Window
         if (_state is null || effect.Plain is not { } kind)
             return effect.Users;
         var units = EffectUsers.Of(_state, kind);
-        return units.Count == 0 ? effect.Users : [.. units.Select(u => new EffectArmy(u.Label, u.Sprite))];
+        return units.Count == 0 ? effect.Users : [.. units.Select(u => new EffectArmy(u.Label, u.Sprite, u.WithCommander, u.Alone))];
     }
 
-    /// <summary>The battlefield with the selected user on the player's side.</summary>
+    /// <summary>
+    /// The battlefield with the selected user on the player's side, a unit of the game as the sprite list asks (the list
+    /// off for the catalog's users, which have one sprite).
+    /// </summary>
     private void ShowField()
     {
         var effect = Effects[_effect.Selected];
-        _stage.ShowField(_cgs, _users[Math.Max(0, _user.Selected)], effect.EnemyArmy);
+        var user = _users[Math.Max(0, _user.Selected)];
+        _sprite.Disabled = user.WithCommander == 0 && user.Alone == 0;
+        _stage.ShowField(_cgs, user.As((EffectSprite)_sprite.GetSelectedId()), effect.EnemyArmy);
     }
 
     private void Restart()

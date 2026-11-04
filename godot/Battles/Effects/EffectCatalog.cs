@@ -4,8 +4,32 @@ using Kichikuou.Original.Content.Battles;
 
 namespace Kichikuou.Game.Battles.Effects;
 
-/// <summary>A side's army in an effect's picture: who it is, named, and the battle sprite CG it shows (0: none).</summary>
-internal readonly record struct EffectArmy(string Name, int Cg);
+/// <summary>
+/// A side's army in an effect's picture: who it is, named, and the battle sprite CG it shows (0: none); for a unit of the
+/// game also its other two sprites (<see cref="EffectUser"/>): its troops below the battle's limit with the commander
+/// among them, and the commander alone (0: not known).
+/// </summary>
+internal readonly record struct EffectArmy(string Name, int Cg, int WithCommander = 0, int Alone = 0)
+{
+    /// <summary>The sprite shown as <paramref name="sprite"/> asks, else <see cref="Cg"/>.</summary>
+    public EffectArmy As(EffectSprite sprite) => sprite switch
+    {
+        EffectSprite.WithCommander when WithCommander != 0 => this with { Cg = WithCommander },
+        EffectSprite.Alone when Alone != 0 => this with { Cg = Alone },
+        _ => this,
+    };
+}
+
+/// <summary>Which of a unit's three battle sprites Debug → Effects shows (<c>FIGT.ADV:1647-1655</c>).</summary>
+internal enum EffectSprite
+{
+    /// <summary>The troops below the battle's limit, the commander among them (<c>Unit_CgPartial</c>).</summary>
+    WithCommander,
+    /// <summary>The troops at the limit (<c>Unit_CgFull</c>), the commander not drawn.</summary>
+    Full,
+    /// <summary>The commander without troops (<c>Unit_CgAlone</c>).</summary>
+    Alone,
+}
 
 /// <summary>Where an effect stands in the screen gallery's Combat VFX tab.</summary>
 internal enum EffectGroup { Attacks, Magic, Specials, Ninjas, Defence }

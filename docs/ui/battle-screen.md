@@ -865,6 +865,10 @@ picture, the slot panels) is not shown. How it is built:
   Magic the magic of their caster's element (`MagicSpells.OfUnit`; a shouted spell may play another), any other melee —
   each over its own sprite (`Unit_CgFull`). At the boot the bow is Maria (unit 16), Mill (unit 25) and Isoroku
   (unit 27). The poison has no unit and keeps Papaya; the gallery and `--effects` keep the table's first users.
+  Such a unit is shown by one of its three battle sprites (owner, 2026-11-04: the commander with the troops), the list
+  in the second row: "With commander", the default — its troops below the battle's limit, the commander among them
+  (`Unit_CgPartial`, `FIGT.ADV:1651`), the battle's only picture of both, since the full troops' (`Unit_CgFull`)
+  leave the commander out — "Full troops", or "Commander alone" (`Unit_CgAlone`); off for the table's users.
   `--effects --shots DIR --quit` (in a window; `--effects white-beam-magic,black-beam-nagi` for those alone) writes every frame of each with seed 1: the effect alone on black
   (`melee-NN.png`, `bow-NN.png`, `magic-NN.png`, `ice-magic-NN.png`, `lightning-magic-NN.png`, `light-magic-NN.png`,
   `poison-magic-NN.png`, `rance-attack-NN.png`, `kentarou-slash-NN.png`, `white-beam-shizuka-NN.png`, `white-beam-magic-NN.png`, `epo-light-NN.png`, `whirlwind-shot-NN.png`, `high-speed-NN.png`, `by-la-way-NN.png`, `ninja-NN.png`, `kanami-NN.png`, `freya-NN.png`, `kaoru-NN.png`, `wichita-NN.png`, `vanish-bomb-NN.png`, `war-dance-NN.png`, `chuhai-NN.png`, `goliath-NN.png`, `soaring-wave-NN.png`, `guard-NN.png`; the black beams' (`black-beam-chizuko`,
