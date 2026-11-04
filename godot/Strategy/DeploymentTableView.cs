@@ -346,8 +346,11 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 c.DrawString(_titleFont, new Vector2(x + w - 4 - tw, baseline), _numberTitle, fontSize: TitleSize, modulate: Ui.HeadInk);
             }
             else
-                c.DrawString(_titleFont, new Vector2(x + 4, baseline), GetColumnTitle(column), GetColumnTitleAlignment(column), w - 8,
-                    TitleSize, Ui.HeadInk);
+            {
+                float lead = column == ItemColumn ? ItemLead : 0;           // over the item's text (DrawItem)
+                c.DrawString(_titleFont, new Vector2(x + 4 + lead, baseline), GetColumnTitle(column), GetColumnTitleAlignment(column),
+                    w - 8 - lead, TitleSize, Ui.HeadInk);
+            }
             x += w;
         }
     }
@@ -684,6 +687,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// <summary>The № column's index in the tree (-1 without one).</summary>
     private int NumberColumn => _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Number) + 1 is var c and > 0 ? c : -1;
 
+    /// <summary>The Item column's index in the tree (-1 without one).</summary>
+    private int ItemColumn => _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Item) + 1 is var c and > 0 ? c : -1;
+
+    /// <summary>
+    /// The room before the Item's text and title (owner, 2026-11-04): left-aligned after a right-aligned figure (Cost, C.Def)
+    /// the item's name stood against it; a part of the font's size, so it scales with the ledger's type.
+    /// </summary>
+    private float ItemLead => _fontSize * 0.75f;
+
     /// <summary>The Name column's index in the tree (-1 without one: upright the fixed part draws the name).</summary>
     private int NameColumn => _columns.ToList().FindIndex(c => c.Column == DeploymentColumn.Name) + 1 is var c and > 0 ? c : -1;
 
@@ -780,6 +792,8 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
             widths[0] = _fixedWidth - separation - 3;                       // upright: the room the fixed part covers (DrawFixedRows)
         if (RefillColumn > 0)
             widths[RefillColumn] += _fontSize * 0.8f;                       // the buttons' rule and padding
+        if (ItemColumn > 0)
+            widths[ItemColumn] += ItemLead;                                 // the room before the item (DrawItem)
         if (_landscape is { } held && NameColumn > 0)
             widths[NameColumn] += held.Px(PhoneLedger.NameFace + PhoneLedger.NameFaceGap) + 2;   // the face left of the name
         for (int c = 0; c < Columns; c++)
@@ -830,6 +844,12 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
                 item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
                 var (text, troops, max, grey) = (row.Text(info.Column), row.Troops, row.MaxTroops, row.Grey);
                 item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawTroops(rect, text, troops, max, grey)));
+            }
+            if (info.Column == DeploymentColumn.Item)
+            {
+                item.SetCellMode(c + 1, TreeItem.TreeCellMode.Custom);
+                var (text, colour) = (row.Text(info.Column), row.Grey ? Ui.InkGrey : Ui.InkQuiet);
+                item.SetCustomDrawCallback(c + 1, Callable.From<TreeItem, Rect2>((_, rect) => DrawItem(rect, text, colour)));
             }
             if (info.Column == DeploymentColumn.Name && _landscape is not null)
             {
@@ -955,6 +975,15 @@ internal sealed partial class DeploymentTableView : Tree, IUiPaletteUser
     /// The troops' figures (a custom cell draws no text of its own) a little raised, and their strength under them:
     /// green from three quarters, amber from a third, else red.
     /// </summary>
+    /// <summary>The item's name after <see cref="ItemLead"/>, centred in the row as the tree centres its own text.</summary>
+    private void DrawItem(Rect2 row, string text, Color colour)
+    {
+        var cell = Content(row);
+        float baseline = cell.GetCenter().Y + (_font.GetAscent(_fontSize) - _font.GetDescent(_fontSize)) / 2;
+        float x = cell.Position.X + 2 + ItemLead;
+        DrawString(_font, new Vector2(x, baseline), text, HorizontalAlignment.Left, Math.Max(1, cell.End.X - x), _fontSize, colour);
+    }
+
     private void DrawTroops(Rect2 row, string text, int troops, int max, bool grey) =>
         DrawStrength(this, TextOverBar(row, text, grey), troops, max, grey);
 
