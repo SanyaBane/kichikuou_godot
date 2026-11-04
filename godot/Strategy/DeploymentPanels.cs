@@ -66,6 +66,7 @@ internal sealed partial class DeploymentPanels : Control
     private DeploymentParty? _party;
     private string[] _labels = ["", "", ""];
     private int _mode;
+    private (int Plains, int City) _limits;                 // a defence's fields' troop limits, under Plains and City
     private string _date = "", _key = "";
     private ImageTexture? _picture;
     private int _hovered = NoPart, _pressed = NoPart, _hoveredPlace;
@@ -185,13 +186,14 @@ internal sealed partial class DeploymentPanels : Control
     public void Refresh(GameState state, PickerView picker, IReadOnlyList<int>? order = null)
     {
         var party = DeploymentTable.Party(state, order);
+        var limits = DeploymentTable.DefenceLimits(state);
         var details = DeploymentTable.Details(state);
         var labels = picker.BarLabelTexts();
         var (year, month, week) = StatusStrip.DateOf(state.Week.Value);
         string date = $"LP {year} · Month {month} · Week {week}";
         int portrait = details is null ? 0 : state.Units[details.Unit].PortraitCg.Value;
         string key = $"{string.Join(";", party.Places)}|{party.Troops}|{party.Cost}|{party.Gold}|{string.Join("|", labels)}"
-            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}|{Figures.Separator}"
+            + $"|{picker.Mode.Value}|{date}|{portrait}|{Busy}|{Figures.Separator}|{limits}"
             + $"|{Table?.Tab}|{Table?.SortShown}|{Table?.SortHeader}|{Table?.SortMark}";
         Table?.OpenTop = _tabs.OpenSpan(_k);
         if (key == _key)
@@ -202,6 +204,7 @@ internal sealed partial class DeploymentPanels : Control
         _party = party;
         _labels = [.. labels];
         _mode = picker.Mode.Value;
+        _limits = limits;
         _date = date;
         _picture = _faces.PicturePanel(portrait);
         _screen.QueueRedraw();
@@ -513,8 +516,8 @@ internal sealed partial class DeploymentPanels : Control
             Ui.DrawRedButton(c, rect, hover, down, _k);
             string? note = (_mode, button) switch
             {
-                (2, 1) => "Fight on the plains",
-                (2, 2) => "Fight in the city",
+                (2, 1) => DeploymentTable.LimitNote(_limits.Plains),   // each field's limit (owner, 2026-11-04)
+                (2, 2) => DeploymentTable.LimitNote(_limits.City),
                 (3, _) => $"Into the dungeon  ·  {cost}",
                 _ => null,                                      // Attack alone (owner, 2026-10-24): the war expenses are above it
             };

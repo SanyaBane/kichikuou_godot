@@ -262,7 +262,9 @@ hold the player's CGs and stay outside the repository.
 **The owner's look (2026-10-19): D5's layout** — the ledger across the top, the portrait below left, as the
 Subordinates screen — and more mock-ups in it. A defence's bar has two buttons that send the party, Plains and City
 (`Sﾌﾞﾀｲ.ADV:45-63`), where an attack has Attack and "---" (`:14-33`) and a dungeon search Search and "---" (`:75-93`);
-Stop is the third in every mode.
+Stop is the third in every mode. Under Plains and City each field's troop limit, "Limit 5,000" and the defended
+province's battle area (owner, 2026-11-04, in place of "Fight on the plains" / "Fight in the city";
+`DeploymentTable.DefenceLimits`).
 
 **Round E** (the same script, round `e`): the ledger and the portrait as D5; the party panel at the bottom right
 (574×416) varied.

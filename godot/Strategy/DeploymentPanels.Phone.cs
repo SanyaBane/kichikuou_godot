@@ -136,8 +136,8 @@ internal sealed partial class DeploymentPanels
             Ui.DrawRedButton(c, rect, hover, down, _k);
             string? note = (_mode, button) switch
             {
-                (2, 1) => "Fight on the plains",
-                (2, 2) => "Fight in the city",
+                (2, 1) => DeploymentTable.LimitNote(_limits.Plains),   // each field's limit (owner, 2026-11-04)
+                (2, 2) => DeploymentTable.LimitNote(_limits.City),
                 (3, _) => $"Into the dungeon  ·  {cost}",
                 _ => null,
             };

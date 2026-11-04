@@ -461,6 +461,16 @@ public static class DeploymentTable
     }
 
     /// <summary>
+    /// A defence's two fields' troop limits, which our deployment screen shows under Plains and City (owner, 2026-11-04):
+    /// the plains' 5000 (<c>FIGT_B.ADV:165</c>) and the defended province's battle area (<c>:182</c>, before its +10 %).
+    /// </summary>
+    public static (int Plains, int City) DefenceLimits(GameState state) =>
+        (Battles.EnemyAttack.PlainsLimit, state.Provs[state.Prov_Cur].BattleArea.Value);
+
+    /// <summary>A field's limit as the deployment screen's send buttons show it: "Limit 5,000".</summary>
+    public static string LimitNote(int limit) => $"Limit {Figures.Number(limit)}";
+
+    /// <summary>
     /// The party being built (<c>Bt_PlayerParty1-4</c>) in the places the screen offers, with its
     /// totals — or the party in <paramref name="order"/>, the order a drop asked for (<see cref="Drop"/>).
     /// </summary>
