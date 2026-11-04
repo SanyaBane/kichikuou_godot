@@ -34,6 +34,8 @@ public class UnitDescriptionTests
                 foreach (var p in paragraphs)
                     all.Append(p).Append('\n');
             }
+        if (Environment.GetEnvironmentVariable("KICHIKUOU_DESCRIPTIONS_OUT") is { Length: > 0 } outPath)
+            File.WriteAllText(outPath, all.ToString());   // for tools/ui/mock_unit_descriptions.py; keep it outside the repository
         Assert.Equal([.. Enumerable.Range(601, 53), 695, 697, 698, 699], read);
         Assert.Equal("2A8740F78BB7143636E2F93E616A223DB07F14CBDFAF14D913E3C63AF9A20531",
             Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(all.ToString()))));

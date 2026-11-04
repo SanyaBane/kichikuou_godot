@@ -50,7 +50,20 @@ from their words in context; the 57 texts were then read through whole and the e
 `UnitDescriptionTests` holds the SHA-256 of all 57 texts as checked, so a change of the reading cannot go unseen; the
 archive's CGs are the PNGs pixel for pixel (`GameArchiveTests`), so the import reads the same.
 
+## Mock-ups, round 1 (2026-11-04)
+
+`tools/ui/mock_unit_descriptions.py` over the gallery's `deployment` and `treasure-hover` (pc) and `treasure-hover`
+(phone-portrait); the texts from `UnitDescriptionTests` with `KICHIKUOU_DESCRIPTIONS_OUT` set. The panel's inside
+(columns 207-301) is covered and the text set again in **Oswald** (bundled, condensed, proportional): BIZ UDGothic was
+tried first and dropped — its Latin is set wide (`that' s`), so the narrow panel held few words and the long texts
+fell to 12 px. One size per screen, the largest the longest text of all (CG 622, 384 letters) fits in — 15 px on the
+PC's deployment screen, 18 px on Treasure — so every unit on a screen reads alike; the special attack's quoted name
+takes the accent colour where the variant has one.
+
+- **A** — the panel as it is: its grey pattern (CG 600's empty panel), the text white with a dark outline.
+- **B** — our lacquer, a dim gold line inside the panel's own border, the text cream, the attack's name gold.
+- **C** — our paper (the options window's), the text in ink, the attack's name vermilion.
+
 ## Next
 
-The drawing: the CG's panel covered and the text set in our font, on every screen that shows a status CG — mock-ups
-first.
+The owner's choice from round 1, then the drawing on every screen that shows a status CG.
