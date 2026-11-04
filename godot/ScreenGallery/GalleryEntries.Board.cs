@@ -103,8 +103,9 @@ internal static partial class GalleryEntries
             Settle: 0.35);                                                      // the ribbon at its height, as the look dumps it
         yield return new("info-results", Battle, "Battle: the results plate", null, CaptureNote + " The battle's tally.",
             g => Board(g, Results));
-        yield return new("info-level-up", Battle, "Battle: a level-up on the results plate", null, CaptureNote + " The level-up's page after the tally.",
-            g => Board(g, Results, nth: 2));
+        yield return new("info-level-up", Battle, "Battle: a level-up on the results plate", null,
+            CaptureNote + " The level-up's page after the tally, made up as the longest it can be: four rows, the longest names and gains.",
+            g => Board(g, Results, nth: 2, info: LongestLevelUps));
         yield return new("battle-window", Battle, "Battle: a window after the field", null,
             CaptureNote + " The first window the battle opens off the field, our message window over the screen the presenter composes.",
             BattleWindow);
@@ -131,6 +132,26 @@ internal static partial class GalleryEntries
     }
 
     /// <summary>The results plate at its key wait: the tally, then each level-up's page.</summary>
+    /// <summary>
+    /// The results plate with the longest level-ups it can show (FIGT.ADV:3065-3160): a row for each of a party's four, the
+    /// longest names of SET_CHR's units (Mars the Great, Seizel Sisters, 14 letters; Mill (unit 25) for her phantom beasts),
+    /// each after "Leader Attacks +1" with the longest of what may follow — the Popularity Staff's troops (three figures),
+    /// Mill's beasts, a modifier's "… in Dungeons UP".
+    /// </summary>
+    private static BattleInfoBox LongestLevelUps(BattleInfoBox box) => box.Results is not { } r ? box : box with
+    {
+        Results = r with
+        {
+            LevelUps =
+            [
+                new("Mars the Great", ["Leader Attacks +1", "The Popularity Staff increased troops by 250."]),
+                new("Seizel Sisters", ["Leader Attacks +1", "Def in Dungeons UP"]),
+                new("Mill", ["Leader Attacks +1", "Summoned 50 more phantom beasts."]),
+                new("Aristoles", ["Leader Attacks +1", "Atk in Dungeons UP"]),
+            ],
+        },
+    };
+
     private static bool Results(GamePresenter p, BattleMoment m) => m.Kind == MomentKind.Key && p.Battle.InfoBox is { Kind: InfoBoxKind.Results };
 
     /// <summary>A player's turn: <c>FIGT_SEL</c> with our battle screen up.</summary>
@@ -175,11 +196,12 @@ internal static partial class GalleryEntries
     /// each frame as the game follows it; at a <c>FIGT_SEL</c> moment with <paramref name="then"/> our commands are begun
     /// on its menu and <paramref name="then"/> plays the pointer once the board is laid out — with <paramref name="forecast"/>
     /// the damage forecast on (else off, whatever the option), its figures waited for; with <paramref name="dialog"/>
-    /// the retreat's confirmation is asked over it; with <paramref name="read"/> every message counts as read before.
+    /// the retreat's confirmation is asked over it; with <paramref name="read"/> every message counts as read before;
+    /// <paramref name="info"/> makes up the info box shown from the capture's.
     /// </summary>
     private static Action<Rect2>? Board(GalleryStage g, Func<GamePresenter, BattleMoment, bool> chosen, int nth = 1,
         Action<GamePresenter, BattleMoment, BattleBoardView>? then = null, bool dialog = false, string file = GalleryBattle.Capture,
-        bool read = false, bool forecast = false)
+        bool read = false, bool forecast = false, Func<BattleInfoBox, BattleInfoBox>? info = null)
     {
         GamePresenter Fresh()
         {
@@ -214,7 +236,7 @@ internal static partial class GalleryEntries
             var hovered = board.Commands.Active ? board.Commands.Lit : null;
             p.Scene.Hover(board.Commands.Active ? board.Commands.Hovered : null);
             board.Refresh(p, [], screenChanged: first, hovered, instant: true, slidesInstant: true);
-            board.Info.Show(p.Battle.InfoBox, moment.Kind == MomentKind.Key);
+            board.Info.Show(info is not null && p.Battle.InfoBox is { } box ? info(box) : p.Battle.InfoBox, moment.Kind == MomentKind.Key);
             first = false;
         }
         g.EachFrame(Follow);
