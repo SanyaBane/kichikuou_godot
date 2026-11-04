@@ -530,7 +530,7 @@ L7b:
 - **The model** (`Original.Content/Devices/PhoneSaves`, tested in `PhoneSavesTests`): the places at the mock-ups' figures
   (`ll1`, `land_save_list`, `save_row`, `land_save_page`, `load_save_chips`, `land_back`, `bin_button`, `ly1`) in the canvas's
   units — the list at the left (884 wide from the hole's strip + 6) with the title band (the divider at 110), Load | Save
-  (200 × 80) at its right, the lists' tabs (96 high from 124), the heading with the sweep (440 × 64) and the rows (104 high,
+  (200 × 80 then, 150 × 80 since 2026-11-04) at its right, the lists' tabs (96 high from 124), the heading with the sweep (440 × 64) and the rows (104 high,
   10 apart, from 320 to 10 over the gesture zone: seven in view, six under New save, 88 high, in Save), the scroll bar's
   groove 14 in from the list's right; the page from 40 right of the list to the hole's strip — its title band (100, Delete
   240 × 84 at its right), the map at its width cut at its foot for the figures (two rows of three, 92 apart) and the comment
@@ -557,7 +557,7 @@ L7b:
   and tab gold, the chosen chip red); the groove stays when every save fits, as the PC's; New save over the rows in Save
   (LL1 drew Load only); an auto-save's kind on its tag left of the time, Auto and its kind after the page's title, its two
   lines on its load under the comment, the map cut lower by them (LL1 drew no auto-save); in Save what a save writes
-  ("Saving: …") as a line under the red button's word (the PC has it beside the button), an auto-save's button greyed as
+  ("Saving: …") as a line under the red button's word (the PC has it beside the button; taken off on both phones, owner, 2026-11-04), an auto-save's button greyed as
   on the PC; Delete's and the sweep's questions in the PC's words at the phone's sizes (LL1 drew neither); the card's
   title "No. 3 · LP 3 · Month 4 · Week 4" (an auto-save's "Turn Start auto-save · …"), a tap off the card doing nothing
   (the PC's click off the field keeps).
@@ -1065,7 +1065,7 @@ P7b:
 
 - **The model** (`Original.Content/Devices/PhoneSavesUpright`, tested in `PhoneSavesUprightTests`): the places at the
   mock-ups' figures (`save_title`, `save_list`, `save_row`, `save_page` compact, `back_and`, `pl2`, `comment_card`, `py2`)
-  from the room's top and the bar — the title band (the title, Load | Save 210 × 88 at its right, the divider at 116), the
+  from the room's top and the bar — the title band (the title, Load | Save 210 × 88 at its right (160 × 88 since 2026-11-04, owner), the divider at 116), the
   lists' tabs (104 high from 134), the heading with the sweep (470 × 64) and the rows (104 high, 10 apart, from 340 down
   to 36 over the page: nine in view on the reference, eight under New save in Save), the scroll bar's groove 18 in from
   the right; the page standing 24 over the bar across the room — its title band (100, Delete 230 × 84 at its right), the

@@ -337,9 +337,8 @@ internal sealed partial class SaveLoadView
                 Text(_gothic, size, page.Position.X, Places.LineMiddle(f, 1) / u.K, Fit(second, size, page.Size.X), Ui.Quiet);
             }
         }
-        string? saving = save && _now is { } now ? $"Saving: {now.DateText} · {now.BudgetText} · {now.RealmText} · {Figures.Number(now.Troops)} troops" : null;
         if (ButtonShown)
-            PhoneButton(u, _chosenNew || !save ? (save ? "Save" : "Load") : $"Save over {held!.Label}", saving);
+            PhoneButton(u, _chosenNew || !save ? (save ? "Save" : "Load") : $"Save over {held!.Label}");
         else if (save)
             PhoneOffButton(u);
         if (held is not null)
@@ -400,21 +399,14 @@ internal sealed partial class SaveLoadView
         TextCentred(_brush, size, (ax + u.Px(44) + r.End.X) / 2, cy, "Back", hover ? Ui.Name : Ui.Text);
     }
 
-    /// <summary>The red button: its word, in Save what a save writes under it.</summary>
-    private void PhoneButton(PhoneUnits u, string word, string? saving)
+    /// <summary>The red button: its word alone (no "Saving: …" line under it on a phone, owner, 2026-11-04).</summary>
+    private void PhoneButton(PhoneUnits u, string word)
     {
         var r = ButtonBox;
         bool hover = _hovered == ButtonHit;
         Ui.DrawRedButton(this, r, hover, hover && _pressed == ButtonHit, _k);
-        float cx = r.GetCenter().X, room = r.Size.X - u.Px(60);
-        if (saving is null)
-        {
-            TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(Places.ButtonText(u.Frame)), room), cx, r.GetCenter().Y, word, Ui.Name);
-            return;
-        }
-        TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(Places.ButtonText(u.Frame) * 0.86f), room), cx, r.Position.Y + r.Size.Y * 0.4f, word, Ui.Name);
-        int line = SideCells.Fit(_gothic, saving, u.Size(PhoneSaves.ButtonLineText), room);
-        TextCentred(_gothic, line, cx, r.Position.Y + r.Size.Y * 0.77f, saving, Ui.Name with { A = 0.85f });
+        float room = r.Size.X - u.Px(60);
+        TextCentred(_brush, SideCells.Fit(_brush, word, u.Size(Places.ButtonText(u.Frame)), room), r.GetCenter().X, r.GetCenter().Y, word, Ui.Name);
     }
 
     /// <summary>The red button off in Save: an auto-save is the game's own, not saved over.</summary>

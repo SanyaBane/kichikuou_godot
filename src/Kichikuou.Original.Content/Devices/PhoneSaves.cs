@@ -42,8 +42,8 @@ public static class PhoneSaves
     /// <summary>The title's left (in from the list's), its top and type (the brush face); the divider under the band.</summary>
     public const float TitleIn = 4, TitleTop = 14, TitleText = 56, Divider = 110;
 
-    /// <summary>Load | Save: 200 × 80, 12 apart, 18 from the top, the pair ending at the list's right (from 412 short of it).</summary>
-    private const float ChipWidth = 200, ChipHeight = 80, ChipGap = 12, ChipTop = 18;
+    /// <summary>Load | Save: 150 × 80, 12 apart, 18 from the top, the pair ending at the list's right (from 312 short of it).</summary>
+    private const float ChipWidth = 150, ChipHeight = 80, ChipGap = 12, ChipTop = 18;
 
     /// <summary>The chips' type (Cinzel).</summary>
     public const float ChipText = 32;
@@ -147,7 +147,7 @@ public static class PhoneSaves
     /// <summary>The foot's buttons: 150 high; Back 360 wide, the red button 16 right of it to the page's right; the page 16 over them.</summary>
     private const float FootHeight = 150, BackWidth = 360, FootGap = 16;
 
-    /// <summary>Back's and the red button's type (the brush face), the red button's line under its word.</summary>
+    /// <summary>Back's and the red button's type (the brush face), its word alone; the line under the word of the button off.</summary>
     public const float BackText = 50, ButtonText = 64, ButtonLineText = 28;
 
     /// <summary>The page at the right: 40 right of the list to the hole's strip, from its top to 16 over the foot's buttons.</summary>

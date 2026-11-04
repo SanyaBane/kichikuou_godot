@@ -24,10 +24,10 @@ public class PhoneSavesTests
     public void The_list_stands_at_the_left_its_band_with_Load_and_Save()
     {
         // ll1: the list (LX0, 124, LL1_SPLIT, FOOT - 10) from LX0 = SIDE + 6 = 116 to 1000; load_save_chips at
-        // (LL1_SPLIT - 412, 18), 200 × 80, 12 apart; lacquer_tabs at 124, 96 high, 12 apart.
+        // (LL1_SPLIT - 312, 18), 150 × 80 (owner, 2026-11-04), 12 apart; lacquer_tabs at 124, 96 high, 12 apart.
         Equal(new(116, 0, 884, 1160), PhoneSaves.List(Reference));
-        Equal(new(588, 18, 200, 80), PhoneSaves.Chip(Reference, save: false));
-        Equal(new(800, 18, 200, 80), PhoneSaves.Chip(Reference, save: true));
+        Equal(new(688, 18, 150, 80), PhoneSaves.Chip(Reference, save: false));
+        Equal(new(850, 18, 150, 80), PhoneSaves.Chip(Reference, save: true));
         Equal(new(116, 124, 436, 96), PhoneSaves.Tab(Reference, auto: false));
         Equal(new(564, 124, 436, 96), PhoneSaves.Tab(Reference, auto: true));
     }

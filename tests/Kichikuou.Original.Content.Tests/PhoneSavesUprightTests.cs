@@ -31,10 +31,10 @@ public class PhoneSavesUprightTests
     [Fact]
     public void The_band_holds_Load_and_Save_and_the_tabs_stand_under_it()
     {
-        // save_title: the chips (PW - 16 - 430, TOP + 8) and (PW - 16 - 210, …), 210 × 88; lacquer_tabs at TOP + 134, 104
+        // save_title: the chips (PW - 16 - 330, TOP + 8) and (PW - 16 - 160, …), 160 × 88 (owner, 2026-11-04); lacquer_tabs at TOP + 134, 104
         // high, 12 apart across 16 to PW - 16.
-        Equal(new(774, 118, 210, 88), PhoneSavesUpright.Chip(Reference, save: false));
-        Equal(new(994, 118, 210, 88), PhoneSavesUpright.Chip(Reference, save: true));
+        Equal(new(874, 118, 160, 88), PhoneSavesUpright.Chip(Reference, save: false));
+        Equal(new(1044, 118, 160, 88), PhoneSavesUpright.Chip(Reference, save: true));
         Equal(new(16, 244, 588, 104), PhoneSavesUpright.Tab(Reference, auto: false));
         Equal(new(616, 244, 588, 104), PhoneSavesUpright.Tab(Reference, auto: true));
     }

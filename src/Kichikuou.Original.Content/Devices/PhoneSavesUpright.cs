@@ -36,8 +36,8 @@ public static class PhoneSavesUpright
     /// <summary>The divider under the band: under the room's top, its ends in from the room's sides.</summary>
     public const float Divider = 116, DividerIn = 24;
 
-    /// <summary>Load | Save: 210 × 88, 10 apart, 8 under the room's top, the pair ending at the list's right.</summary>
-    private const float ChipWidth = 210, ChipHeight = 88, ChipGap = 10, ChipTop = 8;
+    /// <summary>Load | Save: 160 × 88, 10 apart, 8 under the room's top, the pair ending at the list's right.</summary>
+    private const float ChipWidth = 160, ChipHeight = 88, ChipGap = 10, ChipTop = 8;
 
     /// <summary>The chips' type (Cinzel).</summary>
     public const float ChipText = 32;
@@ -229,8 +229,8 @@ public static class PhoneSavesUpright
     /// <summary>Back's width at the bar's right, the gap between it and the red button.</summary>
     private const float BackWidth = 384, BarGap = 16;
 
-    /// <summary>Back's and the red button's type (the brush face), the red button's line under its word.</summary>
-    public const float BackText = 50, ButtonText = 58, ButtonLineText = 28;
+    /// <summary>Back's and the red button's type (the brush face), its word alone.</summary>
+    public const float BackText = 50, ButtonText = 58;
 
     /// <summary>Back at the bar's right — the right thumb: a way back stands right of the action (owner, 2026-10-30).</summary>
     public static PhoneFrame.Box Back(PhoneFrame f) => new(f.Bar.Right - f.Px(BackWidth), f.Bar.Y, f.Px(BackWidth), f.Bar.H);
