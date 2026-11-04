@@ -475,8 +475,8 @@ internal sealed partial class DeploymentPanels : Control
         var head = new Rect2(PartyPanel.Position.X + 18, PartyPanel.Position.Y + 10, PartyPanel.Size.X - 36, 30);
         c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 20)), "Party", fontSize: 20, modulate: Ui.Name);
         float x = head.End.X;
-        x = RightString(c, _cinzelLight, "K GOLD", 11, Ui.Subtitle, x, head) - 6;
-        x = RightString(c, _cinzel, Figures.Number(party.Gold * 100), 20, Ui.Name, x, head) - 10;
+        x = RightString(c, _cinzelLight, "GOLD", 11, Ui.Subtitle, x, head) - 6;
+        x = RightString(c, _cinzel, Figures.GoldShort(party.Gold * 100), 20, Ui.Name, x, head) - 10;
         RightString(c, _cinzelLight, "Budget", 12, Ui.Label, x, head);
         Ui.DrawDivider(c, PartyPanel.Position.X + 14, PartyPanel.End.X - 14, PartyPanel.Position.Y + 44, _k);
 

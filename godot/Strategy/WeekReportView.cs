@@ -130,7 +130,7 @@ internal sealed partial class WeekReportView : Control
             DrawRect(total, Ui.Row);
             DrawRect(total, Ui.Gold, false, Lacquer.Line(1, _k));
             DrawString(_bold, new Vector2(x0 + 16, Lacquer.Baseline(total, _bold, 18)), "Budget", fontSize: 18, modulate: Ui.Name);
-            Amount(x1 - 16, Lacquer.Baseline(total, _heavy, TotalSize), Gold(r.BudgetAfter ?? r.BudgetBefore), _heavy, TotalSize, Ui.Name, "K GOLD");
+            Amount(x1 - 16, Lacquer.Baseline(total, _heavy, TotalSize), Gold(r.BudgetAfter ?? r.BudgetBefore), _heavy, TotalSize, Ui.Name, "GOLD");
             y += TotalHeight;
         }
         if (r.Troops is { } troops)
@@ -157,7 +157,7 @@ internal sealed partial class WeekReportView : Control
         DrawString(_cinzel, new Vector2(x0 + 24, baseline), label, fontSize: LabelSize, modulate: Ui.Text);
         float lw = _cinzel.GetStringSize(label, fontSize: LabelSize).X;
         DrawString(_cinzel, new Vector2(x0 + 24 + lw + 8, baseline), sub, fontSize: SubSize, modulate: Ui.Label);
-        Amount(x1 - 4, baseline, amount, _bold, ValueSize, colour, "K GOLD");
+        Amount(x1 - 4, baseline, amount, _bold, ValueSize, colour, "GOLD");
         for (float x = x0; x < x1; x += 5)
             DrawLine(new Vector2(x, line.End.Y), new Vector2(Math.Min(x + 2, x1), line.End.Y), Ui.DimGold, Lacquer.Line(1, _k));
         y += LinePitch;
@@ -173,6 +173,6 @@ internal sealed partial class WeekReportView : Control
         DrawString(font, new Vector2(right - uw - (unit is null ? 0 : 6) - aw, baseline), amount, fontSize: size, modulate: colour);
     }
 
-    /// <summary>An amount in K GOLD, its thousands separated as Option chose: 20200 → "20,200".</summary>
-    private static string Gold(int amount) => Figures.Number(amount);
+    /// <summary>An amount in K, its thousands separated as Option chose, the K a part of the figure: 20200 → "20,200K".</summary>
+    private static string Gold(int amount) => Figures.GoldShort(amount);
 }

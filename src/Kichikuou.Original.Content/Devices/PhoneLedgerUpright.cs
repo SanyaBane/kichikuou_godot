@@ -322,7 +322,7 @@ public static class PhoneLedgerUpright
 
     /// <summary>
     /// The budget at the bar's left as text (PU1e3): its left from the bar's, the label's middle from the bar's top, the
-    /// figure's middle, the "K GOLD" after it (its middle, the room before it); their types.
+    /// figure's middle, the "GOLD" after it (its middle, the room before it); their types.
     /// </summary>
     public const float BudgetX = 24, BudgetLabelMiddle = 42, BudgetFigureMiddle = 102, BudgetFigureText = 56, BudgetUnitMiddle = 108,
         BudgetUnitGap = 14, BudgetLabelText = 26;

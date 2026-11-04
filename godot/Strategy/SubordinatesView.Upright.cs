@@ -70,11 +70,11 @@ internal sealed partial class SubordinatesView
         int label = u.Size(PhoneLedgerUpright.BudgetLabelText), figure = u.Size(PhoneLedgerUpright.BudgetFigureText);
         c.DrawString(_cinzelLight, new Vector2(bx, Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetLabelMiddle))),
             "Budget", fontSize: label, modulate: Ui.Subtitle);
-        string gold = Figures.Number(panel.Gold * 100);
+        string gold = Figures.GoldShort(panel.Gold * 100);
         c.DrawString(_cinzel, new Vector2(bx, Middle(_cinzel, figure, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetFigureMiddle))), gold,
             fontSize: figure, modulate: Ui.Name);
         c.DrawString(_cinzelLight, new Vector2(bx + _cinzel.GetStringSize(gold, fontSize: figure).X + u.Px(PhoneLedgerUpright.BudgetUnitGap),
-            Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetUnitMiddle))), "K GOLD", fontSize: label, modulate: Ui.Subtitle);
+            Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerUpright.BudgetUnitMiddle))), "GOLD", fontSize: label, modulate: Ui.Subtitle);
         var end = RectOf(EndButton)!.Value;
         DrawPlain(c, end, "End", null, EndButton, _brush, SideCells.Fit(_brush, "End", u.Size(PhoneLedgerUpright.EndText), end.Size.X - u.Px(30)), 0);
     }

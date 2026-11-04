@@ -494,8 +494,8 @@ internal sealed partial class SubordinatesView : Control
         var head = new Rect2(OrdersPanel.Position.X + 18, OrdersPanel.Position.Y + 10, OrdersPanel.Size.X - 36, 30);
         c.DrawString(_brush, new Vector2(head.Position.X, Lacquer.Baseline(head, _brush, 18)), "Orders", fontSize: 18, modulate: Ui.Name);
         float x = head.End.X;
-        x = RightString(c, _cinzelLight, "K GOLD", 11, Ui.Subtitle, x, head) - 6;
-        x = RightString(c, _cinzel, Figures.Number(panel.Gold * 100), 20, Ui.Name, x, head) - 10;
+        x = RightString(c, _cinzelLight, "GOLD", 11, Ui.Subtitle, x, head) - 6;
+        x = RightString(c, _cinzel, Figures.GoldShort(panel.Gold * 100), 20, Ui.Name, x, head) - 10;
         RightString(c, _cinzelLight, "Budget", 12, Ui.Label, x, head);
         Ui.DrawDivider(c, OrdersPanel.Position.X + 14, OrdersPanel.End.X - 14, OrdersPanel.Position.Y + 46, _k);
 

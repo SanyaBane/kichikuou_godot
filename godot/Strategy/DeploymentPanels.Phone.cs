@@ -80,8 +80,8 @@ internal sealed partial class DeploymentPanels
             fontSize: sub, modulate: Ui.Subtitle);
         int label = u.Size(PhoneLedger.LabelText), figure = u.Size(PhoneLedger.BudgetText);
         float mid = u.Px(PhoneLedger.BudgetMiddle), x = x1;
-        x = RightAt(c, _cinzelLight, "K GOLD", label, Ui.Subtitle, x, mid) - u.Px(12);
-        x = RightAt(c, _cinzel, Figures.Number(party.Gold * 100), figure, Ui.Name, x, mid) - u.Px(14);
+        x = RightAt(c, _cinzelLight, "GOLD", label, Ui.Subtitle, x, mid) - u.Px(12);
+        x = RightAt(c, _cinzel, Figures.GoldShort(party.Gold * 100), figure, Ui.Name, x, mid) - u.Px(14);
         RightAt(c, _cinzelLight, "Budget", label, Ui.Subtitle, x, mid);
         Ui.DrawDivider(c, x0, x1, u.Px(PhoneLedger.Divider), _k);
 

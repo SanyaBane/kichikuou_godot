@@ -29,8 +29,8 @@ internal sealed partial class DeploymentPanels
         float mid = panel.Position.Y + u.Px(PhoneLedgerUpright.HeadingMiddle);
         LeftAt(c, _brush, "Party", u.Size(PhoneLedgerUpright.HeadingText), Ui.Name, x0, mid);
         int label = u.Size(PhoneLedgerUpright.LabelText), figure = u.Size(PhoneLedgerUpright.BudgetText);
-        float x = RightAt(c, _cinzelLight, "K GOLD", label, Ui.Subtitle, x1, mid) - u.Px(12);
-        x = RightAt(c, _cinzel, Figures.Number(party.Gold * 100), figure, Ui.Name, x, mid) - u.Px(14);
+        float x = RightAt(c, _cinzelLight, "GOLD", label, Ui.Subtitle, x1, mid) - u.Px(12);
+        x = RightAt(c, _cinzel, Figures.GoldShort(party.Gold * 100), figure, Ui.Name, x, mid) - u.Px(14);
         RightAt(c, _cinzelLight, "Budget", label, Ui.Subtitle, x, mid);
 
         int caption = u.Size(PhoneLedgerUpright.CaptionText);

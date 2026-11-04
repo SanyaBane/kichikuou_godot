@@ -25,7 +25,8 @@ public enum ThousandsSeparator
 /// How our own screens write gold, troops and damage, one standard for all (owner, 2026-10-23): the thousands
 /// separated by <see cref="Separator"/>, a minus as U+2212, gold in K — "K GOLD" where the amount stands alone or in
 /// a sentence (the budget, the week report, the questions), "K" in tables, buttons and cards — with no space
-/// before the K. The screens of the original engine keep its own way.
+/// before the K; a large figure with a small "GOLD" after it takes the K in its own face (<see cref="GoldShort"/>).
+/// The screens of the original engine keep its own way.
 /// </summary>
 public static class Figures
 {

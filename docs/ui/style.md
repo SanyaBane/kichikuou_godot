@@ -94,7 +94,10 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   the PC, text 19 (text = 8 + 0.29 × row), a tag's word 4 smaller; the scene menus 40 px; touch rows 46 px
   (docs/ui/command-screen.md, "The province menu"; docs/ui/touch.md).
 - **Figures go through `Original.Content/Figures`**: the thousands separator is the player's choice (Comma by default),
-  "K GOLD" alone or in a sentence, "K" in tables, buttons and cards, the minus U+2212; the scenario's sums in our windows
+  "K GOLD" alone or in a sentence, "K" in tables, buttons and cards, the minus U+2212; where a figure is drawn large
+  with "GOLD" after it in a small, quiet face (the budget's headers, the week report), the K is a part of the figure,
+  "116,400K" + "GOLD", never left in the small face (owner, 2026-11-04: it went unseen; mock-up A,
+  `tools/ui/mock_budget_k.py`); the scenario's sums in our windows
   get it only where they are verified money (`ScenarioFigures`; docs/ui/gold-figures.md).
 - A label that overruns is shortened ("Trp.") or a name shrunk to fit its row, never wrapped into the next.
 - The date reads "LP 3 · Month 5 · Week 2"; at a title band's right, Cinzel 700 at 16 in the name's colour (owner,
