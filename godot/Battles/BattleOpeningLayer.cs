@@ -120,15 +120,18 @@ internal sealed partial class BattleOpeningLayer : Control
         _taller = TitlePitch;
     }
 
-    /// <summary>The distance between the title's two lines' middles (layout pixels).</summary>
-    private static float TitlePitch => TitleSize * 1.1f;
+    /// <summary>The distance between the title's two lines' middles (layout pixels; the PC's 34 under a place of 30).</summary>
+    private static float TitlePitch => TitleSize * 34 / 30;
+
+    /// <summary>The kind's type under the place, the owner's B (2026-11-04): 19 against the place's 30 on the PC.</summary>
+    private static float KindSize => TitleSize * 19 / 30;
 
     private float TitleWidth(string text, float size) => _plate.GetStringSize(text, HorizontalAlignment.Left, -1, Math.Max(1, (int)Math.Round(size))).X;
 
-    /// <summary>The largest type up to the title's that fits <paramref name="text"/> in the bar, in window pixels.</summary>
-    private int TitlePx(string text)
+    /// <summary>The largest type up to <paramref name="largest"/> (else the title's) that fits <paramref name="text"/> in the bar, in window pixels.</summary>
+    private int TitlePx(string text, float largest = 0)
     {
-        float room = PlateArea.Size.X - 4 * BarInset, size = TitleSize;
+        float room = PlateArea.Size.X - 4 * BarInset, size = largest > 0 ? largest : TitleSize;
         while (size > 8 && TitleWidth(text, size) > room)
             size -= 1;
         return Px(size);
@@ -267,8 +270,16 @@ internal sealed partial class BattleOpeningLayer : Control
             _top.DrawString(_plate, new Vector2(plate.Position.X, plate.Position.Y + y * s + Centred(_plate, size)), text,
                 HorizontalAlignment.Center, plate.Size.X, size, colour);
         string? turnsText = o.Turns is { } turns ? turns == 1 ? "1 turn" : $"{turns} turns" : null;
-        for (int i = 0; i < _title.Length; i++)                            // one line, or the place over the kind
-            Line(_title[i], TitleMiddle + i * TitlePitch, TitlePx(_title[i]), Ui.Text);
+        if (_title.Length == 1)                                             // "Duel", "Dungeon Battle"
+            Line(_title[0], TitleMiddle, TitlePx(_title[0]), Ui.Text);
+        else if (_title.Length == 2)                                        // the owner's B, the place in C's gold (2026-11-04)
+        {
+            Line(_title[0], TitleMiddle, TitlePx(_title[0]), Ui.Name);
+            int kindPx = TitlePx(_title[1], KindSize);
+            float ky = TitleMiddle + TitlePitch;
+            Line(_title[1], ky, kindPx, Ui.Quiet);
+            KindRules(plate, ky * s, _plate.GetStringSize(_title[1], HorizontalAlignment.Left, -1, kindPx).X);
+        }
         float down = _taller;                                               // the limit and the turns under a second line
         if (Phone)
         {
@@ -287,6 +298,23 @@ internal sealed partial class BattleOpeningLayer : Control
         Line(o.Limit, 84 + down, Px(22), Ui.Text);
         if (turnsText is not null)
             Line(turnsText, 115 + down, Px(20), Ui.Quiet);
+    }
+
+    /// <summary>
+    /// The gold rules either side of the battle's kind (the owner's B): 40 long, 14 off its ends, a small diamond at their
+    /// inner end, in the PC's layout pixels scaled with the title's type; <paramref name="y"/> and <paramref name="width"/>
+    /// in window pixels from the plate's top.
+    /// </summary>
+    private void KindRules(Rect2 plate, float y, float width)
+    {
+        float k = TitleSize / 30 * _scale, cx = plate.GetCenter().X, cy = plate.Position.Y + y;
+        for (int side = -1; side <= 1; side += 2)
+        {
+            float a = cx + side * (width / 2 + 14 * k);
+            _top.DrawLine(new Vector2(a, cy), new Vector2(a + side * 40 * k, cy), Ui.Gold, Math.Max(1, 2 * k), true);
+            _top.DrawColoredPolygon(
+                [new(a, cy - 3 * k), new(a + side * 3 * k, cy), new(a, cy + 3 * k), new(a - side * 3 * k, cy)], Ui.Gold);
+        }
     }
 
     /// <summary>A length of <paramref name="reference"/> reference pixels in layout pixels.</summary>
