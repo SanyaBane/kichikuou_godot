@@ -21,7 +21,7 @@ public partial class GameScreen
     /// <summary>
     /// A list over our Save/Load screen in unattended play. With <c>--saveload</c> from the command panel (decision 29): the
     /// save list (<c>save-load-save</c>, New save chosen; the button hovered, <c>save-load-button</c>) saved as a new manual
-    /// save by the red button; listed again with it chosen (<c>save-load-saved</c>), the sweep of the saves without a
+    /// save by the red button, which closes the screen; the Save row again, the save chosen (<c>save-load-saved</c>), the sweep of the saves without a
     /// comment asked and answered Keep (<c>save-load-sweep</c>), its comment written through Edit
     /// (<c>save-load-comment</c>, then kept by Enter), Delete asked and answered Keep (<c>save-load-delete</c>), the
     /// auto-saves' side (<c>save-load-autos-save</c>, no Save there), the Load tab; the load list (<c>save-load</c>, the save
@@ -52,7 +52,10 @@ public partial class GameScreen
                 await AutoViewClickAsync(_saveView.ButtonCentre, MouseButton.Left);
                 break;
             case 1:
-                Expect(list == SaveList.Save && _saveView.Chosen is { Kind: SaveKind.Manual } written
+                // The save closed the screen (owner, 2026-11-04); opened again, the save just written, at the top, is chosen.
+                Expect(list == SaveList.Save && _saveView.NewChosen && _saveView.ManualSaves.Count > 0, "the save list opened again");
+                await AutoViewClickAsync(_saveView.RowCentre(_saveView.ManualSaves[0])!.Value, MouseButton.Left);
+                Expect(_saveView.Chosen is { Kind: SaveKind.Manual } written
                     && _library?.Read(written) is { } saved && WeekLoop.IsMomentSave(saved.Resume), "a new manual save of the game as it is now, chosen");
                 await AutoDumpAsync("save-load-saved");
                 int bare = _saveView.UncommentedCount;

@@ -848,7 +848,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   `--load --auto --fast --quit --seed 2 --saves user://saves-look-items --slots-from user://saves-week18 --treasure --until deployment [--interface new] --shots <dir>`.
   Add another kept save the same way when a screen needs another phase.
   Our Save/Load screen (2026-10-20): `--saveload` on the week-18 save makes the first map wait open the command panel's
-  Save row; in a window it saves a new manual save by the red button, asks the sweep of the saves without a comment and
+  Save row; in a window it saves a new manual save by the red button (which closes the screen), opens the Save row again, asks the sweep of the saves without a comment and
   keeps them, writes its comment through Edit, asks Delete and
   keeps it, shows the auto-saves, opens the Load tab, chooses the newest auto-save, writes its comment and leaves by Back, then plays on — dumps `save-load-title` (the
   title's load list at the `--load`), `save-load-save`, `save-load-button`, `save-load-saved`, `save-load-sweep`, `save-load-comment`,

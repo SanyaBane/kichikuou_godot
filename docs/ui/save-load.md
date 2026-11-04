@@ -61,7 +61,7 @@ answers the menu with the item the player means — a load list's item (`slots` 
   menu).
 - **A question before saving over a game** (ours: the original overwrites at once): in a callout at the clicked
   slot, as the Treasure screen's (docs/ui/pickers.md, round W), or a second click in C.
-- After a save the script lists the slots again; the screen stays open with the new slot filled.
+- After a save the script lists the slots again; the screen stayed open with the new slot filled until §14 (a save closes it).
 - The "Auto-Save", "Load Complete" and error notices stay our message windows.
 
 ## 4. Round 1: three layouts (2026-10-20)
@@ -542,3 +542,12 @@ foot is the red button | Back: on the PC and the tablet the red button at the pa
 its right (1086, 140 wide), "Saving: …" between them; on the phone held landscape and upright the same with Back at the
 right thumb, and the comment's card Keep | Cancel (docs/ui/phone-build.md, §5, "After the build: the way back at the
 right"). The questions were already Delete | Keep.
+
+## 14. A save closes the screen (owner, 2026-11-04)
+
+After a save the player is back in the game: the list `ﾛｰﾄﾞｾｰﾌﾞ` shows again after it (`L_006a2`, §1) is answered with
+0 unseen, as a right click, and the Load / Save / Don't menu that comes back with Don't (`LoadSaveShortcut`), so
+`COMMAND`'s map follows the save at once (`GameScreen.SaveAnswered`, `_saveWritten`). Only a save list's item counts as
+a save; Back, a right click and the Load tab leave as before. With `--interface original` the menu is the original's
+and stays seen. `--saveload` opens the command panel's Save row a second time for the rest of its exercise, the save
+just written clicked in the list (`save-load-saved`).

@@ -1785,6 +1785,15 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             ? _presenter.DungeonEntry : null;
         // All Data's menus on the phone held landscape: our sides answer them (docs/ui/phone.md, §23, LG2m and LG2).
         var data = saveList is null && province is null && command is null && ladder is null && entry is null ? DataMenuMode() : null;
+        if (saveList == SaveList.Save && _saveWritten)
+        {
+            // A save made: the list the script shows again is left unseen, so the player is back in the game (owner, 2026-11-04).
+            _saveWritten = false;
+            _presenter.SaveScreenCovered = true;
+            _presenter.CloseMenu();
+            return 0;
+        }
+        _saveWritten = false;
         if (saveList is { } shownList)
         {
             _presenter.SaveScreenCovered = true;                // our Save/Load screen (docs/ui/save-load.md, §5)
@@ -1872,13 +1881,13 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                     await AutoDumpAsync("scene-menu");
                 }
                 if (saveList is { } autoList)
-                    return Answered(await AutoSaveLoadAsync(autoList, items));
+                    return Answered(SaveAnswered(autoList, await AutoSaveLoadAsync(autoList, items)));
                 if (TouchMode.On && Windowed
                     && (command is not null && !_autoCommandCloses || province is { CancelReopens: false } && !_autoProvinceOutside))
                     await AutoTouchDismissAsync(command is not null);
                 return Answered(AutoChoice(items));
             }
-            return Answered(saveList is not null ? await SaveAnswerAsync()
+            return Answered(saveList is { } answeredList ? SaveAnswered(answeredList, await SaveAnswerAsync())
                 : province is not null ? await _provinceView.ChooseAsync()
                 : command is not null ? await CommandAnswerAsync(command)
                 : ladder is not null || entry is not null ? await _ladderView.ChooseAsync()
@@ -1931,6 +1940,19 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         var (choice, other) = await _saveView.ChooseAsync();
         if (other is { } list)
             _saveShortcut.Switch(list);
+        return choice;
+    }
+
+    /// <summary>
+    /// Whether the save list's last answer saved the game (an item, not 0: a right click, Back or a tab): the list the script
+    /// shows after it is then answered with 0 unseen, so the screen closes after a save (owner, 2026-11-04).
+    /// </summary>
+    private bool _saveWritten;
+
+    /// <summary><paramref name="choice"/> as given; a save list's item marks the save made (<see cref="_saveWritten"/>).</summary>
+    private int SaveAnswered(SaveList list, int choice)
+    {
+        _saveWritten = list == SaveList.Save && choice != 0;
         return choice;
     }
 
@@ -3360,9 +3382,10 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 _pointer.RightClick(5, 6);                              // the menu: Treasure
                 return;
             }
-            if (centred && _options.AutoSaveLoad && !_autoSaveLoadWanted.HasValue)
+            // Once at the first map wait, and again after its save closed the screen (owner, 2026-11-04).
+            if (_options.AutoSaveLoad && (centred && !_autoSaveLoadWanted.HasValue || _autoSaveLoadWanted == false && _autoSaveStep == 1))
             {
-                GD.Print($"Kichikuou: --auto opens Load/Save (week {s.Week.Value}).");
+                GD.Print($"Kichikuou: --auto opens Load/Save (week {s.Week.Value}{(_autoSaveStep == 1 ? ", after its save" : "")}).");
                 _autoSaveLoadWanted = true;
                 _pointer.RightClick(5, 6);                              // the menu: Load/Save
                 return;
