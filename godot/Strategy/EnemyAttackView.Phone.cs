@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Strategy;
 
 // Our enemy attack screen on the phone held landscape (docs/ui/phone-build.md, step L6; docs/ui/phone.md, §14, LA2 and LA2n
 // with the owner's changes): across the whole width between the hole's strips over the wave backdrop — the province's
-// panel and the army's at the left, their content in their middle, the army's cards as the scout report's; at the right
+// panel and the army's at the left, their content in their middle, the army's cards (PhoneCommanderCard); at the right
 // thumb a column of its own: the title, the date and the news, Maris's question, Abandon City | Ninja Scout, Intercept at
 // the thumb. Ninja Scout's list opens above its button, two ninjas a row; Abandon City asks in the callout above its button.
 // Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhoneAttack's. The answers, the list,

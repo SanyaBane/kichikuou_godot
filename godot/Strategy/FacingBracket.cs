@@ -7,12 +7,10 @@ namespace Kichikuou.Game.Strategy;
 /// The bracket holding an army's front row, which points the way the army faces: a gold line along the row's outer side,
 /// its ends turned to the cards, its arms bending to a head in the middle in the name's gold. The PC's and the tablet's
 /// (<see cref="DrawPc"/>: the owner's F5 on the deployment table, docs/ui/deployment-table.md, "The facing mark"; the enemy
-/// attack, docs/ui/enemy-attack.md, §8; the scout report, Cf1, docs/ui/phone.md, §47) holds a column of cards from its
-/// side. On the phone (<see cref="PhoneBracket"/>, the PC's scaled with the cards) upright (<see cref="Draw"/>; §31-§33) it
-/// holds a row from above or below — up at the province on the enemy attack (PA1f2a) and on the ninja's scout report
-/// (PB4sf2m2), down as our army in the battle on the deployment table (PD2f2) —, held landscape (<see cref="DrawSide"/>;
+/// attack, docs/ui/enemy-attack.md, §8) holds a column of cards from its side. On the phone (<see cref="PhoneBracket"/>, the PC's scaled with the cards) upright (<see cref="Draw"/>; §31-§33) it
+/// holds a row from above or below — up at the province on the enemy attack (PA1f2a), down as our army in the battle on the deployment table (PD2f2) —, held landscape (<see cref="DrawSide"/>;
 /// §47) a column from its side as on the PC: right on the deployment table (LD2f1), left at the province on the enemy
-/// attack (LA2f1) and on the scout report (LB3sf1).
+/// attack (LA2f1).
 /// </summary>
 internal static class FacingBracket
 {

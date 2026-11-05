@@ -327,7 +327,8 @@ question beside Retreat, the exchange's counters in the scene's blurred sides (`
 Step L4 is built, awaiting the owner's look on the phone (phone-build.md, "Step L4, where it stands"): the battle's other
 states — the opening at the lower scene band, the scout report across the width (its front row in the bracket, LB3sf1), the cut-in's band on across the sides,
 the results plate and our panel in the frame's middle, the ribbon and caption, the balloon over the scene's foot, the
-cards' menu at a finger's size (`Original.Content/Devices/PhoneBattleStates`; `ScoutReportView.Phone.cs`,
+cards' menu at a finger's size (`Original.Content/Devices/PhoneBattleStates`; `ScoutReportView.Phone.cs` (the report's
+overlay, removed 2026-11-05 with the rest of it),
 `BattleInfoLayer.Phone.cs`, the phone branches of `BattleOpeningLayer`, `StrategyCutInView`, `SpeechBalloon`).
 Step L5 is built, awaiting the owner's look on the phone (phone-build.md, "Step L5, where it stands"): the deployment table
 and Subordinates — the ledger in one-line rows at the phone's type (wholly at the left on the deployment table, the frame on
@@ -401,7 +402,7 @@ our balloon beside it, a defence's ribbon and caption at held landscape's millim
 the scout report (since 2026-10-31 the ninja and the enemy one block in the middle over Rance's answer, the front row in
 the bracket, the owner's PB4sf2m2, phone.md §34) and the strategy's cut-in as screens of their own (`Original.Content/Devices/PhoneBattleStatesPortrait`;
 the upright branches of `BattleOpeningLayer`, `SpeechBalloon`, `BattleCommandLayer`, `BattleInfoLayer.Portrait.cs`,
-`ScoutReportView.Portrait.cs`, `StrategyCutInView.Portrait.cs`).
+`ScoutReportView.Portrait.cs` (removed 2026-11-05), `StrategyCutInView.Portrait.cs`).
 Step P5 is built, awaiting the owner's look on the Poco (phone-build.md, "Step P5, where it stands"): the deployment table
 and Subordinates upright — the title band, the party on top as our army in the battle (since 2026-10-31 its front row held
 from below in the bracket, the owner's PD2f2, phone.md §32; `PhoneLedgerPortrait.Bracket`, `Devices/PhoneBracket`,
@@ -662,7 +663,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   `BattlePresenter.ExchangeCounters` (the cards run in their steps; Option → Battle → "Counters: run");
   `FIGT_SEL` answered by our own input, `BattleCommandLayer`: banners and context menus from
   `Original.Content/Battles/BattleCommands`; the retreat confirmation our dialog, `BattleDialogLayer`
-  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the info boxes 143/153 (a defence's ribbon on the card and its caption at the scene's foot, mock-ups D2 and D5, the results plate, our panel, a fall's box among the panels) `Battles/BattleInfoLayer` from `BattlePresenter.InfoBox` (docs/ui/messages.md, §5 step 5); the ninja's scout report, before the field, our overlay `Battles/ScoutReportView` from `BattlePresenter.Scout` (`Original.Content/Battles/ScoutReport`); a successful strategy, before the field, our cut-in `Battles/StrategyCutInView` from `BattlePresenter.Strategy` (`Original.Content/Battles/BattleStrategy`; one click, the strategist's line); the first round header our opening `Battles/BattleOpeningLayer` from `GamePresenter.Opening` (`Original.Content/Battles/BattleOpening`; the later headers answered at once; its fonts Shojumaru and Cinzel bundled in `godot/fonts`); the exchange's result held ("Results: hold") and answered by `GameScreen` unless a wiped-out mark is up; the order messages not shown, the card's order label flashing (`BattleBoardView.FlashOrder`, `BattlePresenter.OrderedUnit`); every card's stats always under its portrait, `Battles/CardPortrait` from `Original.Content/Battles/BattleCardStats` (no menu offers Info), the focus "◆ n" on it; the advantages as what they do ("Walls +8%", "Strategy +10%") and the battle's limit on a plate at the scene's top (`BattleOpening.Effects`, `LimitText`); its settings Option → Battle, `BattleScreenSettings`);
+  from `BattleDialog`; the speech bubbles' lines our balloon, `SpeechBalloon` from `BattlePresenter.Speech`; the info boxes 143/153 (a defence's ribbon on the card and its caption at the scene's foot, mock-ups D2 and D5, the results plate, our panel, a fall's box among the panels) `Battles/BattleInfoLayer` from `BattlePresenter.InfoBox` (docs/ui/messages.md, §5 step 5); the ninja's scout report fills our enemy attack screen's places (`BattlePresenter.Scout`, `Original.Content/Battles/ScoutReport`; its own overlay removed 2026-11-05, docs/ui/battle-screen.md, "The scout report"); a successful strategy, before the field, our cut-in `Battles/StrategyCutInView` from `BattlePresenter.Strategy` (`Original.Content/Battles/BattleStrategy`; one click, the strategist's line); the first round header our opening `Battles/BattleOpeningLayer` from `GamePresenter.Opening` (`Original.Content/Battles/BattleOpening`; the later headers answered at once; its fonts Shojumaru and Cinzel bundled in `godot/fonts`); the exchange's result held ("Results: hold") and answered by `GameScreen` unless a wiped-out mark is up; the order messages not shown, the card's order label flashing (`BattleBoardView.FlashOrder`, `BattlePresenter.OrderedUnit`); every card's stats always under its portrait, `Battles/CardPortrait` from `Original.Content/Battles/BattleCardStats` (no menu offers Info), the focus "◆ n" on it; the advantages as what they do ("Walls +8%", "Strategy +10%") and the battle's limit on a plate at the scene's top (`BattleOpening.Effects`, `LimitText`); its settings Option → Battle, `BattleScreenSettings`);
   the touch mode (`Strategy/TouchMode`: Android or `--touch`; docs/ui/touch.md, "The tablet"): our battle screen's rails
   (`Battles/BattleCommandLayer.Touch.cs`: the acting unit's commands left, the target's attacks right, the banners not
   shown; the target preselected by `Original.Content/Battles/TouchTargets` through `GameScreen.Touch.cs`, which also
@@ -833,7 +834,7 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   them (press, held six frames, release; the system pointer stays), and the key wait after each must find no click
   left, else the run fails (the bug of 2026-10-16, `Engine/Script/InputLatch`) — then it intercepts as usual —
   `--load --auto --fast --quit --seed 2 --saves user://saves-scout --slots-from user://saves-week18 --turn-end --scout --until deployment [--interface new] --shots <dir>`
-  (Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7); our overlay needs a window,
+  (Ex (commander 1), Sakanaku (commander 6), Dodge (commander 5), Jibul (commander 7); our screen needs a window,
   and `--until deployment` stops before the battle, so nothing moves the system pointer). In our interface the attack
   is our own screen (docs/ui/enemy-attack.md, §6), answered without the pointer: in a window it dumps `enemy-attack`,
   `enemy-attack-ninjas` (the list open), `enemy-attack-scouted` (the places filled) and `enemy-attack-abandon` (the

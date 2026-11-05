@@ -179,7 +179,7 @@ internal sealed partial class SpeechBalloon : Control
     /// The balloon's shape on <paramref name="canvas"/> at <paramref name="box"/> (window pixels, <paramref name="s"/> to a
     /// layout pixel): rounded, a soft shadow, the tail out of its left or right side <see cref="TailFromTop"/> below its
     /// top (or <paramref name="tailFromTop"/> canvas units); white for talk, dark for a thought. Returns the colour of the text
-    /// on it. The scout report's balloon is one too.
+    /// on it.
     /// </summary>
     internal static Color DrawBalloon(CanvasItem canvas, Rect2 box, bool tailLeft, float s, bool thought = false, float tailFromTop = -1)
     {

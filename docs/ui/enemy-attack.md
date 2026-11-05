@@ -20,7 +20,7 @@ start, docs/ui/turn-start.md §3). In order:
 | Plains | `:164-180` | Rance: "Alright, move out!!" / "Don't let them near <province>!" | every plains battle |
 | City | `:181-216` | Rance: "...Yeah, the citizens'll be harmed, but it'll be more convenient for us." / "Maris, we're fighting inside <province>. Alright?"; Maris: "Understood." | every city battle |
 | Before the battle | `:217-242` | Kayblis's war: `Gｹｲﾌﾞﾘｽ` 5, 6, 7 when Satella, Meglass or Galtia (unit 41) fights Kayblis's army (story scenes; Galtia's leaves the party) | rarely |
-| Ninja Scout | `:311-648` | Rance: "Yeah, this is a good time to use a ninja." (112); none free: Maris's apology and Rance's grumble (`:322`, `:331`), back to the menu; else the ninja menu (the free ninjas, None: `:384`, `:389`, back to the menu); the ninja's call and report — the report is ours already, the lines before it are answered unseen (docs/ui/battle-screen.md, "The scout report") | every scouting |
+| Ninja Scout | `:311-648` | Rance: "Yeah, this is a good time to use a ninja." (112); none free: Maris's apology and Rance's grumble (`:322`, `:331`), back to the menu; else the ninja menu (the free ninjas, None: `:384`, `:389`, back to the menu); the ninja's call and report — the report fills the army's places on our screen, its lines answered unseen (§6; our overlay of docs/ui/battle-screen.md, "The scout report", withdrawn 2026-11-05) | every scouting |
 | Abandon City | `:714-829` | Leazas Castle (1) after week 20 with `F_Ex_State = 4`: `Gｴｸｽ` 5 and Ex's last stand (Ex's unit, unit 14, alone); else Rance and Maris, six lines ("King Rance..." / "Just leave it. I don't care." / "But then..." / "Shut up, ..."), the province's flag changes, "<province> was occupied by the <army>." (113); Leazas Castle: "The castle has fallen... Leazas is no more." and ending 2 | every abandon |
 | The result | `:244-310`, `:830-883` | "<province> was successfully defended." or "Our army was defeated..." / "... was occupied by ..."; `死亡捕獲`; `Gｴｸｽ` 6 after Ex's stand, `Gｴﾚﾅ` 1-3, 7 after some wins in the north | every battle |
 
@@ -122,7 +122,8 @@ seen. Our interface only; the rules run as before.
   `enemy-attack-scouted` and `enemy-attack-abandon` (the question answered Keep) before it intercepts.
 - **Built (2026-10-24):** `Original.Content/Battles/EnemyAttack` (`EnemyAttackTests`), `BattlePresenter.Attack.cs`
   (the ninjas taken again with the report, which spent one), `godot/Strategy/EnemyAttackView` (the report's cards
-  drawn by `ScoutReportView.DrawCard`; since §8 our party's cards), `godot/Strategy/GameScreen.EnemyAttack.cs`. The `--scout` look on the week-18
+  drawn by `ScoutReportView.DrawCard`; since §8 our party's cards; the overlay `ScoutReportView` itself, never shown
+  since this screen, removed 2026-11-05), `godot/Strategy/GameScreen.EnemyAttack.cs`. The `--scout` look on the week-18
   save (CLAUDE.md, "Commands") goes through all of it in a window: the screen, Kanami's list, the places filled
   (Kanami spent: "0 of 1 free"), Abandon City's question answered Keep, Intercept and the deployment table, with no
   key wait of the hidden lines left for the player. Not yet looked at in a run: a refusal (Gandhi, Satella, Meglass),

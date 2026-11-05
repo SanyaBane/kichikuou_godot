@@ -8,8 +8,8 @@ using Kichikuou.Original.Content.Strategy;
 namespace Kichikuou.Game.Battles;
 
 /// <summary>
-/// A scouted commander's card on the phone held landscape, as the enemy attack (docs/ui/phone.md, §14, LA2) and the scout
-/// report (§17, LB3s) draw it (<c>attacker_card</c>): the place on a gold diamond and the name beside it, the troop type under
+/// A scouted commander's card on the phone, as the enemy attack (docs/ui/phone.md, §14, LA2) draws it (<c>attacker_card</c>):
+/// the place on a gold diamond and the name beside it, the troop type under
 /// them, "TROOPS" and the figure over a rule at the foot, the face at the right. Drawn in a <see cref="PhoneUnits"/> drawing at
 /// <see cref="PhoneBattleStates"/>' card figures.
 /// </summary>

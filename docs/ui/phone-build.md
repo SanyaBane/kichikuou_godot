@@ -409,8 +409,8 @@ on Oaks (6), the debug build):
   the hole's strips (the ninja, her balloon, the cards 700 × 270, the rows' captions, Rance and his answer, Maris and her
   comment at the foot right).
 - **The views**, each keyed by the live device: `BattleOpeningLayer` covers the lower scene band, its plate and type
-  LB3o1's, the names centred beside the plate (`DrawPhoneText`); `ScoutReportView.Phone.cs` draws the report over the
-  whole screen, the cards as the enemy attack's; `StrategyCutInView` lets the band run on across the black sides (strong
+  LB3o1's, the names centred beside the plate (`DrawPhoneText`); `ScoutReportView.Phone.cs` drew the report over the
+  whole screen, the cards as the enemy attack's (the scout report's overlay, which no game reaches since our enemy attack screen, removed with its layouts and its gallery entries, owner, 2026-11-05; docs/ui/battle-screen.md, "The scout report"); `StrategyCutInView` lets the band run on across the black sides (strong
   on the strategist's side, its gold edges alone on the other); `BattleInfoLayer.Phone.cs` the results plate and the
   panel over the frame dimmed, the ribbon 1.3 times the PC's, the caption at the phone's type over the scene's foot;
   `SpeechBalloon` the balloon at 62 (smaller down to 46 to keep two lines), its tail at the portrait in the blurred side
@@ -923,7 +923,7 @@ and System's rotation lock).
   (`DrawPortraitText`); `BattleInfoLayer.Portrait.cs` the results plate and the panel over the whole board dimmed, the ribbon
   and the caption in `DrawDefence`; `SpeechBalloon.DrawPortrait` the balloon, `BattleBoardView` the speaker's portrait at the
   model's place; `ScoutReportView.Portrait.cs` the report over the whole screen (`Device.Held`, the cards
-  `PhoneCommanderCard` as held landscape); `StrategyCutInView.Portrait.cs` the cut-in over the whole screen, the backdrop
+  `PhoneCommanderCard` as held landscape; removed 2026-11-05 (the scout report's overlay, which no game reaches since our enemy attack screen, removed with its layouts and its gallery entries, owner, 2026-11-05; docs/ui/battle-screen.md, "The scout report")); `StrategyCutInView.Portrait.cs` the cut-in over the whole screen, the backdrop
   left at the picture's place under it, the line's balloon with its tail up (`SpeechBalloon.DrawBalloonTailUp`);
   `BattleCommandLayer`'s card menu at the upright rows.
 - **The agent's choices**, for the owner to confirm: a level-up's rows stay on the results plate (as held landscape), the
@@ -1415,6 +1415,10 @@ Built:
   The PC's, the tablet's and the landscape phone's deployment screens are unchanged.
 
 ### After the build: the scout report's bracket upright (owner, 2026-10-31)
+
+**Withdrawn (owner, 2026-11-05):** the scout report's overlay is removed on every device with its layouts and the
+gallery's `scout-report` and `scout-report-comment` — since our enemy attack screen the game never shows it, the
+report filling that screen's places (docs/ui/battle-screen.md, "The scout report"). What follows is the record.
 
 The scout report upright showed the enemy's front row with no mark of its facing. Rounds P27-P28 (phone.md, §33-§34):
 the owner chose PB4sf2m2. Built:

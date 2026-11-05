@@ -6,9 +6,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// screen's width, a level-up's rows and our narration panel the same way (PB4r); a fighter's line in our balloon over the
 /// scene's foot beside the speaker's portrait, a defence's caption there (PB4b); the cards' long-press menu at a finger's
 /// size — the board's places in its layout pixels (<see cref="PhoneBattlePortrait.Layout"/>, its corner the room's) —; and the
-/// ninja's scout report as a screen of its own (PB4s) and the strategy's cut-in stacked (PB4c), in the canvas's units
-/// (<see cref="PhoneFrame.Px"/>). The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>pb4o3</c>, <c>pb4s</c>,
-/// <c>pb4c</c>, <c>pb4r</c>, <c>pb4b</c>) in the reference phone's pixels. Interface only. Engine-independent.
+/// strategy's cut-in stacked (PB4c), in the canvas's units (<see cref="PhoneFrame.Px"/>). The figures are the mock-ups'
+/// (<c>tools/ui/mock_phone.py</c>, <c>pb4o3</c>, <c>pb4c</c>, <c>pb4r</c>, <c>pb4b</c>) in the reference phone's pixels.
+/// Interface only. Engine-independent.
 /// </summary>
 public static class PhoneBattleStatesPortrait
 {
@@ -185,104 +185,10 @@ public static class PhoneBattleStatesPortrait
     public static float MenuRowHeight(int items, float height) =>
         Math.Min(L(PhoneBattleStates.MenuRow), (height - L(2 * PhoneBattleStates.MenuPad + 20)) / Math.Max(1, items));
 
-    // ------------------------------------------------------------------ the scout report (PB4s), the canvas's units
-
-    /// <summary>
-    /// Its places. The ninja and the enemy stand as one block (the owner's PB4sf2m2, docs/ui/phone.md, §34) in the middle of
-    /// the room over the answers (<see cref="BlockFoot"/>), at least 20 under the room's top; from the block's top: the
-    /// ninja's portrait 330 × 440 from 24 in; her balloon from 400 (her tail's room) to 16 short of the room's right edge,
-    /// from 10 to 310 down; the cards (half the room's width less 16 at the sides and 14 between) 250 high, the front row's
-    /// from 580 down (60 lower than first drawn, PB4sf2, for the bracket over it), the back row's 304 under them, each row's
-    /// caption 22 over its cards. Rance's portrait 231 × 300 at the bottom left, standing on the bar, his balloon 45 right
-    /// of it (the tail's room) to 16 short of the edge, from 40 under the portrait's top, 160 high at least; with Maris's
-    /// comment his row a row higher (24 between) and hers at the foot, mirrored.
-    /// </summary>
-    private const float Edge = 16, NinjaIn = 24, NinjaTop = 20, NinjaWidth = 330, NinjaHeight = 440, ReportLeft = 400, ReportTop = 10,
-        ReportHeight = 300, CardsTop = 580, CardHeight = 250, CardGap = 14, RowPitch = 304, RowCaptionAbove = 22, PortraitIn = 24,
-        PortraitWidth = 231, PortraitHeight = 300, ReplyGap = 45, ReplyTop = 40, ReplyHeight = 160, RowsGap = 24;
-
-    /// <summary>The block's height: the front row's top, a row's pitch and the back row's height.</summary>
-    private const float BlockHeight = CardsTop + RowPitch + CardHeight;
-
-    /// <summary>The bracket over the front row (<see cref="PhoneBracket"/>, PA1f2a as the enemy attack's): its line this far over "FRONT ROW"'s middle.</summary>
-    public const float BracketOver = 30;
-
-    /// <summary>
-    /// The foot of the room the block is centred in: Rance's portrait's top when he answers (<paramref name="replied"/>; a row
-    /// higher with Maris's comment, <paramref name="commented"/>), else the bar.
-    /// </summary>
-    public static float BlockFoot(PhoneFrame f, bool replied, bool commented) =>
-        replied ? SpeakerPortrait(f, right: false, commented).Y : f.Bar.Y;
-
-    /// <summary>The block's top: in the middle between the room's top and <paramref name="foot"/>, at least 20 under the room's top.</summary>
-    private static float BlockTop(PhoneFrame f, float foot) =>
-        Math.Max(f.Room.Y + f.Px(NinjaTop), (f.Room.Y + foot - f.Px(BlockHeight)) / 2);
-
-    /// <summary>
-    /// The report's type: the balloons' text (the report's 40, the answers' 52) and its padding, the lines' pitch, the tails'
-    /// place under the balloons' tops; the rows' captions (26). The cards' insides are held landscape's
-    /// (<see cref="PhoneBattleStates.CardName"/> and on, <c>attacker_card</c>).
-    /// </summary>
-    public const float ReportText = 40, ReplyText = 52, TextSide = 40, TextTop = 30, LinePitch = 1.25f, ReportTail = 70, ReplyTail = 60,
-        RowCaption = 26;
-
-    /// <summary>The ninja's portrait at the block's top left (<paramref name="foot"/>: <see cref="BlockFoot"/>).</summary>
-    public static PhoneFrame.Box NinjaPortrait(PhoneFrame f, float foot) =>
-        new(f.Room.X + f.Px(NinjaIn), BlockTop(f, foot), f.Px(NinjaWidth), f.Px(NinjaHeight));
-
-    /// <summary>Her balloon with the army's name and totals, right of her.</summary>
-    public static PhoneFrame.Box ReportBalloon(PhoneFrame f, float foot) =>
-        new(f.Room.X + f.Px(ReportLeft), BlockTop(f, foot) + f.Px(ReportTop), f.Room.W - f.Px(ReportLeft + Edge), f.Px(ReportHeight));
-
-    /// <summary>Place <paramref name="slot"/>'s card: the front row (1-2) on top, the back row (3-4) under it; 1 and 3 at the left.</summary>
-    public static PhoneFrame.Box ScoutCard(PhoneFrame f, int slot, float foot)
-    {
-        float w = (f.Room.W - f.Px(2 * Edge + CardGap)) / 2;
-        int row = (slot - 1) / 2, column = (slot - 1) % 2;
-        return new PhoneFrame.Box(f.Room.X + f.Px(Edge) + column * (w + f.Px(CardGap)), BlockTop(f, foot) + f.Px(CardsTop + row * RowPitch),
-            w, f.Px(CardHeight));
-    }
-
-    /// <summary>The middle of a row's caption ("FRONT ROW", "BACK ROW") over its cards.</summary>
-    public static (float X, float Y) RowCaptionAt(PhoneFrame f, int row, float foot) =>
-        (f.Room.X + f.Room.W / 2, ScoutCard(f, 1 + 2 * row, foot).Y - f.Px(RowCaptionAbove));
-
-    /// <summary>
-    /// The bracket over the front row (PA1f2a): its ends at the cards' outer sides (1 in), its middle the room's, its line
-    /// <see cref="BracketOver"/> over "FRONT ROW"'s middle, and the cards' top its ends come down to.
-    /// </summary>
-    public static (float X0, float X1, float Middle, float Line, float CardsTop) Bracket(PhoneFrame f, float foot)
-    {
-        var (middle, caption) = RowCaptionAt(f, 0, foot);
-        var left = ScoutCard(f, 1, foot);
-        return (left.X + f.Px(1), ScoutCard(f, 2, foot).Right - f.Px(1), middle, caption - f.Px(BracketOver), left.Y);
-    }
-
-    /// <summary>
-    /// Rance's portrait at the bottom left (<paramref name="right"/>: the advisor's, at the bottom right), on the bar; with
-    /// the advisor's comment (<paramref name="commented"/>) his a row higher.
-    /// </summary>
-    public static PhoneFrame.Box SpeakerPortrait(PhoneFrame f, bool right, bool commented)
-    {
-        float foot = f.Bar.Y - (commented && !right ? f.Px(PortraitHeight + RowsGap) : 0);
-        float x = right ? f.Room.Right - f.Px(PortraitIn + PortraitWidth) : f.Room.X + f.Px(PortraitIn);
-        return new PhoneFrame.Box(x, foot - f.Px(PortraitHeight), f.Px(PortraitWidth), f.Px(PortraitHeight));
-    }
-
-    /// <summary>
-    /// The answer's balloon (<paramref name="comment"/>: the advisor's comment's), <paramref name="textHeight"/> canvas units
-    /// of text in it, beside its speaker's portrait, growing down from its top.
-    /// </summary>
-    public static PhoneFrame.Box ReplyBalloon(PhoneFrame f, bool comment, bool commented, float textHeight)
-    {
-        var portrait = SpeakerPortrait(f, comment, commented);
-        float h = Math.Max(f.Px(ReplyHeight), textHeight + f.Px(2 * TextTop)), y = portrait.Y + f.Px(ReplyTop);
-        float left = comment ? f.Room.X + f.Px(Edge) : portrait.Right + f.Px(ReplyGap);
-        float right = comment ? portrait.X - f.Px(ReplyGap) : f.Room.Right - f.Px(Edge);
-        return new PhoneFrame.Box(left, y, right - left, h);
-    }
-
     // ------------------------------------------------------------------ the strategy's cut-in (PB4c), the canvas's units
+
+    /// <summary>The strategist's balloon's padding: its text this far in from its sides and from its top.</summary>
+    public const float TextSide = 40, TextTop = 30;
 
     /// <summary>The cut-in's middle: halfway between the room's top and the bar; its places are given from it.</summary>
     public static float CutInMiddle(PhoneFrame f) => (f.Room.Y + f.Bar.Y) / 2;

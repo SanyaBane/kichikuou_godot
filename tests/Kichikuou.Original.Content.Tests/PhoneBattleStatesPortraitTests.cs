@@ -122,45 +122,6 @@ public class PhoneBattleStatesPortraitTests
     }
 
     [Fact]
-    public void The_scout_report_is_a_screen_of_its_own()
-    {
-        var f = Reference;
-        // PB4sf2m2 (mock_attack_facing.py, round P28): Kanami, her report and the cards one block 580 + 304 + 250 = 1134
-        // high, in the middle between the room's top (TOP) and Rance's portrait's (2204): from (110 + 2204 - 1134) / 2 = 590.
-        float foot = PhoneBattleStatesPortrait.BlockFoot(f, replied: true, commented: false);
-        Assert.Equal(2204, foot, Close);
-        // pb4s: Kanami framed at the block's top, 24 in, 330 × 440; her balloon from 380 (400 with its tail's room) to
-        // PW - 16, 10 to 310 under the block's top.
-        Equal(new PhoneFrame.Box(24, 590, 330, 440), PhoneBattleStatesPortrait.NinjaPortrait(f, foot));
-        Equal(new PhoneFrame.Box(400, 600, 804, 300), PhoneBattleStatesPortrait.ReportBalloon(f, foot));
-        Assert.True(PhoneBattleStatesPortrait.ReportBalloon(f, foot).X - 40 >= PhoneBattleStatesPortrait.NinjaPortrait(f, foot).Right);
-        // The cards (PW - 32 - 14) // 2 wide, 250 high: the front row 580 under the block's top (PB4sf2), the back row 304
-        // under it; the bracket's line 30 over "FRONT ROW"'s middle, its head's tip clear of Kanami's balloon.
-        Equal(new PhoneFrame.Box(16, 1170, 587, 250), PhoneBattleStatesPortrait.ScoutCard(f, 1, foot));
-        Equal(new PhoneFrame.Box(617, 1170, 587, 250), PhoneBattleStatesPortrait.ScoutCard(f, 2, foot));
-        Equal(new PhoneFrame.Box(16, 1474, 587, 250), PhoneBattleStatesPortrait.ScoutCard(f, 3, foot));
-        Equal(new PhoneFrame.Box(617, 1474, 587, 250), PhoneBattleStatesPortrait.ScoutCard(f, 4, foot));
-        Assert.Equal((610f, 1148f), PhoneBattleStatesPortrait.RowCaptionAt(f, 0, foot));
-        Assert.Equal((610f, 1452f), PhoneBattleStatesPortrait.RowCaptionAt(f, 1, foot));
-        Assert.Equal((17f, 1203f, 610f, 1118f, 1170f), PhoneBattleStatesPortrait.Bracket(f, foot));
-        Assert.True(1118 - PhoneBracket.HeadTip > PhoneBattleStatesPortrait.ReportBalloon(f, foot).Bottom);
-        Assert.Equal(PhoneBattleStatesPortrait.NinjaPortrait(f, foot).Y - f.Room.Y, foot - PhoneBattleStatesPortrait.ScoutCard(f, 3, foot).Bottom, Close);
-        // With Maris's comment the block rises with Rance's row; with no answer it stands in the middle over the bar.
-        float raised = PhoneBattleStatesPortrait.BlockFoot(f, replied: true, commented: true);
-        Assert.Equal(428, PhoneBattleStatesPortrait.NinjaPortrait(f, raised).Y, Close);
-        Assert.Equal(raised - 318, PhoneBattleStatesPortrait.ScoutCard(f, 3, raised).Bottom, Close);
-        Assert.Equal(740, PhoneBattleStatesPortrait.NinjaPortrait(f, PhoneBattleStatesPortrait.BlockFoot(f, replied: false, commented: false)).Y, Close);
-        // Rance at the foot on the bar (231 × 300 at (24, BAR[0] - 300)), his balloon from 40 under his top, 160 high.
-        Equal(new PhoneFrame.Box(24, 2204, 231, 300), PhoneBattleStatesPortrait.SpeakerPortrait(f, right: false, commented: false));
-        Equal(new PhoneFrame.Box(300, 2244, 904, 160), PhoneBattleStatesPortrait.ReplyBalloon(f, comment: false, commented: false, 52));
-        // With Maris's comment: his row a row higher, hers at the foot, mirrored.
-        Equal(new PhoneFrame.Box(24, 1880, 231, 300), PhoneBattleStatesPortrait.SpeakerPortrait(f, right: false, commented: true));
-        Equal(new PhoneFrame.Box(965, 2204, 231, 300), PhoneBattleStatesPortrait.SpeakerPortrait(f, right: true, commented: true));
-        Equal(new PhoneFrame.Box(16, 2244, 904, 160), PhoneBattleStatesPortrait.ReplyBalloon(f, comment: true, commented: true, 52));
-        Assert.Equal(52 + 3 * 52 * 1.25f + 60, PhoneBattleStatesPortrait.ReplyBalloon(f, false, false, 52 + 3 * 52 * 1.25f).H, Close);
-    }
-
-    [Fact]
     public void The_strategy_s_cut_in_is_stacked_in_the_room_s_middle()
     {
         var f = Reference;

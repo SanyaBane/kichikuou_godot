@@ -65,7 +65,7 @@ draws what the core shows and answers what the core asks.
    three): "◆ n" on the portrait's top-left corner ("The focus" below).
 6. **Pre-battle**: the strategy screen and the scout report — our own panels or the original's
    pictures in the scene. The scout report is answered (owner, 2026-10-14: our own overlay, "The scout
-   report" below); the strategy screen (`FIGT作`, docs/battle/screen-layout.md §6.2) stayed the original's at
+   report" below; since 2026-10-24 filled into our enemy attack screen, the overlay withdrawn 2026-11-05); the strategy screen (`FIGT作`, docs/battle/screen-layout.md §6.2) stayed the original's at
    first (owner, 2026-10-15), then became our cut-in (owner, 2026-10-15, mock-up A of three: "The strategy's
    cut-in" below).
 7. **Script menus** (retreat, intercept / ninja scout / abandon, the ninja): a dialog of ours.
@@ -310,8 +310,17 @@ picture, the slot panels) is not shown. How it is built:
   no rise, no falling digits).
 - **The scout report** (owner, 2026-10-14, mock-up C of three, "all at once"): when the player sends a ninja to
   scout an attacking army (`FIGT_B.ADV:506-648`, `NinjaScoutReportAsync`; the original prints it into window 113,
-  docs/battle/screen-layout.md §6.3), the report is our overlay over the original's screen (the map, before the
-  field is drawn), shown only in New (`godot/Battles/ScoutReportView`): the screen dimmed and blurred; the ninja's
+  docs/battle/screen-layout.md §6.3), the report was our overlay over the original's screen (the map, before the
+  field is drawn), shown only in New (`godot/Battles/ScoutReportView`).
+  **Withdrawn (owner, 2026-11-05).** Since our enemy attack screen (2026-10-24, docs/ui/enemy-attack.md, §6, the
+  owner's B2) the report fills the army's places on that screen and its lines are answered unseen, so the overlay was
+  never shown any more (it showed only while no attack screen was up, and the report's window closes before Intercept);
+  `godot/Battles/ScoutReportView`, its phone layouts (`PhoneBattleStates`' and `PhoneBattleStatesPortrait`'s scout
+  report) and the gallery's `scout-report` and `scout-report-comment` were removed. The model below stays: it is what the
+  enemy attack screen fills in (`EnemyAttack.Report`), and the presenter's `ScoutReported`, `ScoutReplied` and
+  `ScoutCalling` still keep the original's windows of the report from our message windows. What follows is the
+  overlay as it was built.
+  The overlay: the screen dimmed and blurred; the ninja's
   whole portrait on the left (the original's framed 192×256 picture of op 321, Kanami's CG 9, 300×400 at
   (40, 40), its top with the balloon's so the tail points at it — owner, 2026-10-14); our balloon (the dialogue panel's, `SpeechBalloon.DrawBalloon`) to its right at the top: "The
   Approaching Enemy  [<army, string 10>]" bold, then "Commanders n      Total troops N"; the commanders as cards

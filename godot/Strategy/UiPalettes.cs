@@ -9,7 +9,7 @@ namespace Kichikuou.Game.Strategy;
 /// </summary>
 internal enum UiPart
 {
-    /// <summary>The battle screen and what comes before its field (the scout report, a strategy's cut-in), its info boxes, the touch mode's rails and Skip.</summary>
+    /// <summary>The battle screen and what comes before its field (a strategy's cut-in), its info boxes, the touch mode's rails and Skip.</summary>
     Battle,
     /// <summary>The map's command panel, its status strip, the province menu, the touch mode's Commands button.</summary>
     Map,

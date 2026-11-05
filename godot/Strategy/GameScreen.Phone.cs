@@ -54,7 +54,7 @@ public partial class GameScreen
     }
 
     private bool MenuCellShown => _presenter.State is not null && !_modal && !ViewHidden && !BattleScreenShown && !EnemyAttackShown
-        && !ScoutReportShown && !StrategyCutInShown && !_saveView.Visible && !_commandView.Visible;
+        && !StrategyCutInShown && !_saveView.Visible && !_commandView.Visible;
 
     /// <summary>The week report on the phone: the left side, or the bar, as in the scenes (LW1, PW1), Skip and Log with it.</summary>
     private bool PhoneWeekReport => _weekView.Visible && (PhoneLandscape || PhonePortrait);

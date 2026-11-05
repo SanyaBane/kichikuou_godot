@@ -8,8 +8,8 @@ namespace Kichikuou.Original.Content.Devices;
 /// attack (the owner's PA1f2a, <see cref="PhoneAttackPortrait.Bracket"/>), down as our army in the battle on the deployment
 /// table (PD2f2, <see cref="PhoneLedgerPortrait.Bracket"/>). Held landscape it holds a column of cards from its side as the
 /// PC's does (docs/ui/phone.md, §47): right on the deployment table (LD2f1, <see cref="PhoneLedger.Bracket"/>), left at the
-/// province on the enemy attack (LA2f1, <see cref="PhoneAttack.Bracket"/>) and on the scout report (LB3sf1,
-/// <see cref="PhoneBattleStates.ScoutBracket"/>). Its figures in the reference phone's pixels, from its line.
+/// province on the enemy attack (LA2f1, <see cref="PhoneAttack.Bracket"/>). Its figures in the reference phone's
+/// pixels, from its line.
 /// Interface only. Engine-independent.
 /// </summary>
 public static class PhoneBracket

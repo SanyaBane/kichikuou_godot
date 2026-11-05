@@ -91,42 +91,4 @@ public class PhoneBattleStatesTests
         Assert.Equal(104 / 1.525f, PhoneBattleStates.MenuRowHeight(5), Close);
         Assert.True(12 * PhoneBattleStates.MenuRowHeight(12) * 1.525f <= 1220 - 50 - 24);
     }
-
-    [Fact]
-    public void The_scout_report_s_bracket_holds_the_front_row_in_the_black_beside_it()
-    {
-        // LB3sf1 (mock_facing_modes.py): the line 16 left of the front row's cards, the head's tip 75 beyond it, clear of
-        // Kanami's portrait; the ends at the cards' top and foot, 1 in, nothing over Rance's answer.
-        var (y0, y1, middle, line, cards) = PhoneBattleStates.ScoutBracket(Reference);
-        var front = PhoneBattleStates.ScoutCard(Reference, 1);
-        Assert.Equal(front.X, cards, Close);
-        Assert.Equal(front.X - 16, line, Close);
-        Assert.Equal((331f, 889f, 610f), (y0, y1, middle));
-        Assert.True(line - PhoneBracket.HeadTip > PhoneBattleStates.NinjaPortrait(Reference).Right + 200);
-        Assert.True(y1 < PhoneBattleStates.ReplyBalloon(Reference, false, 60).Y);
-    }
-
-    [Fact]
-    public void The_scout_report_lies_across_the_whole_width()
-    {
-        // lb3s: Kanami 345 × 460 at (LX0 + 14, 30), LX0 = 116; her balloon (bx0, 40, LX1 - 10, 246), bx0 = LX0 + 14 + 345 + 60.
-        Equal(new(130, 30, 345, 460), PhoneBattleStates.NinjaPortrait(Reference));
-        Equal(new(535, 40, 2051, 206), PhoneBattleStates.ReportBalloon(Reference));
-        // The cards 700 × 270 from cx0 = bx0 + (LX1 - 10 - bx0 - 1440) // 2, rows at 330 and 330 + 290, the columns 40 apart.
-        Equal(new(840, 330, 700, 270), PhoneBattleStates.ScoutCard(Reference, 1), 0.6f);
-        Equal(new(840, 620, 700, 270), PhoneBattleStates.ScoutCard(Reference, 2), 0.6f);
-        Equal(new(1580, 330, 700, 270), PhoneBattleStates.ScoutCard(Reference, 3), 0.6f);
-        Assert.Equal(300, PhoneBattleStates.RowCaptionAt(Reference, 1).Y, Close);
-        // Rance 246 × 320 at (LX0 + 14, FOOT - 10 - 320); his balloon (LX0 + 14 + 246 + 60, FOOT - 210, 1500, FOOT - 50).
-        Equal(new(130, 840, 246, 320), PhoneBattleStates.SpeakerPortrait(Reference, false));
-        Equal(new(436, 960, 1064, 160), PhoneBattleStates.ReplyBalloon(Reference, false, 60));
-        // Maris at the bottom right, her comment between, growing up from the same foot over the cards.
-        var maris = PhoneBattleStates.SpeakerPortrait(Reference, true);
-        Assert.Equal(2596 - 14, maris.Right, Close);
-        var comment = PhoneBattleStates.ReplyBalloon(Reference, true, 60 + 75);       // two lines at 60, 1.25 apart
-        Assert.Equal(1540, comment.X, Close);
-        Assert.Equal(maris.X - 60, comment.Right, Close);
-        Assert.Equal(1120, comment.Bottom, Close);
-        Assert.True(comment.Y >= PhoneBattleStates.ScoutCard(Reference, 4).Bottom);
-    }
 }

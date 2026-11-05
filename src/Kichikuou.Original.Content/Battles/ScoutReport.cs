@@ -18,8 +18,8 @@ namespace Kichikuou.Original.Content.Battles;
 public sealed record ScoutedCommander(int Slot, int Record, string Name, string TroopType, int Picture, int Troops);
 
 /// <summary>
-/// A ninja's scout report (<c>FIGT_B.ADV:506-648</c>, <c>NinjaScoutReportAsync</c>) as our own overlay shows it
-/// (docs/ui/battle-screen.md, "The scout report"): the approaching army's name (string 10), its commanders in the
+/// A ninja's scout report (<c>FIGT_B.ADV:506-648</c>, <c>NinjaScoutReportAsync</c>) as our enemy attack screen fills it
+/// into the army's places (docs/ui/enemy-attack.md, §6): the approaching army's name (string 10), its commanders in the
 /// places the battle will give them, and the totals the script sums (<c>Tmp0002</c> commanders, <c>Tmp0001</c>
 /// troops). The report lists <c>Bt_EnemyParty1-4</c> in order, the empty ones skipped, and the battle's
 /// <c>InitBattle</c> puts party member i into enemy slot i. Rance's answer and Maris's comment, which the script has
@@ -54,10 +54,10 @@ public sealed record ScoutReport(int NinjaCg, string Army, IReadOnlyList<Scouted
     /// </summary>
     public ScriptRef CommentLine => new("FIGT_B.ADV", Commented ? 637 : 644);
 
-    /// <summary>Whether Maris says something (637): her "............" (644) our overlay leaves out with her (owner, 2026-10-16).</summary>
+    /// <summary>Whether Maris says something (637): her "............" (644) our screen leaves out with her (owner, 2026-10-16).</summary>
     public bool Commented => Troops > 5000;
 
-    /// <summary>The text of <see cref="CommentLine"/> as the overlay shows it, one line per <c>R</c>: empty for her "............" and until the presenter reads it.</summary>
+    /// <summary>The text of <see cref="CommentLine"/> as our screen shows it, one line per <c>R</c>: empty for her "............" and until the presenter reads it.</summary>
     public string Comment { get; init; } = "";
 
     /// <summary>The report as GameState holds the approaching army now, told by the ninja whose portrait is <paramref name="ninjaCg"/>.</summary>

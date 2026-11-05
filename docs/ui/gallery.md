@@ -51,7 +51,7 @@ pull out first (named); **heavy** — needs a battle replayed (§6).
 | `DeploymentPanels` | `Refresh(state, picker, order)` | reads only the picker's bar labels and mode; `PickerView`'s constructor is internal | small: `Refresh(state, labels, mode)` |
 | `SaveLoadView` | `Open(list, items, library, now, last, tabs)` | the library and the state; **it deletes and writes comments** | small: `LoadSaveScreen.Items(list, library)` and a read-only library |
 | `EnemyAttackView` | `Show(EnemyAttack)` | `EnemyAttack.Of(state, ninjaName)` on `Prov_Cur`, `Ev_PhaseNation`, string 10 set on a copy | ready |
-| `ScoutReportView` | `Show(ScoutReport)` | `ScoutReport.Of(state, ninjaCg)` on `Bt_EnemyParty1-4` set on a copy | ready |
+| `ScoutReportView` | `Show(ScoutReport)` | `ScoutReport.Of(state, ninjaCg)` on `Bt_EnemyParty1-4` set on a copy | ready (removed 2026-11-05) |
 | `StrategyCutInView` | `Show(strategy, backdrop, …)` | the record by hand; a null backdrop allowed | ready |
 | `ExchangeCountersView` | `Show(counters, started, instant)` | `ExchangeCounters.Of(state, strike)` or the record | ready |
 | `BattleInfoLayer` | `Show(box, waiting)` | the record by hand; real tallies only in a battle | small / heavy |
@@ -266,7 +266,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
    a report only past 5000 troops (`FIGT_B.ADV:636-647`), which no rebel army reaches, so `scout-report-comment` (owner,
    2026-10-31) is the Helman 3rd Army's attack on Micrograd (44) (`Tﾍﾙﾏﾝ.ADV:293-313`, string 10 read from `:276`):
    Serges (commander 42), Booch (commander 43), Mineva (commander 39) and Tami (commander 40) with the save's troops,
-   8,500 together, Maris's line `:637` in her balloon. Left for step 3:
+   8,500 together, Maris's line `:637` in her balloon. **`scout-report` and `scout-report-comment` were removed
+   (owner, 2026-11-05)** with the overlay they showed: since the enemy attack screen the game never shows it, the report
+   being `enemy-attack-scouted` (docs/ui/battle-screen.md, "The scout report"). Left for step 3:
    the Abandon City question (asked by the view's own button, no way in from outside yet), deployment, Save/Load, the
    cut-in, the counters, the info boxes, the dialog and the commands.
    **Then deployment and Save/Load** (`GalleryEntries.Screens.cs`). The deployment picker is opened in the bound presenter
@@ -458,7 +460,7 @@ the scene at 70% with the taller cards, the rails in the sides (`battle-turn`, `
 the battle's Skip on the left rail's top (the entries add it, as the game's `TouchPill`), the retreat question beside
 Retreat (`retreat`) and the exchange's counters in the scene's blurred sides (`exchange-counters`); LB2, LB2r1 and LB2x
 left the mock-up tab. Step L4 (2026-10-28) built the battle's other states: the opening at the lower scene band (`opening`),
-the scout report across the whole width (`scout-report`), the cut-in's band on across the sides (`strategy`,
+the scout report across the whole width (`scout-report`, removed 2026-11-05), the cut-in's band on across the sides (`strategy`,
 `strategy-enemy`), the results plate and our panel in the frame's middle over the dimmed board (`info-results`,
 `info-level-up`, `info-panel`), the ribbon and the caption at the phone's type (`info-defence`), the balloon over the
 scene's foot (`battle-speech…`) and the cards' menu at a finger's size (`menu`, `menu-orders`); LB3o1, LB3s, LB3c, LB3r
@@ -511,7 +513,7 @@ the enemy's rows at the thumb, Skip on its strip and the deck at the foot; the b
 PB3, PB3r and PB3x left `GALLERY_ENTRIES`.
 
 Step P4 (2026-10-29) built the battle's other states: on this pass `opening` shows the plate on top of the scene and the
-armies' names at its sides, `scout-report` Kanami's report as a screen of its own, `strategy` and `strategy-enemy` the
+armies' names at its sides, `scout-report` Kanami's report as a screen of its own (removed 2026-11-05), `strategy` and `strategy-enemy` the
 cut-in stacked round the room's middle, `info-results` and `info-level-up` the results plate over the dimmed board at the
 screen's width, `info-panel` our panel where the plate stands, `info-defence` the ribbon and the caption at held
 landscape's millimetres, `battle-speech…` the portrait at the scene's top corner and our balloon beside it, and `menu`,

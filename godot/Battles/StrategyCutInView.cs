@@ -28,14 +28,14 @@ internal sealed partial class StrategyCutInView : Control
     private const float BalloonTop = Top + 136, BalloonWidth = 600, BalloonPad = 22, BalloonMin = 100, LineSize = 30, LineGap = 8;
     private const float LabelBelow = 62, LabelSize = 38, GreatLabelSize = 46;
     private const float SlideIn = 400, TitleSlide = 60, AppearSeconds = 0.3f, BobPixels = 3, BobSeconds = 0.9f, MarkerSize = 9;
-    private const float Dim = 0.69f;                                 // as the scout report's
+    private const float Dim = 0.69f;
     private static readonly Color PlayerColour = new(69 / 255f, 117 / 255f, 219 / 255f), EnemyColour = new(209 / 255f, 77 / 255f, 77 / 255f);
     private static readonly Color Ink = new(20 / 255f, 20 / 255f, 30 / 255f), PortraitShadow = new(0, 0, 0, 0.63f);
     private const string TitleFont = "res://fonts/Shojumaru-Regular.ttf", CaptionFont = "res://fonts/Cinzel-VariableFont_wght.ttf";
     private const TextServer.LineBreakFlag Breaks =
         TextServer.LineBreakFlag.Mandatory | TextServer.LineBreakFlag.WordBound | TextServer.LineBreakFlag.Adaptive;
 
-    /// <summary>The backdrop's picture blurred (a mipmap level a step above the scout report's: plain mipmaps blur less than the screen's) and dimmed.</summary>
+    /// <summary>The backdrop's picture blurred (mipmap level 3.5: plain mipmaps blur less than the screen's) and dimmed.</summary>
     private const string BlurShader = """
         shader_type canvas_item;
         uniform float dim = 0.69;

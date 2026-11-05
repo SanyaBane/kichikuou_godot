@@ -5,9 +5,9 @@ namespace Kichikuou.Original.Content.Devices;
 /// opening at the scene's band, laid out again at the frame's width (LB3o1); the results plate in the frame's middle, a
 /// level-up's rows and our narration panel the same way (LB3r); a fighter's line in our balloon over the scene's foot,
 /// two lines at most (LB3b), a defence's caption there; the cards' long-press menu at a finger's size — the frame's places
-/// in its layout pixels (<see cref="PhoneBattle.Layout"/>) —; and the ninja's scout report across the whole width (LB3s),
-/// in the canvas's units (<see cref="PhoneFrame.Px"/>). The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>,
-/// <c>lb3o1</c>, <c>lb3s</c>, <c>lb3r</c>, <c>lb3b</c>) in the reference phone's pixels. Interface only. Engine-independent.
+/// in its layout pixels (<see cref="PhoneBattle.Layout"/>) —; and the commanders' cards' type, in the canvas's units
+/// (<see cref="PhoneFrame.Px"/>). The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>lb3o1</c>, <c>lb3r</c>,
+/// <c>lb3b</c>) in the reference phone's pixels. Interface only. Engine-independent.
 /// </summary>
 public static class PhoneBattleStates
 {
@@ -173,93 +173,11 @@ public static class PhoneBattleStates
         return L(Math.Min(MenuRow, room / Math.Max(1, items)));
     }
 
-    // ------------------------------------------------------------------ the scout report (LB3s), the canvas's units
+    // ------------------------------------------------------------------ the commanders' cards (LA2), the canvas's units
 
     /// <summary>
-    /// Its places from the room between the hole's strips (its left edge, <c>LX0</c>, 6 in from the strip): the ninja's portrait
-    /// 345 × 460 from 14 in and 30 down; her balloon 60 right of it from 40 to 246 down, 10 short of the room's right edge; the
-    /// cards 700 × 270, 40 apart in a row and 20 in a column, from 330 down, centred under the balloon, the rows' captions at
-    /// 300; Rance's portrait 246 × 320 at the foot, his balloon 60 right of it, 1064 wide, from 210 to 50 over the foot;
-    /// Maris's mirrored at the right, her balloon 40 right of his and 60 short of her.
+    /// A commander's card at the phone's type, the enemy attack's: its name (42), troop type (30), troops (38), "TROOPS"
+    /// (22), the place's badge (its radius), the face (200, 12 in).
     /// </summary>
-    private const float ReportIn = 6, PortraitIn = 14, NinjaTop = 30, NinjaWidth = 345, NinjaHeight = 460, ReportGap = 60,
-        ReportTop = 40, ReportFoot = 246, ReportEnd = 10, CardWidth = 700, CardHeight = 270, CardColumns = 40, CardRows = 20,
-        CardsTop = 330, CaptionsMiddle = 300, SpeakerWidth = 246, SpeakerHeight = 320, SpeakerFoot = 10, ReplyWidth = 1064,
-        ReplyTop = 210, ReplyFoot = 50, CommentGap = 40;
-
-    /// <summary>
-    /// The report's type: the balloons' text (the report's 54, the answers' 60) and its padding, the tail's place under the
-    /// balloon's top; a card's name (42), troop type (30), troops (38), "TROOPS" (22), the place's badge (its radius), the
-    /// face (200, 12 in), the rows' captions (30).
-    /// </summary>
-    public const float ReportText = 54, ReplyText = 60, TextSide = 40, TextTop = 30, LinePitch = 1.25f, ReportTail = 70,
-        ReplyTail = 60, CardName = 42, CardKind = 30, CardTroops = 38, CardLabel = 22, Badge = 26, CardFace = 200, FaceIn = 12,
-        RowCaption = 30;
-
-    private static float Left(PhoneFrame f) => f.Safe.Left + f.Px(ReportIn);
-
-    private static float Right(PhoneFrame f) => f.Screen.W - f.Safe.Right - f.Px(ReportIn);
-
-    /// <summary>The ninja's portrait at the top left.</summary>
-    public static PhoneFrame.Box NinjaPortrait(PhoneFrame f) =>
-        new(Left(f) + f.Px(PortraitIn), f.Px(NinjaTop), f.Px(NinjaWidth), f.Px(NinjaHeight));
-
-    /// <summary>Her balloon with the army's name and totals, right of her.</summary>
-    public static PhoneFrame.Box ReportBalloon(PhoneFrame f)
-    {
-        float x = NinjaPortrait(f).Right + f.Px(ReportGap);
-        return new PhoneFrame.Box(x, f.Px(ReportTop), Right(f) - f.Px(ReportEnd) - x, f.Px(ReportFoot - ReportTop));
-    }
-
-    /// <summary>Place <paramref name="slot"/>'s card (1-2 the front row in the left column, 3-4 the back row; 1 and 3 on top).</summary>
-    public static PhoneFrame.Box ScoutCard(PhoneFrame f, int slot)
-    {
-        var balloon = ReportBalloon(f);
-        float x0 = balloon.X + (balloon.W - f.Px(2 * CardWidth + CardColumns)) / 2;
-        int column = (slot - 1) / 2, row = (slot - 1) % 2;
-        return new PhoneFrame.Box(x0 + column * f.Px(CardWidth + CardColumns), f.Px(CardsTop + row * (CardHeight + CardRows)),
-            f.Px(CardWidth), f.Px(CardHeight));
-    }
-
-    /// <summary>The middle of a column's caption ("FRONT ROW", "BACK ROW") over its cards.</summary>
-    public static (float X, float Y) RowCaptionAt(PhoneFrame f, int column)
-    {
-        var card = ScoutCard(f, 1 + 2 * column);
-        return (card.X + card.W / 2, f.Px(CaptionsMiddle));
-    }
-
-    /// <summary>
-    /// The bracket left of the front row, its head pointing left as the enemy attack's (the owner's LB3sf1, docs/ui/phone.md,
-    /// §47; <see cref="PhoneBracket"/>): its ends at the top (1 in) of place 1's card and the foot of place 2's, its middle
-    /// theirs; its line <see cref="PhoneBracket.Beside"/> left of the cards' left side, in the black beside them.
-    /// </summary>
-    public static (float Y0, float Y1, float Middle, float Line, float CardsSide) ScoutBracket(PhoneFrame f)
-    {
-        var top = ScoutCard(f, 1);
-        float y0 = top.Y + f.Px(1), y1 = ScoutCard(f, 2).Bottom - f.Px(1);
-        return (y0, y1, (y0 + y1) / 2, top.X - f.Px(PhoneBracket.Beside), top.X);
-    }
-
-    /// <summary>Rance's portrait at the bottom left (<paramref name="right"/>: the advisor's, at the bottom right).</summary>
-    public static PhoneFrame.Box SpeakerPortrait(PhoneFrame f, bool right)
-    {
-        float foot = f.Screen.H - f.Safe.Bottom - f.Px(SpeakerFoot);
-        float x = right ? Right(f) - f.Px(PortraitIn + SpeakerWidth) : Left(f) + f.Px(PortraitIn);
-        return new PhoneFrame.Box(x, foot - f.Px(SpeakerHeight), f.Px(SpeakerWidth), f.Px(SpeakerHeight));
-    }
-
-    /// <summary>
-    /// The answer's balloon (<paramref name="comment"/>: the advisor's comment's), <paramref name="textHeight"/> canvas units of
-    /// text in it: Rance's right of his portrait, hers between his and her portrait; both grow up from their foot.
-    /// </summary>
-    public static PhoneFrame.Box ReplyBalloon(PhoneFrame f, bool comment, float textHeight)
-    {
-        float foot = f.Screen.H - f.Safe.Bottom - f.Px(ReplyFoot);
-        float h = Math.Max(f.Px(ReplyTop - ReplyFoot), textHeight + f.Px(2 * TextTop));
-        float x = SpeakerPortrait(f, false).Right + f.Px(ReportGap);
-        if (!comment)
-            return new PhoneFrame.Box(x, foot - h, f.Px(ReplyWidth), h);
-        x += f.Px(ReplyWidth + CommentGap);
-        return new PhoneFrame.Box(x, foot - h, SpeakerPortrait(f, true).X - f.Px(ReportGap) - x, h);
-    }
+    public const float CardName = 42, CardKind = 30, CardTroops = 38, CardLabel = 22, Badge = 26, CardFace = 200, FaceIn = 12;
 }

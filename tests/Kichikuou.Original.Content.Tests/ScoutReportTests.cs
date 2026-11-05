@@ -12,7 +12,7 @@ using Xunit.Abstractions;
 
 namespace Kichikuou.Original.Content.Tests;
 
-/// <summary>The ninja's scout report as our own overlay shows it (docs/ui/battle-screen.md, "The scout report").</summary>
+/// <summary>The ninja's scout report as our enemy attack screen fills it in (docs/ui/enemy-attack.md, §6).</summary>
 public class ScoutReportTests
 {
     private static readonly Lazy<CgLibrary> Cgs = new(() => new CgLibrary(LocalData.CgDirectory));
@@ -171,7 +171,7 @@ public class ScoutReportTests
         private const int Shards = 3;
 
         /// <summary>
-        /// In every captured battle with a scout report, the report our overlay shows is what the script prints: its
+        /// In every captured battle with a scout report, the report our screen shows is what the script prints: its
         /// commanders' lines (record, name, troop type, troops) in order, its totals (<c>Tmp0002</c>, <c>Tmp0001</c>), and
         /// the places the battle then gives them (<c>Bt_EnemySlot1-4</c>).
         /// </summary>
@@ -222,14 +222,14 @@ public class ScoutReportTests
                         placed = toComment = report;
                         break;
                     case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 629 } } when toComment is not null:
-                        // Rance's answer: the one the overlay showed, its window answered on our screen.
+                        // Rance's answer: the one our screen took, its window answered on our screen.
                         if (toComment.Reply != presenter.Text(ScoutReport.RanceLine))
                             wrong.Add($"report {reports}: Rance's answer shown \"{toComment.Reply}\"");
                         if (!presenter.ScoutReplied)
                             wrong.Add($"report {reports}: Rance's answer not answered");
                         break;
                     case MessageEvent { Text: { File: "FIGT_B.ADV", Line: 637 or 644 } said } when toComment is not null:
-                        // Maris's comment: the one the overlay showed (none for her "............"), its window answered.
+                        // Maris's comment: the one our screen took (none for her "............"), its window answered.
                         if (said != toComment.CommentLine || toComment.Comment != (said.Line == 637 ? presenter.Text(said) : ""))
                             wrong.Add($"report {reports}: commented {said}, shown {toComment.CommentLine} \"{toComment.Comment}\"");
                         if (!presenter.ScoutReplied)

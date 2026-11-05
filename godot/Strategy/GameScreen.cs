@@ -256,7 +256,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     private DeploymentTableView _table = null!;         // our own deployment screen's ledger (our interface)
     private BattleBoardView _battleView = null!;        // our own battle screen over the stage (our interface)
-    private ScoutReportView _scoutView = null!;         // our own scout report over the original's screen (our interface)
     private StrategyCutInView _strategyView = null!;    // our own cut-in of a successful strategy over the original's screen (New)
     private DeploymentPanels _panels = null!;           // and the rest of it, over the whole of Sﾌﾞﾀｲ's screen
     private UnitPictureView _tablePicture = null!;      // a unit's picture raised by the phone's long press on its row
@@ -345,9 +344,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         _content.AddChild(_weekView);
         _battleView = new BattleBoardView(GodotGlyphRenderer.Chosen, faces);
         _content.AddChild(_battleView);
-        _scoutView = new ScoutReportView(GodotGlyphRenderer.Chosen, faces);
-        _scoutView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
-        _content.AddChild(_scoutView);
         ReadyEnemyAttack(faces);
         _strategyView = new StrategyCutInView(GodotGlyphRenderer.Chosen, faces);
         _strategyView.SetAnchorsAndOffsetsPreset(LayoutPreset.FullRect);
@@ -516,7 +512,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateMessageWindow();
         UpdateSkipButtons();
         UpdatePhone();
-        UpdateScoutReport();
         UpdateEnemyAttack();
         UpdateStrategyCutIn();
         if (_options.Portraits && !_portraitsOpened && _presenter.State is not null && !_modal)
@@ -936,7 +931,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         if (_options.ScreenshotDirectory is not { } dir)
             return;
         System.IO.Directory.CreateDirectory(dir);
-        if ((_optionsView is not null || _logView is not null || _drawer.Visible || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _dataView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || ScoutReportShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
+        if ((_optionsView is not null || _logView is not null || _drawer.Visible || _table.Visible || _subordinates.Visible || _harem.Visible || _treasure.Visible || _markers.Visible || _provinceView.Visible || _commandView.Visible || _sceneMenuView.Visible || _ladderView.Visible || _dataView.Visible || _saveView.Visible || _strip.Visible || _weekView.Visible || _messageView.Visible || BattleScreenShown || StrategyCutInShown || _attackView.Visible) && DisplayServer.GetName() != "headless")
         {
             // Our deployment and battle screens are drawn by Godot over the screen: the window's next frame (headless
             // draws none). No Compose here: the frame's Present must find the change to upload it.
@@ -1338,24 +1333,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         {
             // Our enemy attack's screen (docs/ui/enemy-attack.md, §6): the announcement, the ninjas' lead-in, the report
             // and Rance's repeated lines are answered at once, as by a click (RetVal is kept).
-            key = KeyReturn;
-            await ReleaseWaitAsync(_input.PeekInput());
-            _ikKey = key;
-        }
-        else if (ScoutReportShown && _presenter.Battle.ScoutReported)
-        {
-            // Our scout report shows the whole army from its first key wait (owner, 2026-10-14): the waits of its
-            // commanders' lines and of its totals are answered at once, as by a click (RetVal is kept, FIGT_B.ADV:649-672),
-            // after the release of a button still held from the click that answered the first.
-            key = KeyReturn;
-            await ReleaseWaitAsync(_input.PeekInput());
-            _ikKey = key;
-        }
-        else if (InterfaceChoice.New && (_presenter.Battle.ScoutReplied || _presenter.Battle.ScoutCalling) && _presenter.State is not null)
-        {
-            // Our scout report comes straight after the ninja's choice and shows Rance's answer and Maris's comment at its
-            // foot (owner, 2026-10-16): the windows between the choice and the report (FIGT_B.ADV:393-586) and after it
-            // (629, 636-647) are answered at once, as by a click (RetVal is kept), before a frame shows them.
             key = KeyReturn;
             await ReleaseWaitAsync(_input.PeekInput());
             _ikKey = key;
@@ -2534,29 +2511,6 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             slidesInstant: _skip.IsSkipping || _options.Fast,                  // the armies and the counters at once (--fast: no runs)
             effectStepped: _skip.IsSkipping && !_options.Fast);                // MsgSkip: the exchange's waits step its effect
         UpdateInfoBox();
-    }
-
-    /// <summary>
-    /// Our scout report (docs/ui/battle-screen.md, "The scout report") over the original's screen while Option →
-    /// Interface is on New and a ninja's report lists the approaching army (<see cref="BattlePresenter.Scout"/>).
-    /// </summary>
-    private bool ScoutReportShown => InterfaceChoice.New && _presenter.Battle.Scout is not null && _presenter.Battle.Attack is null
-        && !SkippingScene && _presenter.State is not null;
-
-    private void UpdateScoutReport()
-    {
-        bool show = ScoutReportShown;
-        if (show != _scoutView.Visible)
-        {
-            _scoutView.Visible = show;
-            if (show)
-                _scoutView.LoadCrops();
-        }
-        if (!show)
-            return;
-        var frame = Frame();
-        _scoutView.Place(frame.Origin, frame.Scale);
-        _scoutView.Show(_presenter.Battle.Scout!);
     }
 
     /// <summary>

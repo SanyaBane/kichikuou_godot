@@ -938,19 +938,19 @@ public sealed partial class BattlePresenter
     /// <summary>
     /// The ninja's report while window 113 lists it (docs/ui/battle-screen.md, "The scout report"): from "The
     /// Approaching Enemy" (<c>FIGT_B.ADV:587</c>) to the window's close after the totals; null otherwise. Taken from
-    /// GameState when that line prints, so our overlay shows the whole army from the report's first key wait.
+    /// GameState when that line prints, so our enemy attack screen fills in the whole army from the report's first key wait.
     /// </summary>
     public ScoutReport? Scout { get; private set; }
 
     /// <summary>
     /// Whether the report has gone past its first key wait: a commander's line or the totals are printed. Our
-    /// overlay shows them all already, so the key waits from here to the window's close are answered at once.
+    /// screen shows them all already, so the key waits from here to the window's close are answered at once.
     /// </summary>
     public bool ScoutReported { get; private set; }
 
     /// <summary>
     /// Whether Rance's answer to the report (<c>FIGT_B.ADV:629</c>, window 111) or Maris's comment (<c>:636-647</c>, window
-    /// 121) is in its window, until it closes. Our overlay shows both with the report already (<see cref="ScoutReport.Reply"/>,
+    /// 121) is in its window, until it closes. Our screen has both with the report already (<see cref="ScoutReport.Reply"/>,
     /// <see cref="ScoutReport.Comment"/>), so their key waits are answered at once.
     /// </summary>
     public bool ScoutReplied { get; private set; }
@@ -958,8 +958,8 @@ public sealed partial class BattlePresenter
     /// <summary>
     /// Whether a line between the ninja's choice and the report is in its window (owner, 2026-10-16): the ninja called,
     /// how they come, their answer, Rance's order, the wait and "… returned with information" (<c>FIGT_B.ADV:393-586</c>,
-    /// only the scout's path reaches them), until the window closes or another line prints. Our overlay comes straight
-    /// after the choice, so their key waits are answered at once.
+    /// only the scout's path reaches them), until the window closes or another line prints. Our screen fills the
+    /// places straight after the choice, so their key waits are answered at once.
     /// </summary>
     public bool ScoutCalling { get; private set; }
 
