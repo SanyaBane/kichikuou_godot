@@ -295,7 +295,7 @@ internal sealed partial class TreasureView : Control
 
     public override void _GuiInput(InputEvent e)
     {
-        if (_phone is { IsPortrait: true } && GridTouch(e))
+        if (_phone is not null && GridTouch(e))
         {
             AcceptEvent();
             return;

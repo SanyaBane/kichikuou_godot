@@ -63,13 +63,20 @@ public static class PhonePickersPortrait
     /// <summary>The grids' distance over the bar.</summary>
     private const float GridFoot = 20;
 
+    /// <summary>The pickers' cells, whatever the columns.</summary>
+    public const int Cells = Columns * Rows;
+
     /// <summary>
     /// A grid of the pickers' cells scrolled by whole rows: its area, its rows' height, the width it leaves at its right for
-    /// the scroll bar (none while every row is in view); how many rows its area shows, how far it scrolls, where a cell
-    /// stands at a scroll, and which cell is at a point.
+    /// the scroll bar (none while every row is in view), its columns (three upright, five for Treasure held landscape, the
+    /// owner's P39, docs/ui/phone.md §53); how many rows its area shows, how far it scrolls, where a cell stands at a scroll,
+    /// and which cell is at a point.
     /// </summary>
-    public sealed record ScrolledGrid(PhoneFrame.Box Area, float RowHeight, float Gap, float CellGap, float BarRoom = 0)
+    public sealed record ScrolledGrid(PhoneFrame.Box Area, float RowHeight, float Gap, float CellGap, float BarRoom = 0, int Columns = Columns)
     {
+        /// <summary>The rows the cells fill at <see cref="Columns"/> a row, the last one perhaps not whole.</summary>
+        public int Rows => (Cells + Columns - 1) / Columns;
+
         /// <summary>A row and the gap under it.</summary>
         public float Pitch => RowHeight + Gap;
 
@@ -98,7 +105,7 @@ public static class PhonePickersPortrait
         /// <summary>The number of the cell shown at (<paramref name="x"/>, <paramref name="y"/>), or 0 off every cell.</summary>
         public int CellAt(int scroll, float x, float y)
         {
-            for (int n = 1; n <= Columns * Rows; n++)
+            for (int n = 1; n <= Cells; n++)
                 if (Cell(n, scroll) is { } cell && cell.Contains(x, y))
                     return n;
             return 0;
@@ -137,6 +144,20 @@ public static class PhonePickersPortrait
             }
             return (above, below, nearestAbove, nearestBelow);
         }
+
+        /// <summary>
+        /// The reference scroll bar (<see cref="PhoneScrollBar"/>, the owner's S2) in the room right of the area: its groove
+        /// as tall as the rows in view, its thumb at <paramref name="scroll"/>.
+        /// </summary>
+        public (PhoneFrame.Box Track, PhoneFrame.Box Thumb) Bar(PhoneFrame f, int scroll)
+        {
+            var track = PhoneScrollBar.Groove(f, Area.Right + BarRoom, Area.Y, Shown * Pitch - Gap);
+            float at = MaxScroll == 0 ? 0 : (float)Math.Clamp(scroll, 0, MaxScroll) / MaxScroll;
+            return (track, PhoneScrollBar.Thumb(f, track, (float)Shown / Rows, at));
+        }
+
+        /// <summary>A tick's middle on <paramref name="track"/> for row <paramref name="row"/>: the whole list laid along it.</summary>
+        public float TickY(PhoneFrame.Box track, int row) => track.Y + (row + 0.5f) * track.H / Rows;
     }
 
     // ------------------------------------------------------------------ the hint at cells out of view (mock_more_cells.py, 3)
@@ -169,7 +190,7 @@ public static class PhonePickersPortrait
     /// </summary>
     public const float TickOut = 6, TickThick = 5, TickRim = 2;
 
-    /// <summary>A tick's middle for row <paramref name="row"/> (0-16): the whole list laid along <paramref name="track"/>.</summary>
+    /// <summary>A tick's middle for row <paramref name="row"/> (0-16) of a three-column grid: the whole list laid along <paramref name="track"/>.</summary>
     public static float TickY(PhoneFrame.Box track, int row) => track.Y + (row + 0.5f) * track.H / Rows;
 
     /// <summary>The harem's grid: 190 under the details' top, down to 20 over the bar, its rows 102 high (5.8 mm; 128 till the owner's B, 2026-11-04, `tools/ui/mock_picker_rows.py`: 20 % lower, more rows in view).</summary>
@@ -247,12 +268,7 @@ public static class PhonePickersPortrait
     /// The scroll bar right of <paramref name="grid"/> (<see cref="PhoneScrollBar"/>, the owner's S2): its groove as tall as
     /// the rows in view, its right at the picture's, the tabs' and End's; its thumb at <paramref name="scroll"/>.
     /// </summary>
-    public static (PhoneFrame.Box Track, PhoneFrame.Box Thumb) ScrollBar(PhoneFrame f, ScrolledGrid grid, int scroll)
-    {
-        var track = PhoneScrollBar.Groove(f, f.Room.Right - f.Px(SideIn), grid.Area.Y, grid.Shown * grid.Pitch - grid.Gap);
-        float at = grid.MaxScroll == 0 ? 0 : (float)Math.Clamp(scroll, 0, grid.MaxScroll) / grid.MaxScroll;
-        return (track, PhoneScrollBar.Thumb(f, track, (float)grid.Shown / Rows, at));
-    }
+    public static (PhoneFrame.Box Track, PhoneFrame.Box Thumb) ScrollBar(PhoneFrame f, ScrolledGrid grid, int scroll) => grid.Bar(f, scroll);
 
     // ------------------------------------------------------------------ the bar (end_and)
 

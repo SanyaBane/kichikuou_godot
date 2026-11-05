@@ -1603,3 +1603,9 @@ E. Nurse (item 50) owned besides the two) at the top and two rows down:
 R1 and R2 stand over the grid's edge row and may hide a cell's name there (P39's items two rows down: the Doping Drug
 under R2's pill); R3 covers nothing. The agent recommends R3 with the ticks: the bar says it all in one place.
 
+## 54. The owner's choice: B with R2 (2026-11-05)
+
+The owner took round P39's R2 (the pill at the cut edge: a pill may hide a cell's name, but a scroll shows it) and asked
+for the touch mode's button under the picture to stand with its foot on the buttons' under the grid (the round's sheets
+drawn so since). Built as upright's hint (the pill "▲ 9 more above", its press scrolling to the nearest; the ticks
+across the bar), docs/ui/phone-build.md, §5, "After the build: Treasure in five columns held landscape".

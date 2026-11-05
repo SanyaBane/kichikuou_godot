@@ -7,12 +7,16 @@ namespace Kichikuou.Original.Content.Devices;
 /// thumb; at the right thumb the pickers' 3 × 17 grid folded after its ninth row (<see cref="Cell"/>: rows 1-9 in the left
 /// half, 10-17 in the right, a gold rule between them, every cell in view and each girl or item still at her number's
 /// cell, the order read down the left half, then the right). The harem's foot is Summon | End (<see cref="Summon"/>,
-/// <see cref="HaremEnd"/>); the treasure's Characters | Items and End (<see cref="Tab"/>, <see cref="TreasureEnd"/>), the
-/// touch mode's button beside the details (<see cref="Action"/>), and while a first pick waits for its second the pick's
-/// prompt and Back in the tabs' place (<see cref="Prompt"/>, <see cref="Back"/>: the tabs would drop the pick as Back
-/// does). The figures are the mock-ups' (<c>tools/ui/mock_phone.py</c>, <c>lh2</c>, <c>lt2</c>, <c>folded_grid</c>,
+/// <see cref="HaremEnd"/>). Treasure is laid out apart since round P39 (the owner, 2026-11-05; docs/ui/phone.md, §51-§54):
+/// its grid in five columns at the right thumb, scrolled under the finger with the reference scroll bar
+/// (<see cref="TreasureGrid"/>), Characters | Items and End under it (<see cref="Tab"/>, <see cref="TreasureEnd"/>; while a
+/// first pick waits, its prompt and Back in the tabs' place, <see cref="Prompt"/>, <see cref="Back"/>), and the column left
+/// of it as wide as the room left (<see cref="TreasureColumn"/>), the picture at its width, the details under it, the touch
+/// mode's button at the column's right on the buttons' foot (<see cref="Action"/>). The figures are the mock-ups'
+/// (<c>tools/ui/mock_phone.py</c>, <c>lh2</c>, <c>lt2</c>, <c>folded_grid</c>,
 /// <c>column_title</c>, <c>girl_details</c>, <c>item_details</c>, <c>harem_cell</c>, <c>treasure_cell_two</c>) in the
-/// reference phone's pixels, the boxes in the canvas's units; a longer screen widens the grid (the column keeps its width).
+/// reference phone's pixels, the boxes in the canvas's units; a longer screen widens the grid (the column keeps its width;
+/// Treasure's column grows till its picture fills the height over the details, <c>tools/ui/mock_treasure_scroll.py</c>).
 /// Interface only. Engine-independent.
 /// </summary>
 public static class PhonePickers
@@ -67,15 +71,15 @@ public static class PhonePickers
     /// </summary>
     public const float ItemNameMiddle = 30, ItemNameText = 52, ItemLabelTop = 82, ItemValueTop = 118, FigureGap = 50, ItemDetailsRight = 470;
 
-    /// <summary>The touch mode's button: as wide as this at the column's right, 10 under the details' top, as high; a callout 40 left of it.</summary>
-    private const float ActionWidth = 440, ActionDown = 10, ActionHeight = 150, BesideGap = 40;
+    /// <summary>The touch mode's button: as wide and as high as this at the column's right; a callout 40 left of it.</summary>
+    private const float ActionWidth = 440, ActionHeight = 150, BesideGap = 40;
 
-    /// <summary>The treasure's touch mode button (Take Off, Equip, …) beside the details, at the column's right.</summary>
-    public static PhoneFrame.Box Action(PhoneFrame f)
-    {
-        var column = Column(f);
-        return new PhoneFrame.Box(column.Right - f.Px(ActionWidth), Details(f).Y + f.Px(ActionDown), f.Px(ActionWidth), f.Px(ActionHeight));
-    }
+    /// <summary>
+    /// The treasure's touch mode button (Take Off, Equip, …) at its column's right beside the details, its foot on the
+    /// buttons' under the grid (the owner, P39).
+    /// </summary>
+    public static PhoneFrame.Box Action(PhoneFrame f) =>
+        new(TreasureColumn(f).Right - f.Px(ActionWidth), ButtonsFoot(f) - f.Px(ActionHeight), f.Px(ActionWidth), f.Px(ActionHeight));
 
     /// <summary>
     /// Where a callout beside the button stands (the script's questions, ours, a refusal): left of it, 40 away, down to its
@@ -84,7 +88,7 @@ public static class PhonePickers
     public static PhoneFrame.Box BesideAction(PhoneFrame f)
     {
         var action = Action(f);
-        float x = Left(f), top = Picture(f).Y;
+        float x = Left(f), top = TreasurePicture(f).Y;
         return new PhoneFrame.Box(x, top, action.X - f.Px(BesideGap) - x, action.Bottom - top);
     }
 
@@ -114,17 +118,17 @@ public static class PhonePickers
     /// <summary>The treasure's foot: 130 high; the tabs 12 apart, ending 16 short of End.</summary>
     private const float TreasureButtons = 130, TabsGap = 12;
 
-    /// <summary>The treasure's End at the column's right.</summary>
+    /// <summary>The treasure's End at the right under the grid, its right at the scroll bar's.</summary>
     public static PhoneFrame.Box TreasureEnd(PhoneFrame f)
     {
-        float right = Column(f).Right;
+        float right = Right(f);
         return new PhoneFrame.Box(right - f.Px(EndWidth), ButtonsFoot(f) - f.Px(TreasureButtons), f.Px(EndWidth), f.Px(TreasureButtons));
     }
 
     private static PhoneFrame.Box TabsRow(PhoneFrame f)
     {
         var end = TreasureEnd(f);
-        float x = Left(f);
+        float x = TreasureGridLeft(f);
         return new PhoneFrame.Box(x, end.Y, end.X - f.Px(ButtonsGap) - x, end.H);
     }
 
@@ -156,7 +160,63 @@ public static class PhonePickers
     /// <summary>The prompt's insides: the face 12 in, the text 16 right of it, its two lines' middles (of the height) and type.</summary>
     public const float PromptFaceIn = 12, PromptTextGap = 16, PromptFirst = 0.33f, PromptSecond = 0.7f, PromptText = 36;
 
-    // ------------------------------------------------------------------ the folded grid (folded_grid)
+    // ------------------------------------------------------------------ Treasure's column and grid (round P39)
+
+    /// <summary>Treasure's grid: five cells a row.</summary>
+    public const int TreasureColumns = 5;
+
+    /// <summary>
+    /// Treasure's cells at least as wide as the folded grid's on the reference phone and its rows at least as high (the
+    /// owner: their 7 mm kept); the grid 20 over the buttons; the details' room under the picture (their name, figures and
+    /// values, <see cref="ItemValueTop"/> on).
+    /// </summary>
+    private const float TreasureCell = 210, TreasureRow = 122, GridOverButtons = 20, DetailsRoom = 160;
+
+    /// <summary>The grid's least width: five cells, their gaps and the scroll bar's room.</summary>
+    private static float TreasureGridLeast(PhoneFrame f) =>
+        f.Px(TreasureColumns * TreasureCell + (TreasureColumns - 1) * CellGap) + PhoneScrollBar.Room(f);
+
+    /// <summary>
+    /// Treasure's column at the left: as wide as the room left of the grid, but no wider than a picture as tall as the height
+    /// over the details holds (a longer screen gives the rest to the grid).
+    /// </summary>
+    public static PhoneFrame.Box TreasureColumn(PhoneFrame f)
+    {
+        float tallest = ButtonsFoot(f) - f.Px(PictureTop + DetailsUnder + DetailsRoom);
+        float w = Math.Max(0, Math.Min(tallest / PictureShape, Right(f) - Left(f) - f.Px(GridGap) - TreasureGridLeast(f)));
+        return new PhoneFrame.Box(Left(f), 0, w, f.Screen.H - f.Safe.Bottom);
+    }
+
+    /// <summary>Treasure's picture panel at its column's width.</summary>
+    public static PhoneFrame.Box TreasurePicture(PhoneFrame f)
+    {
+        var column = TreasureColumn(f);
+        return new PhoneFrame.Box(column.X, f.Px(PictureTop), column.W, column.W * PictureShape);
+    }
+
+    /// <summary>Treasure's details' left and top, under its picture.</summary>
+    public static (float X, float Y) TreasureDetails(PhoneFrame f) =>
+        (Left(f) + f.Px(DetailsIn), TreasurePicture(f).Bottom + f.Px(DetailsUnder));
+
+    private static float TreasureGridLeft(PhoneFrame f) => TreasureColumn(f).Right + f.Px(GridGap);
+
+    /// <summary>
+    /// Treasure's grid right of its column, from the top down to 20 over the buttons: five cells a row, as many rows in view
+    /// as the height holds at least 122 high, stretched to fill it; the scroll bar right of it while it scrolls.
+    /// </summary>
+    public static PhonePickersPortrait.ScrolledGrid TreasureGrid(PhoneFrame f)
+    {
+        float x = TreasureGridLeft(f), top = f.Px(GridTop), w = Right(f) - x;
+        float h = Math.Max(0, TreasureEnd(f).Y - f.Px(GridOverButtons) - top), gap = f.Px(RowGap);
+        int rows = (PhonePickersPortrait.Cells + TreasureColumns - 1) / TreasureColumns;
+        int shown = Math.Clamp((int)Math.Floor((h + gap) / (f.Px(TreasureRow) + gap) + 0.001f), 1, rows);
+        var area = new PhoneFrame.Box(x, top, w, h);
+        var grid = new PhonePickersPortrait.ScrolledGrid(area, (h + gap) / shown - gap, gap, f.Px(CellGap), Columns: TreasureColumns);
+        float room = PhoneScrollBar.Room(f);
+        return grid.MaxScroll == 0 ? grid : grid with { Area = area with { W = w - room }, BarRoom = room };
+    }
+
+    // ------------------------------------------------------------------ the folded grid (folded_grid), the harem's
 
     /// <summary>The pickers' grid: three columns of 17 rows, cut after the ninth.</summary>
     public const int Columns = 3, Rows = 17, Fold = 9;

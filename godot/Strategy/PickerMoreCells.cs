@@ -5,7 +5,8 @@ namespace Kichikuou.Game.Strategy;
 
 /// <summary>
 /// The hint that a picker's grid holds filled cells out of view, held upright (the owner's 3, 2026-11-04,
-/// <c>tools/ui/mock_more_cells.py</c>; the Harem's and Treasure's grids): a lacquer pill over the rows' edge — "▼ 2 more
+/// <c>tools/ui/mock_more_cells.py</c>; the Harem's and Treasure's grids) and on Treasure's grid held landscape (the owner's
+/// R2, round P39, docs/ui/phone.md §53-§54): a lacquer pill over the rows' edge — "▼ 2 more
 /// below" at their foot, "▲ 3 more above" at their top while scrolled past one — whose press scrolls the grid the least
 /// that shows the nearest of them, and a tick on the scroll bar at every row holding a filled cell, the whole list laid
 /// along the groove. The places are <see cref="PhonePickersPortrait"/>'s; the pills' boxes are kept from the last drawing
@@ -26,12 +27,12 @@ internal sealed class PickerMoreCells
         if (grid.MaxScroll == 0)
             return;
         var f = u.Frame;
-        var (track, _) = PhonePickersPortrait.ScrollBar(f, grid, scroll);
+        var (track, _) = grid.Bar(f, scroll);
         var groove = u.Rect(track);
         float thick = u.Px(PhonePickersPortrait.TickThick), rim = u.Px(PhonePickersPortrait.TickRim), x0 = groove.Position.X - u.Px(PhonePickersPortrait.TickOut);
-        foreach (int row in filled.Select(n => (n - 1) / PhonePickersPortrait.Columns).Distinct())
+        foreach (int row in filled.Select(n => (n - 1) / grid.Columns).Distinct())
         {
-            float y = PhonePickersPortrait.TickY(track, row) / u.K;
+            float y = grid.TickY(track, row) / u.K;
             c.DrawRect(new Rect2(x0 - rim, y - thick / 2 - rim, groove.End.X - x0 + rim, thick + 2 * rim), Ui.Ink);
             c.DrawRect(new Rect2(x0, y - thick / 2, groove.End.X - x0, thick), Ui.Text);
         }

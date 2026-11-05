@@ -62,6 +62,10 @@ internal static partial class GalleryEntries
                 GalleryStates.TreasureView(s, 0);
                 view.ShowHover(FirstHolder(s));
             }));
+        yield return new("treasure-scrolled", "Screens", "Treasure: scrolled down", Week18,
+            "On the phone the grid scrolled to its foot, the characters out of view above it: the hint's pill and the scroll "
+            + "bar's ticks (held upright the owner's 3; held landscape round P39's R2, docs/ui/phone.md §53-§54).",
+            g => TreasureScreen(g, (s, view, _) => GalleryStates.TreasureView(s, 0), scrollTo: TreasureRoster.Cells));
         yield return new("treasure-items", "Screens", "Treasure: the items, one hovered", Week18, "",
             g => TreasureScreen(g, (s, view, _) =>
             {
@@ -115,19 +119,20 @@ internal static partial class GalleryEntries
         GalleryStates.MovableHolders(s) is [var first, ..] ? first
             : throw new InvalidOperationException("The save has no holder of an item that moves.");
 
-    private static Action<Rect2>? TreasureScreen(GalleryStage g, Action<GameState, TreasureView, TreasureCallout> setUp) =>
+    private static Action<Rect2>? TreasureScreen(GalleryStage g, Action<GameState, TreasureView, TreasureCallout> setUp, int scrollTo = 0) =>
         TreasureScreen(g, (s, view, callout) =>
         {
             setUp(s, view, callout);
             return null;
-        });
+        }, scrollTo);
 
     /// <summary>
     /// Our Treasure screen on the save's state as <paramref name="setUp"/> leaves it, and the callout it returns — its lines,
-    /// the cell it is at, whether it waits for a click (a refusal) — at that cell, as <c>GameScreen.Treasure</c> shows it.
+    /// the cell it is at, whether it waits for a click (a refusal) — at that cell, as <c>GameScreen.Treasure</c> shows it;
+    /// with <paramref name="scrollTo"/> the phone's grid scrolled the least that shows that cell.
     /// </summary>
     private static Action<Rect2>? TreasureScreen(GalleryStage g,
-        Func<GameState, TreasureView, TreasureCallout, (IReadOnlyList<string> Lines, int Cell, bool Waiting)?> setUp)
+        Func<GameState, TreasureView, TreasureCallout, (IReadOnlyList<string> Lines, int Cell, bool Waiting)?> setUp, int scrollTo = 0)
     {
         if (g.State(Week18) is not { } s)
             return null;
@@ -135,10 +140,14 @@ internal static partial class GalleryEntries
         view.LoadCrops();
         var callout = g.Add(new TreasureCallout(g.Font));
         var asked = setUp(s, view, callout);
+        bool first = true;
         return area =>
         {
             view.Place(area.Position, PixelsPerScript(area));
             view.Refresh(s);
+            if (scrollTo > 0 && first)
+                view.ShowCell(scrollTo);
+            first = false;
             if (asked is not var (lines, cell, waiting))
                 return;
             view.ShowCallout(callout, lines, cell, waiting, area);

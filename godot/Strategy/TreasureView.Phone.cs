@@ -4,12 +4,14 @@ using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
 
-// Our Treasure screen on the phone held landscape (docs/ui/phone-build.md, step L7; docs/ui/phone.md, §15, LT2): across the
-// whole width between the hole's strips over the wave backdrop — at the left the title and the date, the selected entry's
-// picture at the column's width, its name and figures under it with the touch mode's button beside them, Characters | Items
-// and End at the left thumb (while a first pick waits, its prompt and Back in the tabs' place); at the right thumb the
-// picker's grid folded after its ninth row, every entry at its number's cell, an item's name over its holder and shrunk
-// where long. Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhonePickers'.
+// Our Treasure screen on the phone held landscape (docs/ui/phone-build.md, step L7; docs/ui/phone.md, §15, LT2, and round
+// P39, §53-§54): across the whole width between the hole's strips over the wave backdrop — at the left the title and the
+// date, the selected entry's picture at the column's width, its name and figures under it with the touch mode's button
+// beside them on the buttons' foot; at the right thumb the picker's grid five cells a row, scrolled under the finger
+// (PickerGridScroll) with the reference scroll bar, its ticks and the pills at filled cells out of view (PickerMoreCells,
+// as upright), an item's name over its holder and shrunk where long; Characters | Items and End under it (while a first
+// pick waits, its prompt and Back in the tabs' place). Drawn in the frame's layout pixels over the whole screen
+// (PhoneUnits), the places PhonePickers'.
 internal sealed partial class TreasureView
 {
     private PhoneFrame? _phone;
@@ -31,15 +33,16 @@ internal sealed partial class TreasureView
             return TabCharacters;
         else if (In(PhonePickers.Tab(f, 1)))
             return TabItems;
-        int cell = PhonePickers.CellAt(f, at.X, at.Y);
+        int cell = GridOf(f).CellAt(_grid.Scroll, at.X, at.Y);
         return _entries.Any(e => e.Number == cell) ? cell : NoButton;
     }
 
     private void DrawPhone(Control c, PhoneUnits u)
     {
         var f = u.Frame;
-        PhonePickerParts.DrawTitle(c, u, _brush, _cinzel, "Treasure", _date);
-        DrawPicture(c, u.Rect(PhonePickers.Picture(f)));
+        var grid = ScrolledGrid(f);
+        PhonePickerParts.DrawTitle(c, u, _brush, _cinzel, "Treasure", _date, PhonePickers.TreasureColumn(f));
+        DrawPicture(c, u.Rect(PhonePickers.TreasurePicture(f)));
         PhoneDetails(c, u);
         var end = u.Rect(PhonePickers.TreasureEnd(f));
         _buttonSize = ButtonSize(u, PhonePickers.ButtonText, u.Rect(PhonePickers.Tab(f, 0)), u.Rect(PhonePickers.Back(f)), end,
@@ -54,7 +57,7 @@ internal sealed partial class TreasureView
         else
             PhoneTabs(c, u);
         PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
-        PhoneGrid(c, u);
+        DrawScrolledGrid(c, u, grid, portrait: false);
     }
 
     /// <summary>The size every button of the phone's screen writes its word at, this drawing's (<see cref="ButtonSize"/>).</summary>
@@ -80,9 +83,9 @@ internal sealed partial class TreasureView
     /// </summary>
     private void PhoneDetails(Control c, PhoneUnits u)
     {
-        var (dx, dy) = PhonePickers.Details(u.Frame);
+        var (dx, dy) = PhonePickers.TreasureDetails(u.Frame);
         float x = dx / u.K;
-        DrawDetails(c, u, x, dy / u.K, (PhonePickers.Column(u.Frame).Right - u.Frame.Px(PhonePickers.ItemDetailsRight)) / u.K - x);
+        DrawDetails(c, u, x, dy / u.K, (PhonePickers.TreasureColumn(u.Frame).Right - u.Frame.Px(PhonePickers.ItemDetailsRight)) / u.K - x);
     }
 
     /// <summary>The details at (<paramref name="x"/>, <paramref name="y"/>), <paramref name="room"/> wide (layout pixels).</summary>
@@ -197,27 +200,10 @@ internal sealed partial class TreasureView
     }
 
     /// <summary>
-    /// The folded grid: rows 1-9 at the left, 10-17 at the right, the gold rule between; a held item's name over its holder
-    /// (a padlock before the holder on Chaos and Nikkou), any other entry's name in one line (a unit's diamond at its right),
-    /// a long name shrunk to its cell; the selection lit, the cell a callout asks about in vermilion; the other cells empty.
-    /// </summary>
-    private void PhoneGrid(Control c, PhoneUnits u)
-    {
-        var listed = _entries.ToDictionary(e => e.Number);
-        for (int n = 1; n <= TreasureRoster.Cells; n++)
-        {
-            var r = u.Rect(PhonePickers.Cell(u.Frame, n));
-            if (listed.TryGetValue(n, out var entry))
-                DrawEntryCell(c, u, r, entry, n, portrait: false);
-            else
-                PhonePickerParts.DrawEmptyCell(c, r, _k);
-        }
-        PhonePickerParts.DrawRule(c, u);
-    }
-
-    /// <summary>
     /// <paramref name="entry"/>'s cell <paramref name="r"/> at the phone's sizes: held landscape a held item's name over its
-    /// holder (the cells being narrow), upright in one line with the holder at the right (PT2's wide cells).
+    /// holder (the cells being narrow), upright in one line with the holder at the right (PT2's wide cells); a padlock before
+    /// the holder on Chaos and Nikkou, a unit's diamond at the right, a long name shrunk to its cell; the selection lit, the
+    /// cell a callout asks about in vermilion.
     /// </summary>
     private void DrawEntryCell(Control c, PhoneUnits u, Rect2 r, TreasureEntry entry, int n, bool portrait)
     {

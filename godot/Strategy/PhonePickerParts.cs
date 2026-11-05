@@ -15,10 +15,13 @@ internal static class PhonePickerParts
     /// <summary>The baseline that puts <paramref name="font"/>'s line at <paramref name="size"/> with its middle at <paramref name="middle"/>.</summary>
     public static float Middle(Font font, int size, float middle) => middle + (font.GetAscent(size) - font.GetDescent(size)) / 2;
 
-    /// <summary>The screen's name at the column's left (the brush face), the date at its right, the divider under them.</summary>
-    public static void DrawTitle(CanvasItem c, PhoneUnits u, Font brush, Font cinzel, string title, string date)
+    /// <summary>
+    /// The screen's name at the column's left (the brush face), the date at its right, the divider under them; the column
+    /// <paramref name="box"/> (Treasure's own), else the harem's.
+    /// </summary>
+    public static void DrawTitle(CanvasItem c, PhoneUnits u, Font brush, Font cinzel, string title, string date, PhoneFrame.Box? box = null)
     {
-        var column = u.Rect(PhonePickers.Column(u.Frame));
+        var column = u.Rect(box ?? PhonePickers.Column(u.Frame));
         int size = u.Size(PhonePickers.TitleText);
         c.DrawString(brush, new Vector2(column.Position.X + u.Px(PhonePickers.TitleIn), u.Px(PhonePickers.TitleTop) + brush.GetAscent(size)),
             title, fontSize: size, modulate: Ui.Name);
@@ -43,12 +46,12 @@ internal static class PhonePickerParts
             y + u.Px(PhonePickersPortrait.Divider), u.K);
     }
 
-    /// <summary>Held upright: the reference scroll bar right of the grid, while the grid scrolls.</summary>
+    /// <summary>The reference scroll bar right of the grid, while the grid scrolls (upright, and Treasure's held landscape).</summary>
     public static void DrawScrollBar(CanvasItem c, PhoneUnits u, PhonePickersPortrait.ScrolledGrid grid, int scroll)
     {
         if (grid.MaxScroll == 0)
             return;
-        var (track, thumb) = PhonePickersPortrait.ScrollBar(u.Frame, grid, scroll);
+        var (track, thumb) = grid.Bar(u.Frame, scroll);
         Ui.DrawScrollBar(c, u.Rect(track), u.Rect(thumb), u.Px(PhoneScrollBar.Rim));
     }
 

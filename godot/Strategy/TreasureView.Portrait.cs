@@ -35,20 +35,14 @@ internal sealed partial class TreasureView
             return TabCharacters;
         else if (In(PhonePickersPortrait.Tab(f, 1)))
             return TabItems;
-        int cell = PhonePickersPortrait.TreasureGrid(f).CellAt(_grid.Scroll, at.X, at.Y);
+        int cell = GridOf(f).CellAt(_grid.Scroll, at.X, at.Y);
         return _entries.Any(e => e.Number == cell) ? cell : NoButton;
     }
 
     private void DrawPortrait(Control c, PhoneUnits u)
     {
         var f = u.Frame;
-        var grid = PhonePickersPortrait.TreasureGrid(f);
-        if (_view != _gridView)                                 // the other view's entries: from its first row
-        {
-            _gridView = _view;
-            _grid.Restart();
-        }
-        _grid.Reveal(grid, _selected);
+        var grid = ScrolledGrid(f);
         PhonePickerParts.DrawPortraitTitle(c, u, _brush, _cinzel, "Treasure", _date);
         DrawPicture(c, u.Rect(PhonePickersPortrait.Picture(f)));
         var (dx, dy) = PhonePickersPortrait.Details(f);
@@ -63,21 +57,58 @@ internal sealed partial class TreasureView
         }
         else
             DrawTabs(c, u, view => u.Rect(PhonePickersPortrait.Tab(f, view)));
+        DrawScrolledGrid(c, u, grid, portrait: true);
+        PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
+        if (_button is { } button)
+            DrawAction(c, u, button, u.Rect(PhonePickersPortrait.Action(f)));
+    }
+
+    /// <summary>The grid as the phone is held: upright under the tabs, held landscape in five columns at the right (P39).</summary>
+    private static PhonePickersPortrait.ScrolledGrid GridOf(PhoneFrame f) =>
+        f.IsPortrait ? PhonePickersPortrait.TreasureGrid(f) : PhonePickers.TreasureGrid(f);
+
+    /// <summary>The grid for this drawing: from its first row when the other view is shown, the choice scrolled into view.</summary>
+    private PhonePickersPortrait.ScrolledGrid ScrolledGrid(PhoneFrame f)
+    {
+        var grid = GridOf(f);
+        if (_view != _gridView)                                 // the other view's entries: from its first row
+        {
+            _gridView = _view;
+            _grid.Restart();
+        }
+        _grid.Reveal(grid, _selected);
+        return grid;
+    }
+
+    /// <summary>
+    /// The rows in view: each entry's cell (<paramref name="portrait"/>: an item's holder at the right of its line, else
+    /// under its name), the other cells empty; the scroll bar with its ticks and the pills at filled cells out of view.
+    /// </summary>
+    private void DrawScrolledGrid(Control c, PhoneUnits u, PhonePickersPortrait.ScrolledGrid grid, bool portrait)
+    {
         var listed = _entries.ToDictionary(e => e.Number);
         for (int n = 1; n <= TreasureRoster.Cells; n++)
         {
             if (grid.Cell(n, _grid.Scroll) is not { } cell)
                 continue;
             if (listed.TryGetValue(n, out var entry))
-                DrawEntryCell(c, u, u.Rect(cell), entry, n, portrait: true);
+                DrawEntryCell(c, u, u.Rect(cell), entry, n, portrait);
             else
                 PhonePickerParts.DrawEmptyCell(c, u.Rect(cell), _k);
         }
         PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
         _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
-        PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
-        if (_button is { } button)
-            DrawAction(c, u, button, u.Rect(PhonePickersPortrait.Action(f)));
+    }
+
+    /// <summary>The phone's grid scrolled the least that shows cell <paramref name="number"/> in the view shown (the screen gallery's scrolled look).</summary>
+    public void ShowCell(int number)
+    {
+        if (_phone is { } f)
+        {
+            _gridView = _view;
+            _grid.Show(GridOf(f), number);
+        }
+        _face.QueueRedraw();
     }
 
     /// <summary>The cells an entry holds in the view shown: the hint's (<see cref="PickerMoreCells"/>).</summary>
@@ -85,8 +116,8 @@ internal sealed partial class TreasureView
 
     private bool GridTouch(InputEvent e) =>
         _phone is { } f && !Busy
-        && (_more.Touch(e, cell => _grid.Show(PhonePickersPortrait.TreasureGrid(f), cell), _face.QueueRedraw)
-            || _grid.Touch(e, PhonePickersPortrait.TreasureGrid(f), StartScroll, _face.QueueRedraw));
+        && (_more.Touch(e, cell => _grid.Show(GridOf(f), cell), _face.QueueRedraw)
+            || _grid.Touch(e, GridOf(f), StartScroll, _face.QueueRedraw));
 
     /// <summary>The press scrolls from here on: no tap, no cell lit (the rows move under the finger).</summary>
     private void StartScroll()
@@ -97,5 +128,5 @@ internal sealed partial class TreasureView
 
     /// <summary>A flick going on scrolls the rows on.</summary>
     public override void _Process(double delta) =>
-        _grid.Process(delta, Visible && _phone is { IsPortrait: true } f ? PhonePickersPortrait.TreasureGrid(f) : null, _face.QueueRedraw);
+        _grid.Process(delta, Visible && _phone is { } f ? GridOf(f) : null, _face.QueueRedraw);
 }

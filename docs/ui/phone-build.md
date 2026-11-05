@@ -1631,6 +1631,24 @@ keep the 780×150 plate.
 - **Checks**: the build, `PhoneLedgerPortraitTests`; the gallery's landscape pass for `subordinates-result`,
   `subordinates-new-troops` and `deployment-refill-done`. The look on the Poco is the owner's.
 
+### After the build: Treasure in five columns held landscape (owner, 2026-11-05)
+
+Rounds P37-P39 (docs/ui/phone.md, §51-§54; `tools/ui/mock_treasure_six.py`, `mock_treasure_five.py`,
+`mock_treasure_scroll.py`): held landscape Treasure's grid is no longer folded after its ninth row. It stands at the right
+thumb five cells a row (11 rows, the last with cell 51 alone), the cells 210 reference pixels wide, as many rows in view
+as the height holds at least 122 high (the owner: the rows' 7 mm kept), stretched to fill it — seven on the reference
+phone —, scrolled under the finger as upright (`PickerGridScroll`), with the reference scroll bar, its ticks and the
+pills at filled cells out of view (`PickerMoreCells`, upright's, the owner's R2). Characters | Items and End stand under
+it; the column left of it takes the rest of the width (1328 on the reference, 1104 before), the picture at its width
+(+20%) or as tall as the height over the details holds, the touch mode's button at the column's right with its foot on
+the buttons' (the owner). `PhonePickers.TreasureColumn`, `TreasurePicture`, `TreasureDetails`, `TreasureGrid` (a
+`PhonePickersPortrait.ScrolledGrid` of five columns: its `Columns`, `Rows`, `Bar` and `TickY` are the grid's own now);
+`TreasureView.Phone.cs` draws through upright's `DrawScrolledGrid`. The Harem keeps the folded grid.
+
+- **Checks**: the build, `PhonePickersTests`; the gallery's PC and phone passes for the Treasure entries, and the new
+  `treasure-scrolled` (the grid at its foot, the pill above); `--treasure --phone landscape` headless from the week-18
+  save as before. The look on the Poco is the owner's.
+
 ## 6. The agent's own choices, for the owner to confirm
 
 - A phone is told from a tablet by the screen's physical short side (under ~90 mm); no setting.
