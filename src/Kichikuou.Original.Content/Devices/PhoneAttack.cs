@@ -22,6 +22,20 @@ public static class PhoneAttack
     /// <summary>The room's edges in from the hole's strips; the panels' top and how far over the screen's foot they end.</summary>
     private const float ScreenIn = 6, PanelsTop = 16, PanelsFoot = 16;
 
+    /// <summary>
+    /// The scouting ninja's seal (the owner's LK2 with a 90 square of the dump's, docs/ui/enemy-attack.md, §14): her face
+    /// square 135 in the army panel's top right corner, 25 in from its right and 21 down; "SCOUTED BY" (24) on the panel's
+    /// caption's baseline and her name (42) 55 under it, both right-aligned 24 left of the square.
+    /// </summary>
+    public const float SealSize = 135, SealIn = 25, SealTop = 21, SealWordsGap = 24, SealLabel = 24, SealName = 42, SealNameDrop = 55;
+
+    /// <summary>The scouting ninja's face square in the army panel's top right corner.</summary>
+    public static PhoneFrame.Box Seal(PhoneFrame f)
+    {
+        var army = Army(f);
+        return new PhoneFrame.Box(army.Right - f.Px(SealIn + SealSize), army.Y + f.Px(SealTop), f.Px(SealSize), f.Px(SealSize));
+    }
+
     /// <summary>The province's panel's width, the room "VS" stands in after it, the column's width and the gap before it.</summary>
     private const float ProvinceWidth = 580, VsRoom = 100, ColumnWidth = 804, ColumnGap = 16;
 

@@ -113,6 +113,9 @@ internal sealed partial class EnemyAttackView
         }
         var (x0, x1, top) = PhoneAttackPortrait.Totals(f);
         PhoneTotals(u, x0, x1, top, attack);
+        if (report is not null)                                 // PK1: the seal over the frame, the words on the caption's line
+            PhoneScoutSeal(u, panel, u.Rect(PhoneAttackPortrait.Seal(f)), attack, report, PhoneAttackPortrait.SealWordsGap,
+                PhoneAttackPortrait.SealLabel, PhoneAttackPortrait.SealName, nameDrop: 0, nameGap: PhoneAttackPortrait.SealNameGap);
     }
 
     /// <summary>

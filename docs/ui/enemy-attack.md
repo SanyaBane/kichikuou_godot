@@ -249,4 +249,10 @@ dump's pixels) inside the panel's top right corner, "SCOUTED BY Kanami" on the h
 top edge leaves no room to set it over the frame as on the PC; **LK2** a 110 square there in the room over the cards,
 "SCOUTED BY" on the heading's row and her name larger under it; **PK1** upright, a 50 square over the panel's top right
 frame as the PC's, the words on the heading's baseline; **PK2** upright, a 40 square inside the corner under the frame.
-The note "Kanami's report" goes in each. Awaiting the owner's choice.
+The note "Kanami's report" goes in each. **The owner chose LK2 with the square at 90 (the dump's pixels) and PK1**,
+built the same day (`EnemyAttackView.PhoneScoutSeal`, shared by both orientations; the places `PhoneAttack.Seal` and
+`PhoneAttackPortrait.Seal` with their `Seal…` figures in reference pixels): held landscape a 135 square 25 in from the
+army panel's right and 21 down, "SCOUTED BY" (24) on the caption's baseline and the name (42) 55 under it, 24 left of
+the square; upright a 100 square 22 in and 34 over the panel's top, the words (20 and 28, 12 apart) on the caption's
+baseline 20 left of it; the plate 3/60 of the square wider in a gold line as the PC's. The note under the totals only
+before a scouting. Looked at in the screen gallery's phone passes (`enemy-attack-scouted`).

@@ -99,6 +99,40 @@ internal sealed partial class EnemyAttackView
 
         var (x0, x1, top) = PhoneAttack.Totals(f);
         PhoneTotals(u, x0, x1, top, attack);
+        if (report is not null)                                 // LK2: the seal and the words in two lines before it
+            PhoneScoutSeal(u, panel, u.Rect(PhoneAttack.Seal(f)), attack, report, PhoneAttack.SealWordsGap, PhoneAttack.SealLabel,
+                PhoneAttack.SealName, nameDrop: PhoneAttack.SealNameDrop, nameGap: 0);
+    }
+
+    /// <summary>
+    /// The ninja who scouted as a seal (the PC's <see cref="DrawScoutSeal"/>; docs/ui/enemy-attack.md, §14): her face square
+    /// on a plate in a gold line, "SCOUTED BY" on the panel's caption's baseline right-aligned <paramref name="gap"/> left of
+    /// it, her name under it (<paramref name="nameDrop"/>, LK2) or after it on the same line (<paramref name="nameGap"/>, PK1).
+    /// Reference pixels but <paramref name="panel"/> and <paramref name="seal"/>.
+    /// </summary>
+    private void PhoneScoutSeal(PhoneUnits u, Rect2 panel, Rect2 seal, EnemyAttack attack, ScoutReport report, float gap,
+        float label, float name, float nameDrop, float nameGap)
+    {
+        var plate = seal.Grow(seal.Size.X * 3 / 60);
+        _sheet.DrawRect(plate, Ui.Panel with { A = 1 });
+        _sheet.DrawRect(plate, Ui.Gold, false, Lacquer.Line(1.5f, _k));
+        DrawFace(seal, report.NinjaCg);
+
+        int caption = u.Size(PhoneAttack.CaptionText), labelSize = u.Size(label), nameSize = u.Size(name);
+        float baseline = panel.Position.Y + u.Px(PhoneAttack.CaptionTop) + _cinzel.GetAscent(caption);
+        float right = seal.Position.X - u.Px(gap);
+        string who = NinjaName(attack, report.NinjaCg);
+        float nameWidth = _font!.GetStringSize(who, fontSize: nameSize).X;
+        float labelWidth = _cinzel.GetStringSize("SCOUTED BY", fontSize: labelSize).X;
+        if (nameDrop > 0)
+        {
+            _sheet.DrawString(_cinzel, new Vector2(right - labelWidth, baseline), "SCOUTED BY", fontSize: labelSize, modulate: Ui.Label);
+            _sheet.DrawString(_font, new Vector2(right - nameWidth, baseline + u.Px(nameDrop)), who, fontSize: nameSize, modulate: Ui.Name);
+            return;
+        }
+        _sheet.DrawString(_font, new Vector2(right - nameWidth, baseline), who, fontSize: nameSize, modulate: Ui.Name);
+        _sheet.DrawString(_cinzel, new Vector2(right - nameWidth - u.Px(nameGap) - labelWidth, baseline), "SCOUTED BY",
+            fontSize: labelSize, modulate: Ui.Label);
     }
 
     /// <summary>The army's totals from <paramref name="x0"/> to <paramref name="x1"/> under <paramref name="top"/> (the canvas's units), the report's source under them.</summary>
@@ -120,9 +154,9 @@ internal sealed partial class EnemyAttackView
             modulate: Ui.Subtitle);
         float rule = y + u.Px(PhoneAttack.TotalsRule);
         _sheet.DrawLine(new Vector2(left, rule), new Vector2(right, rule), Ui.DimGold, Lacquer.Line(1, _k));
-        string note = report is null
-            ? attack.CanScout ? "Send a ninja to learn them." : "No ninja can be sent this week."
-            : $"{NinjaName(attack, report.NinjaCg)}'s report";
+        if (report is not null)                                 // after a scouting the seal says whose it is (LK2, PK1)
+            return;
+        string note = attack.CanScout ? "Send a ninja to learn them." : "No ninja can be sent this week.";
         int noteSize = u.Size(PhoneAttack.NoteText);
         _sheet.DrawString(_font, new Vector2(left, y + u.Px(PhoneAttack.NoteTop) + _font.GetAscent(noteSize)), note, fontSize: noteSize,
             modulate: Ui.Quiet);
