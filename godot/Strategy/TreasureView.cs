@@ -564,7 +564,7 @@ internal sealed partial class TreasureView : Control
             string label = view == 0 ? "Characters" : "Items";
             Centred(c, _cinzel, label, ButtonText, on || hover ? Ui.Name : Ui.Quiet, r.GetCenter().X, Lacquer.Baseline(r, _cinzel, ButtonText));
         }
-        DrawButton(c, EndArea, "End", EndButton, ButtonText);
+        DrawButton(c, EndArea, "Close", EndButton, ButtonText);
     }
 
     private void DrawButton(Control c, Rect2 r, string label, int button, int size)

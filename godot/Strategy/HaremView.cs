@@ -355,7 +355,7 @@ internal sealed partial class HaremView : Control
         bool hoverEnd = !Busy && _hovered == EndButton;
         c.DrawRect(EndArea, hoverEnd ? Ui.RowHover : Ui.Row);
         c.DrawRect(EndArea, hoverEnd ? Ui.HoverLine : Ui.DimGold, false, Line(hoverEnd ? 2 : 1));
-        CentredString(c, _cinzel, "End", ButtonText, hoverEnd ? Ui.Name : Ui.Text, EndArea.GetCenter().X, Lacquer.Baseline(EndArea, _cinzel, ButtonText));
+        CentredString(c, _cinzel, "Close", ButtonText, hoverEnd ? Ui.Name : Ui.Text, EndArea.GetCenter().X, Lacquer.Baseline(EndArea, _cinzel, ButtonText));
     }
 
     /// <summary>A small heart, drawn: two circles over a point.</summary>

@@ -387,3 +387,10 @@ button's word), our own replace "Replace it with L. Holy Sword?" (`TreasureRoste
 `GameScreen.UpdateTreasureCallout` shows them over the script's menu, its refusals keep the script's lines; the message
 log keeps the script's). Beside the button the callout breaks a line too long for its width between words.
 `TreasureRosterTests` checks the question against `Cﾀｶﾗ`: there exactly where the picker asks.
+
+## 7. Close, not End (owner, 2026-11-05)
+
+The owner, looking at the gallery: our Harem and Treasure screens' button that leaves them is **Close**, not the bar's
+"End" (`Sﾊｰﾚﾑ.ADV:10`, `Sｱｲﾃﾑ.ADV:36`, the translation patch's word) — it only leaves the screen, every change being
+made at once; on every device (`HaremView`, `TreasureView`, their `.Phone.cs` and `.Portrait.cs`). The original's
+screens (`--interface original`) keep the script's "End". The sections above and the mock-ups keep the word they had.

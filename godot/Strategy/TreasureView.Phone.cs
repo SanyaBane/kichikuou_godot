@@ -56,7 +56,7 @@ internal sealed partial class TreasureView
         }
         else
             PhoneTabs(c, u);
-        PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
+        PhonePickerParts.DrawButton(c, u, end, "Close", !Busy && _hovered == EndButton, _buttonSize);
         DrawScrolledGrid(c, u, grid, portrait: false);
     }
 
@@ -71,7 +71,7 @@ internal sealed partial class TreasureView
     {
         float tabRoom = PhonePickerParts.Room(u, tab);
         List<(string, float)> words = [("Characters", tabRoom), ("Items", tabRoom), ("Back", PhonePickerParts.Room(u, back)),
-            ("End", PhonePickerParts.Room(u, end))];
+            ("Close", PhonePickerParts.Room(u, end))];
         if (_button is { } b)
             words.Add((b.Label, PhonePickerParts.Room(u, action)));
         return SideCells.FitAll(_cinzel, u.Size(text), [.. words]);

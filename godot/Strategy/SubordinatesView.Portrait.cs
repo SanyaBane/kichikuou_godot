@@ -76,7 +76,7 @@ internal sealed partial class SubordinatesView
         c.DrawString(_cinzelLight, new Vector2(bx + _cinzel.GetStringSize(gold, fontSize: figure).X + u.Px(PhoneLedgerPortrait.BudgetUnitGap),
             Middle(_cinzelLight, label, bar.Position.Y + u.Px(PhoneLedgerPortrait.BudgetUnitMiddle))), "GOLD", fontSize: label, modulate: Ui.Subtitle);
         var end = RectOf(EndButton)!.Value;
-        DrawPlain(c, end, "End", null, EndButton, _cinzel, word, 0);
+        DrawPlain(c, end, "Close", null, EndButton, _cinzel, word, 0);
     }
 
     /// <summary>The baseline that puts <paramref name="font"/>'s text of <paramref name="size"/> with its middle at <paramref name="middle"/>.</summary>

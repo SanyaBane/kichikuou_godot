@@ -58,7 +58,7 @@ internal sealed partial class TreasureView
         else
             DrawTabs(c, u, view => u.Rect(PhonePickersPortrait.Tab(f, view)));
         DrawScrolledGrid(c, u, grid, portrait: true);
-        PhonePickerParts.DrawButton(c, u, end, "End", !Busy && _hovered == EndButton, _buttonSize);
+        PhonePickerParts.DrawButton(c, u, end, "Close", !Busy && _hovered == EndButton, _buttonSize);
         if (_button is { } button)
             DrawAction(c, u, button, u.Rect(PhonePickersPortrait.Action(f)));
     }

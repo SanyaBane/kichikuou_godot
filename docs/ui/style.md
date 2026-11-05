@@ -102,7 +102,7 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   get it only where they are verified money (`ScenarioFigures`; docs/ui/gold-figures.md).
 - **Buttons side by side** (owner, 2026-11-04, the strict variant A): the buttons of one screen that stand together —
   its tabs, its actions, its way back, a callout's answers, a rail's or a bar's cells — write their words in one face
-  and one size (Treasure: Characters | Items, End, Back and the red button all Cinzel 700 at 17). A main action stands
+  and one size (Treasure: Characters | Items, Close, Back and the red button all Cinzel 700 at 17). A main action stands
   out by its fill alone (the red button, Turn END's and Retreat's red), a chosen tab by its frame, colour and weight, an
   unchosen one by a quieter colour — never by another face or a size a point or two apart, which reads as a mistake.
   Button boxes are **Cinzel 700**; rows of a list or a rail (the command panel, the province menu, the battle's
@@ -154,8 +154,8 @@ narration, place title, 131) in docs/ui/messages.md.
   ("Delete all without ★ (3)"), is off at 0, and veils the rows it would take while it asks. One question, never two.
 - **A choice then a red button is the confirmation** — no question after it (Save/Load C, the harem's Summon).
 - **The way back stands right of the action** (owner, 2026-10-30), on every device: where a button that leaves without
-  changing anything (End, Stop, Back, Cancel, No, Keep) stands beside one that acts (a red button, Yes, Delete, Abandon,
-  Restart), the way back is the right one — Load | Back, Summon | End, Attack | Stop, Plains | City | Back, Yes | No,
+  changing anything (Close, Stop, Back, Cancel, No, Keep) stands beside one that acts (a red button, Yes, Delete, Abandon,
+  Restart), the way back is the right one — Load | Back, Summon | Close, Attack | Stop, Plains | City | Back, Yes | No,
   Delete | Keep, Keep | Cancel (a comment's card), Restart | Cancel. A red button with no way back beside it keeps the
   right thumb (the import's first launch). The one exception is the battle's retreat question on the tablet and the
   phone: Retreat stays farthest from the rail's Retreat it answers (the owner's A2, docs/ui/touch.md), so a second tap
@@ -235,7 +235,7 @@ or `--touch`; the PC's mouse interface does not change.
 - **The phone held upright** (docs/ui/phone-build.md, steps P0-P9, built 2026-10-30): the engine's picture at the screen's
   width (762.5 reference pixels high) in the room between the camera's strip (6.3 mm) and the gesture zone (3 mm), where
   each screen puts it (in the middle by default); the bar at the room's foot (8.4 mm), Menu, Log and Skip at its left, the
-  act and the way back right of it (the red button | End, the red button | Back; §5), the way back at the right thumb. The scenes' windows above the picture for the left
+  act and the way back right of it (the red button | Close, the red button | Back; §5), the way back at the right thumb. The scenes' windows above the picture for the left
   portrait's, under it for every other, the script's line breaks kept; a screen of our own stacked down the width (a title
   band, the picture or the party on top, a sheet or a list at the thumb, scrolled by a finger with the scroll bar of
   §4, since 2026-10-31), a menu or

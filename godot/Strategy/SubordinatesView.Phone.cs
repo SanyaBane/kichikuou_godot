@@ -93,7 +93,7 @@ internal sealed partial class SubordinatesView
             DrawPrimary(c, rep, "Replenish", note, ReplenishButton, word, small, _cinzel);
         else
             DrawPlain(c, rep, "Replenish", note, ReplenishButton, _cinzel, word, small);
-        DrawPlain(c, end, "End", null, EndButton, _cinzel, word, 0);
+        DrawPlain(c, end, "Close", null, EndButton, _cinzel, word, 0);
     }
 
     /// <summary>
@@ -105,7 +105,7 @@ internal sealed partial class SubordinatesView
         var talk = RectOf(TalkButton)!.Value;
         float talkRoom = talk.Size.X - (talk.Size.Y - u.Px(faceIn)) - u.Px(26);   // right of the face: its inset and its side
         return SideCells.FitAll(_cinzel, u.Size(text), ("Replenish", RectOf(ReplenishButton)!.Value.Size.X - u.Px(30)), ("Talk", talkRoom),
-            ("End", RectOf(EndButton)!.Value.Size.X - u.Px(30)));
+            ("Close", RectOf(EndButton)!.Value.Size.X - u.Px(30)));
     }
 
     /// <summary>A step of Add New Troops (<c>lu_orders_side</c>): the men at the left, the price at the foot right; grey above the budget.</summary>

@@ -524,7 +524,7 @@ internal sealed partial class SubordinatesView : Control
         c.DrawLine(new Vector2(ReplenishArea.Position.X + 2, RuleY), new Vector2(ReplenishArea.End.X - 2, RuleY), Ui.DimGold, Line(1));
 
         DrawTalk(c, panel);
-        DrawPlain(c, EndArea, "End", null, EndButton, _cinzel, ButtonText, 0);
+        DrawPlain(c, EndArea, "Close", null, EndButton, _cinzel, ButtonText, 0);
     }
 
     /// <summary>Draws <paramref name="text"/> ending at <paramref name="right"/>, centred in <paramref name="band"/>; returns where it starts.</summary>

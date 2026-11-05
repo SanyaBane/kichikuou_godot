@@ -238,3 +238,9 @@ lines).
 The deployment screen's request applies here too: the ledger down the screen's left, a part of its columns at a time
 in tabs, the picture and the orders panel stacked on the right — docs/ui/unit-ledger.md; the owner took A1-A4 and round
 D's D2 for the order's seal (its §5), built (its §6).
+
+## 9. Close, not End (owner, 2026-11-05)
+
+As on the Harem and Treasure screens (docs/ui/pickers.md, §7): our Subordinates screen's button that leaves it is
+**Close**, not `Sﾌﾞｶ.ADV:21`'s "End", on every device (`SubordinatesView`, its `.Phone.cs` and `.Portrait.cs`); the
+original's screen keeps the script's word, the sections above and the mock-ups the word they had.

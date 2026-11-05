@@ -49,7 +49,7 @@ internal sealed partial class HaremView
         var end = u.Rect(PhonePickersPortrait.End(f));
         _buttonSize = ButtonSize(u, PhonePickersPortrait.ButtonText, end, u.Rect(PhonePickersPortrait.Action(f)));
         bool hoverEnd = !Busy && _hovered == EndButton;
-        PhonePickerParts.DrawButton(c, u, end, "End", hoverEnd, _buttonSize);
+        PhonePickerParts.DrawButton(c, u, end, "Close", hoverEnd, _buttonSize);
         DrawSummon(c, u, u.Rect(PhonePickersPortrait.Action(f)));
     }
 

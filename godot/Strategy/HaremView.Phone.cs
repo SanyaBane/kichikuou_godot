@@ -34,7 +34,7 @@ internal sealed partial class HaremView
         var end = u.Rect(PhonePickers.HaremEnd(f));
         _buttonSize = ButtonSize(u, PhonePickers.ButtonText, end, u.Rect(PhonePickers.Summon(f)));
         bool hoverEnd = !Busy && _hovered == EndButton;
-        PhonePickerParts.DrawButton(c, u, end, "End", hoverEnd, _buttonSize);
+        PhonePickerParts.DrawButton(c, u, end, "Close", hoverEnd, _buttonSize);
         PhoneSummon(c, u);
     }
 
@@ -49,7 +49,7 @@ internal sealed partial class HaremView
     /// pixels, or as much smaller as Summon's word with her name needs.
     /// </summary>
     private int ButtonSize(PhoneUnits u, float text, Rect2 end, Rect2 summon) =>
-        SideCells.FitAll(_cinzel, u.Size(text), ("End", PhonePickerParts.Room(u, end)), (SummonWord, PhonePickerParts.Room(u, summon)));
+        SideCells.FitAll(_cinzel, u.Size(text), ("Close", PhonePickerParts.Room(u, end)), (SummonWord, PhonePickerParts.Room(u, summon)));
 
     private void PhoneDetails(Control c, PhoneUnits u)
     {
