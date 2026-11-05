@@ -1548,3 +1548,58 @@ The agent recommends LU1r2: the upright card's sizes, laid out for the landscape
 
 The owner took LU1r1: held landscape the plate is the upright card at its size in the screen's middle. Built
 (docs/ui/phone-build.md, §5, "After the build: the result plate held landscape").
+
+## 51. Round P37: Treasure's grid in six columns held landscape (2026-11-05)
+
+Held landscape the pickers' 3 × 17 grid is folded after its ninth row (LT2, §15): rows 10-17 continue in a right half
+past a gold rule. The owner asked for the Treasure screen without that continuation, the grid in six columns instead.
+`tools/ui/mock_treasure_six.py` draws it over the gallery's landscape pass (`treasure`, `treasure-items`,
+`treasure-hover`), each cell of the dump moved to its new place:
+
+- **LT2s — six columns**: the picker's rows laid two by two side by side, cell *n* in row ⌈*n* / 6⌉, column
+  (*n* − 1) mod 6 + 1, read left to right, top to bottom; nine rows, the last with three cells (49-51). The rule and the
+  gap between the halves go, every gap the cells' own; the cells keep their height and grow ~2% wider, the grid's box as
+  before. On the Characters tab Rance, Leila and Barres share the first row, Rick to Haurein fill the second.
+
+The Harem screen keeps the folded grid unless the owner asks for it too (it shares `PhonePickers.Cell`).
+
+## 52. Round P38: Treasure in five columns, the picture larger (2026-11-05)
+
+The owner, after LT2s (§51): Treasure alone for now, its grid in five columns, the room it frees given to the picture
+panel at the left, grown in proportion; where it lacks the height the buttons may move. `tools/ui/mock_treasure_five.py`
+draws it over the gallery's landscape pass (`treasure-hover`, `treasure-items`). The grid in every variant: cell *n* in
+row ⌈*n* / 5⌉, five a row, 11 rows (the last with cell 51 alone), the cells 216 reference px wide as now, at the right
+thumb; the column at the left 1338 px wide (1104 now). The picture's panel is 1104 × 690 now (62.7 × 39.2 mm).
+
+- **A — the buttons in the title band.** Characters | Items | End at the band's right, 89 px high (5.0 mm), the date
+  under the title; the picture at the column's whole width, 1338 × 836 (+21%); the details and the touch mode's action
+  under it as now. The grid's rows over the whole height, 99 px (5.6 mm; 7.1 mm now).
+- **B — the buttons under the grid** at the right thumb, at their size now; the picture as A's, the title band as now,
+  the details and the action under it. The grid's rows shorter, 85 px (4.8 mm).
+- **C — the buttons at the left thumb as now**, the touch mode's action (Take Off, Choose an Item, …) joining their row
+  at its left, all four 114 px high (6.5 mm); the details in one row over them (the name and kind, then the figures);
+  the picture as tall as is left, 1245 × 778 (+13%), a little short of the column's width. The grid as A's.
+
+The agent recommends C: the buttons stay where every landscape screen has them, at the thumb, and the grid's rows stay
+above 5.4 mm; A gives the picture the most room but puts the buttons at the top, out of the thumbs' reach.
+
+## 53. Round P39: B with the rows kept, the grid scrolled (2026-11-05)
+
+The owner took P38's B (the buttons under the grid at the right thumb, the picture at the column's width) with the grid's
+rows kept at 7.1 mm (124 reference px, as now), so the grid scrolls: about 7.8 of its 11 rows are in view. At its right
+the reference scroll bar (S2, §41: the groove 20 px, the gold thumb, 10 px from the cells, each cell 10 px narrower), and
+two new signs the owner asked for: a **tick** across the groove for each row holding a filled cell (dark where the thumb
+covers it), and a **sign** while filled cells lie beyond the view above or below. `tools/ui/mock_treasure_scroll.py`
+draws three ways for the sign, each in four states — Characters at the top and scrolled to the end (the week-18 save),
+Items of a later game (illustrative: Chaos (item 1), Safety Bonsai (item 10), Snow Charm (item 11), Crystal Sword
+(item 20), Happiness Ring (item 29), Bird Corpse (item 36), Hawaiian Sword (item 41), the Doping Drug (item 48) and
+E. Nurse (item 50) owned besides the two) at the top and two rows down:
+
+- **R1 — at the cut edge:** a gold line along the grid's edge and a round chevron in its middle.
+- **R2 — a pill at the cut edge:** the chevron and the number of filled cells beyond.
+- **R3 — on the bar:** a chevron at each end of the groove (the groove shorter by them), gold while filled cells lie
+  beyond that way, a dim outline else.
+
+R1 and R2 stand over the grid's edge row and may hide a cell's name there (P39's items two rows down: the Doping Drug
+under R2's pill); R3 covers nothing. The agent recommends R3 with the ticks: the bar says it all in one place.
+
