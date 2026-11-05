@@ -1641,13 +1641,28 @@ phone —, scrolled under the finger as upright (`PickerGridScroll`), with the r
 pills at filled cells out of view (`PickerMoreCells`, upright's, the owner's R2). Characters | Items and End stand under
 it; the column left of it takes the rest of the width (1328 on the reference, 1104 before), the picture at its width
 (+20%) or as tall as the height over the details holds, the touch mode's button at the column's right with its foot on
-the buttons' (the owner). `PhonePickers.TreasureColumn`, `TreasurePicture`, `TreasureDetails`, `TreasureGrid` (a
-`PhonePickersPortrait.ScrolledGrid` of five columns: its `Columns`, `Rows`, `Bar` and `TickY` are the grid's own now);
+the buttons' (the owner). `PhonePickers.Column`, `Picture`, `Details`, `Grid` (named `Treasure…` till the Harem
+followed; a `PhonePickersPortrait.ScrolledGrid` of five columns: its `Columns`, `Rows`, `Bar` and `TickY` are the grid's own now);
 `TreasureView.Phone.cs` draws through upright's `DrawScrolledGrid`. The Harem keeps the folded grid.
 
 - **Checks**: the build, `PhonePickersTests`; the gallery's PC and phone passes for the Treasure entries, and the new
   `treasure-scrolled` (the grid at its foot, the pill above); `--treasure --phone landscape` headless from the week-18
   save as before. The look on the Poco is the owner's.
+
+### After the build: the Harem in five columns held landscape (owner, 2026-11-05)
+
+The owner's H1 (docs/ui/phone.md, §55-§56, `tools/ui/mock_harem_scroll.py`): held landscape the Harem's grid is Treasure's
+— five cells a row, as many rows in view as the height holds, scrolled under the finger with the reference scroll bar,
+its ticks and the pills at filled cells out of view (`PickerGridScroll`, `PickerMoreCells`), a girl newly chosen out of
+view scrolled into it — the two-line names kept; Summon (red, in Treasure's tabs' place) | Close under it; the column
+and the picture at Treasure's width. Both screens now share `PhonePickers`' one layout: `Column`, `Picture`, `Details`,
+`Grid`, `End` (Close), `Summon`, `Tab`, `Prompt`, `Back`, `Action`; the folded grid (`Cell`, `CellAt`, `Rule`,
+`PhonePickerParts.DrawRule`) is gone. `HaremView.Phone.cs` draws through upright's `DrawScrolledGrid`
+(`HaremView.Portrait.cs`), `ShowCell` scrolls either way (the gallery's `harem-scrolled`).
+
+- **Checks**: the build, `PhonePickersTests`; the gallery's PC and phone passes for `harem`, `harem-scrolled` and the
+  Treasure entries; `--harem 6 --phone landscape` headless from the week-18 save as before. The look on the Poco is the
+  owner's.
 
 ## 6. The agent's own choices, for the owner to confirm
 

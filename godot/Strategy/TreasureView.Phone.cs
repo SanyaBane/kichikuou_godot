@@ -20,7 +20,7 @@ internal sealed partial class TreasureView
     private int PhoneButtonAt(PhoneFrame f, Vector2 at)
     {
         bool In(PhoneFrame.Box box) => box.Contains(at.X, at.Y);
-        if (In(PhonePickers.TreasureEnd(f)))
+        if (In(PhonePickers.End(f)))
             return EndButton;
         if (_button is not null && In(PhonePickers.Action(f)))
             return ActionButton;
@@ -41,10 +41,10 @@ internal sealed partial class TreasureView
     {
         var f = u.Frame;
         var grid = ScrolledGrid(f);
-        PhonePickerParts.DrawTitle(c, u, _brush, _cinzel, "Treasure", _date, PhonePickers.TreasureColumn(f));
-        DrawPicture(c, u.Rect(PhonePickers.TreasurePicture(f)));
+        PhonePickerParts.DrawTitle(c, u, _brush, _cinzel, "Treasure", _date);
+        DrawPicture(c, u.Rect(PhonePickers.Picture(f)));
         PhoneDetails(c, u);
-        var end = u.Rect(PhonePickers.TreasureEnd(f));
+        var end = u.Rect(PhonePickers.End(f));
         _buttonSize = ButtonSize(u, PhonePickers.ButtonText, u.Rect(PhonePickers.Tab(f, 0)), u.Rect(PhonePickers.Back(f)), end,
             u.Rect(PhonePickers.Action(f)));
         if (_button is { } button)
@@ -83,9 +83,9 @@ internal sealed partial class TreasureView
     /// </summary>
     private void PhoneDetails(Control c, PhoneUnits u)
     {
-        var (dx, dy) = PhonePickers.TreasureDetails(u.Frame);
+        var (dx, dy) = PhonePickers.Details(u.Frame);
         float x = dx / u.K;
-        DrawDetails(c, u, x, dy / u.K, (PhonePickers.TreasureColumn(u.Frame).Right - u.Frame.Px(PhonePickers.ItemDetailsRight)) / u.K - x);
+        DrawDetails(c, u, x, dy / u.K, (PhonePickers.Column(u.Frame).Right - u.Frame.Px(PhonePickers.ItemDetailsRight)) / u.K - x);
     }
 
     /// <summary>The details at (<paramref name="x"/>, <paramref name="y"/>), <paramref name="room"/> wide (layout pixels).</summary>

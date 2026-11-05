@@ -65,7 +65,7 @@ internal sealed partial class TreasureView
 
     /// <summary>The grid as the phone is held: upright under the tabs, held landscape in five columns at the right (P39).</summary>
     private static PhonePickersPortrait.ScrolledGrid GridOf(PhoneFrame f) =>
-        f.IsPortrait ? PhonePickersPortrait.TreasureGrid(f) : PhonePickers.TreasureGrid(f);
+        f.IsPortrait ? PhonePickersPortrait.TreasureGrid(f) : PhonePickers.Grid(f);
 
     /// <summary>The grid for this drawing: from its first row when the other view is shown, the choice scrolled into view.</summary>
     private PhonePickersPortrait.ScrolledGrid ScrolledGrid(PhoneFrame f)

@@ -4,7 +4,7 @@ namespace Kichikuou.Original.Content.Tests;
 
 /// <summary>
 /// <see cref="PhonePickers"/>: our Harem and Treasure screens on the phone held landscape (docs/ui/phone-build.md, step L7),
-/// at the mock-ups' figures on the reference phone (docs/ui/phone.md, §15: LH2 and LT2).
+/// at the mock-ups' figures on the reference phone (docs/ui/phone.md, §15: LH2 and LT2; rounds P39 and P40, §51-§56).
 /// </summary>
 public class PhonePickersTests
 {
@@ -21,50 +21,34 @@ public class PhonePickersTests
     }
 
     [Fact]
-    public void The_column_holds_the_picture_at_the_left_and_the_grid_takes_the_rest()
+    public void The_column_takes_the_room_the_five_column_grid_leaves()
     {
-        // lh2: the column from LX0 = SIDE + 6 = 116, PIC_W2 = 1104 wide; the picture 4 under column_title's 124, the PC's
-        // 666 × 416 (the mock's dump crop 663 × 412: 686 high); the grid (LX0 + PIC_W2 + 40, 16, LX1, FOOT - 10).
-        Equal(new(116, 0, 1104, 1170), PhonePickers.Column(Reference));
-        Equal(new(116, 128, 1104, 1104 * 416f / 666), PhonePickers.Picture(Reference));
+        // The grid at least five cells of 210, 8 apart, and the scroll bar's 30; the column the rest of 2480 less the 40
+        // between them; the picture at its width, the details under it.
+        Equal(new(116, 0, 1328, 1170), PhonePickers.Column(Reference));
+        Equal(new(116, 128, 1328, 1328 * 416f / 666), PhonePickers.Picture(Reference));
         var (x, y) = PhonePickers.Details(Reference);
-        Assert.Equal(130, x, Close);                                        // girl_details(d, LX0 + 14, …)
-        Assert.Equal(128 + 1104 * 416f / 666 + 12, y, Close);
-        Equal(new(1260, 16, 1336, 1144), PhonePickers.Grid(Reference));
-    }
-
-    [Fact]
-    public void The_harem_s_Summon_and_End_stand_at_the_left_thumb()
-    {
-        // lh2's foot = (FOOT - 10 - 140, FOOT - 10), its two buttons swapped (owner, 2026-10-30): Summon (LX0, …,
-        // LX0 + PIC_W2 - 336), End (LX0 + PIC_W2 - 320, …, LX0 + PIC_W2).
-        Equal(new(900, 1020, 320, 140), PhonePickers.HaremEnd(Reference));
-        Equal(new(116, 1020, 768, 140), PhonePickers.Summon(Reference));
-    }
-
-    [Fact]
-    public void Treasure_s_column_takes_the_room_its_five_column_grid_leaves()
-    {
-        // Round P39 (docs/ui/phone.md, §53-§54): the grid at least five cells of 210, 8 apart, and the scroll bar's 30;
-        // the column the rest of 2480 less the 40 between them; the picture at its width, the details under it.
-        Equal(new(116, 0, 1328, 1170), PhonePickers.TreasureColumn(Reference));
-        Equal(new(116, 128, 1328, 1328 * 416f / 666), PhonePickers.TreasurePicture(Reference));
-        var (x, y) = PhonePickers.TreasureDetails(Reference);
         Assert.Equal(130, x, Close);
         Assert.Equal(128 + 1328 * 416f / 666 + 12, y, Close);
     }
 
     [Fact]
-    public void Treasure_s_tabs_and_End_stand_under_the_grid_its_button_on_their_foot()
+    public void The_harem_s_Summon_and_Close_stand_under_the_grid()
     {
-        // The buttons under the grid (1484-2596), End 320 at the right, the tabs 12 apart ending 16 short of it; Take Off at
-        // the column's right, its foot on theirs (the owner, P39).
+        // H1 (round P40): Summon in Treasure's tabs' place, Close 320 at the right, both 130 high on the foot.
+        Equal(new(2276, 1030, 320, 130), PhonePickers.End(Reference));
+        Equal(new(1484, 1030, 776, 130), PhonePickers.Summon(Reference));
+    }
+
+    [Fact]
+    public void The_treasure_s_tabs_stand_under_the_grid_its_button_on_their_foot()
+    {
+        // The tabs 12 apart ending 16 short of Close; Take Off at the column's right, its foot on theirs (the owner, P39).
         Equal(new(1484, 1030, 382, 130), PhonePickers.Tab(Reference, 0));
         Equal(new(1878, 1030, 382, 130), PhonePickers.Tab(Reference, 1));
-        Equal(new(2276, 1030, 320, 130), PhonePickers.TreasureEnd(Reference));
         Equal(new(1004, 1010, 440, 150), PhonePickers.Action(Reference));
-        Assert.Equal(PhonePickers.TreasureEnd(Reference).Bottom, PhonePickers.Action(Reference).Bottom, Close);
-        Assert.Equal(974, PhonePickers.TreasureColumn(Reference).Right - PhonePickers.ItemDetailsRight, Close);
+        Assert.Equal(PhonePickers.End(Reference).Bottom, PhonePickers.Action(Reference).Bottom, Close);
+        Assert.Equal(974, PhonePickers.Column(Reference).Right - PhonePickers.ItemDetailsRight, Close);
     }
 
     [Fact]
@@ -77,11 +61,11 @@ public class PhonePickersTests
     }
 
     [Fact]
-    public void Treasure_s_grid_shows_seven_of_its_eleven_rows_five_cells_a_row()
+    public void The_grid_shows_seven_of_its_eleven_rows_five_cells_a_row()
     {
         // From 16 down to 20 over the buttons (994): seven rows of at least 122 fit, stretched to fill it; the cells 210
         // wide, the scroll bar's 30 at the right.
-        var grid = PhonePickers.TreasureGrid(Reference);
+        var grid = PhonePickers.Grid(Reference);
         float pitch = 1000 / 7f;
         Assert.Equal(11, grid.Rows);
         Assert.Equal(7, grid.Shown);
@@ -97,87 +81,42 @@ public class PhonePickersTests
         Assert.Equal(track.Y + 0.5f * track.H / 11, grid.TickY(track, 0), Close);
     }
 
+    [Fact]
+    public void A_girl_is_found_at_her_number_s_cell_at_a_scroll()
+    {
+        // Royal Guards (13) in row 2; Saitou (50) in row 9, in view once scrolled by 4.
+        var grid = PhonePickers.Grid(Reference);
+        var royal = grid.Cell(13, 0)!.Value;
+        Assert.Equal(13, grid.CellAt(0, royal.X + royal.W / 2, royal.Y + royal.H / 2));
+        var saitou = grid.Cell(50, 4)!.Value;
+        Assert.Equal(50, grid.CellAt(4, saitou.X + saitou.W / 2, saitou.Y + saitou.H / 2));
+        Assert.Equal(0, grid.CellAt(0, 600, 400));                                               // the picture
+        Assert.Equal((0, 3, 0, 41), grid.Hidden([1, 11, 12, 13, 41, 47, 50], 0));
+        Assert.Equal((4, 0, 13, 0), grid.Hidden([1, 11, 12, 13, 41, 47, 50], 4));
+    }
+
     [Theory]
     [InlineData(2712, 1220)]
     [InlineData(2400, 1080)]
     [InlineData(3200, 1440)]
-    public void Treasure_s_parts_keep_apart(float width, float height)
+    public void The_parts_keep_apart(float width, float height)
     {
         var f = PhoneFrame.Landscape(width, height);
-        var grid = PhonePickers.TreasureGrid(f);
-        var column = PhonePickers.TreasureColumn(f);
-        Assert.True(column.Right < grid.Area.X);
-        Assert.True(grid.Area.Bottom <= PhonePickers.TreasureEnd(f).Y);
-        Assert.True(PhonePickers.TreasurePicture(f).Bottom < PhonePickers.Action(f).Y);
-        Assert.Equal(PhonePickers.TreasureEnd(f).Right, grid.Area.Right + grid.BarRoom, Close);
+        var grid = PhonePickers.Grid(f);
+        Assert.True(PhonePickers.Column(f).Right < grid.Area.X);
+        Assert.True(grid.Area.Bottom <= PhonePickers.End(f).Y);
+        Assert.True(PhonePickers.Picture(f).Bottom < PhonePickers.Action(f).Y);
+        Assert.Equal(PhonePickers.End(f).Right, grid.Area.Right + grid.BarRoom, Close);
+        Assert.True(PhonePickers.Summon(f).Right < PhonePickers.End(f).X);
         Assert.True(grid.RowHeight >= f.Px(122) - Close);
     }
 
     [Fact]
-    public void A_longer_screen_gives_treasure_s_grid_the_room_its_picture_cannot_use()
+    public void A_longer_screen_gives_the_grid_the_room_the_picture_cannot_use()
     {
         // 2900 wide: the picture as tall as the height over the details holds (1160 - 128 - 12 - 160), the grid the rest.
         var longer = PhoneFrame.Landscape(2900, 1220);
-        Assert.Equal(860, PhonePickers.TreasurePicture(longer).H, Close);
-        Assert.True(PhonePickers.TreasureGrid(longer).Area.W > PhonePickers.TreasureGrid(Reference).Area.W + 100);
-    }
-
-    [Fact]
-    public void The_grid_is_folded_after_its_ninth_row_every_cell_at_its_number_s_place()
-    {
-        // folded_grid: bw = (1336 - 40) / 2 = 648, w = (648 - 16) / 3, the rows (1144 + 6) / 9 apart less 6 (the mock's
-        // integer 121); rows 1-9 at x0, 10-17 at x0 + bw + 40.
-        float w = (648 - 16) / 3f, pitch = 1150 / 9f;
-        Equal(new(1260, 16, w, pitch - 6), PhonePickers.Cell(Reference, 1));
-        Equal(new(1260 + 2 * (w + 8), 16, w, pitch - 6), PhonePickers.Cell(Reference, 3));
-        Equal(new(1260 + 2 * (w + 8), 16 + 8 * pitch, w, pitch - 6), PhonePickers.Cell(Reference, 27));      // row 9, the left half's last
-        Equal(new(1948, 16, w, pitch - 6), PhonePickers.Cell(Reference, 28));                                 // row 10 heads the right half
-        var last = PhonePickers.Cell(Reference, 51);
-        Assert.Equal(1948 + 2 * (w + 8), last.X, Close);
-        Assert.Equal(16 + 7 * pitch, last.Y, Close);
-        Assert.Equal(2596, last.Right, Close);
-        Assert.Equal(1160, PhonePickers.Cell(Reference, 25).Bottom, Close);                                  // nine rows fill the height
-        Assert.Equal((1928f, 28f, 1148f), PhonePickers.Rule(Reference));
-    }
-
-    [Fact]
-    public void Anasel_is_found_at_her_number_s_cell_and_the_rule_s_gap_is_no_cell()
-    {
-        // HAREM_CELLS: Anasel at (3, 2), the twelfth cell.
-        var anasel = PhonePickers.Cell(Reference, 12);
-        Assert.Equal(12, PhonePickers.CellAt(Reference, anasel.X + anasel.W / 2, anasel.Y + anasel.H / 2));
-        var (x, top, _) = PhonePickers.Rule(Reference);
-        Assert.Equal(0, PhonePickers.CellAt(Reference, x, top + 100));
-        Assert.Equal(0, PhonePickers.CellAt(Reference, 600, 400));                                           // the picture
-    }
-
-    [Theory]
-    [InlineData(2712, 1220)]
-    [InlineData(2400, 1080)]
-    [InlineData(3200, 1440)]
-    public void No_cell_overlaps_another_or_leaves_the_grid(float width, float height)
-    {
-        var f = PhoneFrame.Landscape(width, height);
-        var grid = PhonePickers.Grid(f);
-        var cells = Enumerable.Range(1, 51).Select(n => PhonePickers.Cell(f, n)).ToList();
-        foreach (var c in cells)
-        {
-            Assert.True(c.X >= grid.X - Close && c.Right <= grid.Right + Close && c.Y >= grid.Y - Close && c.Bottom <= grid.Bottom + Close);
-            Assert.True(c.Right <= PhonePickers.Rule(f).X || c.X >= PhonePickers.Rule(f).X);
-        }
-        for (int i = 0; i < cells.Count; i++)
-            for (int j = i + 1; j < cells.Count; j++)
-                Assert.False(cells[i].X < cells[j].Right - Close && cells[j].X < cells[i].Right - Close
-                    && cells[i].Y < cells[j].Bottom - Close && cells[j].Y < cells[i].Bottom - Close, $"cells {i + 1} and {j + 1}");
-        Assert.True(PhonePickers.Summon(f).Right <= grid.X);
-    }
-
-    [Fact]
-    public void A_longer_screen_widens_the_grid_and_keeps_the_column()
-    {
-        var longer = PhoneFrame.Landscape(2900, 1220);
-        Equal(PhonePickers.Column(Reference), PhonePickers.Column(longer));
-        Equal(PhonePickers.Picture(Reference), PhonePickers.Picture(longer));
-        Assert.Equal(1336 + 188, PhonePickers.Grid(longer).W, Close);
+        Assert.Equal(860, PhonePickers.Picture(longer).H, Close);
+        Assert.True(PhonePickers.Grid(longer).Area.W > PhonePickers.Grid(Reference).Area.W + 100);
     }
 }

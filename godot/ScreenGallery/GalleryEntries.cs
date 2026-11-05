@@ -161,7 +161,7 @@ internal static partial class GalleryEntries
     {
         yield return new("harem", "Screens", "Harem", Week18, HaremNote, g => HaremScreen(g, scrolled: false));
         yield return new("harem-scrolled", "Screens", "Harem: scrolled down", Week18,
-            HaremNote + " Held upright the grid is scrolled down to show the hint above it too (the owner's 3).",
+            HaremNote + " On the phone the grid is scrolled down to show the hint above it too (the owner's 3; held landscape round P40's H1).",
             g => HaremScreen(g, scrolled: true));
     }
 
@@ -170,7 +170,7 @@ internal static partial class GalleryEntries
 
     /// <summary>
     /// The harem from the week-18 save with <see cref="LongestHaremName"/> and <see cref="HaremBelow"/>; with
-    /// <paramref name="scrolled"/>, held upright, the grid scrolled to its foot — the chosen girl's row then shown again
+    /// <paramref name="scrolled"/>, on the phone, the grid scrolled to its foot — the chosen girl's row then shown again
     /// as the screen keeps her in view — so the hint shows above as well as below.
     /// </summary>
     private static Action<Rect2>? HaremScreen(GalleryStage g, bool scrolled)

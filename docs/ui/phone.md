@@ -1629,3 +1629,8 @@ The agent recommends H1: Summon, the screen's one action, stands at the right th
 tapped, its long label at its full size, and the row under the grid is not left half empty; H2 keeps Treasure's place
 for the action.
 
+## 56. The owner's choice: H1 (2026-11-05)
+
+The owner took H1: held landscape the Harem's grid is Treasure's (five cells a row, scrolled, the pills and the ticks),
+Summon | Close under it, the picture at the column's new width. Built (docs/ui/phone-build.md, §5, "After the build: the
+Harem in five columns held landscape"); the folded grid is gone from both screens.

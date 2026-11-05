@@ -21,31 +21,19 @@ internal sealed partial class HaremView
             return SummonButton;
         if (PhonePickersPortrait.End(f).Contains(at.X, at.Y))
             return EndButton;
-        int cell = PhonePickersPortrait.HaremGrid(f).CellAt(_grid.Scroll, at.X, at.Y);
+        int cell = GridOf(f).CellAt(_grid.Scroll, at.X, at.Y);
         return _girls.Any(g => g.Number == cell) ? cell : NoButton;
     }
 
     private void DrawPortrait(Control c, PhoneUnits u)
     {
         var f = u.Frame;
-        var grid = PhonePickersPortrait.HaremGrid(f);
-        _grid.Reveal(grid, _chosen);
+        var grid = ScrolledGrid(f);
         PhonePickerParts.DrawPortraitTitle(c, u, _brush, _cinzel, "Harem", _date);
         DrawPicture(c, u.Rect(PhonePickersPortrait.Picture(f)));
         var (dx, dy) = PhonePickersPortrait.Details(f);
         DrawDetails(c, u, dx / u.K, dy / u.K, PhonePickersPortrait.DetailsRight(f) / u.K);
-        var offered = _girls.ToDictionary(g => g.Number);
-        for (int n = 1; n <= Cells; n++)
-        {
-            if (grid.Cell(n, _grid.Scroll) is not { } cell)
-                continue;
-            if (offered.TryGetValue(n, out var girl))
-                DrawGirlCell(c, u, u.Rect(cell), girl, PhonePickersPortrait.CellHeartIn, PhonePickersPortrait.CellNameIn);
-            else
-                PhonePickerParts.DrawEmptyCell(c, u.Rect(cell), _k);
-        }
-        PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
-        _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
+        DrawScrolledGrid(c, u, grid, PhonePickersPortrait.CellHeartIn, PhonePickersPortrait.CellNameIn, twoLines: false);
         var end = u.Rect(PhonePickersPortrait.End(f));
         _buttonSize = ButtonSize(u, PhonePickersPortrait.ButtonText, end, u.Rect(PhonePickersPortrait.Action(f)));
         bool hoverEnd = !Busy && _hovered == EndButton;
@@ -53,19 +41,52 @@ internal sealed partial class HaremView
         DrawSummon(c, u, u.Rect(PhonePickersPortrait.Action(f)));
     }
 
+    /// <summary>The grid as the phone is held: upright under her details, held landscape five cells a row at the right (P40).</summary>
+    private static PhonePickersPortrait.ScrolledGrid GridOf(PhoneFrame f) =>
+        f.IsPortrait ? PhonePickersPortrait.HaremGrid(f) : PhonePickers.Grid(f);
+
+    /// <summary>The grid for this drawing, a girl newly chosen out of view scrolled into it.</summary>
+    private PhonePickersPortrait.ScrolledGrid ScrolledGrid(PhoneFrame f)
+    {
+        var grid = GridOf(f);
+        _grid.Reveal(grid, _chosen);
+        return grid;
+    }
+
+    /// <summary>
+    /// The rows in view: each girl's cell (her heart <paramref name="heartIn"/> and her name <paramref name="nameIn"/> in,
+    /// <paramref name="twoLines"/> as <see cref="DrawGirlCell"/>'s), the other cells empty; the scroll bar with its ticks and
+    /// the pills at filled cells out of view.
+    /// </summary>
+    private void DrawScrolledGrid(Control c, PhoneUnits u, PhonePickersPortrait.ScrolledGrid grid, float heartIn, float nameIn, bool twoLines)
+    {
+        var offered = _girls.ToDictionary(g => g.Number);
+        for (int n = 1; n <= Cells; n++)
+        {
+            if (grid.Cell(n, _grid.Scroll) is not { } cell)
+                continue;
+            if (offered.TryGetValue(n, out var girl))
+                DrawGirlCell(c, u, u.Rect(cell), girl, heartIn, nameIn, twoLines);
+            else
+                PhonePickerParts.DrawEmptyCell(c, u.Rect(cell), _k);
+        }
+        PhonePickerParts.DrawScrollBar(c, u, grid, _grid.Scroll);
+        _more.Draw(c, u, _cinzel, grid, _grid.Scroll, FilledCells);
+    }
+
     /// <summary>The cells a girl holds: the hint's (<see cref="PickerMoreCells"/>).</summary>
     private int[] FilledCells => [.. _girls.Select(g => g.Number)];
 
     private bool GridTouch(InputEvent e) =>
         _phone is { } f && !Busy
-        && (_more.Touch(e, cell => _grid.Show(PhonePickersPortrait.HaremGrid(f), cell), _face.QueueRedraw)
-            || _grid.Touch(e, PhonePickersPortrait.HaremGrid(f), StartScroll, _face.QueueRedraw));
+        && (_more.Touch(e, cell => _grid.Show(GridOf(f), cell), _face.QueueRedraw)
+            || _grid.Touch(e, GridOf(f), StartScroll, _face.QueueRedraw));
 
     /// <summary>The grid scrolled the least that shows cell <paramref name="number"/> (the screen gallery's scrolled look).</summary>
     public void ShowCell(int number)
     {
-        if (_phone is { IsPortrait: true } f)
-            _grid.Show(PhonePickersPortrait.HaremGrid(f), number);
+        if (_phone is { } f)
+            _grid.Show(GridOf(f), number);
         _face.QueueRedraw();
     }
 
@@ -78,5 +99,5 @@ internal sealed partial class HaremView
 
     /// <summary>A flick going on scrolls the rows on.</summary>
     public override void _Process(double delta) =>
-        _grid.Process(delta, Visible && _phone is { IsPortrait: true } f ? PhonePickersPortrait.HaremGrid(f) : null, _face.QueueRedraw);
+        _grid.Process(delta, Visible && _phone is { } f ? GridOf(f) : null, _face.QueueRedraw);
 }

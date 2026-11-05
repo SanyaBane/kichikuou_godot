@@ -4,11 +4,12 @@ using Kichikuou.Original.Content.Strategy;
 
 namespace Kichikuou.Game.Strategy;
 
-// Our Harem screen on the phone held landscape (docs/ui/phone-build.md, step L7; docs/ui/phone.md, §15, LH2): across the
-// whole width between the hole's strips over the wave backdrop — at the left the title and the date, her picture at the
-// column's width, her name, visits and last summons under it, Summon | End at the left thumb; at the right thumb the
-// picker's grid folded after its ninth row, every girl at her number's cell. Drawn in the frame's layout pixels over the
-// whole screen (PhoneUnits), the places PhonePickers'.
+// Our Harem screen on the phone held landscape (docs/ui/phone-build.md, step L7; docs/ui/phone.md, §15, LH2, and round
+// P40, §55-§56, the owner's H1): across the whole width between the hole's strips over the wave backdrop — at the left the
+// title and the date, her picture at the column's width, her name, visits and last summons under it; at the right thumb
+// the picker's grid five cells a row, scrolled under the finger (PickerGridScroll) with the reference scroll bar, its
+// ticks and the pills at filled cells out of view (PickerMoreCells), every girl at her number's cell; Summon | Close under
+// it. Drawn in the frame's layout pixels over the whole screen (PhoneUnits), the places PhonePickers'.
 internal sealed partial class HaremView
 {
     private PhoneFrame? _phone;
@@ -18,20 +19,21 @@ internal sealed partial class HaremView
     {
         if (PhonePickers.Summon(f).Contains(at.X, at.Y))
             return SummonButton;
-        if (PhonePickers.HaremEnd(f).Contains(at.X, at.Y))
+        if (PhonePickers.End(f).Contains(at.X, at.Y))
             return EndButton;
-        int cell = PhonePickers.CellAt(f, at.X, at.Y);
+        int cell = GridOf(f).CellAt(_grid.Scroll, at.X, at.Y);
         return _girls.Any(g => g.Number == cell) ? cell : NoButton;
     }
 
     private void DrawPhone(Control c, PhoneUnits u)
     {
         var f = u.Frame;
+        var grid = ScrolledGrid(f);
         PhonePickerParts.DrawTitle(c, u, _brush, _cinzel, "Harem", _date);
         DrawPicture(c, u.Rect(PhonePickers.Picture(f)));
         PhoneDetails(c, u);
-        PhoneGrid(c, u);
-        var end = u.Rect(PhonePickers.HaremEnd(f));
+        DrawScrolledGrid(c, u, grid, PhonePickers.CellHeartIn, PhonePickers.CellNameIn, twoLines: true);
+        var end = u.Rect(PhonePickers.End(f));
         _buttonSize = ButtonSize(u, PhonePickers.ButtonText, end, u.Rect(PhonePickers.Summon(f)));
         bool hoverEnd = !Busy && _hovered == EndButton;
         PhonePickerParts.DrawButton(c, u, end, "Close", hoverEnd, _buttonSize);
@@ -108,26 +110,6 @@ internal sealed partial class HaremView
         CentredString(c, _cinzel, word, size, Color.Color8(250, 226, 160), box.GetCenter().X, PhonePickerParts.Middle(_cinzel, size, box.GetCenter().Y));
         if (PickerMarks.Label(girl.Mark) is { } pill)
             Ui.DrawPill(c, _cinzel, box.End.X - u.Px(20), box.Position.Y + u.Px(38), pill, MarkColour(girl.Mark)!.Value, u.Size(26), u.Px(40));
-    }
-
-    /// <summary>
-    /// The folded grid: rows 1-9 at the left, 10-17 at the right, the gold rule between; a girl's cell her heart and her name
-    /// (Cinzel, shrunk where long), her visit's mark at its top right, the chosen one lit in gold; the others' cells empty.
-    /// </summary>
-    private void PhoneGrid(Control c, PhoneUnits u)
-    {
-        var offered = _girls.ToDictionary(g => g.Number);
-        for (int n = 1; n <= Cells; n++)
-        {
-            var r = u.Rect(PhonePickers.Cell(u.Frame, n));
-            if (!offered.TryGetValue(n, out var girl))
-            {
-                PhonePickerParts.DrawEmptyCell(c, r, _k);
-                continue;
-            }
-            DrawGirlCell(c, u, r, girl, PhonePickers.CellHeartIn, PhonePickers.CellNameIn, twoLines: true);
-        }
-        PhonePickerParts.DrawRule(c, u);
     }
 
     /// <summary>
