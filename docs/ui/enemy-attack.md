@@ -239,3 +239,14 @@ tablet (`EnemyAttackView.DrawScoutSeal`): the face square 60×60 at (1166, `Pane
 heading's baseline, the heading's rule ending 14 before them; the note under the totals only before a scouting. The
 phone's layouts (`EnemyAttackView.Phone.cs`, `.Portrait.cs`) keep their "Kanami's report" line. Looked at in the
 screen gallery (`enemy-attack-scouted`, PC and touch).
+
+## 14. The seal on the phone (owner, 2026-11-05)
+
+The owner asked for K2 on the phone too, mock-ups first. Round KP is `tools/ui/mock_attack_scout_phone.py`, over the
+screen gallery's phone passes of `enemy-attack-scouted` (held landscape 1808×813, upright 610×1356), each full screen
+and a sheet of the army panel's top right corner as it is and as drawn: **LK1** held landscape, a 66 square (the
+dump's pixels) inside the panel's top right corner, "SCOUTED BY Kanami" on the heading's baseline before it — the screen's
+top edge leaves no room to set it over the frame as on the PC; **LK2** a 110 square there in the room over the cards,
+"SCOUTED BY" on the heading's row and her name larger under it; **PK1** upright, a 50 square over the panel's top right
+frame as the PC's, the words on the heading's baseline; **PK2** upright, a 40 square inside the corner under the frame.
+The note "Kanami's report" goes in each. Awaiting the owner's choice.
