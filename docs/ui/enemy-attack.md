@@ -220,3 +220,17 @@ The owner: on Android, Intercept and Abandon City change places. Built the same 
 the row's middle height), Ninja Scout at 762, Intercept at 974 by the foot's right edge (`EnemyAttackView.Mirrored`); the
 ninjas' list and Abandon City's callout follow their buttons as before. The PC's row is unchanged. Looked at in the
 screen gallery's touch pass (the screen, the list, the question); not yet on the tablet.
+
+## 13. The scouting ninja's portrait (owner, 2026-11-05)
+
+The owner: after a scouting the line "Kanami's report" under the army's totals is too little — the ninja who scouted
+should be shown by her portrait. Mock-up round K is `tools/ui/mock_attack_scout.py`, over the screen gallery's
+`enemy-attack-scouted` dump (Kanami's CG 9), each full screen and a sheet of the part it changes at 1280×800 and at
+2560×1600: **K1** her face square (46×46, the cards' gold line) in the note's row under the totals, "Scouted by" over
+her name in gold and what she did quieter beside it; **K2** her face square (60×60) as a seal over the army panel's top
+right frame, "Scouted by Kanami" at the heading's right end, the note's row empty; **K3** her face on the Ninja Scout
+button, which tells who went ("Kanami went", the ninjas left under it), the note as built; **K4** her whole portrait
+(84×112) in a gold frame between the panels under "VS" (raised), her name on a speaker's plate under it, the note as
+built. The figures are the gallery's: its state does not spend the ninja, so the button still says "1 of 1 free".
+The agent recommends K1: the report's attribution stays with the figures she brought, nothing else on the screen moves,
+and the row holds a second scout's face the same way. Awaiting the owner's choice.
