@@ -256,3 +256,12 @@ army panel's right and 21 down, "SCOUTED BY" (24) on the caption's baseline and 
 the square; upright a 100 square 22 in and 34 over the panel's top, the words (20 and 28, 12 apart) on the caption's
 baseline 20 left of it; the plate 3/60 of the square wider in a gold line as the PC's. The note under the totals only
 before a scouting. Looked at in the screen gallery's phone passes (`enemy-attack-scouted`).
+
+## 15. PK2 with a larger square (owner, 2026-11-05)
+
+The owner wants to try PK2 — the seal inside the army panel's top right corner, under its frame — with a somewhat larger
+square than round KP drew (40). Round PK2 is `tools/ui/mock_attack_scout_pk2.py`, over the upright gallery dump as built
+with PK1 (its seal and words painted over first), the dump's pixels (twice that in the reference's): **PK2a** 50 (PK1's
+size), **PK2b** 56, **PK2c** 60 — the most the corner holds, its foot 7 over the bracket's line over the front row; each
+14 in from the panel's right and 8 under its frame, "SCOUTED BY Kanami" on the heading's baseline 10 left of it. Each
+full screen and a sheet of the corner as built and as each variant. Awaiting the owner's choice.
