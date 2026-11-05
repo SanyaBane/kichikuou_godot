@@ -1609,3 +1609,23 @@ The owner took round P39's R2 (the pill at the cut edge: a pill may hide a cell'
 for the touch mode's button under the picture to stand with its foot on the buttons' under the grid (the round's sheets
 drawn so since). Built as upright's hint (the pill "▲ 9 more above", its press scrolling to the nearest; the ticks
 across the bar), docs/ui/phone-build.md, §5, "After the build: Treasure in five columns held landscape".
+
+## 55. Round P40: the Harem as Treasure (2026-11-05)
+
+The owner asked for the Harem held landscape after Treasure's P39 (§53-§54): the grid five cells a row at the right thumb,
+its rows as Treasure's (seven of 11 in view on the reference phone), scrolled under the finger with the reference scroll
+bar, its ticks and the pills at filled cells out of view, the column left of it at the new width and the picture with it
+(1328 reference px wide, 1104 now). `tools/ui/mock_harem_scroll.py` draws it over the gallery's landscape pass (`harem`:
+the week-18 save, Royal Guards (13) chosen, Kaoru (41), Rebecca (47) and Saitou (50) on offer far down), the grid's places
+and Close taken from the built Treasure screen, each cell's insides moved from the folded grid as they are (the two-line
+names too); the grid at its top ("3 more below") and scrolled to its end ("4 more above"):
+
+- **H1 — Summon | Close under the grid:** Summon, red, in Treasure's tabs' place (776 px wide, "Summon Royal Guards" at
+  its size now), Close at the right; under the picture the details alone.
+- **H2 — Summon at the column's foot**, as Treasure's touch mode button but wider (from 750 px to the column's right, so
+  the girl's name in it fits), its foot on Close's; Close alone under the grid, the room left of it empty.
+
+The agent recommends H1: Summon, the screen's one action, stands at the right thumb by the grid where the girl was
+tapped, its long label at its full size, and the row under the grid is not left half empty; H2 keeps Treasure's place
+for the action.
+
