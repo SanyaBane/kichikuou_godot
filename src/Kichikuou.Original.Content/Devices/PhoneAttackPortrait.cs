@@ -81,11 +81,19 @@ public static class PhoneAttackPortrait
     public static (float X, float Y) Vs(PhoneFrame f) => (f.Room.X + f.Room.W / 2, Province(f).Bottom + f.Px(VsRoom / 2));
 
     /// <summary>
-    /// The scouting ninja's seal (the owner's PK2c over the frame as PK1, docs/ui/enemy-attack.md, §15): her face square 120,
-    /// 28 in from the army panel's right and 34 over its top, so it sits over the top frame as the PC's; "SCOUTED BY" (20)
-    /// and her name (28) on the panel's caption's baseline, 12 apart, right-aligned 20 left of the square.
+    /// The scouting ninja's seal (the owner's PK3c, docs/ui/enemy-attack.md, §16): her face square 192, 28 in from the army
+    /// panel's right and 34 over its top, so it sits over the top frame as the PC's; "SCOUTED BY" (20) and her name (28) on
+    /// the panel's caption's baseline, 12 apart, right-aligned 20 left of the square. After a scouting the army's block
+    /// stands <see cref="ScoutDrop"/> lower for it.
     /// </summary>
-    public const float SealSize = 120, SealIn = 28, SealTop = -34, SealWordsGap = 20, SealLabel = 20, SealName = 28, SealNameGap = 12;
+    public const float SealSize = 192, SealIn = 28, SealTop = -34, SealWordsGap = 20, SealLabel = 20, SealName = 28, SealNameGap = 12;
+
+    /// <summary>
+    /// How much lower the army's block (the bracket, the rows' captions, the cards, the totals) stands after a scouting, so the
+    /// seal clears the bracket's line (PK3c): 48, less where the panel has no room for it over its foot. Before a scouting it
+    /// stays where it was, so Ninja Scout's list of five keeps under the back row.
+    /// </summary>
+    public const float ScoutDrop = 48;
 
     /// <summary>The scouting ninja's face square over the army panel's top right frame.</summary>
     public static PhoneFrame.Box Seal(PhoneFrame f)
@@ -133,46 +141,50 @@ public static class PhoneAttackPortrait
     /// <summary>The front row's least distance under the panel's top: the head's tip, the head, the line and the caption over it.</summary>
     private const float FrontLeast = TipUnder + PhoneBracket.HeadTip + BracketOver + RowCaptionAbove;
 
-    private static float CardsTop(PhoneFrame f)
+    private static float CardsTop(PhoneFrame f, bool scouted)
     {
         var panel = Army(f);
         float block = 2 * CardH(f) + f.Px(2 * CaptionsRoom + CardGap + TotalsUnder + TotalsBlock);
-        return Math.Max(panel.Y + f.Px(FrontLeast), panel.Y + (panel.H - block) / 2 + f.Px(CaptionsRoom + BracketDrop));
+        float top = Math.Max(panel.Y + f.Px(FrontLeast), panel.Y + (panel.H - block) / 2 + f.Px(CaptionsRoom + BracketDrop));
+        if (!scouted)
+            return top;
+        float room = panel.Bottom - f.Px(ContentFoot) - (top - f.Px(CaptionsRoom) + block);
+        return top + Math.Clamp(room, 0, f.Px(ScoutDrop));
     }
 
     /// <summary>Place <paramref name="slot"/>'s card: the front row (1, 2) on top, nearer the province, the back row (3, 4) under it; 1 and 3 at the left.</summary>
-    public static PhoneFrame.Box Card(PhoneFrame f, int slot)
+    public static PhoneFrame.Box Card(PhoneFrame f, int slot, bool scouted = false)
     {
         var panel = Army(f);
         float w = (panel.W - f.Px(2 * CardsIn + CardGap)) / 2, h = CardH(f);
         float x = panel.X + f.Px(CardsIn) + (slot is 2 or 4 ? w + f.Px(CardGap) : 0);
-        float y = CardsTop(f) + (slot is 3 or 4 ? h + f.Px(CardGap + CaptionsRoom) : 0);
+        float y = CardsTop(f, scouted) + (slot is 3 or 4 ? h + f.Px(CardGap + CaptionsRoom) : 0);
         return new PhoneFrame.Box(x, y, w, h);
     }
 
     /// <summary>The middle of a row's caption ("FRONT ROW" over 1-2, "BACK ROW" over 3-4), the panel's middle across.</summary>
-    public static (float X, float Y) RowCaptionAt(PhoneFrame f, int row)
+    public static (float X, float Y) RowCaptionAt(PhoneFrame f, int row, bool scouted = false)
     {
         var panel = Army(f);
-        return (panel.X + panel.W / 2, Card(f, 1 + 2 * row).Y - f.Px(RowCaptionAbove));
+        return (panel.X + panel.W / 2, Card(f, 1 + 2 * row, scouted).Y - f.Px(RowCaptionAbove));
     }
 
     /// <summary>
     /// The bracket over the front row: its ends at the front row's outer sides (1 in), its middle the panel's, its line
     /// <see cref="BracketOver"/> over "FRONT ROW"'s middle, and the cards' top its ends come down to.
     /// </summary>
-    public static (float X0, float X1, float Middle, float Line, float CardsTop) Bracket(PhoneFrame f)
+    public static (float X0, float X1, float Middle, float Line, float CardsTop) Bracket(PhoneFrame f, bool scouted = false)
     {
-        var (middle, caption) = RowCaptionAt(f, 0);
-        var left = Card(f, 1);
-        return (left.X + f.Px(1), Card(f, 2).Right - f.Px(1), middle, caption - f.Px(BracketOver), left.Y);
+        var (middle, caption) = RowCaptionAt(f, 0, scouted);
+        var left = Card(f, 1, scouted);
+        return (left.X + f.Px(1), Card(f, 2, scouted).Right - f.Px(1), middle, caption - f.Px(BracketOver), left.Y);
     }
 
     /// <summary>The totals under the cards: 28 in from the panel's sides; their top, 16 under the cards.</summary>
-    public static (float X0, float X1, float Top) Totals(PhoneFrame f)
+    public static (float X0, float X1, float Top) Totals(PhoneFrame f, bool scouted = false)
     {
         var panel = Army(f);
-        return (panel.X + f.Px(TotalsIn), panel.Right - f.Px(TotalsIn), Card(f, 4).Bottom + f.Px(TotalsUnder));
+        return (panel.X + f.Px(TotalsIn), panel.Right - f.Px(TotalsIn), Card(f, 4, scouted).Bottom + f.Px(TotalsUnder));
     }
 
     // ------------------------------------------------------------------ Maris and the answers (maris, attack_answers)

@@ -64,6 +64,21 @@ public class PhoneAttackPortraitTests
     }
 
     [Fact]
+    public void After_a_scouting_the_army_s_block_stands_lower_under_the_seal()
+    {
+        // PK3c (mock_attack_scout_pk3.py): the seal 192 over the panel's top frame, 34 over it and 28 in; the block 48 lower,
+        // the seal's foot 40 over the bracket's line, the totals still over the panel's foot.
+        var seal = PhoneAttackPortrait.Seal(Reference);
+        var army = PhoneAttackPortrait.Army(Reference);
+        Equal(new(army.Right - 220, army.Y - 34, 192, 192), seal);
+        Assert.Equal(PhoneAttackPortrait.Card(Reference, 1).Y + 48, PhoneAttackPortrait.Card(Reference, 1, scouted: true).Y, Close);
+        var (_, _, _, line, _) = PhoneAttackPortrait.Bracket(Reference, scouted: true);
+        Assert.Equal(40, line - seal.Bottom, Close);
+        var (_, _, totals) = PhoneAttackPortrait.Totals(Reference, scouted: true);
+        Assert.True(totals + PhoneAttack.TotalsRule <= army.Bottom - 24);
+    }
+
+    [Fact]
     public void Maris_and_the_answers_stand_at_the_thumb_Intercept_in_the_bar()
     {
         // ROW1 = BAR[0] - 168 = 2336: Maris (16, ROW1 - 20 - 330, PW - 16, ROW1 - 20); Abandon City (16, ROW1 + 10,

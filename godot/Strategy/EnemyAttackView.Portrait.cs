@@ -96,14 +96,14 @@ internal sealed partial class EnemyAttackView
         int caption = u.Size(PhoneAttack.RowCaption);
         for (int row = 0; row < 2; row++)
         {
-            var (cx, cy) = PhoneAttackPortrait.RowCaptionAt(f, row);
+            var (cx, cy) = PhoneAttackPortrait.RowCaptionAt(f, row, report is not null);
             float x = cx / u.K, y = cy / u.K;
             CentredAt(_cinzelBold, row == 0 ? "FRONT ROW" : "BACK ROW", caption, x, Middle(_cinzelBold, caption, y), Ui.Subtitle);
         }
-        PortraitBracket(u, f);
+        PortraitBracket(u, f, report is not null);
         for (int slot = 1; slot <= 4; slot++)
         {
-            var card = u.Rect(PhoneAttackPortrait.Card(f, slot));
+            var card = u.Rect(PhoneAttackPortrait.Card(f, slot, report is not null));
             if (report is null)
                 PhoneUnknownCard(u, card, slot, PhoneAttackPortrait.CardFace);
             else if (report.Places[slot - 1] is { } commander)
@@ -111,7 +111,7 @@ internal sealed partial class EnemyAttackView
             else
                 PhoneEmptyCard(u, card, slot);
         }
-        var (x0, x1, top) = PhoneAttackPortrait.Totals(f);
+        var (x0, x1, top) = PhoneAttackPortrait.Totals(f, report is not null);
         PhoneTotals(u, x0, x1, top, attack);
         if (report is not null)                                 // PK1: the seal over the frame, the words on the caption's line
             PhoneScoutSeal(u, panel, u.Rect(PhoneAttackPortrait.Seal(f)), attack, report, PhoneAttackPortrait.SealWordsGap,
@@ -122,9 +122,9 @@ internal sealed partial class EnemyAttackView
     /// The PC's bracket turned up (<see cref="DrawArmyBracket"/>; the owner's PA1f2a): a gold line over "FRONT ROW" from the
     /// front row's left to its right, its ends down to the cards, its head in the middle pointing at the province.
     /// </summary>
-    private void PortraitBracket(PhoneUnits u, PhoneFrame f)
+    private void PortraitBracket(PhoneUnits u, PhoneFrame f, bool scouted)
     {
-        var (left, right, middle, line, cards) = PhoneAttackPortrait.Bracket(f);
+        var (left, right, middle, line, cards) = PhoneAttackPortrait.Bracket(f, scouted);
         FacingBracket.Draw(_sheet, u, Ui, _k, left, right, middle, line, cards, down: false);
     }
 

@@ -277,4 +277,10 @@ first), the dump's pixels (twice that in the reference's), the seal over the top
 **PK3a** 72, the block where it is (the seal's foot 21 over the bracket's line); **PK3b** 84, the block 12 lower;
 **PK3c** 96, the block 24 lower; **PK3d** 108, the block 36 lower and the words in two lines as held landscape's
 ("SCOUTED BY" on the heading's line, the name larger under it). Each full screen and a sheet of the panel as built and
-as each variant side by side. Awaiting the owner's choice.
+as each variant side by side. **The owner chose PK3c**, built the same day: `PhoneAttackPortrait.Seal` a 192 square
+(reference pixels) 28 in from the panel's right and 34 over its top, and after a scouting the army's block stands
+`ScoutDrop` (48) lower — `Card`, `RowCaptionAt`, `Bracket` and `Totals` take `scouted`, less where the panel has no
+room over its foot; before a scouting it stays where it was, so Ninja Scout's list of five keeps under the back row
+(after a scouting with five ninjas in service the list may cover the back row's foot while it is open). Tested by
+`PhoneAttackPortraitTests.After_a_scouting_the_army_s_block_stands_lower_under_the_seal`; looked at in the upright
+gallery pass.
