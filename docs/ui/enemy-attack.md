@@ -233,4 +233,9 @@ button, which tells who went ("Kanami went", the ninjas left under it), the note
 (84×112) in a gold frame between the panels under "VS" (raised), her name on a speaker's plate under it, the note as
 built. The figures are the gallery's: its state does not spend the ninja, so the button still says "1 of 1 free".
 The agent recommends K1: the report's attribution stays with the figures she brought, nothing else on the screen moves,
-and the row holds a second scout's face the same way. Awaiting the owner's choice.
+and the row holds a second scout's face the same way. **The owner chose K2**, built the same day for the PC and the
+tablet (`EnemyAttackView.DrawScoutSeal`): the face square 60×60 at (1166, `PanelsTop` − 12) on a panel-coloured plate
+3 wider in a gold line, "SCOUTED BY" (Cinzel 11) and her name (15, gold) right-aligned 12 short of it on the
+heading's baseline, the heading's rule ending 14 before them; the note under the totals only before a scouting. The
+phone's layouts (`EnemyAttackView.Phone.cs`, `.Portrait.cs`) keep their "Kanami's report" line. Looked at in the
+screen gallery (`enemy-attack-scouted`, PC and touch).

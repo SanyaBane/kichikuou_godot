@@ -34,6 +34,7 @@ internal sealed partial class EnemyAttackView : Control
     private static readonly Rect2 TitleBand = new(32, TitleTop, 1216, 72);
     private static readonly Rect2 ProvincePanel = new(32, PanelsTop, 472, PanelsHeight);
     private static readonly Rect2 ArmyPanel = new(600, PanelsTop, 648, PanelsHeight);
+    private const float ScoutSealX = 1166, ScoutSealSize = 60;     // the scouting ninja's seal over the panel's top right frame (K2)
 
     // The army's cards (mock-up E3): the deployment screen's size, a strip for the bracket left of them, the headers, the
     // cards and the totals (328 tall) centred in the panel under its heading.
@@ -468,8 +469,9 @@ internal sealed partial class EnemyAttackView : Control
     private void DrawArmy(EnemyAttack attack)
     {
         Ui.DrawPanel(_sheet, ArmyPanel, _k);
-        Heading(622, PanelsTop + 16, "ATTACKING · " + attack.Army.ToUpperInvariant(), 1226);
         var report = attack.Report;
+        float headingRight = report is null ? 1226 : DrawScoutSeal(attack, report);
+        Heading(622, PanelsTop + 16, "ATTACKING · " + attack.Army.ToUpperInvariant(), headingRight);
 
         var front = ArmyCard(1);
         float labelsY = front.Position.Y - 12;
@@ -499,10 +501,31 @@ internal sealed partial class EnemyAttackView : Control
         _sheet.DrawString(_cinzel, new Vector2(tx - 10 - _cinzel.GetStringSize("Total troops", fontSize: 12).X, y), "Total troops",
             fontSize: 12, modulate: Ui.Label);
         _sheet.DrawLine(new Vector2(left, y + 14), new Vector2(right, y + 14), Ui.DimGold, Lacquer.Line(1, _k));
-        string note = report is null
-            ? attack.CanScout ? "Send a ninja to learn them." : "No ninja can be sent this week."
-            : $"{NinjaName(attack, report.NinjaCg)}'s report";
-        _sheet.DrawString(_font, new Vector2(left, y + 36), note, fontSize: 13, modulate: Ui.Quiet);
+        if (report is null)                                     // after a scouting the seal at the heading says whose it is
+            _sheet.DrawString(_font, new Vector2(left, y + 36),
+                attack.CanScout ? "Send a ninja to learn them." : "No ninja can be sent this week.", fontSize: 13, modulate: Ui.Quiet);
+    }
+
+    /// <summary>
+    /// The ninja who scouted, as a seal (the owner's K2, docs/ui/enemy-attack.md, §13): her face square over the army
+    /// panel's top right frame on a plate in a gold line, "Scouted by" and her name at the heading's right end. Returns
+    /// where the heading's rule ends.
+    /// </summary>
+    private float DrawScoutSeal(EnemyAttack attack, ScoutReport report)
+    {
+        var seal = new Rect2(ScoutSealX, PanelsTop - 12, ScoutSealSize, ScoutSealSize);
+        var plate = seal.Grow(3);
+        _sheet.DrawRect(plate, Ui.Panel with { A = 1 });
+        _sheet.DrawRect(plate, Ui.Gold, false, Lacquer.Line(1.5f, _k));
+        DrawFace(seal, report.NinjaCg);
+
+        float baseline = PanelsTop + 27, nameRight = seal.Position.X - 12;
+        string name = NinjaName(attack, report.NinjaCg);
+        float nameX = nameRight - _font!.GetStringSize(name, fontSize: 15).X;
+        _sheet.DrawString(_font, new Vector2(nameX, baseline), name, fontSize: 15, modulate: Ui.Name);
+        float wordsX = nameX - 8 - _cinzel.GetStringSize("SCOUTED BY", fontSize: 11).X;
+        _sheet.DrawString(_cinzel, new Vector2(wordsX, baseline), "SCOUTED BY", fontSize: 11, modulate: Ui.Label);
+        return wordsX - 14;
     }
 
     /// <summary>Place <paramref name="slot"/>'s card: the front row (1, 2) left next to the bracket, the back row (3, 4) right; the block centred in the panel.</summary>
