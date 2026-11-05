@@ -267,3 +267,14 @@ size), **PK2b** 56, **PK2c** 60 — the most the corner holds, its foot 7 over t
 full screen and a sheet of the corner as built and as each variant. **The owner chose PK2c's size, the square going
 over the top frame as PK1's**, built the same day in PK1's place: `PhoneAttackPortrait.Seal` a 120 square (reference
 pixels) 28 in from the panel's right and 34 over its top, the words as PK1's. Looked at in the upright gallery pass.
+
+## 16. A larger upright seal (owner, 2026-11-05)
+
+The owner: the upright seal larger, the army's block (the bracket with its head, the rows' captions, the cards, the
+totals) moved down where it needs the room — the panel keeps ~75 (the dump's pixels) under the totals. Round PK3 is
+`tools/ui/mock_attack_scout_pk3.py`, over the upright gallery dump as built (§15; its seal and words painted over
+first), the dump's pixels (twice that in the reference's), the seal over the top frame as built, 14 in from the right:
+**PK3a** 72, the block where it is (the seal's foot 21 over the bracket's line); **PK3b** 84, the block 12 lower;
+**PK3c** 96, the block 24 lower; **PK3d** 108, the block 36 lower and the words in two lines as held landscape's
+("SCOUTED BY" on the heading's line, the name larger under it). Each full screen and a sheet of the panel as built and
+as each variant side by side. Awaiting the owner's choice.
