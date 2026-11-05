@@ -27,12 +27,14 @@ internal static partial class GalleryEntries
         yield return new("options-defaults", "Settings", "Options: Defaults asking", Week18,
             "Defaults asks first, the same words on every tab (owner, 2026-10-31), here over Messages, whose preview hides "
             + "under it; nothing is reset unless Reset is used.", g => Options(g, OptionsView.Tab.Messages, askDefaults: true));
+        if (!Device.TouchLayout)                    // the screen margins are the touch layout's only: not in the PC's pass
+            yield break;
         yield return new("screen-margins", "Settings", "Screen margins: the calibration", Week18,
             "Option → Display → Screen margins' Adjust… (docs/ui/screen-margins.md, C) at 2.8 mm all round, over the map's "
-            + "plates laid out inside them; the touch layout's only (none on the PC).", g => Margins(g, calibration: true));
+            + "plates laid out inside them.", g => Margins(g, calibration: true));
         yield return new("map-margins", "Settings", "Screen margins: the map inside them", Week18,
-            "The map's plates and controls laid out inside screen margins of 2.8 mm all round (docs/ui/screen-margins.md); the "
-            + "touch layout's only (none on the PC).", g => Margins(g, calibration: false));
+            "The map's plates and controls laid out inside screen margins of 2.8 mm all round (docs/ui/screen-margins.md).",
+            g => Margins(g, calibration: false));
     }
 
     /// <summary>
