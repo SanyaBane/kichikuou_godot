@@ -81,11 +81,11 @@ public static class PhoneAttackPortrait
     public static (float X, float Y) Vs(PhoneFrame f) => (f.Room.X + f.Room.W / 2, Province(f).Bottom + f.Px(VsRoom / 2));
 
     /// <summary>
-    /// The scouting ninja's seal (the owner's PK1, docs/ui/enemy-attack.md, §14): as the PC's, her face square 100 over the
-    /// army panel's top right frame, 22 in from its right and 34 over its top; "SCOUTED BY" (20) and her name (28) on the
-    /// panel's caption's baseline, 12 apart, right-aligned 20 left of the square.
+    /// The scouting ninja's seal (the owner's PK2c over the frame as PK1, docs/ui/enemy-attack.md, §15): her face square 120,
+    /// 28 in from the army panel's right and 34 over its top, so it sits over the top frame as the PC's; "SCOUTED BY" (20)
+    /// and her name (28) on the panel's caption's baseline, 12 apart, right-aligned 20 left of the square.
     /// </summary>
-    public const float SealSize = 100, SealIn = 22, SealTop = -34, SealWordsGap = 20, SealLabel = 20, SealName = 28, SealNameGap = 12;
+    public const float SealSize = 120, SealIn = 28, SealTop = -34, SealWordsGap = 20, SealLabel = 20, SealName = 28, SealNameGap = 12;
 
     /// <summary>The scouting ninja's face square over the army panel's top right frame.</summary>
     public static PhoneFrame.Box Seal(PhoneFrame f)

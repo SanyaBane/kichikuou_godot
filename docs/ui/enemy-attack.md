@@ -264,4 +264,6 @@ square than round KP drew (40). Round PK2 is `tools/ui/mock_attack_scout_pk2.py`
 with PK1 (its seal and words painted over first), the dump's pixels (twice that in the reference's): **PK2a** 50 (PK1's
 size), **PK2b** 56, **PK2c** 60 — the most the corner holds, its foot 7 over the bracket's line over the front row; each
 14 in from the panel's right and 8 under its frame, "SCOUTED BY Kanami" on the heading's baseline 10 left of it. Each
-full screen and a sheet of the corner as built and as each variant. Awaiting the owner's choice.
+full screen and a sheet of the corner as built and as each variant. **The owner chose PK2c's size, the square going
+over the top frame as PK1's**, built the same day in PK1's place: `PhoneAttackPortrait.Seal` a 120 square (reference
+pixels) 28 in from the panel's right and 34 over its top, the words as PK1's. Looked at in the upright gallery pass.
