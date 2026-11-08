@@ -54,6 +54,9 @@ internal sealed record EffectShow(string Name, string Prefix, EffectGroup Group,
     /// </summary>
     public EffectArmy User => Users[0].As(EffectSprite.WithCommander);
 
+    /// <summary>The enemy's side as shown by default, its army with its commander among its troops (owner, 2026-11-08).</summary>
+    public EffectArmy Opponent => EnemyArmy.As(EffectSprite.WithCommander);
+
     /// <summary>
     /// The six frames the Combat VFX tab shows (owner, 2026-10-29): every fourth from 2, the part before the tail that the
     /// message skip shows too (2, 6 … 22 of 30); every second from 1 for a short one (1, 3 … 11 of 14 or 15).
@@ -80,8 +83,11 @@ internal sealed record EffectShow(string Name, string Prefix, EffectGroup Group,
 /// </summary>
 internal static class EffectCatalog
 {
-    /// <summary>Ex's (commander 1) Leazas Knights, the enemy's army unless an effect names another.</summary>
-    public static readonly EffectArmy Ex = new("Ex (commander 1), Leazas Knights", 1131);
+    /// <summary>
+    /// Ex's (commander 1) Leazas Knights, the enemy's army unless an effect names another; a commander's three sprites are
+    /// <c>Cmdr_CgFull</c>, <c>Cmdr_CgPartial</c> and <c>Cmdr_CgAlone</c> (<c>SET_CHR.ADV</c>, <c>FIGT.ADV:1634-1642</c>).
+    /// </summary>
+    public static readonly EffectArmy Ex = new("Ex (commander 1), Leazas Knights", 1131, 1132, 1133);
 
     private static readonly EffectArmy RanceKnights = new("Rance (unit 1), Leazas Knights", 1100, 1101, 1102);
 
@@ -113,7 +119,7 @@ internal static class EffectCatalog
             Plain: ExchangeEffectKind.LightMagic),
         // No unit of ours casts poison: Papaya (commander 104) and Ragarl (commander 109) do (docs/ui/mage-lines.md).
         new("Poison Magic (after 41300)", "poison-magic", EffectGroup.Magic, PoisonEffect.Build, false, [RanceKnights],
-            new("Papaya (commander 104), Zeth Mages", 1343), EnemyCasts: true, Plain: ExchangeEffectKind.PoisonMagic),
+            new("Papaya (commander 104), Zeth Mages", 1343, 1362, 1363), EnemyCasts: true, Plain: ExchangeEffectKind.PoisonMagic),
         new("Rance Attack (after 40500)", "rance-attack", EffectGroup.Specials, RanceAttackEffect.Build, false, [new("Rance (unit 1)", 1520)]),
         new("Kentarou-kun Slash (after 40800)", "kentarou-slash", EffectGroup.Specials, KentarouSlashEffect.Build, false, [new("Kentarou (unit 31)", 1222)]),
         new("White Beam: Shizuka (after 40460)", "white-beam-shizuka", EffectGroup.Specials, ShizukaBeamEffect.Build, false, [new("Shizuka (unit 17)", 1522)]),

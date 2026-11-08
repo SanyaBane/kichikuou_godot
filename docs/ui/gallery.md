@@ -615,11 +615,13 @@ that means only when the owner asks for it or the tab itself changes — a new e
 looked at (Debug → Screen Gallery…) lists both. Two dumps of the same build are the same (0 pixels, 2026-10-29).
 
 The armies, the owner's table of 2026-10-29 (`EffectCatalog`, shared with Debug → Effects, which offers the others):
-the enemy's is Ex's (commander 1) Leazas Knights (CG 1131) throughout but the poison's. A unit of the game on the left
+the enemy's is Ex's (commander 1) Leazas Knights (CG 1131 at the limit) throughout but the poison's. A unit of the game on the left
 stands with its commander among its troops (owner, 2026-11-08; `EffectShow.User`): its sprite below the battle's limit,
 `CgPartial`, as Debug → Effects shows it by default — the table's CG is its troops' at the limit (`CgFull`), without the
 commander; the catalog holds all three (`SET_CHR.ADV`; Rance's as `Iﾊﾝﾗﾝ.ADV:27`, Hanny King's (unit 48) as
-`Gﾊﾆｰ.ADV:348` set them). The specials' and the ninjas' sprites are their users' own.
+`Gﾊﾆｰ.ADV:348` set them). The specials' and the ninjas' sprites are their users' own. The enemy on the right stands
+with its commander too (owner, 2026-11-08; `EffectShow.Opponent`, `Cmdr_CgPartial`): Ex (commander 1) among his
+knights, CG 1132, and Papaya (commander 104) among the Zeth Mages, CG 1362 — so in Debug → Effects.
 
 | Effect | Left (the player's side) | CG |
 |---|---|---|

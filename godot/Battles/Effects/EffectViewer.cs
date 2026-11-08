@@ -241,7 +241,7 @@ internal sealed partial class EffectViewer : Window
         var effect = Effects[_effect.Selected];
         var user = _users[Math.Max(0, _user.Selected)];
         _sprite.Disabled = user.WithCommander == 0 && user.Alone == 0;
-        _stage.ShowField(_cgs, user.As((EffectSprite)_sprite.GetSelectedId()), effect.EnemyArmy);
+        _stage.ShowField(_cgs, user.As((EffectSprite)_sprite.GetSelectedId()), effect.Opponent);
     }
 
     private void Restart()
@@ -272,7 +272,7 @@ internal sealed partial class EffectViewer : Window
             var (prefix, dark) = (effect.Prefix, effect.Dark);
             if (only is not null && !only.Contains(prefix))
                 continue;
-            _stage.ShowField(_cgs, effect.User, effect.EnemyArmy);
+            _stage.ShowField(_cgs, effect.User, effect.Opponent);
             _player.Start(effect.Build(1));
             _player.Dark = dark;
             foreach (bool mirrored in new[] { false, true })

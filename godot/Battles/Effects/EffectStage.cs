@@ -41,13 +41,13 @@ internal sealed partial class EffectStage : SubViewport
     }
 
     /// <summary>
-    /// <paramref name="effect"/> built from <paramref name="seed"/> over its default armies (<see cref="EffectShow.User"/>: the
-    /// commander among the player's troops), standing at <paramref name="frame"/>, mirrored when the enemy casts it. The
-    /// stage must be in the tree (the player draws only while it is shown).
+    /// <paramref name="effect"/> built from <paramref name="seed"/> over its default armies (<see cref="EffectShow.User"/> and
+    /// <see cref="EffectShow.Opponent"/>: each side's commander among its troops), standing at <paramref name="frame"/>,
+    /// mirrored when the enemy casts it. The stage must be in the tree (the player draws only while it is shown).
     /// </summary>
     public void Show(CgLibrary cgs, EffectShow effect, int frame, int seed = 1)
     {
-        ShowField(cgs, effect.User, effect.EnemyArmy);
+        ShowField(cgs, effect.User, effect.Opponent);
         Player.Start(effect.Build(seed));
         Player.Dark = effect.Dark;
         Player.Mirrored = effect.EnemyCasts;
