@@ -615,14 +615,18 @@ that means only when the owner asks for it or the tab itself changes — a new e
 looked at (Debug → Screen Gallery…) lists both. Two dumps of the same build are the same (0 pixels, 2026-10-29).
 
 The armies, the owner's table of 2026-10-29 (`EffectCatalog`, shared with Debug → Effects, which offers the others):
-the enemy's is Ex's (commander 1) Leazas Knights (CG 1131) throughout but the poison's.
+the enemy's is Ex's (commander 1) Leazas Knights (CG 1131) throughout but the poison's. A unit of the game on the left
+stands with its commander among its troops (owner, 2026-11-08; `EffectShow.User`): its sprite below the battle's limit,
+`CgPartial`, as Debug → Effects shows it by default — the table's CG is its troops' at the limit (`CgFull`), without the
+commander; the catalog holds all three (`SET_CHR.ADV`; Rance's as `Iﾊﾝﾗﾝ.ADV:27`, Hanny King's (unit 48) as
+`Gﾊﾆｰ.ADV:348` set them). The specials' and the ninjas' sprites are their users' own.
 
 | Effect | Left (the player's side) | CG |
 |---|---|---|
 | Melee, Guard | Rance (unit 1), Leazas Knights, as the rebellion makes them (`Iﾊﾝﾗﾝ.ADV:27`) | 1100 |
 | Bow | Isoroku (unit 27), JAPAN Archers | 1209 |
-| Cannon | Maria (unit 16), Maria's Pupils | 1168 |
-| Phantoms | Mill (unit 25), Phantom Beasts | 1180 |
+| Cannon | Maria (unit 16), Maria's Pupils | 1167 |
+| Phantoms | Mill (unit 25), Phantom Beasts | 1179 |
 | Magic (fire) | Sill (unit 2), Leazas Mages | 1125 |
 | Ice Magic | Melfeis (unit 13), Leazas Mages | 1125 |
 | Lightning Magic | Somita (unit 46), Kalars (the viewer: Eleanor (unit 23), Hanty (unit 19)) | 1450 |

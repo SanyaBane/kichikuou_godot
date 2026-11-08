@@ -272,7 +272,7 @@ internal sealed partial class EffectViewer : Window
             var (prefix, dark) = (effect.Prefix, effect.Dark);
             if (only is not null && !only.Contains(prefix))
                 continue;
-            _stage.ShowField(_cgs, effect.Users[0], effect.EnemyArmy);
+            _stage.ShowField(_cgs, effect.User, effect.EnemyArmy);
             _player.Start(effect.Build(1));
             _player.Dark = dark;
             foreach (bool mirrored in new[] { false, true })

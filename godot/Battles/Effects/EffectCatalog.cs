@@ -49,6 +49,12 @@ internal sealed record EffectShow(string Name, string Prefix, EffectGroup Group,
     public EffectArmy EnemyArmy => Enemy ?? EffectCatalog.Ex;
 
     /// <summary>
+    /// The player's side as shown by default, the first user with its commander among its troops where it is a unit of the
+    /// game (owner, 2026-11-08: the Combat VFX tab shows the commander, as Debug → Effects does by default).
+    /// </summary>
+    public EffectArmy User => Users[0].As(EffectSprite.WithCommander);
+
+    /// <summary>
     /// The six frames the Combat VFX tab shows (owner, 2026-10-29): every fourth from 2, the part before the tail that the
     /// message skip shows too (2, 6 … 22 of 30); every second from 1 for a short one (1, 3 … 11 of 14 or 15).
     /// </summary>
@@ -69,38 +75,42 @@ internal sealed record EffectShow(string Name, string Prefix, EffectGroup Group,
 /// sprite its user shows while using it (<c>FIGT.ADV:1660-1713</c>, <c>SpecialAttackSprites</c> in <c>Battle.Resolution.cs</c>;
 /// the ninjas' follow-ups their own, record 51's <c>CgFull</c>, <c>:1922-1968</c>), against Ex's (commander 1) army. The
 /// sprites are the records' as <c>SET_CHR.ADV</c> sets them, Rance's Leazas Knights as the rebellion does
-/// (<c>Iﾊﾝﾗﾝ.ADV:27</c>).
+/// (<c>Iﾊﾝﾗﾝ.ADV:27</c>). A unit of the game has its three sprites (<c>CgFull</c>, <c>CgPartial</c>, <c>CgAlone</c>; Hanny
+/// King's (unit 48) as <c>Gﾊﾆｰ.ADV:348</c> sets them), so its commander can be shown among its troops (<see cref="EffectShow.User"/>).
 /// </summary>
 internal static class EffectCatalog
 {
     /// <summary>Ex's (commander 1) Leazas Knights, the enemy's army unless an effect names another.</summary>
     public static readonly EffectArmy Ex = new("Ex (commander 1), Leazas Knights", 1131);
 
-    private static readonly EffectArmy RanceKnights = new("Rance (unit 1), Leazas Knights", 1100);
-    private static readonly EffectArmy LeazasMages = new("Leazas Mages", 1125);
+    private static readonly EffectArmy RanceKnights = new("Rance (unit 1), Leazas Knights", 1100, 1101, 1102);
 
-    private static EffectArmy Mages(string who) => LeazasMages with { Name = $"{who}, {LeazasMages.Name}" };
+    /// <summary>A caster whose troops are the Leazas Mages (CG 1125), with its own sprites with the troops and alone.</summary>
+    private static EffectArmy Mages(string who, int withCommander, int alone) => new($"{who}, Leazas Mages", 1125, withCommander, alone);
 
     public static readonly IReadOnlyList<EffectShow> All =
     [
         new("Melee (after 40000)", "melee", EffectGroup.Attacks, MeleeEffect.Build, false, [RanceKnights], Plain: ExchangeEffectKind.Melee),
-        new("Bow (after 40260)", "bow", EffectGroup.Attacks, BowEffect.Build, false, [new("Isoroku (unit 27), JAPAN Archers", 1209)],
+        new("Bow (after 40260)", "bow", EffectGroup.Attacks, BowEffect.Build, false, [new("Isoroku (unit 27), JAPAN Archers", 1209, 1210, 1211)],
             Plain: ExchangeEffectKind.Bow),
-        new("Cannon (after 40330)", "cannon", EffectGroup.Attacks, CannonEffect.Build, false, [new("Maria (unit 16), Maria's Pupils", 1168)],
+        new("Cannon (after 40330)", "cannon", EffectGroup.Attacks, CannonEffect.Build, false, [new("Maria (unit 16), Maria's Pupils", 1167, 1168, 1169)],
             Plain: ExchangeEffectKind.Cannon),
-        new("Phantoms (ours)", "phantoms", EffectGroup.Attacks, PhantomEffect.Build, false, [new("Mill (unit 25), Phantom Beasts", 1180)],
+        new("Phantoms (ours)", "phantoms", EffectGroup.Attacks, PhantomEffect.Build, false, [new("Mill (unit 25), Phantom Beasts", 1179, 1180, 1181)],
             Plain: ExchangeEffectKind.Phantoms),
-        new("Magic: fire (after 40360)", "magic", EffectGroup.Magic, MagicEffect.Build, false, [Mages("Sill (unit 2)")],
+        new("Magic: fire (after 40360)", "magic", EffectGroup.Magic, MagicEffect.Build, false, [Mages("Sill (unit 2)", 1292, 1293)],
             Plain: ExchangeEffectKind.Magic),
-        new("Ice Magic (after 40730)", "ice-magic", EffectGroup.Magic, IceEffect.Build, false, [Mages("Melfeis (unit 13)")],
+        new("Ice Magic (after 40730)", "ice-magic", EffectGroup.Magic, IceEffect.Build, false, [Mages("Melfeis (unit 13)", 1126, 1127)],
             Plain: ExchangeEffectKind.IceMagic),
         new("Lightning Magic (after 40630)", "lightning-magic", EffectGroup.Magic, LightningEffect.Build, false,
-            [new("Somita (unit 46), Kalars", 1450), new("Eleanor (unit 23), Magic Warriors", 1173), new("Hanty (unit 19), Freak Robots", 1240)],
+            [new("Somita (unit 46), Kalars", 1450, 1451, 1452), new("Eleanor (unit 23), Magic Warriors", 1173, 1174, 1175),
+                new("Hanty (unit 19), Freak Robots", 1240, 1241, 1242)],
             Plain: ExchangeEffectKind.LightningMagic),
         new("Dark Magic (after 47030)", "dark-magic", EffectGroup.Magic, DarkEffect.Build, true,
-            [new("Satella (unit 29), Guardians", 1316), Mages("Chizuko (unit 38)"), Mages("Miki (unit 32)")], Plain: ExchangeEffectKind.DarkMagic),
+            [new("Satella (unit 29), Guardians", 1316, 1317, 1318), Mages("Chizuko (unit 38)", 1392, 1393), Mages("Miki (unit 32)", 1338, 1339)],
+            Plain: ExchangeEffectKind.DarkMagic),
         new("Light Magic (after 40430)", "light-magic", EffectGroup.Magic, LightEffect.Build, false,
-            [new("Seizel Sisters (unit 42), False Angels", 1514), new("Hanny King (unit 48)", 1517)], Plain: ExchangeEffectKind.LightMagic),
+            [new("Seizel Sisters (unit 42), False Angels", 1514, 1405, 1413), new("Hanny King (unit 48)", 1517, 1518, 1519)],
+            Plain: ExchangeEffectKind.LightMagic),
         // No unit of ours casts poison: Papaya (commander 104) and Ragarl (commander 109) do (docs/ui/mage-lines.md).
         new("Poison Magic (after 41300)", "poison-magic", EffectGroup.Magic, PoisonEffect.Build, false, [RanceKnights],
             new("Papaya (commander 104), Zeth Mages", 1343), EnemyCasts: true, Plain: ExchangeEffectKind.PoisonMagic),
