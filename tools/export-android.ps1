@@ -1,12 +1,19 @@
 <#
 .SYNOPSIS
-Exports the Android test build (the "Android" preset of godot/export_presets.cfg) as a debug APK, and installs it.
+Exports the Android build (the "Android" preset of godot/export_presets.cfg) as an APK, the debug one by default, and
+installs it.
 
 .DESCRIPTION
 Runs Godot's export (KICHIKUOU_GODOT_EXE: its environment variable, else its line in local.env) headless with
 --export-debug. Godot needs JDK 17 and the Android SDK (platform-tools, build-tools 35.0.1, platforms;android-35)
 set in its editor settings (export/android/java_sdk_path, export/android/android_sdk_path); it makes the debug
 keystore itself. The export templates 4.7.2 mono must be installed.
+
+-Release exports the release APK instead (--export-release), signed with the owner's release key: the keystore
+KICHIKUOU_ANDROID_KEYSTORE in local.env, its alias KICHIKUOU_ANDROID_KEY_ALIAS (else "kichikuou"), its password asked
+once (or GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD) and tried before the export (android-key.ps1); the APK's signer is
+checked after it. Its default file is Kichikuou-<version>.apk. A device with the debug build refuses it as an update
+(another key): the error says what to do. docs/release.md.
 
 -Install puts the APK on the one device adb sees (USB debugging on; with several, ANDROID_SERIAL names one), keeping
 the app's data, and copies the game folder too when the device has none. -PushGame copies the player's game folder
@@ -23,8 +30,11 @@ powershell -ExecutionPolicy Bypass -File tools\export-android.ps1 -Install -Laun
 powershell -ExecutionPolicy Bypass -File tools\export-android.ps1 -Out D:\Builds\Kichikuou.apk -Install -PushGame
 #>
 param(
-    # The APK file to write (its folder is created when missing); by default in %LOCALAPPDATA%\KichikuouGodot\android.
-    [string]$Out = (Join-Path $env:LOCALAPPDATA 'KichikuouGodot\android\Kichikuou.apk'),
+    # The APK file to write (its folder is created when missing); by default in %LOCALAPPDATA%\KichikuouGodot\android,
+    # Kichikuou.apk, or Kichikuou-<version>.apk with -Release.
+    [string]$Out = '',
+    # The release APK, signed with the release key, in place of the debug one.
+    [switch]$Release,
     # Install the APK with adb after the export (and the game folder when the device has none).
     [switch]$Install,
     # Copy the game folder to the device, also when it has one.
@@ -38,6 +48,7 @@ param(
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
 . (Join-Path $PSScriptRoot 'android-adb.ps1')
+. (Join-Path $PSScriptRoot 'android-key.ps1')
 
 # The local paths, as Kichikuou.Engine.LocalPaths reads them: the environment, else local.env.
 function Get-LocalPath([string]$Key) {
@@ -64,6 +75,34 @@ function Test-RemoteGame([string]$Remote) {
     return $LASTEXITCODE -eq 0 -and ($listing | Where-Object { $_.Trim() })
 }
 
+# The game's version, application/config/version in project.godot (docs/release.md, "Versions").
+function Get-ProjectVersion {
+    $line = Select-String -Path (Join-Path $root 'godot\project.godot') -Pattern '^config/version="(.+)"$' | Select-Object -First 1
+    if (-not $line) { throw 'No config/version in godot/project.godot.' }
+    return $line.Matches[0].Groups[1].Value
+}
+
+# adb install, with what to do when the device has the app signed with another key.
+function Install-Apk([string]$Apk) {
+    $previous = $ErrorActionPreference
+    $ErrorActionPreference = 'Continue'
+    $answer = & $script:adb install -r $Apk 2>&1 | Out-String
+    $code = $LASTEXITCODE
+    $ErrorActionPreference = $previous
+    Write-Host $answer.Trim()
+    if ($code -eq 0) { return }
+    if ($answer -match 'INSTALL_FAILED_UPDATE_INCOMPATIBLE') {
+        throw ('The device has the game signed with another key (the debug build and the release one differ), so it ' +
+            'takes this APK only after the game is uninstalled there, which deletes its saves and game folder: copy the ' +
+            'saves off first (copy-saves-from-tablet.cmd), uninstall the game on the device, then install again.')
+    }
+    throw "adb install failed (exit code $code)."
+}
+
+if (-not $Out) {
+    $name = if ($Release) { "Kichikuou-$(Get-ProjectVersion).apk" } else { 'Kichikuou.apk' }
+    $Out = Join-Path $env:LOCALAPPDATA "KichikuouGodot\android\$name"
+}
 $Out = [IO.Path]::GetFullPath($Out)
 if (($Out + '\').StartsWith($root + '\', [StringComparison]::OrdinalIgnoreCase)) {
     throw "The APK must go outside the repository ($root)."
@@ -74,6 +113,9 @@ if ($Install -or $PushGame -or $Launch) {
     $script:adb = Get-Adb
     Assert-Device
 }
+if ($Release -and -not $NoExport) {
+    Set-ReleaseKey -Keystore (Get-LocalPath 'KICHIKUOU_ANDROID_KEYSTORE') -Alias (Get-LocalPath 'KICHIKUOU_ANDROID_KEY_ALIAS')
+}
 
 if (-not $NoExport) {
     $exe = Get-LocalPath 'KICHIKUOU_GODOT_EXE'
@@ -81,21 +123,25 @@ if (-not $NoExport) {
         throw "Godot not found: set KICHIKUOU_GODOT_EXE in local.env (see local.env.example)."
     }
     New-Item -ItemType Directory -Force (Split-Path $Out) | Out-Null
-    Write-Host "Exporting the Android debug build to $Out ..."
+    $kind = if ($Release) { 'release' } else { 'debug' }
+    Write-Host "Exporting the Android $kind build to $Out ..."
     # As in export-release.ps1: no build servers left holding the console's output open.
     $env:MSBUILDDISABLENODEREUSE = '1'
     $env:UseSharedCompilation = 'false'
     Start-AdbServer     # and adb's server started apart from Godot's console (android-adb.ps1)
-    & $exe --headless --path (Join-Path $root 'godot') --export-debug 'Android' $Out
-    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $Out)) {
+    $started = Get-Date
+    & $exe --headless --path (Join-Path $root 'godot') "--export-$kind" 'Android' $Out
+    # An APK left from an earlier export is no proof of this one.
+    if ($LASTEXITCODE -ne 0 -or -not (Test-Path $Out) -or (Get-Item $Out).LastWriteTime -lt $started) {
         throw "The export failed (exit code $LASTEXITCODE)."
     }
+    if ($Release) { Assert-ReleaseSigned $Out }
 }
 
 if ($Install) {
     if (-not (Test-Path $Out)) { throw "No APK to install: $Out." }
     Write-Host "Installing $Out ..."
-    Invoke-Adb @('install', '-r', $Out)
+    Install-Apk $Out
     if (-not $PushGame -and -not (Test-RemoteGame $remote)) {
         Write-Host 'The device has no game folder yet.'
         $PushGame = $true

@@ -23,19 +23,42 @@ The numbers are `major.minor[.patch]`, digits only (Windows refuses anything els
 of a published release raises the patch (`0.1.1`), anything else the minor (`0.2`). The version is
 raised in the commit that prepares the next release, not after one.
 
+## The Android release key
+
+The release APK is signed with the owner's own key (made 2026-11-08 with `keytool` from the `bin` folder
+of JDK 17, the JDK Godot's editor settings name in `export/android/java_sdk_path`; it is not on the PATH).
+The keystore lies outside the repository, backed up: every later APK must be signed with the same key,
+or Android refuses it as an update of the installed game. `local.env` names it,
+`KICHIKUOU_ANDROID_KEYSTORE` (its alias `KICHIKUOU_ANDROID_KEY_ALIAS`, else `kichikuou`). Its password is
+written nowhere: the scripts ask for it once a run and open the key with `keytool` before the export, and
+pass it to Godot in `GODOT_ANDROID_KEYSTORE_RELEASE_PASSWORD` (set that variable to skip the question).
+After the export they check that the APK's signer is that key (apksigner; `tools/android-key.ps1`).
+
+The debug build (`run-android.cmd`) stays signed with Godot's debug key, so a device holding it refuses
+the release APK as an update, and the other way round: the game has to be uninstalled first, which deletes
+its saves and game folder on the device — copy the saves off first (`copy-saves-from-tablet.cmd`).
+
 ## Building a release
 
 1. **A settled commit**: the work tree clean, the build and every test project green with the full
-   counts (`KICHIKUOU_FULL_TESTS=1`, CLAUDE.md, "Commands").
-2. **Windows**: `powershell -ExecutionPolicy Bypass -File tools/export-release.ps1 -Out <folder>`, the
-   folder outside the repository (~2 minutes). It holds `Kichikuou.exe`, `Kichikuou.pck`,
-   `data_Kichikuou_windows_x86_64\` (the .NET assemblies), `LICENSE` and `licenses\` (the fonts' OFL
-   texts); all of it together is the build. The download is that folder zipped as
-   `Kichikuou-<version>-windows-x64.zip`.
-3. **Android**: a release APK, `Kichikuou-<version>.apk`. Not scripted yet:
-   `tools/export-android.ps1` makes the debug APK, signed with Godot's debug key (backlog.md, "Release").
-4. **The checks** below, on the files that will be published.
-5. **The tag** `v<version>` on the commit, pushed, and the files published with their SHA-256 and a
+   counts (`KICHIKUOU_FULL_TESTS=1`, CLAUDE.md, "Commands"), `version/code` raised in the Android preset
+   when an APK of an earlier version was given out.
+2. **`release.cmd`** at the root (a double-click), or
+   `powershell -ExecutionPolicy Bypass -File tools/release.ps1 [-Out <folder>]`: it asks for the release
+   key's password, then builds both downloads into `%LOCALAPPDATA%\KichikuouGodot\release\<version>` (or
+   `-Out`, outside the repository), ~5 minutes:
+   - `Kichikuou-<version>-windows-x64\` — the Windows build (`tools/export-release.ps1`): `Kichikuou.exe`,
+     `Kichikuou.pck`, `data_Kichikuou_windows_x86_64\` (the .NET assemblies), `LICENSE` and `licenses\`
+     (the fonts' OFL texts); all of it together is the build;
+   - `Kichikuou-<version>-windows-x64.zip` — that folder zipped, the download;
+   - `Kichikuou-<version>.apk` — the release APK (`tools/export-android.ps1 -Release`);
+   - `SHA256SUMS.txt` — the two downloads' SHA-256.
+
+   It refuses a work tree with changes not committed (`-AllowDirty` for a trial) and a folder that holds
+   that version's files already; `-NoWindows` / `-NoAndroid` leave one part out. The release APK alone:
+   `tools/export-android.ps1 -Release [-Install]`.
+3. **The checks** below, on the files that will be published.
+4. **The tag** `v<version>` on the commit, pushed, and the files published with `SHA256SUMS.txt` and a
    short list of what is in the release.
 
 Godot's Android exporter runs adb in any export, the Windows one too; the export scripts start adb's

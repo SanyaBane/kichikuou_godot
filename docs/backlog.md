@@ -36,13 +36,11 @@ The owner aims at a public release (decision 28, 2026-10-20).
   info is in the exe since 2026-11-08 (`0.1.0.0` from project.godot's version; [release.md](release.md),
   "Versions"). Still open: an icon, the exe's company and copyright fields (empty), the archive a player
   downloads, and the owner's look at a first launch.
-- **The Android release APK** — *owner*, then *agent* (2026-11-08, [release.md](release.md)): a release key of the
-  owner's own, kept outside the repository and backed up (an APK signed with another key never updates the
-  installed one); `tools/export-android.ps1` then exports with `--export-release` (Godot reads the key from
-  `GODOT_ANDROID_KEYSTORE_RELEASE_PATH`, `_USER`, `_PASSWORD`). The owner's devices have the debug build: the
-  release one installs only after it is uninstalled, which deletes the saves and the game folder in the app's
-  folder — copy the saves off first (`copy-saves-from-tablet.cmd`), or give the development builds a package of
-  their own (`GameData.AndroidPackage` names one today).
+- **The Android release APK** — *owner* (2026-11-08, [release.md](release.md)): the owner's release key is made and
+  `tools/export-android.ps1 -Release` / `release.cmd` sign with it (tried with a throwaway key, not yet with the
+  owner's). The owner's devices have the debug build: the release one installs only after it is uninstalled, which
+  deletes the saves and the game folder in the app's folder — copy the saves off first (`copy-saves-from-tablet.cmd`),
+  or give the development builds a package of their own (`GameData.AndroidPackage` names one today).
 - **The Android player's way in** — *agent*: a player without adb copies the game folder into
   `Android/data/org.kichikuou.port/files/game` (a PC over USB; Android 11 and later keep a phone's own file
   managers out of `Android/data`); the README says nothing of it yet. A folder picked through Android's own
