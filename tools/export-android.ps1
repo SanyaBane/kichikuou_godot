@@ -85,6 +85,7 @@ if (-not $NoExport) {
     # As in export-release.ps1: no build servers left holding the console's output open.
     $env:MSBUILDDISABLENODEREUSE = '1'
     $env:UseSharedCompilation = 'false'
+    Start-AdbServer     # and adb's server started apart from Godot's console (android-adb.ps1)
     & $exe --headless --path (Join-Path $root 'godot') --export-debug 'Android' $Out
     if ($LASTEXITCODE -ne 0 -or -not (Test-Path $Out)) {
         throw "The export failed (exit code $LASTEXITCODE)."

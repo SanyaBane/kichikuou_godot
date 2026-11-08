@@ -18,6 +18,16 @@ function Get-Adb {
     throw "adb not found: install the Android SDK's platform-tools ($sdk) or set ANDROID_HOME."
 }
 
+# adb's server started before a Godot export, when adb is installed. Godot's Android exporter runs adb in any export,
+# the Windows one too; a server that adb starts then inherits the console exe's output and holds it open, so the export
+# never seems to end (2026-11-08). Started through Start-Process, the client inherits none of this console's handles,
+# so neither does its server; only the client is waited for.
+function Start-AdbServer {
+    try { $adb = Get-Adb } catch { return }
+    $client = Start-Process -FilePath $adb -ArgumentList 'start-server' -WindowStyle Hidden -PassThru
+    $client.WaitForExit()
+}
+
 function Invoke-Adb([string[]]$Arguments) {
     & $script:adb @Arguments
     if ($LASTEXITCODE -ne 0) { throw "adb $($Arguments -join ' ') failed (exit code $LASTEXITCODE)." }

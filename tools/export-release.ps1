@@ -24,6 +24,7 @@ param(
 
 $ErrorActionPreference = 'Stop'
 $root = (Resolve-Path (Join-Path $PSScriptRoot '..')).Path
+. (Join-Path $PSScriptRoot 'android-adb.ps1')
 
 # The local paths, as Kichikuou.Engine.LocalPaths reads them: the environment, else local.env.
 function Get-LocalPath([string]$Key) {
@@ -61,6 +62,7 @@ Write-Host "Exporting the release build to $target ..."
 # inherit the console exe's output and hold it open, so the export never seems to end.
 $env:MSBUILDDISABLENODEREUSE = '1'
 $env:UseSharedCompilation = 'false'
+Start-AdbServer     # nor adb's server, which Godot's Android exporter would start (android-adb.ps1)
 & $exe --headless --path (Join-Path $root 'godot') --export-release 'Windows Desktop' $target
 if ($LASTEXITCODE -ne 0 -or -not (Test-Path $target)) {
     throw "The export failed (exit code $LASTEXITCODE)."
