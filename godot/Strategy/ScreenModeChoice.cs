@@ -33,7 +33,7 @@ internal static class ScreenModeChoice
         if (_applied)
             return;
         _applied = true;
-        if (OS.GetCmdlineUserArgs().Length > 0 || DisplayServer.GetName() == "headless")
+        if (CommandLine.Args.Length > 0 || DisplayServer.GetName() == "headless")
             return;
         var config = new ConfigFile();
         bool loaded = config.Load(GameData.SettingsPath) == Error.Ok;

@@ -23,7 +23,7 @@ internal static class HangWatch
     /// <summary>Starts the watch, once a launch (the screens come and go, the watch's nodes stay on the root).</summary>
     public static void Start(SceneTree tree)
     {
-        var args = OS.GetCmdlineUserArgs();
+        var args = CommandLine.Args;
         if (_watch is not null || (OS.GetName() != "Android" && !args.Contains("--hang-watch")))
             return;
         string folder = OS.GetName() == "Android" ? GameData.AndroidHangReports : ProjectSettings.GlobalizePath("user://hang-reports");

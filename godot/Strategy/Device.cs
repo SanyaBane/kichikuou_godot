@@ -70,7 +70,7 @@ internal static class Device
     {
         get
         {
-            var args = OS.GetCmdlineUserArgs();
+            var args = CommandLine.Args;
             int at = Array.IndexOf(args, "--phone");
             return at < 0 ? null : at + 1 < args.Length ? args[at + 1] : "";
         }
@@ -192,7 +192,7 @@ internal static class Device
     {
         if (_turnEvery is null)
         {
-            var args = OS.GetCmdlineUserArgs();
+            var args = CommandLine.Args;
             int at = Array.IndexOf(args, "--turn-every");
             _turnEvery = PlaysPhone && at >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out int n) && n > 0 ? n : 0;
         }

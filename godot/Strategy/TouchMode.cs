@@ -14,7 +14,7 @@ internal static class TouchMode
     private static Vector2 _touch = new(-100000, -100000);     // no touch yet: the pointer is nowhere
 
     /// <summary>Whether the touch mode is on.</summary>
-    public static bool On => _on ??= OS.GetName() == "Android" || OS.GetCmdlineUserArgs() is var args && (args.Contains("--touch") || args.Contains("--phone"));
+    public static bool On => _on ??= OS.GetName() == "Android" || CommandLine.Args is var args && (args.Contains("--touch") || args.Contains("--phone"));
 
     /// <summary>
     /// Whether the mouse plays a finger (<c>--touch</c> on PC; owner, 2026-10-24): it moves the pointer only while a

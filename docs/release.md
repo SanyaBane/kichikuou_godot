@@ -23,6 +23,18 @@ The numbers are `major.minor[.patch]`, digits only (Windows refuses anything els
 of a published release raises the patch (`0.1.1`), anything else the minor (`0.2`). The version is
 raised in the commit that prepares the next release, not after one.
 
+## What a release build leaves out
+
+A release export (`--export-release`, the templates' release build: `OS.IsDebugBuild` false) has none of
+the development parts (owner, 2026-11-08); the editor's runs and the debug exports (the Android test
+build) keep them:
+
+- **the Debug menu** (the capture viewer, Portraits, Effects, the screen gallery, the map names' and menu
+  rows' settings) — on the PC's and the tablet's menu bar, as on the phone's Menu sheet;
+- **the development switches**, everything after `--` on the command line (`--auto`, `--watch`,
+  `--ending`, `--touch`, `--phone`, `--import`, …): `godot/CommandLine.cs` gives none in a release build,
+  and every switch is read through it. Godot's own options (before `--`) still work.
+
 ## The Android release key
 
 The release APK is signed with the owner's own key (made 2026-11-08 with `keytool` from the `bin` folder

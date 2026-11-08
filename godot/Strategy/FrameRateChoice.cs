@@ -72,7 +72,7 @@ internal static class FrameRateChoice
     /// </summary>
     public static void Apply()
     {
-        bool development = DisplayServer.GetName() == "headless" || OS.GetCmdlineUserArgs().Contains("--fast");
+        bool development = DisplayServer.GetName() == "headless" || CommandLine.Args.Contains("--fast");
         Godot.Engine.MaxFps = development ? 0 : Chosen;
         GD.Print($"Kichikuou: the frame rate {(Godot.Engine.MaxFps == 0 ? "the screen's" : Godot.Engine.MaxFps + " fps")}"
             + (development ? " (headless or --fast: no limit)" : "") + ".");

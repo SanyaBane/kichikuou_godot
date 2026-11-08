@@ -92,7 +92,7 @@ internal static class UiPalettes
     private static void Load()
     {
         _parts = [];
-        var args = OS.GetCmdlineUserArgs();
+        var args = CommandLine.Args;
         int at = Array.IndexOf(args, "--palette");
         if (at >= 0 && at + 1 < args.Length && UiPalette.Named(args[at + 1]) is { } given)
         {

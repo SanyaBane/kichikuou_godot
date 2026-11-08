@@ -25,10 +25,6 @@ The owner aims at a public release (decision 28, 2026-10-20).
   Windows it has not been run end to end (import.md, "Not run": the owner's `user://settings.cfg` sets the extract) —
   a release build's first launch is that start (Windows export, below); the content tests still read `_extract` and
   could move to the import; the music still goes through `_inmm.ini` (it is hashed with the rest).
-- **Hide the development parts** in a release build — *owner*: the Debug menu (with the capture viewer, the screen
-  gallery, Portraits and Effects) is gone from a release export since 2026-11-08 (owner: hide it; `OS.IsDebugBuild`,
-  the PC's menu bar as the phone's Menu sheet already did); the development switches (`--auto`, `--watch`,
-  `--ending`, `--portraits`, …) still work there, unseen by a player — whether they go too is open.
 - **Windows export** — *agent*: the preset `godot/export_presets.cfg` ("Windows Desktop") and
   `tools/export-release.ps1` export a release build outside the repository (2026-10-21; templates 4.7.2 mono
   installed on the owner's machine). The build keeps its data in `%APPDATA%\KichikuouGodot` (project.godot's

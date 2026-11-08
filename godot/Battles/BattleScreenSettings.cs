@@ -97,7 +97,7 @@ internal static class BattleScreenSettings
             bool loaded = config.Load(GameData.SettingsPath) == Error.Ok;
             foreach (var s in All)
                 _values[s.Key] = loaded ? Math.Clamp((double)config.GetValue(Section, s.Key, s.Default), s.Min, s.Max) : s.Default;
-            var args = OS.GetCmdlineUserArgs();
+            var args = CommandLine.Args;
             foreach (var (name, s) in Switches)
             {
                 int at = Array.IndexOf(args, name);

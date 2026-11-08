@@ -19,7 +19,7 @@ internal static class FrameTimes
     private static double _since;
 
     /// <summary>Whether frame times are recorded.</summary>
-    public static bool On => _on ??= OS.GetName() == "Android" || OS.GetCmdlineUserArgs().Contains("--frame-times");
+    public static bool On => _on ??= OS.GetName() == "Android" || CommandLine.Args.Contains("--frame-times");
 
     /// <summary>A frame of <paramref name="delta"/> seconds while the screen showed <paramref name="kind"/>.</summary>
     public static void Record(string kind, double delta)

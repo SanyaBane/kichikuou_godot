@@ -39,7 +39,7 @@ internal static class MenuRowsChoice
 
     private static int Load(string switchName, string key, int fallback)
     {
-        var args = OS.GetCmdlineUserArgs();
+        var args = CommandLine.Args;
         int at = Array.IndexOf(args, switchName);
         int height = fallback;
         if (at >= 0 && at + 1 < args.Length && int.TryParse(args[at + 1], out int given))

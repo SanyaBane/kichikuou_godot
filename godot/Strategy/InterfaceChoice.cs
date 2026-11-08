@@ -18,7 +18,7 @@ internal static class InterfaceChoice
         {
             if (_new is { } chosen)
                 return chosen;
-            var args = OS.GetCmdlineUserArgs();
+            var args = CommandLine.Args;
             int at = Array.IndexOf(args, "--interface");
             bool given = at < 0 || at + 1 >= args.Length || Parse(args[at + 1]) is not { } named || named;
             return (_new = given).Value;

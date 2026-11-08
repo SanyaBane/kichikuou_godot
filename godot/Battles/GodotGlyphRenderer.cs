@@ -47,7 +47,7 @@ public sealed class GodotGlyphRenderer : IGlyphRenderer, IDisposable
     {
         get
         {
-            var args = OS.GetCmdlineUserArgs();
+            var args = CommandLine.Args;
             int at = Array.IndexOf(args, "--font");
             if (at >= 0 && at + 1 < args.Length && Parse(args[at + 1]) is { } given)
                 return given;

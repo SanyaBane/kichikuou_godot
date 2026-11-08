@@ -28,7 +28,7 @@ internal static class EngineState
         {
             if (_random is null)
             {
-                var args = OS.GetCmdlineUserArgs();
+                var args = CommandLine.Args;
                 int at = Array.IndexOf(args, "--seed");
                 uint seed = at >= 0 && at + 1 < args.Length && uint.TryParse(args[at + 1], out uint s)
                     ? s : (uint)System.Environment.TickCount;

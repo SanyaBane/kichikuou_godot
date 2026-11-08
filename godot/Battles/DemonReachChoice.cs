@@ -25,7 +25,7 @@ internal static class DemonReachChoice
         {
             if (_chosen is { } chosen)
                 return chosen;
-            var args = OS.GetCmdlineUserArgs();
+            var args = CommandLine.Args;
             int at = Array.IndexOf(args, "--demon-reach");
             string? key = at >= 0 && at + 1 < args.Length ? args[at + 1].Replace('-', '_') : null;
             if (key is null)

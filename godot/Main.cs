@@ -76,7 +76,7 @@ public partial class Main : Control
     /// </summary>
     private void ImportFromCommandLine()
     {
-        var args = OS.GetCmdlineUserArgs();
+        var args = CommandLine.Args;
         int at = Array.IndexOf(args, "--import");
         if (at < 0)
             return;
@@ -96,7 +96,7 @@ public partial class Main : Control
         catch (Exception e) when (e is GameFolderException or Kichikuou.Content.Decompiler.DecompileException)
         {
             GD.PrintErr($"Import failed: {e.Message}");
-            if (OS.GetCmdlineUserArgs().Contains("--quit"))
+            if (CommandLine.Args.Contains("--quit"))
                 GetTree().Quit(1);
         }
     }
@@ -110,7 +110,7 @@ public partial class Main : Control
     /// </summary>
     private static ImportScreen? ImportScreenFromCommandLine()
     {
-        var args = OS.GetCmdlineUserArgs();
+        var args = CommandLine.Args;
         int at = Array.IndexOf(args, "--import-screen");
         if (at < 0)
             return null;
@@ -160,7 +160,7 @@ public partial class Main : Control
     /// </summary>
     private static Node? FromCommandLine()
     {
-        var args = OS.GetCmdlineUserArgs();
+        var args = CommandLine.Args;
         string? Value(string name) => Array.IndexOf(args, name) is int i and >= 0 && i + 1 < args.Length ? args[i + 1] : null;
         bool fast = args.Contains("--fast"), quit = args.Contains("--quit");
         string? shots = Value("--shots");

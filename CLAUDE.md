@@ -756,7 +756,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   — the Windows zip and the release APK with their SHA-256 in `%LOCALAPPDATA%\KichikuouGodot\release\<version>`; it
   asks for the release key's password (the keystore `KICHIKUOU_ANDROID_KEYSTORE` in `local.env`; never ask for the
   password or write it anywhere — the owner types it), so the owner runs it. The release APK alone:
-  `tools/export-android.ps1 -Release`. docs/release.md.
+  `tools/export-android.ps1 -Release`. docs/release.md. A release build has no Debug menu and takes no switch: read
+  every switch through `CommandLine.Args` (`godot/CommandLine.cs`, empty in a release build), never
+  `OS.GetCmdlineUserArgs()`.
 - Export the Android test build (JDK 17 and the Android SDK set in Godot's editor settings), install it on the USB
   device and start it: `run-android.cmd` at the root (a double-click), or
   `powershell -ExecutionPolicy Bypass -File tools/export-android.ps1 -Install -Launch [-Out <apk outside the repository>] [-PushGame] [-NoExport]`
