@@ -69,8 +69,9 @@ the console's output open and the script never ends (2026-11-08).
 
 - **Windows, a first launch**: with `%APPDATA%\KichikuouGodot` moved aside (the build's own data folder;
   without it the launch is a new player's), the exe started from a folder outside the repository shows the
-  import screen, imports the game folder, and a new game and a load play. The log
-  (`%APPDATA%\KichikuouGodot\logs\godot.log`) names the version.
+  import screen, imports the game folder, and a new game and a load play, the menu bar without Debug (a
+  release build has none). The log (`%APPDATA%\KichikuouGodot\logs\godot.log`) names the version and
+  "release build".
 - **Android**: the release APK installed on a device without the app, the game folder copied into the
   app's folder (`Android/data/org.kichikuou.port/files/game`, what a player does by USB), the first start
   imports it, a new game and a load play, both orientations.

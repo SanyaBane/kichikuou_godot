@@ -15,7 +15,8 @@ namespace Kichikuou.Game.Strategy;
 // Exit), Screen (Window, Fullscreen), Options (ours: the options window, OptionsView, with xsystem35's Mouse
 // Movement among its settings), Sound[on|off] (ours, SoundChoice), MsgSkip[off|on]; hot keys F1 and F4 as xsystem35's, Alt+R; and ours for development, Debug
 // (Battle Captures: the capture viewer, which our own title had until ｽﾀMENU replaced it; Portraits,
-// Effects, Hide Dimmed Map Names).
+// Effects, Hide Dimmed Map Names), in a development build only — the editor's runs and the debug exports, not a release
+// export (OS.IsDebugBuild; owner, 2026-11-08), as the phone's Menu sheet (PhoneMenu.Settings.Development).
 public partial class GameScreen
 {
     private const int MenuBarHeight = 24;
@@ -101,6 +102,8 @@ public partial class GameScreen
         row.AddChild(_skipItem);
         _skip.Changed += UpdateSkipItem;
         UpdateSkipItem();
+        if (!OS.IsDebugBuild())
+            return;                                         // a release build has no Debug menu
         var debugMenu = Menu("Debug",
             ("Battle Captures...", ConfirmCaptures),
             ("Portraits...", OpenPortraits),
@@ -115,7 +118,7 @@ public partial class GameScreen
     }
 
     private Button _soundItem = null!;
-    private PopupMenu _debugPopup = null!;
+    private PopupMenu? _debugPopup;                         // none in a release build
 
     /// <summary>Sound on or off (ours, <see cref="SoundChoice"/>; saved for later launches).</summary>
     private void ToggleSound()
@@ -130,7 +133,7 @@ public partial class GameScreen
     private void ToggleDimmedNames()
     {
         MapNamesChoice.HideDimmed = !MapNamesChoice.HideDimmed;
-        _debugPopup.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
+        _debugPopup?.SetItemChecked(DimmedNamesItem, MapNamesChoice.HideDimmed);
         _markers.SetHideDimmed(MapNamesChoice.HideDimmed);
     }
 
