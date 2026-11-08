@@ -212,9 +212,10 @@ function Get-PngSize([string]$path) {
     return @($width, $height)
 }
 
-# The passes marked old by the last run that dumped, which -IndexOnly keeps.
+# The passes marked old by the last run that dumped, which -IndexOnly keeps, and -VfxOnly for every pass but its own:
+# a run of the effects alone says nothing of the screens (2026-11-08: it marked them all old).
 $stalePath = Join-Path $Out 'stale-passes.txt'
-$keptStale = @(if ($IndexOnly -and (Test-Path $stalePath)) { Get-Content -Encoding UTF8 $stalePath })
+$keptStale = @(if (($IndexOnly -or $VfxOnly) -and (Test-Path $stalePath)) { Get-Content -Encoding UTF8 $stalePath })
 $staleNames = @()
 
 # One tab a pass, one pass shown at a time; a pass not dumped this time says so on its tab and above its pictures.
@@ -227,7 +228,7 @@ foreach ($pass in $allPasses) {
     $entries = @($manifest.entries)
     $changed = @($entries | Where-Object { $_.since -eq 'changed' -or $_.since -eq 'new' })
     # A run of the mock-ups alone dumps no game pass, so it leaves them unmarked; nor is a pass dumped only on request.
-    $isStale = if ($IndexOnly) { $keptStale -contains $pass.Name } else {
+    $isStale = if ($IndexOnly -or ($VfxOnly -and $passes.Name -notcontains $pass.Name)) { $keptStale -contains $pass.Name } else {
         $passes.Name -notcontains $pass.Name -and -not ($PhoneOnly -and -not $pass.Mockup) -and -not $pass.OnRequest }
     if ($isStale) { $staleNames += $pass.Name }
     $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }

@@ -603,12 +603,15 @@ half our scene's 1024×410) under a strip naming the effect and its armies, the 
 owner's B of the sheets drawn that day (one middle frame, A, shows little of most: melee's slashes are gone by frame 15,
 the Black D. Beam's orb is not there yet). The frames are 2, 6 … 22 of 30, the part before the tail that the message skip
 shows too (docs/ui/battle-screen.md, "Under the message skip"); 1, 3 … 11 for the short Guard (14) and T2 Goliath (15).
-Seed 1, the player's side; the unused Ninja troop left out: 28 entries, by group (Attacks, Magic, Specials, Ninjas,
-Defence). `GalleryEntries.CombatVfx`, each frame an `EffectStage` (the viewer's), no kept save needed.
+Seed 1, the player's side; the unused Ninja troop left out: every effect of `EffectCatalog`, 30 entries since Maria's
+cannon and Mill's phantoms (2026-11-04; dumped 2026-11-08), by group (Attacks, Magic, Specials, Ninjas, Defence).
+`GalleryEntries.CombatVfx`, each frame an `EffectStage` (the viewer's), no kept save needed; an effect added to the
+catalog joins the tab at its next dump.
 
 **Only when asked for** (owner, 2026-10-29: the effects hardly ever change): `gallery.ps1 -Vfx` adds the pass, `-VfxOnly`
 dumps it alone (`--screen-gallery --combat-vfx` in the game); a run without it leaves the tab as it was, never marked
-old. In a session with the agent that means only when the owner asks for it or the tab itself changes. The gallery
+old, and `-VfxOnly` leaves the other tabs' marks as the last run left them (2026-11-08). In a session with the agent
+that means only when the owner asks for it or the tab itself changes — a new effect included. The gallery
 looked at (Debug → Screen Gallery…) lists both. Two dumps of the same build are the same (0 pixels, 2026-10-29).
 
 The armies, the owner's table of 2026-10-29 (`EffectCatalog`, shared with Debug → Effects, which offers the others):
@@ -618,6 +621,8 @@ the enemy's is Ex's (commander 1) Leazas Knights (CG 1131) throughout but the po
 |---|---|---|
 | Melee, Guard | Rance (unit 1), Leazas Knights, as the rebellion makes them (`Iﾊﾝﾗﾝ.ADV:27`) | 1100 |
 | Bow | Isoroku (unit 27), JAPAN Archers | 1209 |
+| Cannon | Maria (unit 16), Maria's Pupils | 1168 |
+| Phantoms | Mill (unit 25), Phantom Beasts | 1180 |
 | Magic (fire) | Sill (unit 2), Leazas Mages | 1125 |
 | Ice Magic | Melfeis (unit 13), Leazas Mages | 1125 |
 | Lightning Magic | Somita (unit 46), Kalars (the viewer: Eleanor (unit 23), Hanty (unit 19)) | 1450 |
