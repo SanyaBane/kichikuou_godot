@@ -84,7 +84,9 @@ the console's output open and the script never ends (2026-11-08).
   import screen, imports the game folder, and a new game and a load play, the menu bar without Debug (a
   release build has none). The log (`%APPDATA%\KichikuouGodot\logs\godot.log`) names the version and
   "release build".
-- **Android**: the release APK installed on a device without the app, the game folder copied into the
-  app's folder (`Android/data/org.kichikuou.port/files/game`, what a player does by USB), the first start
-  imports it, a new game and a load play, both orientations.
-- **The README's "Installing"** matches the build: where to get it, what the player copies where.
+- **Android**: the README's "Installing" followed step by step on a device without the app — the release
+  APK installed from the device, the game started once, the game folder copied from a PC by USB in File
+  transfer mode (not adb) into `Android/data/org.kichikuou.port/files/game` —, the next start imports it, a
+  new game and a load play, both orientations; then the APK installed again over it keeps the saves.
+- **The README's "Installing"** matches the build: where to get it, what the player copies where, the
+  version in the file names.

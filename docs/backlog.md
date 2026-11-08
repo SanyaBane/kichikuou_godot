@@ -38,10 +38,13 @@ The owner aims at a public release (decision 28, 2026-10-20).
   owner's). The owner's devices have the debug build: the release one installs only after it is uninstalled, which
   deletes the saves and the game folder in the app's folder — copy the saves off first (`copy-saves-from-tablet.cmd`),
   or give the development builds a package of their own (`GameData.AndroidPackage` names one today).
-- **The Android player's way in** — *agent*: a player without adb copies the game folder into
-  `Android/data/org.kichikuou.port/files/game` (a PC over USB; Android 11 and later keep a phone's own file
-  managers out of `Android/data`); the README says nothing of it yet. A folder picked through Android's own
-  dialog (a `content://` tree, a Java plugin) would spare that, later.
+- **The Android player's way in** — *owner*, then *agent*: a player without adb copies the game folder into
+  `Android/data/org.kichikuou.port/files/game` from a PC over USB (Android 11 and later keep a device's own file
+  managers out of `Android/data`), as the README's "Installing" says since 2026-11-08 — never tried that way (the
+  owner's devices got it by adb, whose folders the app could not read on Android 16 until `Grant-AppAccess`): the
+  release check ([release.md](release.md)) tries it. The import screen on Android does not say where the folder goes
+  and offers the folder dialog, whose `content://` answer the import cannot open — *agent*. A folder picked through
+  Android's own dialog (a `content://` tree, a Java plugin) would spare the copy, later.
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play; the tablet first,
   phones put off (owner, 2026-10-24: their mock-ups B1, B3, M1, M2 and the open questions are in
   [ui/touch.md](ui/touch.md), "Phones (put off)") and taken up again (owner, 2026-10-27): both orientations, the
