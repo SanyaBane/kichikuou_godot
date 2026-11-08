@@ -6,6 +6,7 @@ config_version=5
 [application]
 
 config/name="Kichikuou"
+config/version="0.1"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
 config/use_custom_user_dir.template=true

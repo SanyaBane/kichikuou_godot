@@ -749,6 +749,9 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   preset `godot/export_presets.cfg`, the licenses copied next to the exe. The build keeps its data in
   `%APPDATA%\KichikuouGodot`, not the development runs' `app_userdata\Kichikuou`; deleting that folder makes the next
   launch a first one (the import screen with no folder chosen).
+- **The version** is `application/config/version` in `godot/project.godot` (0.1); the exe's version info and the
+  APK's version name come from it, the APK's `version/code` is raised by hand; a release is tagged `v<version>` —
+  docs/release.md (the release's steps and checks).
 - Export the Android test build (JDK 17 and the Android SDK set in Godot's editor settings), install it on the USB
   device and start it: `run-android.cmd` at the root (a double-click), or
   `powershell -ExecutionPolicy Bypass -File tools/export-android.ps1 -Install -Launch [-Out <apk outside the repository>] [-PushGame] [-NoExport]`

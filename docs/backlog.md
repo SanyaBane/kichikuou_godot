@@ -32,9 +32,21 @@ The owner aims at a public release (decision 28, 2026-10-20).
   `tools/export-release.ps1` export a release build outside the repository (2026-10-21; templates 4.7.2 mono
   installed on the owner's machine). The build keeps its data in `%APPDATA%\KichikuouGodot` (project.godot's
   `.template` overrides), apart from the development runs, so it starts as a new player's would; the fonts'
-  OFL texts go into the pack (the include filter) and next to the exe (`licenses\`) with `LICENSE`. Still open:
-  an icon and version info (`application/modify_resources` is off), the archive a player downloads, and the
-  owner's look at a first launch.
+  OFL texts go into the pack (the include filter) and next to the exe (`licenses\`) with `LICENSE`. The version
+  info is in the exe since 2026-11-08 (`0.1.0.0` from project.godot's version; [release.md](release.md),
+  "Versions"). Still open: an icon, the exe's company and copyright fields (empty), the archive a player
+  downloads, and the owner's look at a first launch.
+- **The Android release APK** — *owner*, then *agent* (2026-11-08, [release.md](release.md)): a release key of the
+  owner's own, kept outside the repository and backed up (an APK signed with another key never updates the
+  installed one); `tools/export-android.ps1` then exports with `--export-release` (Godot reads the key from
+  `GODOT_ANDROID_KEYSTORE_RELEASE_PATH`, `_USER`, `_PASSWORD`). The owner's devices have the debug build: the
+  release one installs only after it is uninstalled, which deletes the saves and the game folder in the app's
+  folder — copy the saves off first (`copy-saves-from-tablet.cmd`), or give the development builds a package of
+  their own (`GameData.AndroidPackage` names one today).
+- **The Android player's way in** — *agent*: a player without adb copies the game folder into
+  `Android/data/org.kichikuou.port/files/game` (a PC over USB; Android 11 and later keep a phone's own file
+  managers out of `Android/data`); the README says nothing of it yet. A folder picked through Android's own
+  dialog (a `content://` tree, a Java plugin) would spare that, later.
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play; the tablet first,
   phones put off (owner, 2026-10-24: their mock-ups B1, B3, M1, M2 and the open questions are in
   [ui/touch.md](ui/touch.md), "Phones (put off)") and taken up again (owner, 2026-10-27): both orientations, the

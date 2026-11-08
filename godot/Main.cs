@@ -18,8 +18,13 @@ public partial class Main : Control
     /// <summary>The development switches are read once per launch, not again when a game returns here.</summary>
     private static bool _commandLineRead;
 
+    /// <summary>The game's version, <c>application/config/version</c> in project.godot (docs/release.md, "Versions").</summary>
+    public static string Version => ProjectSettings.GetSetting("application/config/version").AsString();
+
     public override void _Ready()
     {
+        if (!_commandLineRead)
+            GD.Print($"Kichikuou {Version} ({(OS.IsDebugBuild() ? "debug" : "release")} build, {OS.GetName()})");
         HangWatch.Start(GetTree());
         Device.Follow(GetTree().Root);
         if (!_commandLineRead && !Device.OpenPhoneWindow())
