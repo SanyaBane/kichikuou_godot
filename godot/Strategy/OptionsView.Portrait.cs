@@ -171,10 +171,12 @@ internal sealed partial class OptionsView
         y += 14 + (lines - 1) * WrapPitch(14) + 30;
         SectionHead(x, y, "Battle", w);
         float foot = ForecastBox(x, y + 38, w);
-        // The radio groups start at the check box's edge, as on the PC (owner, 2026-11-10).
-        Text(_gothic, new Vector2(x, foot + 24), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
-        lines = Wrap(ReachHint, x, foot + 43, w, 13, Ui.InkQuiet);
-        float ry = foot + 43 + (lines - 1) * WrapPitch(13) + 14;
+        // The radio groups start at the check box's edge, as on the PC (owner, 2026-11-10); the name 40 under the
+        // forecast hint's last line (the box's foot is 7 under it), as "Ninja follow-up" under the reach note.
+        float head = foot + 33;
+        Text(_gothic, new Vector2(x, head), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
+        lines = Wrap(ReachHint, x, head + 19, w, 13, Ui.InkQuiet);
+        float ry = head + 19 + (lines - 1) * WrapPitch(13) + 14;
         for (int i = 0; i < Reaches.Length; i++)
             ReachRadio(i, x, ry + i * 36);
         y = ry + Reaches.Length * 36 + 14;
