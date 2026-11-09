@@ -9,6 +9,7 @@ config/name="Kichikuou"
 config/version="0.1"
 run/main_scene="res://Main.tscn"
 config/features=PackedStringArray("4.7", "C#", "Forward Plus")
+config/icon="res://icon/window.png"
 config/use_custom_user_dir.template=true
 config/custom_user_dir_name.template="KichikuouGodot"
 config/quit_on_go_back=false

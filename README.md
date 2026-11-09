@@ -16,7 +16,7 @@ that make the game more convenient to play.
   original game. The port replays the same runs from the same memory, with the same random draws
   and inputs, and must end with the same memory, variable by variable
   ([docs/golden-tests.md](docs/golden-tests.md)).
-- **No game data in the repository.** The player supplies their own copy of the game. The port
+- **No game data in the repository**, the game's icon aside (see "License"). The player supplies their own copy of the game. The port
   reads the scenario, pictures, sounds and music from the player's files at run time. The version
   ported is the English fan translation (v1.0).
 - **An engine-independent core.** The rules live in `Kichikuou.Original`, a plain .NET library with
@@ -171,4 +171,6 @@ names what it comes from and who holds the copyright.
 
 The license covers the project's own work only. *Kichikuou Rance* belongs to AliceSoft, and the
 English translation's text belongs to its translators; this license grants no rights to either.
-None of their files are in this repository: the port needs the player's own copy of the game.
+The one piece of their work in this repository and in the builds is the game's icon (`godot/icon`),
+a character cut from the game's title picture, which this license does not cover. None of their
+files are here: the port needs the player's own copy of the game.

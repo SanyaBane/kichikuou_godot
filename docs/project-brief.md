@@ -121,6 +121,7 @@ Why the strategic engine is still hard in a faithful port (rules are given, not 
 - Motivation fade mid-project → ship playable slices early.
 - Rights: fine for personal use. For any public release, distribute only our engine; the player
   supplies their own game files (the xsystem35 model). **Never commit original game assets.**
+  The one exception, the owner's (2026-11-09), is the game's icon ([release.md](release.md), "The icon").
   The project's own code is GPL-2.0-or-later (2026-10-11, decision 23 in
   [strategy/README.md](strategy/README.md)); that license grants nothing of AliceSoft's game.
 - "Engine for the engine's sake" → convert events first, polish later.

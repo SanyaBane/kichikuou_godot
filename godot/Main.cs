@@ -48,6 +48,11 @@ public partial class Main : Control
             if (TouchMode.NoHover)
                 NoHoverFilter.Install(GetTree().Root);
             ImportFromCommandLine();
+            if (CommandLine.Args.Contains("--make-icon"))
+            {
+                GetTree().Quit(GameIcon.Make() ? 0 : 1);
+                return;
+            }
             if (ImportScreenFromCommandLine() is { } look)
             {
                 screen = look;
@@ -156,6 +161,7 @@ public partial class Main : Control
     /// the window at <c>--window WxH</c>, else 1280×800; <c>--combat-vfx</c>: the Combat VFX tab's entries alone). With any of them <c>--phone landscape</c> plays a phone held
     /// landscape (docs/ui/phone-build.md, §3: the touch mode, the window at the reference phone's shape, <see cref="Device"/>).
     /// <c>--hang-watch</c>, <c>--hang-test N</c> and <c>--hang-spin N</c>: the frame watch (<see cref="HangWatch"/>).
+    /// <c>--make-icon</c> (read in <see cref="_Ready"/>) cuts the game's icon and quits (<see cref="GameIcon"/>).
     /// Null without a switch: the title.
     /// </summary>
     private static Node? FromCommandLine()

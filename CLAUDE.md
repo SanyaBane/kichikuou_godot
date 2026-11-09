@@ -752,6 +752,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - **The version** is `application/config/version` in `godot/project.godot` (0.1); the exe's version info and the
   APK's version name come from it, the APK's `version/code` is raised by hand; a release is tagged `v<version>` —
   docs/release.md (the release's steps and checks).
+- Make the game's icon again (Start's character cut from the player's CGs into `godot/icon`, committed):
+  `<Godot console exe> --headless --path godot -- --make-icon` — docs/release.md, "The icon".
 - Build a release: `release.cmd` at the root, or `powershell -ExecutionPolicy Bypass -File tools/release.ps1 [-Out <dir>]`
   — the Windows zip and the release APK with their SHA-256 in `%LOCALAPPDATA%\KichikuouGodot\release\<version>`; it
   asks for the release key's password (the keystore `KICHIKUOU_ANDROID_KEYSTORE` in `local.env`; never ask for the
@@ -936,7 +938,8 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   Never put rules in UI code.
 - **Godot 4 only.** Use Godot 4 C# APIs; never Godot 3 idioms (`yield`, old method/signal names).
   When unsure about an API, check the docs for the installed version.
-- **Never commit original game assets or extracted data** — the player supplies their own files.
+- **Never commit original game assets or extracted data** — the player supplies their own files. The one exception,
+  the owner's (2026-11-09), is the game's icon in `godot/icon` (docs/release.md, "The icon").
 - **License: GPL-2.0-or-later** ([LICENSE](LICENSE), decision 23). Code translated from a
   third-party source (xsystem35's C, `mt19937-1.c`, …) gets a header naming the file and its
   copyright holders, as `Sys3/Mt19937Legacy.cs` and `Graphics/Pms.cs` have; reproducing behaviour

@@ -31,7 +31,7 @@ The owner aims at a public release (decision 28, 2026-10-20).
   `.template` overrides), apart from the development runs, so it starts as a new player's would; the fonts'
   OFL texts go into the pack (the include filter) and next to the exe (`licenses\`) with `LICENSE`. The version
   info is in the exe since 2026-11-08 (`0.1.0.0` from project.godot's version; [release.md](release.md),
-  "Versions"). Still open: an icon, the exe's company and copyright fields (empty), the archive a player
+  "Versions"). Still open: the exe's company and copyright fields (empty), the archive a player
   downloads, and the owner's look at a first launch.
 - **The Android release APK** — *owner* (2026-11-08, [release.md](release.md)): the owner's release key is made and
   `tools/export-android.ps1 -Release` / `release.cmd` sign with it (tried with a throwaway key, not yet with the

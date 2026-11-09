@@ -35,6 +35,30 @@ build) keep them:
   `--ending`, `--touch`, `--phone`, `--import`, …): `godot/CommandLine.cs` gives none in a release build,
   and every switch is read through it. Godot's own options (before `--`) still work.
 
+## The icon
+
+The game's icon (owner, 2026-11-09) is Start's character from the title, cut without its word from CGs 301
+and 302 by `PhoneTitleArt.Character`, the same cut the title uses on a phone held upright. Its pictures in
+`godot/icon` **are in the repository**, the one exception to the rule against committing the original's assets
+(owner, 2026-11-09), and every build carries them. They are AliceSoft's art, so the GPL does not cover them
+(README, "License"). `project.godot` and the export presets name the files. To make them again, on a machine
+that has the game's data:
+
+```bash
+<Godot console exe> --headless --path godot -- --make-icon
+```
+
+(after a build of `godot/Kichikuou.csproj`; add `--import [DIR]` to cut it from a game folder instead of the extract.)
+
+- `icon.png` (256×256, clear round the figure): the Windows exe's icon (Godot makes its sizes from it) and Android's
+  icon before adaptive icons;
+- `window.png` (32×32): the running window's icon, `config/icon` in `project.godot`. Windows stretches the picture a
+  window is given to its icon size unsmoothed, which left the 256 px one ragged, so it is made at that size;
+- `android-foreground.png`, `android-background.png` (432×432): Android's adaptive icon, the figure within the
+  middle 66 dp that every launcher's mask spares, on the lacquer palette's backdrop;
+- `android-monochrome.png` (432×432): the layer Android 13+ tints for themed icons, the figure white with its dark
+  lines clear. Without it the template's Godot logo would show there.
+
 ## The Android release key
 
 The release APK is signed with the owner's own key (made 2026-11-08 with `keytool` from the `bin` folder
