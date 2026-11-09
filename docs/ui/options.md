@@ -140,8 +140,9 @@ their commander is off the field (his troops over the battle's limit).
 - **Defaults**: on Tweaks it turns the forecast off and New scenes first on; on Battle it no longer touches the forecast;
   on Game, which holds only the game folder now, it is greyed out.
 - **Chaos and Nikkou reach demons** (decision 32, docs/tweaks.md): under the forecast in Tweaks' Battle section, its
-  name and hint in the check boxes' column, three radios — Off — as the original (the default), On the field, Out of
-  reach — and a line telling the two apart; `[tweaks] demon_reach`, Defaults turns it off.
+  name and hint at the check boxes' edge (till 2026-11-10 in their labels' column; the owner moved them), three radios —
+  Off — as the original (the default), On the field, Out of reach — their circles under the check boxes, and a line
+  telling the two apart; `[tweaks] demon_reach`, Defaults turns it off.
 - **Ninja follow-up** (decision 33, 2026-10-29, docs/tweaks.md; mock-ups N1 and NP, `tools/ui/mock_ninja_chance.py`,
   Never left out after them): under "Chaos and Nikkou reach demons", its name and hint ("… Ninja never kills.", the
   owner's words), three radios in the reach radios' columns — 33% — as the original (the default), 67%, 100% — and no

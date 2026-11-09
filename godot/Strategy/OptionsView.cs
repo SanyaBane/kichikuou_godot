@@ -843,16 +843,17 @@ internal sealed partial class OptionsView : Control
         y += 44;
         SectionHead(x, y, "Battle", w);
         ForecastBox(x, y + 38);
-        float tx = x + 32, tw = w - 32;
-        Text(_gothic, new Vector2(tx, y + 120), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
-        Text(_gothic, new Vector2(tx, y + 139), ReachHint, fontSize: 13, modulate: Ui.InkQuiet);
+        // The radio groups start at the check box's edge (owner, 2026-11-10), their circles under it, in thirds of the
+        // column as the Display tab's radios.
+        Text(_gothic, new Vector2(x, y + 120), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(x, y + 139), ReachHint, fontSize: 13, modulate: Ui.InkQuiet);
         for (int i = 0; i < Reaches.Length; i++)
-            ReachRadio(i, tx + i * (tw / Reaches.Length), y + 154);
-        Text(_gothic, new Vector2(tx, y + 200), ReachNote, fontSize: 13, modulate: Ui.InkQuiet);
-        Text(_gothic, new Vector2(tx, y + 247), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
-        Text(_gothic, new Vector2(tx, y + 266), NinjaHint, fontSize: 13, modulate: Ui.InkQuiet);
+            ReachRadio(i, x + i * (w / Reaches.Length), y + 154);
+        Text(_gothic, new Vector2(x, y + 200), ReachNote, fontSize: 13, modulate: Ui.InkQuiet);
+        Text(_gothic, new Vector2(x, y + 247), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(x, y + 266), NinjaHint, fontSize: 13, modulate: Ui.InkQuiet);
         for (int i = 0; i < Ninjas.Length; i++)
-            NinjaRadio(Ninjas[i], tx + i * (tw / Ninjas.Length), y + 281);
+            NinjaRadio(Ninjas[i], x + i * (w / Ninjas.Length), y + 281);
         y += 338;
         SectionHead(x, y, "Scenes", w);
         return NewScenesBox(x, y + 38);

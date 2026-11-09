@@ -171,22 +171,22 @@ internal sealed partial class OptionsView
         y += 14 + (lines - 1) * WrapPitch(14) + 30;
         SectionHead(x, y, "Battle", w);
         float foot = ForecastBox(x, y + 38, w);
-        float tx = x + 32, tw = w - 32;
-        Text(_gothic, new Vector2(tx, foot + 24), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
-        lines = Wrap(ReachHint, tx, foot + 43, tw, 13, Ui.InkQuiet);
+        // The radio groups start at the check box's edge, as on the PC (owner, 2026-11-10).
+        Text(_gothic, new Vector2(x, foot + 24), "Chaos and Nikkou reach demons", fontSize: 17, modulate: Ui.Ink);
+        lines = Wrap(ReachHint, x, foot + 43, w, 13, Ui.InkQuiet);
         float ry = foot + 43 + (lines - 1) * WrapPitch(13) + 14;
         for (int i = 0; i < Reaches.Length; i++)
-            ReachRadio(i, tx, ry + i * 36);
+            ReachRadio(i, x, ry + i * 36);
         y = ry + Reaches.Length * 36 + 14;
-        lines = Wrap(ReachNote, tx, y, tw, 13, Ui.InkQuiet);
+        lines = Wrap(ReachNote, x, y, w, 13, Ui.InkQuiet);
         y += (lines - 1) * WrapPitch(13) + 40;
 
-        Text(_gothic, new Vector2(tx, y), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
-        lines = Wrap(NinjaHint, tx, y + 19, tw, 13, Ui.InkQuiet);
+        Text(_gothic, new Vector2(x, y), "Ninja follow-up", fontSize: 17, modulate: Ui.Ink);
+        lines = Wrap(NinjaHint, x, y + 19, w, 13, Ui.InkQuiet);
         ry = y + 19 + (lines - 1) * WrapPitch(13) + 14;
         for (int i = 0; i < PhoneNinjas.Length; i++)
-            NinjaRadio(PhoneNinjas[i], tx + i * (tw / PhoneNinjas.Length), ry);
-        Text(_gothic, new Vector2(tx, ry + 50), "33% is the original's.", fontSize: 13, modulate: Ui.InkQuiet);
+            NinjaRadio(PhoneNinjas[i], x + i * (w / PhoneNinjas.Length), ry);
+        Text(_gothic, new Vector2(x, ry + 50), "33% is the original's.", fontSize: 13, modulate: Ui.InkQuiet);
         y = ry + 50 + PortraitGap;
         SectionHead(x, y, "Scenes", w);
         return NewScenesBox(x, y + 38, w);
