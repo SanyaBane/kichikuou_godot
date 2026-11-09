@@ -85,12 +85,8 @@ public sealed partial class OriginalScriptContext
                 }
                 if (State.Ui_DragX != State.Ui_MouseX || State.Ui_DragY != State.Ui_MouseY)
                 {
-                    State.MapCamX = State.MapCamX + (State.Ui_DragX - State.Ui_MouseX) - (State.Ui_MouseX - State.Ui_DragX);
-                    if (State.MapCamX > 1280)
-                        State.MapCamX = 1280;
-                    State.MapCamY = State.MapCamY + (State.Ui_DragY - State.Ui_MouseY) - (State.Ui_MouseY - State.Ui_DragY);
-                    if (State.MapCamY > 400)
-                        State.MapCamY = 400;
+                    (State.MapCamX, State.MapCamY) = MapDragStep(State.MapCamX, State.MapCamY,
+                        State.Ui_DragX, State.Ui_DragY, State.Ui_MouseX, State.Ui_MouseY);
                     await MapScrollStepAsync();
                 }
             }
@@ -112,19 +108,15 @@ public sealed partial class OriginalScriptContext
                     pressedAgain = true;
                     break;
                 }
-                if (State.Tmp0021 + State.Tmp0022 + State.Tmp0023 + State.Tmp0024 == 0)
+                if (MapCoastStopped(State.Tmp0021, State.Tmp0022, State.Tmp0023, State.Tmp0024))
                     break;
-                State.MapCamX = State.MapCamX + State.Tmp0021 - State.Tmp0023;
-                if (State.MapCamX > 1280)
-                    State.MapCamX = 1280;
-                State.MapCamY = State.MapCamY + State.Tmp0022 - State.Tmp0024;
-                if (State.MapCamY > 400)
-                    State.MapCamY = 400;
+                (State.MapCamX, State.MapCamY) = MapScrolled(State.MapCamX, State.MapCamY,
+                    State.Tmp0021, State.Tmp0022, State.Tmp0023, State.Tmp0024);
                 await MapScrollStepAsync();
-                State.Tmp0021 = State.Tmp0021 * (8 - State.Tmp0028) / 10;
-                State.Tmp0022 = State.Tmp0022 * (8 - State.Tmp0028) / 10;
-                State.Tmp0023 = State.Tmp0023 * (8 - State.Tmp0028) / 10;
-                State.Tmp0024 = State.Tmp0024 * (8 - State.Tmp0028) / 10;
+                State.Tmp0021 = MapCoastDecay(State.Tmp0021, State.Tmp0028);
+                State.Tmp0022 = MapCoastDecay(State.Tmp0022, State.Tmp0028);
+                State.Tmp0023 = MapCoastDecay(State.Tmp0023, State.Tmp0028);
+                State.Tmp0024 = MapCoastDecay(State.Tmp0024, State.Tmp0028);
                 State.Tmp0028 = State.Tmp0028 - 10;
             }
             if (!pressedAgain)
@@ -134,6 +126,40 @@ public sealed partial class OriginalScriptContext
         State.Tmp0021 = State.Tmp0029 - State.MapCamX + (State.MapCamX - State.Tmp0029);
         State.Tmp0022 = State.Tmp0030 - State.MapCamY + (State.MapCamY - State.Tmp0030);
     }
+
+    /// <summary>
+    /// <c>WAO_MAP.ADV:31-37</c>: the camera (the view's corner) a step of the drag moves to, the pointer read at
+    /// (<paramref name="toX"/>, <paramref name="toY"/>) after it was at (<paramref name="fromX"/>, <paramref name="fromY"/>) —
+    /// <see cref="MapScrolled"/> by the anchor less the pointer and the pointer less the anchor. Shared with the screen's
+    /// drag drawn between the steps (<c>Original.Content/Strategy/MapDragPreview</c>).
+    /// </summary>
+    public static (Sys3Int X, Sys3Int Y) MapDragStep(Sys3Int camX, Sys3Int camY, Sys3Int fromX, Sys3Int fromY, Sys3Int toX, Sys3Int toY) =>
+        MapScrolled(camX, camY, fromX - toX, fromY - toY, toX - fromX, toY - fromY);
+
+    /// <summary>
+    /// <c>WAO_MAP.ADV:31-37, 60-66</c>: the camera a step of the drag or of its coasting moves to — on each axis
+    /// <paramref name="aheadX"/> added, then <paramref name="backX"/> taken away (the script's values never go below 0, so
+    /// of a movement's two differences one is 0), at most 1280 and 400.
+    /// </summary>
+    public static (Sys3Int X, Sys3Int Y) MapScrolled(Sys3Int camX, Sys3Int camY, Sys3Int aheadX, Sys3Int aheadY, Sys3Int backX, Sys3Int backY)
+    {
+        var x = camX + aheadX - backX;
+        if (x > 1280)
+            x = 1280;
+        var y = camY + aheadY - backY;
+        if (y > 400)
+            y = 400;
+        return (x, y);
+    }
+
+    /// <summary><c>WAO_MAP.ADV:57</c>: the coasting stops when its four differences are all 0.</summary>
+    public static bool MapCoastStopped(Sys3Int t21, Sys3Int t22, Sys3Int t23, Sys3Int t24) => t21 + t22 + t23 + t24 == 0;
+
+    /// <summary>
+    /// <c>WAO_MAP.ADV:72-76</c>: a difference of the coasting after a step, <paramref name="step"/> (<c>Tmp0028</c>) 3 for
+    /// the first — 5/10 of it — and 0 after (3 − 10 stays 0) — 8/10.
+    /// </summary>
+    public static Sys3Int MapCoastDecay(Sys3Int difference, Sys3Int step) => difference * ((Sys3Int)8 - step) / 10;
 
     /// <summary><c>IM Ui_MouseX, Ui_MouseY:</c> — the button into <c>RetVal</c>.</summary>
     private async Task MapPointerAsync(ISceneInput input)

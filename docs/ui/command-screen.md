@@ -28,7 +28,7 @@ are the `Ref(n)` calls).
   are part of the tiles. There are no army markers.
 - **Scrolling:** any movement while the left button is held drags the map, which coasts after the
   release (`WAO_MAP` op 1, `OriginalScriptContext.Map.cs:49-134`); another button during a drag snaps
-  back.
+  back. The screen draws it every frame ("The drag drawn every frame" below).
 
 ### A click on the map
 
@@ -477,6 +477,39 @@ the edge, the strip folding at the edge, the strip at the foot, the wide screen'
   window by `--map-north` on the week-18 save (CLAUDE.md, "Commands"): Godot's own input drags the map from Leazas
   Castle (1) to the Great Wall's corner, the top from 208 to 0, the pressed row 0-1 rows above the pointer throughout,
   the Great Wall's plate below the strip. Awaiting the owner's look in a window.
+
+### The drag drawn every frame (owner, 2026-11-09)
+
+Upright on the phone the map scrolled smoothly (our own camera, `PortraitMapView`); everywhere else it moved as the
+original's does. `WAO_MAP.ADV` op 1 drags the map in steps — a pointer read (`IM`, a frame), the view copied at the new
+camera (`CC`), `Y 3, Ui_ScrollWait` (2 ticks, 32 ms, waited a frame at a time) — so the picture moved every three or four
+frames at 60 a second (two or three at 30), the pointer's way since the last step in one jump, and the coasting after the
+release in the same steps. Of three ways (A draw the script's next step between its steps, B our own camera as upright,
+C `Ui_ScrollWait` 0, which only saves a frame a step) the owner chose **A**.
+
+- **Between the steps the screen draws the step that comes next.** While the left button drags: the view the script's
+  next step shows for the pointer as its next read would take it (`MapDragPreview.Corner`). The step's arithmetic is the
+  script's own (`OriginalScriptContext.MapDragStep` and `MapScrolled`, which `WAO_MAP`'s port uses, `:31-37`, `:60-66`);
+  its anchor is the read before while the script waits in the step's pause (`:40`), the pointer that read once the pause
+  is over (`:41-42`); the Y read under the strip's room is `MapHeadroom.PeekY`, what `ScriptY` would return, taking no press. So
+  the script's step copies the view that is already on the screen. While the view coasts: the picture goes on from the
+  script's camera towards its next step's (the differences as the pause leaves them, 5/10 then 8/10, `MapCoastDecay`) by
+  the time since the last step of a step's time (its pause in frames and the read's frame), never past it; when the
+  coasting stops, the last step's view stays.
+- **The script sees nothing of it.** Its camera, its reads, its steps and pauses stay the original's; the presenter puts
+  the view on the screen as the step does (`GamePresenter.ShowMapView`: the same `CC`), so `MapViewShown` — and our
+  plates and the strip's room with it — follows the picture. A press while the view coasts stops it at the view the
+  script's last step showed (the picture may stand up to two thirds of a step ahead of the camera), and its row is read
+  by the script's camera (`MapDragPreview.Ahead`, `GameScreen.ScriptY`), so the new drag keeps it under the pointer.
+  Another button during a drag puts the script's camera back where the drag began and leaves the picture (`:25-28`):
+  nothing is drawn ahead then.
+- **Where.** Every device but the phone held upright (whose map is ours already), both interfaces; the player's pointer
+  only (not unattended play's, but `--map-north`'s, which drags with Godot's input).
+- **Built (2026-11-09):** `Original.Content/Strategy/MapDragPreview` (`MapDragPreviewTests`: `WAO_MAP` op 1 run by the
+  port on 500 random drags — presses, moves, releases, other buttons, presses while it coasts — and wherever the script
+  waits, the preview for the read that comes next is the view the script then shows: ~5,000 drag and ~4,300 coasting
+  previews checked), `MapHeadroom.PeekY`, `GamePresenter.ShowMapView`, `godot/Strategy/GameScreen.MapDrag.cs`. Awaiting
+  the owner's look in a window.
 
 ### A building under way (owner, 2026-10-25)
 

@@ -141,6 +141,20 @@ public sealed partial class GamePresenter
         CoverScreen();
     }
 
+    /// <summary>
+    /// Ours (the drag drawn every frame, docs/ui/command-screen.md): the map's view at <paramref name="corner"/> onto the
+    /// screen while <c>COMMAND</c> waits on the map, as a step of <c>WAO_MAP</c>'s drag copies it
+    /// (<c>CC corner.X + 1280, corner.Y, 640, 400, 0, 0</c>, <c>WAO_MAP.ADV:39, 68</c>) — the view the script's next step
+    /// shows, drawn before it (<see cref="MapDragPreview"/>), so the step finds it there. Nothing when the screen shows it
+    /// already, or shows anything but the map.
+    /// </summary>
+    public void ShowMapView((int X, int Y) corner)
+    {
+        if (!MapWaiting || InBattle || DrawnByHand || State is null || MapViewShown is not { } shown || shown == corner)
+            return;
+        Engine("CC", [(Sys3Int)(corner.X + TileArea), (Sys3Int)corner.Y, (Sys3Int)640, (Sys3Int)400, Sys3Int.Zero, Sys3Int.Zero]);
+    }
+
     /// <summary>The six tiles and every marker off screen, from GameState (<c>WAO_MAP.ADV</c> op 3), unless they are there.</summary>
     private void EnsureTiles()
     {

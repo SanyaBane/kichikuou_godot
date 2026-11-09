@@ -60,24 +60,38 @@ public sealed class MapHeadroom
     /// </summary>
     public int ScriptY(int y, int top, bool held, int? shift = null)
     {
+        int read = Read(y, top, held, shift, out var grabbed, out var pressShift);
+        (_grabbed, _pressShift) = (grabbed, pressShift);
+        return read;
+    }
+
+    /// <summary>
+    /// What <see cref="ScriptY"/> would return now, without taking a press or letting it go: the read the script's next
+    /// step takes, for the drag drawn between the steps (<see cref="MapDragPreview"/>).
+    /// </summary>
+    public int PeekY(int y, int top, bool held, int? shift = null) => Read(y, top, held, shift, out _, out _);
+
+    private int Read(int y, int top, bool held, int? shift, out int? grabbed, out int? pressShift)
+    {
+        (grabbed, pressShift) = (_grabbed, _pressShift);
         if (_pressShift is { } pressed)
         {
             if (!held)
-                _pressShift = null;
+                pressShift = null;
             return Clamp(y - pressed);
         }
         if (_grabbed is not { } row)
         {
             int read = Clamp(y - (shift ?? Shift(top)));
             if (held && shift is { } sliding)
-                _pressShift = sliding;
+                pressShift = sliding;
             else if (held)
-                _grabbed = read + top;
+                grabbed = read + top;
             return read;
         }
         int target = Math.Clamp(row - y, Shown(0), Shown(MaxTop));     // the map row the screen's top is to show
         row = y + target;
-        _grabbed = held ? row : null;
+        grabbed = held ? row : null;
         return Clamp(row - TopShowing(target));
     }
 

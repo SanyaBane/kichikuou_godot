@@ -469,6 +469,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         UpdateHaremScreen();
         WarmMarks();
         UpdateTreasureScreen();
+        PreviewMapDrag(delta);                                          // before the room under the strip takes the view
         AdvanceHeadroom(delta);
         UpdateHeadroom();
         UpdateStatusStrip();
@@ -764,6 +765,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     {
         HangWatch.Note(scriptEvent);
         ObserveMapLeft(scriptEvent);
+        ObserveMapDrag(scriptEvent);
         if (SkippingScene)
         {
             // A scene skipped whole is not drawn: its stage commands (seconds of work for the opening) are dropped.
@@ -1673,7 +1675,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         }
         if (InterfaceChoice.New && _presenter.Battle.ReturnsToAttack)
             return Sys3Int.Zero;                                        // the map's scroll and blink under our attack screen after Back
-        double seconds = _options.Fast ? 0 : ticks.Value * 0.016;
+        double seconds = _options.Fast ? 0 : ticks.Value * PauseTick;
         if (_options.Auto)
         {
             await DelayAsync(seconds);
@@ -2156,6 +2158,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
 
     public async Task<MouseState> GetMouseAsync()
     {
+        _dragPreview.Reading();
         _presenter.Flush();
         if (_options.Auto)
         {
@@ -2218,6 +2221,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     private MouseState Read(MouseState read)
     {
         _mapCamera.OnMouseRead(read.Button.Value);
+        ObserveMapDragRead(read);
         return read;
     }
 

@@ -93,6 +93,9 @@ internal sealed class PlayerInput
         return code;
     }
 
+    /// <summary>What <see cref="ReadMouse"/> would return, without reading.</summary>
+    public ushort PeekMouse() => _buttons.Peek();
+
     /// <summary>What <see cref="ReadInput"/> would return, without reading.</summary>
     public ushort PeekInput() => (ushort)(_buttons.Peek() | _keys.Peek());
 

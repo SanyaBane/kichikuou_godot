@@ -489,6 +489,11 @@ Then (owner, 2026-11-04) the units' descriptions as text, drawn in our font over
 built — `Original.Content/Strategy/UnitDescription` reads the patch's pixel font exactly from the player's CG, its pieces
 by hash (`UnitDescriptionGlyphs`), 157 panels: the units', the harem's and the items' (docs/ui/unit-descriptions.md); the
 owner chose mock-up B (lacquer, Oswald), built: `godot/Strategy/PanelDescriptions` draws it over every picture panel of ours, accepted by the owner.
+Then (owner, 2026-11-09) the map's drag drawn every frame on every device but the upright phone (whose map is ours): the
+script drags in steps a few frames apart (`WAO_MAP` op 1), and between them the screen draws the view its next step will
+show — at the pointer while dragging, on the way to the next step while coasting — with the script's own arithmetic, its
+camera and reads untouched (docs/ui/command-screen.md, "The drag drawn every frame": `Original.Content/Strategy/MapDragPreview`,
+`GamePresenter.ShowMapView`, `godot/Strategy/GameScreen.MapDrag.cs`); built, awaiting the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

@@ -119,16 +119,22 @@ public partial class GameScreen
     /// <summary>
     /// The Y the script reads for the pointer at <paramref name="y"/> on the picture with <paramref name="buttons"/> held:
     /// on the map the view's row (<see cref="MapHeadroom.ScriptY"/>, a drag keeping its row under the pointer; while the
-    /// strip slides in, by the picture as drawn), else as it is.
+    /// strip slides in, by the picture as drawn), else as it is. While the view coasts the picture may stand ahead of the
+    /// script's camera (<see cref="MapDragPreview.Ahead"/>): a press then takes its row by the camera, as the script's next
+    /// step shows it. <paramref name="peek"/>: what the next read would be, no press taken nor let go.
     /// </summary>
-    private int ScriptY(int y, ushort buttons)
+    private int ScriptY(int y, ushort buttons, bool peek = false)
     {
         if (!_mapStrip || PhoneLandscape || PhonePortrait || _presenter.MapViewShown is not { } corner)
         {
-            _headroom.Release();
+            if (!peek)
+                _headroom.Release();
             return y;
         }
-        return _headroom.ScriptY(y, corner.Y, held: (buttons & KeyReturn) != 0, shift: _slide < 1 ? _shownShift : null);
+        int top = _dragPreview.Ahead && _presenter.State is { } state ? state.MapCamY.Value : corner.Y;
+        bool held = (buttons & KeyReturn) != 0;
+        int? shift = _slide < 1 ? _shownShift : null;
+        return peek ? _headroom.PeekY(y, top, held, shift) : _headroom.ScriptY(y, top, held, shift);
     }
 
     /// <summary>The player's pointer as the script reads it: the buttons held, the place on the picture turned to the view's (<see cref="ScriptY"/>).</summary>

@@ -110,6 +110,29 @@ public class MapHeadroomTests
         }
     }
 
+    /// <summary>
+    /// <see cref="MapHeadroom.PeekY"/> (the drag drawn between the script's steps) reads what the next
+    /// <see cref="MapHeadroom.ScriptY"/> returns, and takes no press nor lets one go.
+    /// </summary>
+    [Fact]
+    public void A_peek_reads_the_next_read_and_changes_nothing()
+    {
+        var room = new MapHeadroom();
+        int top = 60, previous = room.ScriptY(150, top, held: true);
+        foreach (int y in new[] { 160, 190, 240, 200, 120, 40, 10, 300 })
+        {
+            int peek = room.PeekY(y, top, held: true);
+            Assert.Equal(peek, room.PeekY(y, top, held: true));
+            Assert.Equal(peek, room.PeekY(y, top, held: false));            // a release reads as the press's last step
+            int read = room.ScriptY(y, top, held: true);
+            Assert.Equal(peek, read);
+            top = Math.Clamp(top + previous - read, 0, MapHeadroom.MaxTop);
+            previous = read;
+        }
+        Assert.Equal(room.PeekY(250, top, held: false), room.ScriptY(250, top, held: false));
+        Assert.Equal(250 - MapHeadroom.Shift(top), room.ScriptY(250, top, held: false));   // let go: the row under the pointer
+    }
+
     [Fact]
     public void A_release_lets_the_pressed_row_go()
     {
