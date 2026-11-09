@@ -98,6 +98,72 @@ public class CommandPhaseDifferentialTests(ITestOutputHelper output)
         Assert.True(steps > drags / 2);
     }
 
+    /// <summary>
+    /// The scroll to a target of <c>M.ADV</c> op 1 (<c>OriginalScriptContext.Map.cs</c>, whose step arithmetic the screen's
+    /// scroll drawn every frame shares) against the file run from the decompile, on random cameras and targets (outside
+    /// the scroll's range too, short ways, none) and random scratch values: the same pauses at the same cameras, the same
+    /// memory after.
+    /// </summary>
+    [ScenarioFact]
+    public async Task The_scroll_to_a_target_runs_exactly_as_M()
+    {
+        var program = new ScenarioScripts(LocalData.ScenarioDirectory).ReadProgram("M.ADV");
+        int steps = 0, scrolls = DifferentialRuns.Cases(2000);
+        for (int seed = 1; seed <= scrolls; seed++)
+        {
+            var rng = new Random(seed);
+            int Near(Sys3Int at, int max) => Math.Clamp(at.Value + rng.Next(-30, 31), 0, max);
+            var state = new GameState();
+            state.MapCamX = (Sys3Int)rng.Next(0, 2001);
+            state.MapCamY = (Sys3Int)rng.Next(0, 901);
+            state.MapTargetX = (Sys3Int)(rng.Next(3) == 0 ? Near(state.MapCamX, 2000) : rng.Next(0, 2001));
+            state.MapTargetY = (Sys3Int)(rng.Next(3) == 0 ? Near(state.MapCamY, 900) : rng.Next(0, 901));
+            for (int v = 21; v <= 40; v++)
+                state.Memory.Var(v) = (Sys3Int)rng.Next(0, 50);
+
+            var port = await ScrollAsync(ScriptState.Copy(state), null);
+            var original = await ScrollAsync(ScriptState.Copy(state), program);
+            int at = FirstDifference(original.Log, port.Log);
+            Assert.True(at < 0, $"seed {seed}: the runs differ at entry {at}\n{Around("M.ADV", original.Log, port.Log, at)}");
+            var differences = Differences("M.ADV", original.State.Memory, port.State.Memory, v => VariableCatalog.Variables[v].Name).Take(10).ToList();
+            Assert.True(differences.Count == 0, $"seed {seed}: memory differs\n  " + string.Join("\n  ", differences));
+            steps += port.Log.Count(e => e.StartsWith("wait", StringComparison.Ordinal));
+        }
+        output.WriteLine($"{scrolls} scrolls, {steps} steps");
+        Assert.True(steps > scrolls * 5);
+    }
+
+    private static async Task<Run> ScrollAsync(GameState state, ScriptProgram? program)
+    {
+        var log = new List<string>();
+        var input = new LoggingPauses(log);
+        var view = new LoggingView(log, e => e is not PauseEvent, _ => $" camera {state.MapCamX} {state.MapCamY} corner {state.Tmp0021} {state.Tmp0022}");
+        if (program is null)
+        {
+            var script = new OriginalScriptContext(state, new NoRandom(), view, input, new NoHooks());
+            await script.MapCallAsync(1);
+        }
+        else
+        {
+            var runner = new SceneRunner(new OneProgram(program), new NoHooks(), file => file == "M.ADV");
+            var script = new OriginalScriptContext(state, new NoRandom(), view, input, runner);
+            runner.Bind(script);
+            state.CallArg = 1;
+            await runner.RunFileAsync("M.ADV");
+        }
+        return new Run(state, log, false);
+    }
+
+    /// <summary>The pauses, each answered with no key.</summary>
+    private sealed class LoggingPauses(List<string> log) : UnexpectedInput
+    {
+        public override Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+        {
+            log.Add($"wait {ticks}");
+            return Task.FromResult(Sys3Int.Zero);
+        }
+    }
+
     private static async Task<Run> DragAsync(GameState state, int seed, ScriptProgram? program)
     {
         var log = new List<string>();

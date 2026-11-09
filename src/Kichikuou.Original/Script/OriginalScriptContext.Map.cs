@@ -240,97 +240,53 @@ public sealed partial class OriginalScriptContext
     }
 
     /// <summary><c>M.ADV:3-10</c>: <c>Tmp0021/0022</c> := the view's top-left corner (camera − 320/200, capped).</summary>
-    private void MapViewCorner()
+    private void MapViewCorner() => (State.Tmp0021, State.Tmp0022) = MapViewCornerOf(State.MapCamX, State.MapCamY);
+
+    /// <summary>
+    /// <c>M.ADV:3-10</c>: the view's top-left corner for the camera (<paramref name="camX"/>, <paramref name="camY"/>), the
+    /// view's centre — 320 and 200 less (never below 0), at most 1280 and 400.
+    /// </summary>
+    public static (Sys3Int X, Sys3Int Y) MapViewCornerOf(Sys3Int camX, Sys3Int camY)
     {
-        State.Tmp0021 = State.MapCamX - 320;
-        State.Tmp0022 = State.MapCamY - 200;
-        if (State.Tmp0021 > 1280)
-            State.Tmp0021 = 1280;
-        if (State.Tmp0022 > 400)
-            State.Tmp0022 = 400;
+        var x = camX - 320;
+        var y = camY - 200;
+        if (x > 1280)
+            x = 1280;
+        if (y > 400)
+            y = 400;
+        return (x, y);
     }
 
     /// <summary>
-    /// <c>M.ADV:20-113</c> (op 1): moves the camera to the target in steps of at most 1/10 of
-    /// the distance (at least 1/15), redrawing and pausing 5 ticks per step; then the camera
-    /// and the target both become the original (unclamped) target.
+    /// <c>M.ADV:20-113</c> (op 1): moves the camera to the target in steps of about ten pixels a pause
+    /// (<see cref="MapScrollStepSize"/>; a long way in fifteen, then a snap), redrawing and pausing 5 ticks per step; then
+    /// the camera and the target both become the original (unclamped) target.
     /// </summary>
     private async Task MapScrollToTargetAsync()
     {
         State.Tmp0039 = State.MapTargetX;
         State.Tmp0040 = State.MapTargetY;
-        if (State.MapTargetX < 320)
-            State.MapTargetX = 320;
-        if (State.MapTargetY < 200)
-            State.MapTargetY = 200;
-        if (State.MapCamX < 320)
-            State.MapCamX = 320;
-        if (State.MapCamY < 200)
-            State.MapCamY = 200;
-        if (State.MapTargetX > 1600)
-            State.MapTargetX = 1600;
-        if (State.MapTargetY > 600)
-            State.MapTargetY = 600;
-        if (State.MapCamX > 1600)
-            State.MapCamX = 1600;
-        if (State.MapCamY > 600)
-            State.MapCamY = 600;
+        (State.MapTargetX, State.MapTargetY) = MapScrollHeld(State.MapTargetX, State.MapTargetY);
+        (State.MapCamX, State.MapCamY) = MapScrollHeld(State.MapCamX, State.MapCamY);
         State.Tmp0029 = State.MapCamX - State.MapTargetX + (State.MapTargetX - State.MapCamX);
         State.Tmp0030 = State.MapCamY - State.MapTargetY + (State.MapTargetY - State.MapCamY);
         if (State.Tmp0029 + State.Tmp0030 != 0)
         {
-            // Step sizes: Tmp0023 horizontal, Tmp0024 vertical (:49-74).
-            State.Tmp0021 = State.Tmp0029;
-            if (State.Tmp0021 > 9)
-            {
-                State.Tmp0022 = State.Tmp0021 / 10;
-                State.Tmp0023 = State.Tmp0022 > 15 ? State.Tmp0029 / 15 : State.Tmp0029 / State.Tmp0022;
-            }
-            else
-            {
-                State.Tmp0023 = 1;
-            }
-            State.Tmp0021 = State.Tmp0030;
-            if (State.Tmp0021 > 19)
-            {
-                State.Tmp0022 = State.Tmp0021 / 10;
-                State.Tmp0024 = State.Tmp0022 > 15 ? State.Tmp0030 / 15 : State.Tmp0030 / State.Tmp0022;
-            }
-            else
-            {
-                State.Tmp0024 = 1;
-            }
+            // Step sizes: Tmp0023 horizontal, Tmp0024 vertical (:49-74). The scratch values these lines leave in
+            // Tmp0021/0022 are written over in the loop before anything reads them.
+            State.Tmp0023 = MapScrollStepSize(State.Tmp0029, 9);
+            State.Tmp0024 = MapScrollStepSize(State.Tmp0030, 19);
 
             do
             {
                 // L_001e7 (:75-86): horizontal step, or snap when closer than one step.
                 State.Tmp0021 = State.MapCamX - State.MapTargetX;
                 State.Tmp0022 = State.MapTargetX - State.MapCamX;
-                if (State.Tmp0021 * Lt(State.Tmp0021, State.Tmp0023) + State.Tmp0022 * Lt(State.Tmp0022, State.Tmp0023) != 0)
-                {
-                    State.MapCamX = State.MapTargetX;
-                }
-                else
-                {
-                    if (State.Tmp0021 > 0)
-                        State.MapCamX = State.MapCamX - State.Tmp0023;
-                    if (State.Tmp0022 > 0)
-                        State.MapCamX = State.MapCamX + State.Tmp0023;
-                }
+                State.MapCamX = MapScrollStep(State.MapCamX, State.MapTargetX, State.Tmp0023);
                 // L_0023a (:87-98): vertical.
                 State.Tmp0021 = State.MapCamY - State.MapTargetY;
                 State.Tmp0022 = State.MapTargetY - State.MapCamY;
-                if (State.Tmp0021 * Lt(State.Tmp0021, State.Tmp0024) + State.Tmp0022 * Lt(State.Tmp0022, State.Tmp0024) != 0)
-                {
-                    State.MapCamY = State.MapTargetY;
-                }
-                else
-                {
-                    if (State.Tmp0021 > 0)
-                        State.MapCamY = State.MapCamY - State.Tmp0024;
-                    if (State.Tmp0022 > 0)
-                        State.MapCamY = State.MapCamY + State.Tmp0024;
-                }
+                State.MapCamY = MapScrollStep(State.MapCamY, State.MapTargetY, State.Tmp0024);
                 // L_0028d (:99-113)
                 MapViewCorner();
                 State.CallArg = 0;
@@ -344,6 +300,78 @@ public sealed partial class OriginalScriptContext
         State.MapTargetY = State.Tmp0040;
         State.MapCamX = State.MapTargetX;
         State.MapCamY = State.MapTargetY;
+    }
+
+    /// <summary>
+    /// <c>M.ADV:22-48</c>: a camera or a target (the view's centre) as the scroll takes it, held inside 320-1600 × 200-600.
+    /// </summary>
+    public static (Sys3Int X, Sys3Int Y) MapScrollHeld(Sys3Int x, Sys3Int y)
+    {
+        if (x < 320)
+            x = 320;
+        if (y < 200)
+            y = 200;
+        if (x > 1600)
+            x = 1600;
+        if (y > 600)
+            y = 600;
+        return (x, y);
+    }
+
+    /// <summary>
+    /// <c>M.ADV:49-61</c> (horizontally, <paramref name="atMost"/> 9) and <c>:62-74</c> (vertically, 19): a scroll's step on
+    /// one axis for its <paramref name="distance"/> — the distance over its tenth, so ten pixels or a little more (10-19,
+    /// some ten steps a hundred pixels); once the tenth is above 15 (160 pixels and more), a fifteenth of it (fifteen steps
+    /// and a snap); 1 for a distance of <paramref name="atMost"/> or less, which goes a pixel a step.
+    /// </summary>
+    public static Sys3Int MapScrollStepSize(Sys3Int distance, Sys3Int atMost)
+    {
+        if (distance <= atMost)
+            return 1;
+        var tenth = distance / 10;
+        return tenth > 15 ? distance / 15 : distance / tenth;
+    }
+
+    /// <summary>
+    /// <c>M.ADV:75-86</c> (horizontally) and <c>:87-98</c> (vertically): the camera on one axis after a step of
+    /// <paramref name="step"/> towards <paramref name="target"/>, or the target itself when it is closer than a step.
+    /// </summary>
+    public static Sys3Int MapScrollStep(Sys3Int camera, Sys3Int target, Sys3Int step)
+    {
+        Sys3Int back = camera - target, ahead = target - camera;      // the script's values never go below 0: one is 0
+        if (back * Lt(back, step) + ahead * Lt(ahead, step) != 0)
+            return target;
+        if (back > 0)
+            camera = camera - step;
+        if (ahead > 0)
+            camera = camera + step;
+        return camera;
+    }
+
+    /// <summary>
+    /// <c>M.ADV:20-113</c> without its drawing and pauses: the cameras (the view's centre) an op 1 scroll from
+    /// (<paramref name="camX"/>, <paramref name="camY"/>) to (<paramref name="targetX"/>, <paramref name="targetY"/>) shows,
+    /// one a step, the last the target as held (<see cref="MapScrollHeld"/>); none when there is no way to go. The same
+    /// arithmetic as <see cref="MapScrollToTargetAsync"/>'s, shared with the screen's scroll drawn every frame
+    /// (<c>Original.Content/Strategy/MapScrollGlide</c>).
+    /// </summary>
+    public static IReadOnlyList<(Sys3Int X, Sys3Int Y)> MapScrollCameras(Sys3Int camX, Sys3Int camY, Sys3Int targetX, Sys3Int targetY)
+    {
+        var (x, y) = MapScrollHeld(camX, camY);
+        var (tx, ty) = MapScrollHeld(targetX, targetY);
+        Sys3Int dx = x - tx + (tx - x), dy = y - ty + (ty - y);
+        var cameras = new List<(Sys3Int X, Sys3Int Y)>();
+        if (dx + dy == 0)
+            return cameras;
+        Sys3Int stepX = MapScrollStepSize(dx, 9), stepY = MapScrollStepSize(dy, 19);
+        do
+        {
+            x = MapScrollStep(x, tx, stepX);
+            y = MapScrollStep(y, ty, stepY);
+            cameras.Add((x, y));
+        }
+        while (x != tx || y != ty);
+        return cameras;
     }
 
     /// <summary>

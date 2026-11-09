@@ -1,5 +1,7 @@
+using Kichikuou.Engine.Script;
 using Kichikuou.Engine.Sys3;
 using Kichikuou.Original.Script;
+using Kichikuou.Original.State;
 using static Kichikuou.Original.Tests.Combat.Sys3Assert;
 
 namespace Kichikuou.Original.Tests.Script;
@@ -79,6 +81,57 @@ public class MapTests
         Is(21, rig.State.Tmp0023);
         Is(1, rig.State.Tmp0024);
         Is(0, rig.State.Tmp0021);                    // corner of the last view: 320 - 320
+    }
+
+    [Fact]
+    public void The_scroll_s_cameras_are_its_steps_and_a_snap()
+    {
+        // The case above: fifteen steps of 21 from 640, then 325 snaps to 320.
+        var cameras = OriginalScriptContext.MapScrollCameras((Sys3Int)640, (Sys3Int)200, (Sys3Int)100, (Sys3Int)200);
+        Assert.Equal([.. Enumerable.Range(1, 15).Select(k => 640 - 21 * k), 320], cameras.Select(c => (int)c.X.Value));
+        Assert.All(cameras, c => Is(200, c.Y));
+        Assert.Empty(OriginalScriptContext.MapScrollCameras((Sys3Int)100, (Sys3Int)150, (Sys3Int)320, (Sys3Int)200));  // held: no way
+        // A short way down goes a pixel a step: 15 is not above 19.
+        Assert.Equal(15, OriginalScriptContext.MapScrollCameras((Sys3Int)800, (Sys3Int)300, (Sys3Int)800, (Sys3Int)315).Count);
+    }
+
+    /// <summary>
+    /// Op 1 run by the port on random cameras and targets (some outside the scroll's range, some short ways, some none): at
+    /// each step's pause the camera is the one <see cref="OriginalScriptContext.MapScrollCameras"/> lists for it, which the
+    /// screen's scroll drawn every frame follows (<c>Original.Content/Strategy/MapScrollGlide</c>).
+    /// </summary>
+    [Fact]
+    public async Task Op_1_steps_through_the_cameras_MapScrollCameras_lists()
+    {
+        var rng = new Random(11);
+        for (int i = 0; i < 400; i++)
+        {
+            int Near(int at, int max) => Math.Clamp(at + rng.Next(-25, 26), 0, max);
+            int camX = rng.Next(0, 2001), camY = rng.Next(0, 901);
+            int targetX = rng.Next(3) == 0 ? Near(camX, 2000) : rng.Next(0, 2001);
+            int targetY = rng.Next(3) == 0 ? Near(camY, 900) : rng.Next(0, 901);
+            var rig = Map(1, camX, camY, targetX, targetY);
+            var view = new CamerasAtPauses(rig.State);
+            var script = new OriginalScriptContext(rig.State, rig.Random, view, rig.Input, rig.Story);
+            var expected = OriginalScriptContext.MapScrollCameras((Sys3Int)camX, (Sys3Int)camY, (Sys3Int)targetX, (Sys3Int)targetY);
+
+            await script.MapAsync();
+
+            Assert.Equal(expected, view.Cameras);
+            Is(targetX, rig.State.MapCamX);
+        }
+    }
+
+    private sealed class CamerasAtPauses(GameState state) : IScriptView
+    {
+        public List<(Sys3Int X, Sys3Int Y)> Cameras { get; } = [];
+
+        public Task ShowAsync(ScriptEvent scriptEvent)
+        {
+            if (scriptEvent is PauseEvent)
+                Cameras.Add((state.MapCamX, state.MapCamY));
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]

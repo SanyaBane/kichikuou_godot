@@ -155,6 +155,27 @@ public sealed partial class GamePresenter
         Engine("CC", [(Sys3Int)(corner.X + TileArea), (Sys3Int)corner.Y, (Sys3Int)640, (Sys3Int)400, Sys3Int.Zero, Sys3Int.Zero]);
     }
 
+    /// <summary>
+    /// Ours (the scroll drawn every frame, docs/ui/command-screen.md): while an <c>M.ADV</c> op 1 scroll waits in a step's
+    /// pause — outside a battle or in one (<c>FIGT_A</c>/<c>FIGT_B</c>'s map) —, the map's view at <paramref name="corner"/>
+    /// is drawn in the screen instead of the step's (<see cref="MapScrollGlide"/>); null, the step's. Only the composed
+    /// screen: the stage keeps the step's view, as the original's, and the next event the script shows ends it
+    /// (<see cref="Show"/>).
+    /// </summary>
+    public void ShowScrollView((int X, int Y)? corner)
+    {
+        bool scrolling = BattleShows ? Battle.Scrolling : _mapAnimation == MapAnimation.Scroll;
+        if (!scrolling || State is null || Stage.View != (0, 0))
+            corner = null;
+        if (_scrollView == corner)
+            return;
+        _scrollView = corner;
+        Invalidate();
+    }
+
+    /// <summary>The view a scroll's glide draws over the step's now (<see cref="ShowScrollView"/>), or null.</summary>
+    private (int X, int Y)? _scrollView;
+
     /// <summary>The six tiles and every marker off screen, from GameState (<c>WAO_MAP.ADV</c> op 3), unless they are there.</summary>
     private void EnsureTiles()
     {
@@ -587,6 +608,8 @@ public sealed partial class GamePresenter
         _stageVersion = Stage.ScreenVersion;
         Screen.Palette = Stage.Palette;
         Screen.CopyFrom(Stage, Stage.View.X, Stage.View.Y, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);
+        if (_scrollView is { } glide)
+            Screen.CopyFrom(Stage, glide.X + TileArea, glide.Y, Surface.ScreenWidth, Surface.ScreenHeight, 0, 0);   // the step's view, elsewhere
         if (BattleShows && MaskEventCgs && State is { Ui_WinType.Value: 31 })
             MaskStage();                                                // a scene the battle called; its window is on the stage too
         if (BattleShows && CoverMessages)

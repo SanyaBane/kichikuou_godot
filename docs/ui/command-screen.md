@@ -28,7 +28,8 @@ are the `Ref(n)` calls).
   are part of the tiles. There are no army markers.
 - **Scrolling:** any movement while the left button is held drags the map, which coasts after the
   release (`WAO_MAP` op 1, `OriginalScriptContext.Map.cs:49-134`); another button during a drag snaps
-  back. The screen draws it every frame ("The drag drawn every frame" below).
+  back. The screen draws it every frame ("The drag drawn every frame" below), and so the camera's
+  scroll to a target (`M` op 1, "The scroll drawn every frame" below).
 
 ### A click on the map
 
@@ -510,6 +511,44 @@ C `Ui_ScrollWait` 0, which only saves a frame a step) the owner chose **A**.
   waits, the preview for the read that comes next is the view the script then shows: ~5,000 drag and ~4,300 coasting
   previews checked), `MapHeadroom.PeekY`, `GamePresenter.ShowMapView`, `godot/Strategy/GameScreen.MapDrag.cs`. Awaiting
   the owner's look in a window.
+
+### The scroll drawn every frame (owner, 2026-11-09)
+
+The owner looked at the drag drawn every frame and asked the same for the camera's scroll to a target, `M.ADV` op 1
+(`:20-119`, `OriginalScriptContext.MapScrollToTargetAsync`): the week's start panning to Leazas Castle (`COMMAND.ADV:4-13`),
+To Castle and the like on the command panel, a dungeon's search, the nation turns before an attack, `FIGT_A`/`FIGT_B`'s map
+and the scenes that call it. The target and the camera (the view's centre) are held inside 320-1600 × 200-600; the step on
+each axis is fixed for the scroll — the distance over its tenth, ten pixels or a little more (some ten steps a hundred
+pixels), a fifteenth of it from 160 pixels on (fifteen steps), 1 for nine pixels or less across and nineteen or less down,
+which then go a pixel a step (`MapScrollStepSize`); each step moves by it or snaps to the target when it is closer, the view
+is drawn (`WAO_MAP` op 0) and `Y 3, 5` waits 80 ms — five frames at 60 a second, two at 30. So the picture jumped twelve
+times a second, by up to 85 pixels. Nothing reads the input between the steps.
+
+- **The screen draws the scroll one step behind.** The whole way is known when the call starts
+  (`OriginalScriptContext.MapScrollCameras`, the same arithmetic as the port's steps: `MapScrollHeld`, `MapScrollStepSize`,
+  `MapScrollStep`, `MapViewCornerOf`). In step k's pause the screen shows the view gliding from step k−1's to step k's
+  (the first from the view at the camera before the call) by the time gone of the pause as the screen waits it — whole
+  frames, ending at the frame nearest its end (`MapScrollGlide.PauseSeconds`, `GameScreen.KeyWaitAsync`) — so the view is
+  step k's at the frame the pause ends: the same way in the same time, a frame at a time. Behind, not ahead as the drag's:
+  it never shows a view the script has not drawn yet, and the picture stands at each step's view when the script goes on.
+  A pause that ends early (a key on a cancelable pause) shows its step at once (`MapScrollGlide.Waited`).
+- **The script sees nothing of it.** Its camera, its scratch values (`Tmp0021-0024`, `Tmp0029/0030`), its pauses and its
+  stage stay the original's: the glide's view is drawn only in the screen the presenter composes, over the stage's step
+  (`GamePresenter.ShowScrollView`; outside a battle and in one, where `BattlePresenter.Scrolling` says the battle's map
+  scrolls), and every event the script shows ends it. `MapViewShown` follows the picture.
+- **Where.** Every device, both interfaces, outside a battle and in one; not while the message skip runs nor with
+  `--fast`. Upright on the phone the scroll is the original's picture at the width there too: our map (`PortraitMapView`)
+  is up only while the screen shows `COMMAND`'s map wait, never during a scroll (unattended play upright from the week-18
+  save: the week's pan to the castle, the rebels' pan before their attack on Ys (5) and `FIGT_B`'s, none with our map up),
+  and it opens centred on the view the scroll left, as before. The owner chose to leave it so (2026-11-09).
+- **Built (2026-11-09):** `Original.Content/Strategy/MapScrollGlide` (`MapScrollGlideTests`: op 1 run by the port on 400
+  random cameras and targets with the screen's frames at 30, 60 and 144 a second — every pause a step of the glide, every
+  frame on the way between the step before's view and the step's, never past it nor back, the step's at the pause's end,
+  the script's final view after: ~5,200 steps and ~38,000 frames; the presenter's screen and stage outside a battle and in
+  one), `OriginalScriptContext.MapScrollCameras` and its parts (`MapTests`; the port against `M.ADV` run from the
+  decompile on random cameras, targets and scratch values, `CommandPhaseDifferentialTests.The_scroll_to_a_target_runs_exactly_as_M`),
+  `GamePresenter.ShowScrollView`, `godot/Strategy/GameScreen.MapScroll.cs`. Awaiting the owner's look in a window and on
+  the Poco.
 
 ### A building under way (owner, 2026-10-25)
 

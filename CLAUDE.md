@@ -494,6 +494,13 @@ script drags in steps a few frames apart (`WAO_MAP` op 1), and between them the 
 show — at the pointer while dragging, on the way to the next step while coasting — with the script's own arithmetic, its
 camera and reads untouched (docs/ui/command-screen.md, "The drag drawn every frame": `Original.Content/Strategy/MapDragPreview`,
 `GamePresenter.ShowMapView`, `godot/Strategy/GameScreen.MapDrag.cs`); built, awaiting the owner's look in a window.
+Then (owner, 2026-11-09) the camera's scroll to a target (`M.ADV` op 1) drawn every frame on every device, in a battle too:
+the whole way is known at the call (`OriginalScriptContext.MapScrollCameras`, the port's own step arithmetic), so in each
+step's pause the screen glides from the step before's view to the step's, one step behind, only in the composed screen —
+the script's camera, scratch values, pauses and stage stay the original's (docs/ui/command-screen.md, "The scroll drawn
+every frame": `Original.Content/Strategy/MapScrollGlide`, `GamePresenter.ShowScrollView`, `godot/Strategy/GameScreen.MapScroll.cs`;
+upright on the phone the scroll is the original's picture there too, left so by the owner); built, awaiting the owner's
+look in a window and on the Poco.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its

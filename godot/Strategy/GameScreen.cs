@@ -470,6 +470,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         WarmMarks();
         UpdateTreasureScreen();
         PreviewMapDrag(delta);                                          // before the room under the strip takes the view
+        GlideMapScroll(delta);
         AdvanceHeadroom(delta);
         UpdateHeadroom();
         UpdateStatusStrip();
@@ -766,6 +767,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
         HangWatch.Note(scriptEvent);
         ObserveMapLeft(scriptEvent);
         ObserveMapDrag(scriptEvent);
+        ObserveMapScroll(scriptEvent);
         if (SkippingScene)
         {
             // A scene skipped whole is not drawn: its stage commands (seconds of work for the opening) are dropped.
@@ -1661,6 +1663,18 @@ public partial class GameScreen : Control, IScriptView, IGameInput
     }
 
     public async Task<Sys3Int> PauseAsync(Sys3Int ticks, bool cancelable)
+    {
+        try
+        {
+            return await PauseCoreAsync(ticks, cancelable);
+        }
+        finally
+        {
+            _scrollGlide.Waited();                                      // a scroll's step stands as the script goes on
+        }
+    }
+
+    private async Task<Sys3Int> PauseCoreAsync(Sys3Int ticks, bool cancelable)
     {
         // Y 3 (cmdy.c): 0 reads the input once; the core keeps Y3waitFlags (Y 3, 10000 / 10001
         // never come here) and passes it as cancelable.

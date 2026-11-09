@@ -152,11 +152,18 @@ public sealed partial class GamePresenter : IStageObserver
 
     /// <summary>
     /// The map point at the screen's top-left corner as the screen shows it: the view last put on the
-    /// screen (<c>M.ADV</c> 0/12, a step of the drag), null before any. Our layers over the map follow
+    /// screen (<c>M.ADV</c> 0/12, a step of the drag), or the one a scroll's glide draws over it now
+    /// (<see cref="ShowScrollView"/>), null before any. Our layers over the map follow
     /// it rather than the camera, which <c>COMMAND</c> centres again at a still click's release
     /// (<c>COMMAND.ADV:94-98</c>) a read before it leaves the wait, with the picture unchanged.
     /// </summary>
-    public (int X, int Y)? MapViewShown { get; private set; }
+    public (int X, int Y)? MapViewShown
+    {
+        get => _scrollView ?? _mapViewShown;
+        private set => _mapViewShown = value;
+    }
+
+    private (int X, int Y)? _mapViewShown;
 
     /// <summary>The open picker, or null.</summary>
     public PickerView? Picker { get; private set; }
@@ -294,6 +301,7 @@ public sealed partial class GamePresenter : IStageObserver
     public void Show(ScriptEvent scriptEvent)
     {
         Invalidate();
+        _scrollView = null;                                             // the script goes on: its stage shows again
         if (scriptEvent is BattleScreenEvent battle)
         {
             BattleScreen(battle.Open);

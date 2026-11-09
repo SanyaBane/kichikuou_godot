@@ -386,6 +386,9 @@ public sealed partial class BattlePresenter
     private MapAnimation _mapAnimation;
     private int _blinkStep;
 
+    /// <summary>Whether an <c>M.ADV</c> op 1 scroll is under way: its pauses show the map at the camera (<see cref="MapPause"/>).</summary>
+    internal bool Scrolling => _mapAnimation == MapAnimation.Scroll;
+
     private void Map(int mode)
     {
         switch (mode)
