@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Content;
+using Kichikuou.Content.Audio;
 using Kichikuou.Content.Decompiler;
 using Kichikuou.Game.Battles;
 using Kichikuou.Game.Strategy;
@@ -14,7 +15,9 @@ namespace Kichikuou.Game;
 /// sealed in red. The folder field opens the system's folder dialog; Import runs <see cref="GameImport"/> on a
 /// worker thread under a vermilion bar; a refusal (<see cref="GameFolderException"/>'s message) is written in
 /// vermilion ink with a stamp beside it and "Choose another folder". Once imported, the folder is kept
-/// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens. Opened from Option → Game it has a
+/// (<see cref="GameData.GameDirectory"/>) and <see cref="_next"/> opens — unless the copy lacks music
+/// (<see cref="MusicNote"/>, the owner's B, 2026-11-10): then a row with ♪ between the scenario and Play says so and the
+/// red Play opens it. Opened from Option → Game it has a
 /// way back (<see cref="_back"/>: "Back to the title", Esc or Android's Back) that leaves the open import as it is. Laid
 /// out in the 1280×800 screen's pixels, letterboxed into the window; on the phone held landscape as LI (ImportScreen.Phone.cs).
 /// </summary>
@@ -55,6 +58,10 @@ public partial class ImportScreen : Control
     private ImportedGame? _imported;
     private Exception? _failure;
     private bool _finished;
+    private MusicNote? _musicFound;                // the worker's, under the lock
+    /// <summary>The copy's music missing, once imported: the row between the scenario and Play, and the screen waits for Play.</summary>
+    private MusicNote? _music;
+    private bool _opened;
     private double _doneFor;
     private Rect2 _field;                          // the folder field, in screen pixels (laid out by the drawing)
     private bool _hoverField, _hoverButton, _pressedButton, _hoverBack;
@@ -98,7 +105,7 @@ public partial class ImportScreen : Control
     /// No import runs, it takes no input and opens nothing; the gallery places it (anchored at the top left, not the full rect).
     /// </summary>
     internal static ImportScreen Held(GameFont font, string folder, ImportProgress? importing = null, bool done = false,
-        string? refusal = null, bool back = false)
+        string? refusal = null, bool back = false, MusicNote? music = null)
     {
         static Node Never() => throw new InvalidOperationException("The gallery's import screen opens nothing.");
         var screen = new ImportScreen(folder, start: false, next: Never, back: back ? Never : null, font: font)
@@ -115,6 +122,7 @@ public partial class ImportScreen : Control
         else if (done)
         {
             screen._phase = Phase.Done;
+            screen._music = music;
         }
         else if (importing is { } progress)
         {
@@ -157,12 +165,15 @@ public partial class ImportScreen : Control
             _finished = false;
             _imported = null;
             _failure = null;
+            _musicFound = null;
         }
+        _music = null;
         string folder = _folder, cache = _unattended is not null ? LookCache() : GameData.ImportCache;
         Task.Run(() =>
         {
             ImportedGame? imported = null;
             Exception? failure = null;
+            MusicNote? music = null;
             try
             {
                 imported = GameImport.Import(folder, cache, new Progress(p => { lock (_lock) _progress = p; }));
@@ -171,14 +182,40 @@ public partial class ImportScreen : Control
             {
                 failure = e;
             }
+            if (imported is not null)
+                music = MusicOf(imported.Folder.Directory);
             lock (_lock)
             {
                 _imported = imported;
                 _failure = failure;
+                _musicFound = music;
                 _finished = true;
             }
         });
         QueueRedraw();
+    }
+
+    /// <summary>The note on the copy's music, or null when every track is there (or the folder cannot be read for it: the import stands).</summary>
+    private static MusicNote? MusicOf(string folder)
+    {
+        try
+        {
+            return MusicNote.Of(new MusicTable(folder));
+        }
+        catch (Exception e) when (e is IOException or UnauthorizedAccessException)
+        {
+            GD.PushWarning($"Import: the music of {folder} could not be checked: {e.Message}");
+            return null;
+        }
+    }
+
+    /// <summary>The screen after the import, once.</summary>
+    private void OpenNext()
+    {
+        if (_opened)
+            return;
+        _opened = true;
+        Screens.Open(this, _next());
     }
 
     /// <summary>A fresh cache for the unattended look, so its decompile runs and its bar is seen (our own folder, emptied first).</summary>
@@ -201,19 +238,21 @@ public partial class ImportScreen : Control
         if (_phase == Phase.Done)
         {
             _doneFor += delta;
-            if (_doneFor >= 0.5 && _unattended is null)
-                Screens.Open(this, _next());
+            if (_doneFor >= 0.5 && _unattended is null && _music is null)    // the music missing: Play opens it
+                OpenNext();
             return;
         }
         if (_phase != Phase.Importing)
             return;
         ImportedGame? imported;
         Exception? failure;
+        MusicNote? music;
         bool finished;
         lock (_lock)
         {
             imported = _imported;
             failure = _failure;
+            music = _musicFound;
             finished = _finished;
         }
         QueueRedraw();
@@ -226,6 +265,9 @@ public partial class ImportScreen : Control
                 GameData.GameDirectory = imported.Folder.Directory;
             _phase = Phase.Done;
             _doneFor = 0;
+            _music = music;
+            if (music is not null)
+                GD.Print($"Import: {music.Title}. {music.Body}");
             return;
         }
         _phase = Phase.Refused;
@@ -294,7 +336,7 @@ public partial class ImportScreen : Control
     /// bar), alone at the right thumb without one.
     /// </summary>
     private Rect2 Button => _phone is { } f
-        ? Phone.Rect(f.IsPortrait ? PhoneImportPortrait.Button(f, HasBack) : PhoneImport.Button(f, _phase == Phase.Refused, HasBack))
+        ? Phone.Rect(f.IsPortrait ? PhoneImportPortrait.Button(f, BackBeside) : PhoneImport.Button(f, _phase == Phase.Refused, BackBeside))
         : _phase == Phase.Refused ? WideButton : NarrowButton;
 
     /// <summary>The way back's link, right of the red button; on the phone level with it (upright in the bar right of it).</summary>
@@ -306,8 +348,12 @@ public partial class ImportScreen : Control
     {
         Phase.Choose => _folder.Length > 0,
         Phase.Refused => true,
+        Phase.Done => _music is not null && !_opened,
         _ => false,
     };
+
+    /// <summary>Whether the way back stands beside the red button now (not once imported: Play stands alone at the thumb).</summary>
+    private bool BackBeside => HasBack && _phase is Phase.Choose or Phase.Refused;
 
     private bool FieldLive => !_dialogOpen && _phase is Phase.Choose or Phase.Refused;
 
@@ -344,7 +390,9 @@ public partial class ImportScreen : Control
     {
         if (!ButtonLive)
             return;
-        if (_phase == Phase.Refused)
+        if (_phase == Phase.Done)
+            OpenNext();
+        else if (_phase == Phase.Refused)
             ChooseFolder();
         else
             StartImport();
@@ -471,9 +519,17 @@ public partial class ImportScreen : Control
         DrawRect(new Rect2(bar.Position + new Vector2(3, 3), new Vector2((bar.Size.X - 6) * fraction, bar.Size.Y - 6)), Ui.VermilionInk);
         DrawString(_gothic, new Vector2(TextX, barY + 46), $"{Math.Round(fraction * 100)}%", HorizontalAlignment.Right,
             TextRight - TextX, 16, Ui.Ink);
-        Step(barY + 64, 2, "Play", null, done ? StepState.Now : StepState.Next);
+        float playY = barY + 64;
+        if (done && _music is { } music)
+            playY = Step(playY, MusicMark, music.Title, music.Body, StepState.Warn) + 16;
+        Step(playY, 2, "Play", null, done ? StepState.Now : StepState.Next);
+        if (done && _music is not null)
+            DrawButton("Play");
         ProgressShot(progress, done);
     }
+
+    /// <summary>The music's row's mark in its ring (the owner's B).</summary>
+    private const string MusicMark = "♪";
 
     /// <summary>The unattended look's dump of the bar, once, when the decompile is a third through.</summary>
     private void ProgressShot(ImportProgress progress, bool done)
@@ -505,7 +561,8 @@ public partial class ImportScreen : Control
         DrawButton("Choose another folder");
     }
 
-    private enum StepState { Now, Next, Done, Failed }
+    /// <summary>A step's state: <see cref="Warn"/> is a row that is no step, the music missing (its ring and title in vermilion ink, not sealed).</summary>
+    private enum StepState { Now, Next, Done, Failed, Warn }
 
     private static Color StepColour(StepState state) => state switch
     {
@@ -515,8 +572,14 @@ public partial class ImportScreen : Control
         _ => Ui.VermilionInk,
     };
 
+    /// <summary>A step's numeral (一 二 三) for its <paramref name="index"/>.</summary>
+    private static string Numeral(int index) => "一二三"[index].ToString();
+
     /// <summary>A numbered step (一 二 三) with its title and its text wrapped under it; returns the y below it.</summary>
-    private float Step(float y, int index, string title, string? body, StepState state)
+    private float Step(float y, int index, string title, string? body, StepState state) => Step(y, Numeral(index), title, body, state);
+
+    /// <summary>A row with <paramref name="mark"/> in its ring, its title and its text wrapped under it; returns the y below it.</summary>
+    private float Step(float y, string mark, string title, string? body, StepState state)
     {
         var colour = StepColour(state);
         var seal = new Vector2(StepX + 15, y + 13);
@@ -524,7 +587,7 @@ public partial class ImportScreen : Control
         if (sealed_)
             DrawCircle(seal, 15, Ui.Vermilion);
         DrawArc(seal, 14, 0, Mathf.Tau, 48, state == StepState.Next ? Ui.InkGrey : Ui.VermilionInk, Lacquer.Line(2, _k), true);
-        DrawString(_gothic, new Vector2(seal.X - 15, seal.Y + 6), "一二三"[index].ToString(), HorizontalAlignment.Center, 30, 16,
+        DrawString(_gothic, new Vector2(seal.X - 15, seal.Y + 6), mark, HorizontalAlignment.Center, 30, 16,
             sealed_ ? Ui.SealText : colour);
         DrawString(_gothic, new Vector2(TextX, y + 20), title, fontSize: 19, modulate: colour);
         if (state == StepState.Done)
@@ -633,7 +696,7 @@ public partial class ImportScreen : Control
         if (_quit)
             GetTree().Quit(_phase == Phase.Done || _phase == Phase.Refused ? 0 : 1);
         else if (_phase == Phase.Done)
-            Screens.Open(this, _next());
+            OpenNext();
     }
 
     private async Task Frames(int count)

@@ -49,8 +49,17 @@ public sealed class MusicTable
     {
         if (n < 1 || n > _lines.Count || _lines[n - 1].Length == 0)
             return null;
-        return Path.Combine(GameDirectory, _lines[n - 1].Replace('\\', Path.DirectorySeparatorChar));
+        return Path.Combine(GameDirectory, Relative(_lines[n - 1]));
     }
+
+    /// <summary>The tracks the playlist lists, in its order, each as a path under the game folder (this system's separators).</summary>
+    public IReadOnlyList<string> Listed => [.. _lines.Where(l => l.Length > 0).Select(Relative)];
+
+    /// <summary>The listed tracks whose file is not in the game folder, in the playlist's order (as <see cref="Listed"/>).</summary>
+    public IReadOnlyList<string> Missing() =>
+        [.. Listed.Where(track => !File.Exists(Path.Combine(GameDirectory, track)))];
+
+    private static string Relative(string line) => line.Replace('\\', Path.DirectorySeparatorChar);
 
     private static string? FindPlaylist(string directory) =>
         Directory.Exists(directory)

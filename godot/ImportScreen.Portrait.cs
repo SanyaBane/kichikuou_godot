@@ -83,7 +83,12 @@ public partial class ImportScreen
         y = PhoneStep(u, 0, 1, y + u.Px(PhoneImportPortrait.StepRoom), done ? ticked : right, done ? "The scenario is read" : progress.Stage,
             null, done ? StepState.Done : StepState.Now);
         ImportBar(u, L(PhoneImportPortrait.TextLeft(f)), y, right, done ? 1 : (float)Math.Clamp(progress.Fraction, 0, 1));
-        PhoneStep(u, 0, 2, y + u.Px(PhoneImportPortrait.PlayUnderBar), right, "Play", null, done ? StepState.Now : StepState.Next);
+        float playY = y + u.Px(PhoneImportPortrait.PlayUnderBar);
+        if (done && _music is { } music)        // the music missing (the owner's B): its row where Play stood, Play under it, red in the bar
+            playY = PhoneStep(u, 0, MusicMark, playY, right, music.Title, music.Body, StepState.Warn) + u.Px(PhoneImportPortrait.StepRoom);
+        PhoneStep(u, 0, 2, playY, right, "Play", null, done ? StepState.Now : StepState.Next);
+        if (done && _music is not null)
+            PhoneButton(u, "Play");
         ProgressShot(progress, done);
     }
 

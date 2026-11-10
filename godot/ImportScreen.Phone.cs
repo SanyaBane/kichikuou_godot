@@ -108,7 +108,12 @@ public partial class ImportScreen
         float y = PhoneStep(u, 1, 1, top, done ? L(PhoneImport.TickedRight(f, 1)) : right, done ? "The scenario is read" : progress.Stage,
             null, done ? StepState.Done : StepState.Now);
         ImportBar(u, x, y, right, done ? 1 : (float)Math.Clamp(progress.Fraction, 0, 1));
-        PhoneStep(u, 1, 2, y + u.Px(PhoneImport.PlayUnderBar), right, "Play", null, done ? StepState.Now : StepState.Next);
+        float playY = y + u.Px(PhoneImport.PlayUnderBar);
+        if (done && _music is { } music)        // the music missing (the owner's B): its row where Play stood, Play under it, red at the thumb
+            playY = PhoneStep(u, 1, MusicMark, playY, right, music.Title, music.Body, StepState.Warn) + u.Px(PhoneImport.PlayGap);
+        PhoneStep(u, 1, 2, playY, right, "Play", null, done ? StepState.Now : StepState.Next);
+        if (done && _music is not null)
+            PhoneButton(u, "Play");
         ProgressShot(progress, done);
     }
 
@@ -166,7 +171,11 @@ public partial class ImportScreen
     /// middle at <paramref name="middle"/>, its title and its lines wrapped to <paramref name="right"/>; returns where the next
     /// part starts, under its last line (the mock-ups' <c>step_text</c>).
     /// </summary>
-    private float PhoneStep(PhoneUnits u, int column, int numeral, float middle, float right, string title, string? body, StepState state)
+    private float PhoneStep(PhoneUnits u, int column, int numeral, float middle, float right, string title, string? body, StepState state) =>
+        PhoneStep(u, column, Numeral(numeral), middle, right, title, body, state);
+
+    /// <summary>A row as <see cref="PhoneStep(PhoneUnits, int, int, float, float, string, string?, StepState)"/> with <paramref name="mark"/> in its ring.</summary>
+    private float PhoneStep(PhoneUnits u, int column, string mark, float middle, float right, string title, string? body, StepState state)
     {
         var f = u.Frame;
         var colour = StepColour(state);
@@ -177,8 +186,8 @@ public partial class ImportScreen
             DrawCircle(seal, radius, Ui.Vermilion);
         DrawArc(seal, radius - u.Px(1), 0, Mathf.Tau, 64, state == StepState.Next ? Ui.InkGrey : Ui.VermilionInk,
             u.Px(PhoneImport.MarkLine), true);
-        int mark = u.Size(PhoneImport.MarkText);
-        Middle(_gothic, "一二三"[numeral].ToString(), mark, seal.X - radius, seal.Y, sealed_ ? Ui.SealText : colour, 2 * radius);
+        int markSize = u.Size(PhoneImport.MarkText);
+        Middle(_gothic, mark, markSize, seal.X - radius, seal.Y, sealed_ ? Ui.SealText : colour, 2 * radius);
         if (state == StepState.Done)
         {
             var tick = new Vector2(L(TickX(f, column)), middle);

@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Content;
+using Kichikuou.Content.Audio;
 using Kichikuou.Engine.Script;
 using Kichikuou.Game.Strategy;
 using Kichikuou.Original.Content.Devices;
@@ -27,6 +28,10 @@ internal static partial class GalleryEntries
 
     private const string FolderNote = "The folder's path is the gallery's own; nothing is checked or imported.";
 
+    /// <summary>The translation's playlist as the music's note names it: with the phone's separators on the phone (Android's).</summary>
+    private static string[] SampleTracks =>
+        [.. MusicTable.TranslationPlaylist.Select(line => line.Replace('\\', PhoneHeld ? '/' : '\\'))];
+
     private static IEnumerable<GalleryEntry> TitleScreens()
     {
         yield return new("import-none", TitleSection, "Import: the first launch", null,
@@ -43,6 +48,14 @@ internal static partial class GalleryEntries
         yield return new("import-done", TitleSection, "Import: imported", null,
             "The half second before the title opens. " + FolderNote,
             g => Import(g, ImportScreen.Held(g.Font, SampleFolder, done: true)));
+        yield return new("import-no-music", TitleSection, "Import: a copy without music", null,
+            "Imported, but no track of the playlist in the folder (MusicNote, the owner's B): the row with ♪ between the scenario "
+            + "and Play, the screen waiting for the red Play. " + FolderNote,
+            g => Import(g, ImportScreen.Held(g.Font, SampleFolder, done: true, music: MusicNote.Of(SampleTracks, SampleTracks))));
+        yield return new("import-some-music", TitleSection, "Import: some tracks missing", null,
+            "Made up: three tracks of the playlist not in the folder, named in the row. " + FolderNote,
+            g => Import(g, ImportScreen.Held(g.Font, SampleFolder, done: true,
+                music: MusicNote.Of(SampleTracks, [SampleTracks[5], SampleTracks[10], SampleTracks[18]]))));
         yield return new("import-refused", TitleSection, "Import: the wrong folder", null,
             "GameFiles' refusal of a folder without the game's files (GameFiles.MissingFile). " + FolderNote,
             g => Import(g, ImportScreen.Held(g.Font, SampleFolder,

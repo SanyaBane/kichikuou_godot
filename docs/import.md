@@ -181,6 +181,16 @@ agent days, rough.
      run in the development runs (the owner's `user://settings.cfg` names the extract), ran on 2026-11-10 in the
      Windows release build on a user folder of its own: the screen with no folder, and with a saved folder the
      import at once and the title (docs/release.md, "Checks before publishing").
+   - **A copy without music** (owner, 2026-11-10: mock-up B of round 1, `tools/ui/mock_no_music.py`): the playlist left
+     the version check (step 7), so a copy may import without its music. Once imported, the worker also checks the
+     playlist's tracks (`Content/Audio/MusicTable.Missing`, the translation's list when there is no `_inmm.ini`); when
+     any is missing, a row with ♪ in its ring stands between the scenario read and Play, its words
+     `Content/Audio/MusicNote`'s — "No music found" with the list's first and last track and where to copy them from,
+     or "n of the 28 tracks are missing" naming the first three —, and the screen waits for a red Play instead of
+     opening the title by itself. The same row held landscape (the right column, Play alone at the thumb) and upright
+     (under the bar, Play in the bar). The import stands whatever the music: a track not there is silence, as before.
+     The gallery's `import-no-music` and `import-some-music`; `--import-screen DIR` on a copy of the archives without
+     `bgm\` shows it.
    - **Another folder later** (owner, 2026-10-21): Option → Game Folder… opens the screen from the game, with a way
      back to the title without an import (docs/window-menu.md).
 9. **Docs** ✓ (2026-10-20). CLAUDE.md (status, layout, commands), spike-findings ("Local layout": the extract

@@ -362,7 +362,9 @@ scene's focus, so a shared one would show what the entry before did. A replay ta
      folder is the gallery's own (`C:\Games\Kichikuou Rance`), never the player's, and nothing reads a disk. Entries
      `import-none` (the first launch, no folder chosen), `import-choose` (a folder chosen; the unattended look's
      `--import-screen DIR` dumps the same name), `import-back` (from Option → Game, its way back), `import-progress`
-     (made up: the bar held at 45% of the decompile), `import-done`, `import-refused` (the wrong folder) and
+     (made up: the bar held at 45% of the decompile), `import-done`, `import-no-music` (imported, no track of the
+     playlist there: the row with ♪ and the red Play; 2026-11-10, docs/import.md, step 8), `import-some-music` (made up:
+     three tracks missing), `import-refused` (the wrong folder) and
      `import-refused-version` (made up: an empty KICHIKUSA.ALD, its hashes on the small line). The refusals' wording is
      `GameFiles`' own, pulled out as `GameFiles.MissingFile` and `OtherFile` (the check calls them), so the entries
      show the check's messages for a folder that is not there. Found by `import-refused-version`: the hashes' line is
