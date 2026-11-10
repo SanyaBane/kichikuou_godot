@@ -22,21 +22,8 @@ The owner aims at a public release (decision 28, 2026-10-20).
 
 - **The import's open ends** — *agent* ([import.md](import.md) is done, 2026-10-20): the start with no
   extract set has run on Android (the first start imports the copied folder, 2026-10-24; "Android" below) and in the
-  Windows release build (2026-11-10, Windows export, below); the content tests still read `_extract` and
+  Windows release build (2026-11-10, [release.md](release.md), "Checks before publishing"); the content tests still read `_extract` and
   could move to the import; the music still goes through `_inmm.ini` (it is hashed with the rest).
-- **Windows export** — *agent*: the preset `godot/export_presets.cfg` ("Windows Desktop") and
-  `tools/export-release.ps1` export a release build outside the repository (2026-10-21; templates 4.7.2 mono
-  installed on the owner's machine). The build keeps its data in `%APPDATA%\KichikuouGodot` (project.godot's
-  `.template` overrides), apart from the development runs, so it starts as a new player's would; the fonts'
-  OFL texts go into the pack (the include filter) and next to the exe (`licenses\`) with `LICENSE`. The version
-  info is in the exe since 2026-11-08 (`0.1.0.0` from project.godot's version; [release.md](release.md),
-  "Versions"); the archive a player downloads is `release.ps1`'s zip (2026-11-08). The first launch checked by
-  the agent (2026-11-10, [release.md](release.md), "Checks before publishing": the exe on a data folder of its own
-  through `APPDATA`): the import screen, the import of a saved folder at the start, the title without Debug, and in
-  the debug export of the same preset a new game and a load played unattended — nothing broke; then the owner's
-  look at a first launch of the release build itself (2026-11-10, its own empty data folder): the folder dialog, the
-  import, a new game, a save and a load — all as they should be. Still open: the exe's company and copyright fields
-  (empty) — *owner*.
 - **The Android release APK** — *owner* (2026-11-08, [release.md](release.md)): the owner's release key is made and
   `tools/export-android.ps1 -Release` / `release.cmd` sign with it (tried with a throwaway key, not yet with the
   owner's). The owner's devices have the debug build: the release one installs only after it is uninstalled, which
