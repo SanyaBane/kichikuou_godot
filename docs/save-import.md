@@ -290,3 +290,46 @@ Steps 1-6 are built:
 4. **Godot**: the menu item, the dialog, the refusal, the question, the game screen started again with the save
    (`GameOptions`); `--load-original FILE` for unattended play (a headless run from slot E as the proof of concept's).
 5. **Docs**: this file, docs/window-menu.md, CLAUDE.md, the backlog (the phone's Menu sheet).
+
+## 8. On Android (2026-11-10): survey and mock-up round 3
+
+The owner asked for File → Import Original Save… on Android too. What stands in the way of the PC's way:
+
+- **The phone has no menu bar**: its commands are the Menu sheet's tiles (`PhoneMenu`, `MenuSheetView`; held landscape
+  LN3, upright PN1), on the title as in play. The tablet keeps the menu bar and its stock boxes (Restart's question).
+- **Android's own file picker** (Godot's native `FileDialog`) answers with a `content://` URI. Since Godot 4.6 Godot's
+  `FileAccess` reads such a URI (`System.IO` does not), so a file picked there could be read as bytes — not tried in
+  this project. But since Android 11 the picker hides `Android/data`, and that is where the player's copy of the game
+  folder lives (`GameData.AndroidGameFolder`, README "Installing") — and the original's saves with it, next to
+  `KICHIKUSA.ALD` (on the owner's Poco `KICHIKUSA.asd` … `KICHIKUSJ.asd`). The picker could reach only a save kept
+  elsewhere (Downloads).
+- So on Android the game offers **the saves its game folder holds** itself: every `*.asd` there read when the list opens
+  (`OriginalSave.Read`), each named by its slot's letter and dated by its week, one that cannot be imported greyed with
+  its reason. The original's own list (`ﾛｰﾄﾞｾｰﾌﾞ`) writes slots 1-10, so at most ten (A-J) in practice. After the pick,
+  everything is the PC's (§7): the same question, the game started again with the save, nothing written, the game marked.
+
+`tools/ui/mock_save_import_android.py`, over the gallery's `menu-sheet` (both orientations), the phone's
+`save-load-original` and the tablet's `map`; the saves are the owner's ten (§4):
+
+- **N1, N1p — the Menu sheet's new tile**: "Import original save ›" between Screenshot and Restart, as on the PC's File
+  menu; a page's tile (as Debug's). Held landscape the second row is Import original save, Restart, Exit (Debug after
+  them in a development build); upright the row stands between Screenshot and Restart….
+- **S1, S1p — its page "Original saves"** (the agent's choice): ‹ Menu first, then a tile (a row upright) per save —
+  "Save E", "LP 3 · M5 · W1", "Stage 1". **S1q, S1qp**: a save's tap asks the PC's question in the sheet's callout
+  (the save, its date, the file and its time, "Any unsaved progress will be lost."), Load | Cancel. **S1r**: a save
+  that cannot be imported, greyed, its reason a word; a tap says why in the reader's words, OK. **S1n**: none found —
+  where the original keeps them and where they go (`Android/data/org.kichikuou.port/files/game`).
+- **S2 — the alternative: a screen of its own** in Save/Load's look (LL1): the list at the left (the letter on a seal,
+  the date, the stage), the chosen save's page at the right with its map and figures (`SaveSlots.Of` reads them from the
+  save), the file and what a load does where a comment stands, the red Load | Back. More to build (both orientations).
+- **T1 — the tablet**: the menu bar's item opens a stock dialog listing the same saves (Load | Cancel), then the PC's
+  question — stock as the bar's other boxes.
+
+### Questions for the owner (round 3)
+
+1. The phone: S1 (a page of the Menu sheet; the agent's choice) or S2 (a screen of its own)?
+2. The tablet: T1 (a stock dialog with the list; the agent's choice), or our S1/S2 there too?
+3. Where the saves are looked for: the game folder alone (the agent's choice — they come with it), or also the app's
+   `files` folder beside it, for a player who copies the saves alone?
+4. A tile "Another file…" opening Android's own picker, for a save kept outside `Android/data` (Downloads): not now (the
+   agent's choice; untried, and the saves come with the folder), or with it?
