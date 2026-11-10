@@ -125,7 +125,8 @@ the console's output open and the script never ends (2026-11-08).
     --seed 2 --weeks 28` (the newest auto-save).
 
   Left to a person: the folder dialog (the field's "Choose…") and the title's buttons in the release build
-  itself, whose pointer is the system's.
+  itself, whose pointer is the system's — the owner's look the same day, on an empty folder so: the dialog, the
+  import, a new game, a save and a load, all as they should be.
 - **Android**: the README's "Installing" followed step by step on a device without the app — the release
   APK installed from the device, the game started once, the game folder copied from a PC by USB in File
   transfer mode (not adb) into `Android/data/org.kichikuou.port/files/game` —, the next start imports it, a
