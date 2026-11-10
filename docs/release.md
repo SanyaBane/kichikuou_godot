@@ -129,9 +129,30 @@ the console's output open and the script never ends (2026-11-08).
   Left to a person: the folder dialog (the field's "Choose…") and the title's buttons in the release build
   itself, whose pointer is the system's — the owner's look the same day, on an empty folder so: the dialog, the
   import, a new game, a save and a load, all as they should be.
+
+  **0.1** (2026-11-10, commit 77ffef7, the published zip itself unpacked outside the repository): the two runs
+  without a hand as above (the import screen; a saved folder imported at once, 201 scenario files, the title
+  after it) and the owner's look on a third empty folder (the dialog, the import, a new game to its second
+  turn, a manual save and a load). The debug export's unattended play was not run again: the commits since the
+  first check change the import, which the runs above cover. The exe's version info reads 0.1.0.0, "Kichikuou".
 - **Android**: the README's "Installing" followed step by step on a device without the app — the release
   APK installed from the device, the game started once, the game folder copied from a PC by USB in File
   transfer mode (not adb) into `Android/data/org.kichikuou.port/files/game` —, the next start imports it, a
   new game and a load play, both orientations; then the APK installed again over it keeps the saves.
+
+  **0.1** (2026-11-10, the Xiaomi Poco X6 Pro, Android 16, by the owner's hand, adb only watching): the debug
+  build uninstalled (the whole `Android/data/org.kichikuou.port` went with it; its saves, settings and logs were
+  copied to the PC first); the APK copied by USB into `Download` and installed from the phone (Android's own
+  package installer; versionCode 1, not debuggable); the first start showed the import screen ("No game folder
+  is chosen yet."). **A PC reaches `Android/data` over MTP on this phone**: the `game` folder made and filled
+  from Windows Explorer in File transfer mode, its files then owned by the MTP service (`u0_a91`, folders
+  `drwxrws---`), and the game reads them without the chmod adb's files needed (backlog, "Android"). The next
+  start imported it and opened the title, ~7 s in all: the screen stays on the Play step for a few seconds,
+  the game's start in one frame on the main thread (~6 s; ~4.3 s at every later start, behind the splash) —
+  backlog, "Release". A new game, battles, the harem, a manual save and a load, upright and landscape, no error
+  but one frame's at a turn on the map (backlog, "Android"). The same APK installed over it: the saves byte for
+  byte, the game folder and the import kept (the next start went straight to the title). The owner's saves
+  then copied back (`copy-saves.ps1 -ToDevice`; the check's ten moved into the device's
+  `save-backups/20261110-160905`).
 - **The README's "Installing"** matches the build: where to get it, what the player copies where, the
   version in the file names.

@@ -22,23 +22,28 @@ The owner aims at a public release (decision 28, 2026-10-20).
 
 - **The import's open ends** — *agent* ([import.md](import.md) is done, 2026-10-20): the start with no
   extract set has run on Android (the first start imports the copied folder, 2026-10-24; "Android" below) and in the
-  Windows release build (2026-11-10, [release.md](release.md), "Checks before publishing"); the content tests still read `_extract` and
+  Windows release build (2026-11-10, [release.md](release.md), "Checks before publishing"; 0.1's own builds on Windows and
+  the Poco the same day); the content tests still read `_extract` and
   could move to the import (the agent's advice, 2026-11-10: not now — the extract is the decompiler's independent reference).
   The music's playlist `_inmm.ini` left the version check (2026-11-10, docs/assets.md §5); the import screen says when a
   copy lacks music (the owner's B, import.md, step 8). A new `Key` or importer version leaves the old cache in
   `user://import` (~8 MB; the playlist's change did so once) — pruning the others after an import, if wanted.
-- **The Android release APK** — *owner* (2026-11-08, [release.md](release.md)): the owner's release key is made and
-  `tools/export-android.ps1 -Release` / `release.cmd` sign with it (tried with a throwaway key, not yet with the
-  owner's). The owner's devices have the debug build: the release one installs only after it is uninstalled, which
-  deletes the saves and the game folder in the app's folder — copy the saves off first (`copy-saves-from-tablet.cmd`),
-  or give the development builds a package of their own (`GameData.AndroidPackage` names one today).
-- **The Android player's way in** — *owner*, then *agent*: a player without adb copies the game folder into
-  `Android/data/org.kichikuou.port/files/game` from a PC over USB (Android 11 and later keep a device's own file
-  managers out of `Android/data`), as the README's "Installing" says since 2026-11-08 — never tried that way (the
-  owner's devices got it by adb, whose folders the app could not read on Android 16 until `Grant-AppAccess`): the
-  release check ([release.md](release.md)) tries it. The import screen on Android does not say where the folder goes
-  and offers the folder dialog, whose `content://` answer the import cannot open — *agent*. A folder picked through
-  Android's own dialog (a `content://` tree, a Java plugin) would spare the copy, later.
+- **The Android builds side by side** — *owner* (2026-11-10, [release.md](release.md)): 0.1's release APK, signed with
+  the owner's key, is on the Poco since 2026-11-10; the tablet still has the debug build. The two are signed apart, so
+  Android refuses either over the other (`run-android.cmd` on the Poco now fails until the release build is
+  uninstalled, which deletes its saves and game folder — copy the saves off first), unless the development builds get
+  a package of their own (`GameData.AndroidPackage` names one today, the preset `package/unique_name` another).
+- **The Android player's way in** — *agent*: the README's way (the game folder copied from a PC over USB in File
+  transfer mode into `Android/data/org.kichikuou.port/files/game`) works on the Poco, Android 16 (2026-11-10,
+  release.md, "Checks before publishing": Explorer reaches `Android/data` over MTP, the game reads the MTP service's
+  files with no chmod); not tried on another make or an older Android. Still open: the import screen on Android shows
+  the folder field "not chosen yet" with "Choose…", which opens the folder dialog, whose `content://` answer the
+  import cannot open, and never says where the folder goes. A folder picked through Android's own dialog (a
+  `content://` tree, a Java plugin) would spare the copy, later.
+- **The start stands still after an import** — *agent* (2026-11-10, the Poco): once the import is done the screen
+  stays on its Play step for ~6 s, one frame — `ImportScreen.OpenNext` starts the game (the title's `GameScreen`)
+  on the main thread; every later start spends ~4.3 s the same way, behind the splash. Saying that the game is
+  starting before that frame, or starting it off the main thread, would show it.
 - **Android** — *agent* (the owner wants it, 2026-10-11): our own `.apk`, not Google Play; the tablet first,
   phones put off (owner, 2026-10-24: their mock-ups B1, B3, M1, M2 and the open questions are in
   [ui/touch.md](ui/touch.md), "Phones (put off)") and taken up again (owner, 2026-10-27): both orientations, the
@@ -70,6 +75,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   battle and the map"); the screen turning with the device (sensor landscape, 2026-10-24), not yet seen on the
   tablet; the touch mode's later parts, each marked "Not yet on the tablet" in ui/touch.md, and the damage
   forecast's touch rail ([ui/damage-forecast.md](ui/damage-forecast.md)), awaiting the owner's look there.
+  One frame's errors at a turn from upright to landscape on `COMMAND`'s map (the Poco, 2026-11-10): `MapMarkersView.Place`
+  gets `pixels` 0 that frame, so `plateScale` is infinite and the plates' font size NaN — 181 Godot errors
+  (`p_size <= 0`, `!isfinite(p_size)`) from `Plate.Measure`, nothing seen; the next frame lays them out — *agent*.
   A freeze on the Poco in a battle, seen once (owner, 2026-11-01), cause open: the main thread never left its frame; the
   build now reports the next one — [hang-watch.md](hang-watch.md), *agent* when a report comes.
   Memory on the Poco (owner, 2026-11-01/02): 1.9 GB after a battle, 2.9 GB in a long session, an empty Godot project 355 MB;

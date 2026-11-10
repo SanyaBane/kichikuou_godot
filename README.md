@@ -58,15 +58,17 @@ stay. To remove the game, delete its folder and `%APPDATA%\KichikuouGodot` (the 
 A phone or a tablet with a 64-bit ARM processor (arm64) and Android 7.0 or later. The game is played by
 touch.
 
-1. Download `Kichikuou-<version>.apk` on the device and open it. Android asks first to allow installing
-   apps from the app that opens it (the browser or the file manager): allow it, then install.
+1. Download `Kichikuou-<version>.apk` on the device (or copy it from a PC by USB into the device's
+   `Download` folder) and open it. Android asks first to allow installing apps from the app that opens it
+   (the browser or the file manager): allow it, then install.
 2. Start the game once and close it: Android makes the game's own folder,
    `Android/data/org.kichikuou.port/files/`, in the device's internal storage.
 3. Connect the device to a PC by USB, in File transfer mode. On the PC, open the device's internal
    storage, then `Android\data\org.kichikuou.port\files\`; make a folder named `game` there and copy the
    contents of your game folder into it, `bgm\` included, so that `files\game\System39.ain` is there. (Android
    keeps a device's own file managers out of `Android/data`, so the copy goes through a PC.)
-4. Start the game again: it finds the `game` folder and imports it (below). If it shows the import screen
+4. Start the game again: it finds the `game` folder and imports it (below); the screen then stays on the last
+   step, Play, for a few seconds while the game starts. If it shows the import screen
    asking for a folder instead, the files are not in `files/game`: close the game and check them there (the
    folder dialog cannot open the game's files on Android).
 
@@ -79,7 +81,8 @@ the old one: the game folder and the saves stay. **Uninstalling the game deletes
 On Windows the game asks for the game folder (the system's folder dialog); on Android it reads the `game`
 folder above. It checks that the files are the translation v1.0 (by their SHA-256; another version or a
 missing file is refused with the file's name) and reads the scenario once into its own data folder
-(`%APPDATA%\KichikuouGodot\import\` on Windows), which takes about a second. The pictures, the sounds and
+(`%APPDATA%\KichikuouGodot\import\` on Windows), which takes about a second on a PC and a few seconds on a
+phone. The pictures, the sounds and
 the music are read from your folder as you play, so keep it where it is; if it moves, or to play another
 copy, choose the folder again in Option → Game (on Android, replace the `game` folder's files). The details
 are in [docs/import.md](docs/import.md).
