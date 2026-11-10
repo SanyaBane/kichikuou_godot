@@ -6,16 +6,16 @@ How a release of the port is numbered, built and checked. What a release still l
 ## Versions
 
 Since 2026-11-08 the port has one version number, **`application/config/version` in
-`godot/project.godot`** (now `0.1`). Everything else takes it from there:
+`godot/project.godot`** (now `0.2`). Everything else takes it from there:
 
-- **The Windows exe**: its file and product version (`0.1.0.0`, Windows wants four parts). The preset
+- **The Windows exe**: its file and product version (`0.2.0.0`, Windows wants four parts). The preset
   "Windows Desktop" leaves `application/file_version` and `application/product_version` empty, so Godot
   fills them from the project's version, and `application/modify_resources` is on. Its company,
   copyright and trademark fields stay empty (owner, 2026-11-10); the product name and the file
   description are "Kichikuou", the window's title.
-- **The Android APK**: its version name (`0.1`): the preset "Android" leaves `version/name` empty.
+- **The Android APK**: its version name (`0.2`): the preset "Android" leaves `version/name` empty.
   Its **`version/code`** is the one number kept by hand: an integer that grows by one with every APK
-  given out (Android installs an update only over a lower code). `0.1` is code 1.
+  given out (Android installs an update only over a lower code). `0.1` is code 1, `0.2` code 2.
 - **The game's log**: every launch starts with `Kichikuou <version> (<debug|release> build, <OS>)`
   (`Main.Version`), so a log or a hang report ([hang-watch.md](hang-watch.md)) names its build.
 - **Git**: the commit a release is built from gets an annotated tag `v<version>` (`v0.1`), made when the
