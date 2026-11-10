@@ -112,8 +112,8 @@ The owner aims at a public release (decision 28, 2026-10-20).
   on Android too (2026-11-10, its §8, the owner's S1 and T1: the game folder's saves on a page of the phone's Menu sheet
   and in a stock list from the tablet's menu bar, checked headless with `--menu-import`). Left — *agent*: the "Original"
   tag on the phone's save rows and page (`SaveLoadView.Phone.cs`, `.Portrait.cs`); a run on the Poco and the tablet
-  (the Poco has the release build 0.1, so a debug build needs the owner's word first, docs/release.md); whether it goes
-  into 0.1 or a later version — *owner*. A save kept outside the game folder (Android's own picker, which hides
+  with the version after 0.1, which it goes into (owner, 2026-11-10: not 0.1, no debug build over the Poco's release
+  build meanwhile). A save kept outside the game folder (Android's own picker, which hides
   `Android/data`; Godot 4.6+ reads its `content://` answer) — not now (owner, 2026-11-10).
 
 ## Verification against the original

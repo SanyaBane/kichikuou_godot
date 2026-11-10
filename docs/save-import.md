@@ -365,5 +365,6 @@ S1, the Menu sheet's page, and T1, the tablet's stock list; the other questions 
   Menu sheet's tests updated for the new tile. The screen gallery's phone passes: `menu-sheet-saves`,
   `menu-sheet-save-question`, `menu-sheet-save-refused`, `menu-sheet-no-saves` (docs/ui/gallery.md).
 
-Not yet: a run on the Poco or the tablet (the release build 0.1 is on the Poco; a debug build would need it
-uninstalled), and T1 in the screen gallery (a stock dialog the tablet pass does not dump).
+Not yet: a run on the Poco or the tablet — with the version after 0.1, which this goes into (owner, 2026-11-10: not
+0.1; the Poco keeps the release build 0.1 meanwhile) —, and T1 in the screen gallery (a stock dialog the tablet pass
+does not dump).
