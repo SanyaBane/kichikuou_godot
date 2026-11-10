@@ -102,16 +102,12 @@ The owner aims at a public release (decision 28, 2026-10-20).
 
 ## Saves
 
-- **The original's `.asd` saves** — *owner* put it off (2026-10-11); decision 11 chose our own format.
-  Found while looking (2026-10-11): `System39.exe` and xsystem35 both write "System3.8 SaveData"
-  (`savedata.c`): a 4 KB header (the resume point as page and address, window and font settings,
-  offsets), the call stack, 5000 strings, pages 0, 1, 2, 4, 10 — what `Script/SaveData` holds. The
-  scenario's only `QD` is `ﾛｰﾄﾞｾｰﾌﾞ.ADV:33`, called only from `MAIN.ADV`'s `L_01875` at `:20` and
-  `:83`, so every original save resumes at one of our two autosave points (the near call's return
-  address tells which). The owner's ten slots are all Leazas-week autosaves; four lack xsystem35's
-  `XS35` mark, so `System39.exe` likely wrote them. Reading them is cheap; writing them needs the
-  window settings, which a survey must find. The port keeps its own saves in its own library (decision 29), so
-  reading them would be an import into it.
+- **The original's `.asd` saves** — *owner* put it off (2026-10-11); decision 11 chose our own format. Taken up
+  (owner, 2026-11-10): the import is surveyed and planned in [save-import.md](save-import.md) — a proof of concept
+  loaded the owner's ten saves into the port and played on from two of them; the owner chose File → Import Original
+  Save…, loaded at once (its §7). Put off with it (2026-11-10): the same import on the phone, which has no menu bar —
+  a tile of its Menu sheet, through Android's file picker. Writing the port's saves back as `.asd` stays out of it
+  (only a week's-start auto-save could be expressed; it needs the windows' rectangles in the header).
 
 ## Verification against the original
 

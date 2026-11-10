@@ -501,6 +501,12 @@ the script's camera, scratch values, pauses and stage stay the original's (docs/
 every frame": `Original.Content/Strategy/MapScrollGlide`, `GamePresenter.ShowScrollView`, `godot/Strategy/GameScreen.MapScroll.cs`;
 upright on the phone the scroll is the original's picture there too, left so by the owner); built, awaiting the owner's
 look in a window and on the Poco.
+Then (owner, 2026-11-10) importing the original game's saves (`KICHIKUSA.asd` …, "System3.8 SaveData"): every one resumes
+at one of our two autosaves (`MAIN.ADV:20`, `:83`), so it maps onto a `SaveData`; a proof of concept loaded the owner's
+ten and played on from two. The survey and the plan are docs/save-import.md; the owner took none of mock-up round 1
+(`tools/ui/mock_save_import.py`) and chose File → Import Original Save…: a file dialog, then the save loaded at once,
+no save of ours written; the imported game marked (decision 30 and the talk marks off in it, an "Original" tag
+on its saves, mock-up R1/R1b) — its §7, not built yet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
