@@ -124,7 +124,9 @@ the console's output open and the script never ends (2026-11-08).
     preset** (`--export-debug "Windows Desktop"`: the same pack and assemblies, but the development switches
     are read), headless on such a folder: `Kichikuou.console.exe --headless -- --newgame --auto --fast --quit
     --seed 2 --weeks 26` (the prologue to the first Leazas weeks, ~35 s), then `--load --auto --fast --quit
-    --seed 2 --weeks 28` (the newest auto-save).
+    --seed 2 --weeks 28` (the newest auto-save). Start adb's server before that export (`adb start-server`),
+    as the export scripts do: else the server Godot starts holds the console's output open and the command
+    never returns, though the export is done (2026-11-10).
 
   Left to a person: the folder dialog (the field's "Choose…") and the title's buttons in the release build
   itself, whose pointer is the system's — the owner's look the same day, on an empty folder so: the dialog, the
@@ -135,6 +137,12 @@ the console's output open and the script never ends (2026-11-08).
   after it) and the owner's look on a third empty folder (the dialog, the import, a new game to its second
   turn, a manual save and a load). The debug export's unattended play was not run again: the commits since the
   first check change the import, which the runs above cover. The exe's version info reads 0.1.0.0, "Kichikuou".
+
+  **0.2** (2026-11-10, commit d6d27bb, the published zip unpacked outside the repository): the two runs without
+  a hand as above (the log "Kichikuou 0.2 (release build, Windows)", the import screen; a saved folder imported at
+  once, 201 scenario files, the game started after it), and the debug export's unattended play again, since the
+  menu bar and `GameScreen` changed (its pack byte for byte the release's): a new game to week 27 and the newest
+  auto-save loaded and played to week 29, no error. The exe's version info reads 0.2.0.0, "Kichikuou".
 - **Android**: the README's "Installing" followed step by step on a device without the app — the release
   APK installed from the device, the game started once, the game folder copied from a PC by USB in File
   transfer mode (not adb) into `Android/data/org.kichikuou.port/files/game` —, the next start imports it, a
