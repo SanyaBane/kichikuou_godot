@@ -32,8 +32,8 @@ contains no part of the original game.
 
 **What you need: your own copy of the game with the English translation.** The port reads one version,
 Kichikuou Rance with the **Kichikuou Rance English Translation v1.0** applied: a folder holding
-`system39.exe`, `KICHIKUSA.ALD`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD`, `System39.ain`,
-`_inmm.ini` and the music in `bgm\`. Getting the game and the translation is up to you; none of their
+`system39.exe`, `KICHIKUSA.ALD`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD`, `System39.ain`
+and the music in `bgm\` (with its list `_inmm.ini`, when the copy has one). Getting the game and the translation is up to you; none of their
 files are here, and nothing else of theirs has to be installed or run (the `_inmm` music driver neither).
 
 **The downloads** are on the [releases page](https://github.com/SanyaBane/kichikuou_godot/releases): a zip

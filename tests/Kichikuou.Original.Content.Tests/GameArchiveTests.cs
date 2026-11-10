@@ -227,7 +227,7 @@ public class GameArchiveTests(ITestOutputHelper output)
         var folder = GameFiles.Check(LocalData.GameDirectory);
         output.WriteLine($"{folder.Version.Name}, key {folder.Key}, checked in {watch.ElapsedMilliseconds} ms");
         Assert.Same(GameFiles.EnglishTranslation10, folder.Version);
-        Assert.Equal(6, folder.Paths.Count);
+        Assert.Equal(5, folder.Paths.Count);       // the archives and the .ain; the music's playlist is not checked
     }
 
     /// <summary>

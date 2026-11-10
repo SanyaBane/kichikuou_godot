@@ -223,7 +223,11 @@ PNG itself, `CgImage.ToRgba(transparentIndex: 40)`, `Palette` with `initPal`); t
   common) plus computed values (`CurrentBgm` ×428, `Tmp0001 - 1` in `FIGT_A/B`). 1-28 covers the
   28 files exactly.
 - A player's copy keeps the music next to the game: `<game dir>\bgm\kichiku_N.mp3`, listed in
-  `<game dir>\_inmm.ini`. A loader should read `_inmm.ini` rather than hard-code the names.
+  `<game dir>\_inmm.ini`. A loader should read `_inmm.ini` rather than hard-code the names:
+  `Content/Audio/MusicTable` reads it (its name matched without case), and a copy without one plays
+  the translation's own list, `MusicTable.TranslationPlaylist` (the 28 lines above). Since 2026-11-10
+  the playlist is no part of the version check (docs/import.md, step 7): a copy whose list differs
+  (a mod's, a copy's own) is not refused for it.
 
 ## 6. Fonts
 

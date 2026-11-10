@@ -126,7 +126,11 @@ public class GameDataAssetTests(ITestOutputHelper output)
     {
         var music = new MusicTable(LocalData.GameDirectory);
 
+        Assert.True(music.FromPlaylist);
         Assert.Equal(28, music.Count);
+        for (int n = 1; n <= 28; n++)       // the copy's playlist is the translation's, the list a copy without one plays
+            Assert.Equal(MusicTable.TranslationPlaylist[n - 1].Replace('\\', Path.DirectorySeparatorChar),
+                Path.GetRelativePath(LocalData.GameDirectory, music.PathOf(n)!));
         Assert.Null(music.PathOf(0));
         Assert.EndsWith("kichiku_2.mp3", music.PathOf(1));
         Assert.EndsWith("kichiku_25.mp3", music.PathOf(24));

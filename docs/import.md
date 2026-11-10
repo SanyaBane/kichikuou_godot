@@ -136,8 +136,9 @@ agent days, rough.
    `ScenarioDecompilerTests` on pages written there (expressions, a condition and an `.ain` text, a data table found
    in the second pass, an unknown command read as data, the refusals).
 7. **The version check** ✓ (2026-10-20). `Kichikuou.Content/GameFiles`: `Check(folder)` hashes (SHA-256)
-   `KICHIKUSA.ALD`, `System39.ain`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD`, `KICHIKUWA.ALD` and `_inmm.ini` (names matched
-   without case) against the table of the one version we read, `GameFiles.EnglishTranslation10` (the hashes of the
+   `KICHIKUSA.ALD`, `System39.ain`, `KICHIKUGA.ALD`, `KICHIKUGB.ALD` and `KICHIKUWA.ALD` (names matched
+   without case; the music's playlist `_inmm.ini` left the table on 2026-11-10 — no rule reads it, a copy's own or
+   none plays, docs/assets.md §5 — and with it the folder's `Key`, so every cache was made once more) against the table of the one version we read, `GameFiles.EnglishTranslation10` (the hashes of the
    player's files are not their content, so the table is committed). The result, `GameFolder`, holds each file's
    path and `Key`, 16 hex digits of the version's hash lines, for step 8's cache. A known file missing, or another
    hash, throws `GameFolderException` with a message that names the file and the version expected (both hashes for

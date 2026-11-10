@@ -46,7 +46,7 @@ public static class GameFiles
         ("KICHIKUGA.ALD", "45a4e7269be599a5ee1e3f215f3a106f1fc06bd1d6b1c0250fd706f93ac90180"),
         ("KICHIKUGB.ALD", "0a1a11e5d9fef6c5887c4d26e290f8a76c9a00fc168b2695a572ca5da8c137a0"),
         ("KICHIKUWA.ALD", "159612c81aa858fcd54a20215e6771bc55901b7c298a4302b4fd65398b810ce1"),
-        ("_inmm.ini", "5fb1e9f84b44bf2c0a7cc4f743b0161d7abe2bb6f564bb5a7376adc1a8644484"),
+        // not the music's playlist _inmm.ini: no rule reads it, and a copy's own or none plays (Audio/MusicTable)
     ]);
 
     /// <summary>The versions the port reads.</summary>

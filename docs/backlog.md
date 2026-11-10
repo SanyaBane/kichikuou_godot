@@ -23,7 +23,10 @@ The owner aims at a public release (decision 28, 2026-10-20).
 - **The import's open ends** — *agent* ([import.md](import.md) is done, 2026-10-20): the start with no
   extract set has run on Android (the first start imports the copied folder, 2026-10-24; "Android" below) and in the
   Windows release build (2026-11-10, [release.md](release.md), "Checks before publishing"); the content tests still read `_extract` and
-  could move to the import; the music still goes through `_inmm.ini` (it is hashed with the rest).
+  could move to the import (the agent's advice, 2026-11-10: not now — the extract is the decompiler's independent reference).
+  The music's playlist `_inmm.ini` left the version check (2026-11-10, docs/assets.md §5); the import screen does not
+  yet say when a copy has no music (mock-ups first). A new `Key` or importer version leaves the old cache in
+  `user://import` (~8 MB; the playlist's change did so once) — pruning the others after an import, if wanted.
 - **The Android release APK** — *owner* (2026-11-08, [release.md](release.md)): the owner's release key is made and
   `tools/export-android.ps1 -Release` / `release.cmd` sign with it (tried with a throwaway key, not yet with the
   owner's). The owner's devices have the debug build: the release one installs only after it is uninstalled, which
