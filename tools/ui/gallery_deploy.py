@@ -21,7 +21,7 @@ from PIL import Image
 # A picture of the gallery's page: an <img>'s src or the link around it.
 PICTURE = re.compile(r'(src|href)="([\w-]+)/current/([^"/]+)\.png"')
 IMG = '<img loading=lazy src='
-INTRO = re.compile(r'(<h1>Screen gallery</h1>\s*)<p>.*?</p>', re.S)
+INTRO = re.compile(r'(<h1>Screen gallery(?: <small>[^<]*</small>)?</h1>\s*)<p>.*?</p>', re.S)    # the game's versions after it
 
 
 def encode(job):

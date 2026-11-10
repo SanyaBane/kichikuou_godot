@@ -322,6 +322,7 @@ public partial class GalleryScreen : Control
         var manifest = new
         {
             Written = DateTime.Now.ToString("yyyy-MM-dd HH:mm:ss"),
+            Version = Main.Version,             // the game's (docs/release.md, "Versions"); the page shows it
             Palette = UiPalettes.Chosen.Key,
             Font = _font.ToString(),
             Touch = TouchMode.On,

@@ -124,7 +124,8 @@ state, or is tagged "made up". The first ones are the states the docs record as 
 
 - `<Godot exe> --path godot -- --screen-gallery [id,…] --shots <dir> [--previous <dir>] --quit` dumps every entry (or
   the listed ones, written into the manifest already in `<dir>`) as `<id>.png` at 1280×800, plus `manifest.json` (each entry's id, section, title, save, note, hash,
-  error; the palette, the font, touch). A window is needed (views draw nothing headless); nothing moves the system
+  error; the game's version — `Main.Version`, docs/release.md, "Versions", since 2026-11-10 —, the palette, the font,
+  touch). A window is needed (views draw nothing headless); nothing moves the system
   pointer. With `--previous` each picture is compared with the former one of its name: `since` is new, changed or
   same, `differing` the pixels that differ by more than 8 in a channel — changed above 600 —, `box` the rectangle round
   them. While it dumps, our views animate by a clock of frames (`Strategy/UiClock`: it stands at the same time as each
@@ -165,6 +166,10 @@ state, or is tagged "made up". The first ones are the states the docs record as 
   under the bar. A click with a key held, or the middle button, still opens the picture alone.
   `gallery.ps1 -IndexOnly` writes the page alone from the pictures and manifests as they are (no build, no pass), the
   tabs' "old" marks as the last run that dumped left them (`stale-passes.txt` beside the index).
+  The game's version (owner, 2026-11-10) heads each pass, "Kichikuou 0.1" before the time it was dumped, and the
+  page's title the versions of every pass that has one ("Screen gallery Kichikuou 0.1"). A manifest older than that has
+  none (the Combat VFX tab's until its next dump), nor have the mock-ups', which `mock_phone.py` draws, not the game.
+  The website's copy (§10) keeps both.
 - After a change to a screen: update its entries, run the script, look at what changed — what was meant and what was
   not.
 

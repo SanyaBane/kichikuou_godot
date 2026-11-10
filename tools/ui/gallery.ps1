@@ -217,6 +217,7 @@ function Get-PngSize([string]$path) {
 $stalePath = Join-Path $Out 'stale-passes.txt'
 $keptStale = @(if (($IndexOnly -or $VfxOnly) -and (Test-Path $stalePath)) { Get-Content -Encoding UTF8 $stalePath })
 $staleNames = @()
+$versions = @()     # the game's versions the shown passes were dumped by, in the passes' order
 
 # One tab a pass, one pass shown at a time; a pass not dumped this time says so on its tab and above its pictures.
 $tabs = New-Object System.Text.StringBuilder
@@ -234,7 +235,10 @@ foreach ($pass in $allPasses) {
     $mark = if ($isStale) { ' <b class=stale>old</b>' } elseif ($changed.Count) { " <b class=changed>$($changed.Count)</b>" } else { '' }
     [void]$tabs.Append("<a class=tab href=`"#$($pass.Name)`" data-pass=`"$($pass.Name)`">$(Html $pass.Title)$mark</a>")
     $class = if ($pass.Mockup) { "pass mockup $($pass.Held)" } else { "pass $($pass.Held)" }
-    [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`" data-title=`"$(Html $pass.Title)`"><h2>$(Html $pass.Title) <small>$(Html $manifest.written) &middot; " +
+    # The game's version that dumped the pass (its manifest's since 2026-11-10; none in an older one or the mock-ups').
+    $version = if ($manifest.version) { "Kichikuou $(Html $manifest.version) &middot; " } else { '' }
+    if ($manifest.version -and $versions -notcontains $manifest.version) { $versions += $manifest.version }
+    [void]$body.Append("<section class=`"$class`" id=`"$($pass.Name)`" data-title=`"$(Html $pass.Title)`"><h2>$(Html $pass.Title) <small>$version$(Html $manifest.written) &middot; " +
         "font $(Html $manifest.font) &middot; $($entries.Count) entries, $($changed.Count) changed or new</small></h2>")
     if ($pass.Mockup) {
         [void]$body.Append("<p class=mockup><b>Not built yet.</b> Mock-ups of the phone $(if ($pass.Held -eq 'portrait') { 'in portrait' } else { 'held landscape' }) (Xiaomi Poco X6 Pro, " +
@@ -286,6 +290,7 @@ foreach ($pass in $allPasses) {
 
 $css = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'gallery-index.css')
 $js = Get-Content -Raw -Encoding UTF8 (Join-Path $PSScriptRoot 'gallery-index.js')
+$heading = if ($versions.Count) { " <small>Kichikuou $(Html ($versions -join ', '))</small>" } else { '' }
 $html = @"
 <!doctype html>
 <html lang=en>
@@ -294,7 +299,7 @@ $html = @"
 <title>Screen Gallery</title>
 <style>
 $css</style>
-<h1>Screen gallery</h1>
+<h1>Screen gallery$heading</h1>
 <p>Our screens from the kept saves (docs/ui/gallery.md). Each in its place; a click opens it in the viewer, a changed one&rsquo;s badge on its former picture.</p>
 <nav><div class=tabs>$($tabs.ToString())</div></nav>
 $($body.ToString())
