@@ -551,3 +551,12 @@ After a save the player is back in the game: the list `ﾛｰﾄﾞｾｰﾌﾞ`
 a save; Back, a right click and the Load tab leave as before. With `--interface original` the menu is the original's
 and stays seen. `--saveload` opens the command panel's Save row a second time for the rest of its exercise, the save
 just written clicked in the list (`save-load-saved`).
+
+## 15. The "Original" tag (owner, 2026-11-10)
+
+The saves of a game imported from the original's save ([../save-import.md](../save-import.md), §7) carry its mark in
+their `Extras`; the screen tags each one (`SaveSlot.Original`; mock-ups R1 and R1b): a paper tag "Original" framed in
+gold at the row's right edge — on an auto-save the Turn Start / Turn End tag left of it, a comment cut before both — and
+on the page after the title (after "Auto" and the kind's tag on an auto-save), with the quiet line "A game imported from
+the original's save: "New scenes first" and the talk marks are off in it." under the comment (under the auto-save's two
+lines). The gallery's `save-load-original` and `save-load-original-auto`. Not on the phone's rows yet (backlog).

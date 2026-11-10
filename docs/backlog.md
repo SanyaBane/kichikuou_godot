@@ -107,7 +107,9 @@ The owner aims at a public release (decision 28, 2026-10-20).
   loaded the owner's ten saves into the port and played on from two of them; the owner chose File → Import Original
   Save…, loaded at once (its §7). Put off with it (2026-11-10): the same import on the phone, which has no menu bar —
   a tile of its Menu sheet, through Android's file picker. Writing the port's saves back as `.asd` stays out of it
-  (only a week's-start auto-save could be expressed; it needs the windows' rectangles in the header).
+  (only a week's-start auto-save could be expressed; it needs the windows' rectangles in the header). Built
+  (2026-11-10, its §7, "Built"); left (2026-11-10, the agent's): the "Original" tag on the phone's save rows and page
+  (`SaveLoadView.Phone.cs`, `.Portrait.cs`), and a check on the tablet that Godot's native dialog opens an `.asd`.
 
 ## Verification against the original
 

@@ -7,7 +7,7 @@ than the original. Everything else keeps the original's rules. A tweak that fixe
 | Tweak | Section | Default | Its doc |
 |---|---|---|---|
 | Damage forecast | Battle | off | [ui/damage-forecast.md](ui/damage-forecast.md) |
-| New scenes first | Scenes | on | [ui/talk-marks.md](ui/talk-marks.md) (owner's decision 30) |
+| New scenes first | Scenes | on | [ui/talk-marks.md](ui/talk-marks.md) (owner's decision 30); off and locked in a game imported from the original's save ([save-import.md](save-import.md), §7) |
 | Chaos and Nikkou reach demons | Battle | off | below (BRS-24, owner's decision 32) |
 | Ninja follow-up | Battle | 33% (the original) | below (BRS-11, owner's decision 33) |
 

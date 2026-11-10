@@ -506,7 +506,12 @@ at one of our two autosaves (`MAIN.ADV:20`, `:83`), so it maps onto a `SaveData`
 ten and played on from two. The survey and the plan are docs/save-import.md; the owner took none of mock-up round 1
 (`tools/ui/mock_save_import.py`) and chose File → Import Original Save…: a file dialog, then the save loaded at once,
 no save of ours written; the imported game marked (decision 30 and the talk marks off in it, an "Original" tag
-on its saves, mock-up R1/R1b) — its §7, not built yet.
+on its saves, mock-up R1/R1b) — its §7, built (2026-11-10; "Built" there, the agent's choices for the owner to review):
+`Content/Saves/AsdSave` reads the file, `Original.Content/Saves/OriginalSave` checks it and makes the slot with
+`GameState.ImportedFromOriginal`, `GameSession.LoadImportedAsync` loads it (`ScriptContext.LoadImported`, "Load Complete"
+naming it "Original save E"), `OriginalScriptContext.NewScenesOption` is the player's option and `NewScenesFirst` the rule,
+off in a marked game; `godot/Strategy/GameScreen.ImportSave.cs`, Option → Tweaks as O1 (`OptionsView.ImportedGame`), the
+tag (`SaveSlot.Original`); awaiting the owner's look in a window.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -567,7 +572,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   command table); `GameFiles` checks a game folder's files against the known version (SHA-256, step 7); `GameImport` imports a
   game folder: checked, its scenario decompiled into a cache (`ImportedGame`: the scenario folder, the CGs and
   sounds from the archives; step 8);
-  `ScenarioText` reads message texts from the decompiled scenario by
+  `Saves/AsdSave` reads the original's save files (`.asd`, docs/save-import.md); `ScenarioText` reads message texts from the decompiled scenario by
   `ScriptRef`; `Scripts/ScenarioScripts` reads the data files' statements and whole files as programs
   (`ScenarioParser`; strictly: anything unexpected fails with its location); `Graphics/` decodes the CGs keeping palette indices (`IndexedPng`, `Pms`,
   `CgLibrary`, `Palette` with the engine's reserved entries; `ToRgba(40)` = `G n, 40`);
@@ -576,7 +581,7 @@ Original + Content ← Original.Content ← Godot. All four libraries are `net10
   drawn), its drawing commands (`EngineStage`: `G`/`CC`/`CS`/`CF`/`CM`, `WV`, the fades, the text
   state; its owner is told of the drawing through `IStageObserver`), message text (`TextBox`) and selection windows.
 - `src/Kichikuou.Original.Content` — the original's presenters (references Original and Content):
-  `Audio/SoundTable` maps the original's sound numbers to files; `Devices/` the device's layout (`DeviceLayout`) and
+  `Audio/SoundTable` maps the original's sound numbers to files; `Saves/OriginalSave` an original's save onto a slot (docs/save-import.md); `Devices/` the device's layout (`DeviceLayout`) and
   the phone's frame (`PhoneFrame`, docs/ui/phone-build.md, §3);
   `Battles/BattlePresenter` draws every core event the way the original does
   ([docs/battle/screen-layout.md](docs/battle/screen-layout.md)), `FigtSelScreen` /
@@ -910,6 +915,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
   **Only when the owner asks for it, never in a general run or as a routine check** (owner, 2026-10-27): the window's
   real pointer reaches the same input, and the owner works on the machine meanwhile — a mouse moved over the window
   broke a run (the pressed row strayed −53 to 17 rows). No test, script or other switch runs it.
+- Load a save of the original (`KICHIKUS?.asd`) at once, as File → Import Original Save… does (docs/save-import.md, §7;
+  nothing written but the game's own auto-saves into `--saves`): `--load-original FILE` with the game switches, e.g.
+  `<Godot console exe> --headless --path godot -- --load-original <game folder>/KICHIKUSE.asd --auto --fast --quit --seed 2 --saves user://saves-asd-import --weeks 20`
+  (the owner's slot E, week 18; exit code 0).
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).

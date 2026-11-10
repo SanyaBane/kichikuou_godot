@@ -61,7 +61,8 @@ Read this before a new screen's survey and mock-ups: the first round should not 
   keeps colours outside `_Draw` is an `IUiPaletteUser`). docs/ui/options.md, "The palette".
 - **Left in their own colours on purpose:** the command and province tags (each in the colour of the week's use it
   spends, the strip's tag of that use, `TagColours`; docs/ui/command-screen.md, "The tags' colours"), the auto-saves' Turn Start (green) and Turn
-  End (Turn END's red) tags, the red buttons, the battle's banners (the player's blue, the hovered one pale sky blue —
+  End (Turn END's red) tags, the "Original" tag of an imported game's saves (paper and ink of mock-up R1, the palette's
+  gold frame; docs/save-import.md, §7), the red buttons, the battle's banners (the player's blue, the hovered one pale sky blue —
   the owner's C1, 2026-10-26, for the damage forecast's figures in the bars' red and green; docs/ui/damage-forecast.md,
   §11), the touch rail's gold attack buttons (the forecast on a dark strip, the owner's D2), the defence ribbon's blues,
   the read-text colours, the map's plates (steel).

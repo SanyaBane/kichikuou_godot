@@ -588,3 +588,14 @@ during the build, for the owner to review.
   every unit NEW, as expected (the save predates the read lines). A second look a week on (the save played through week
   18 with Haurein's (girl 9) visit, then `--harem 9` again) still shows NEW everywhere: her second visit has unread lines.
   The ??? and read bubbles and the absent pill were not seen in a window; the models are tested.
+
+## 10. In a game imported from the original's save (owner, 2026-11-10)
+
+An original save keeps no record of the lines read, so in a game imported from one (File → Import Original Save…,
+[../save-import.md](../save-import.md), §7) every line would count as unread. The owner's answer: the import marks the
+game (`GameState.ImportedFromOriginal`, carried by its saves), and in a marked game the rule does not hold —
+`OriginalScriptContext.NewScenesFirst` is the player's option (`NewScenesOption`) only in an unmarked game, so the draws,
+Kanami's choice in Code's event 4 (two flags or more: ending 3) and Kentarou's hint lines are the original's; Option →
+Tweaks shows the check box greyed and empty with the reason (mock-up O1), the player's setting kept for other games. No
+mark New / ??? shows (the ledger's bubbles, Talk's pill, the harem's slots, Summon's pill, "This visit"), and the dry run
+neither runs at a picker's opening nor reads ahead. The read lines are still noted.

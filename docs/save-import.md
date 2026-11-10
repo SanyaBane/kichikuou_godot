@@ -244,6 +244,39 @@ choice gone with the option (accepted), the mark nowhere else.
 through its storage framework — a tile of the Menu sheet later ([backlog.md](backlog.md)). The tablet has the menu bar;
 whether Godot's native dialog opens an `.asd` there is checked at the build.
 
+### Built (2026-11-10)
+
+Steps 1-6 are built:
+
+1. `Content/Saves/AsdSave` reads the format whole (`System3.8 SaveData` only; xsystem35's older "System3.5 SavaData"
+   and other files are refused in words), the stack's frames bottom first, the strings decoded with `Text/Sjis`.
+2. `Original.Content/Saves/OriginalSave` maps it (`Read`, `FromAsd`) and refuses with the reason (`OriginalSaveException`);
+   the slot carries `GameState.ImportedFromOriginal` (`Extras` key `imported-original`). `OriginalSaveTests` check the
+   addresses against `KICHIKUSA.ALD`'s bytes, the pages' sizes against the boot, and the owner's ten.
+3. `OriginalScriptContext.NewScenesOption` is the player's option, `NewScenesFirst` the rule (the option in an unmarked
+   game); `SubordinatesScreen.TalkMarks`, `HaremRoster.Girls` and `PickerMarks` show and run no marks in a marked game.
+4. `GameSession.LoadImportedAsync` (on `ScriptContext.LoadImported`, `LastImport`); a content test loads the owner's slot
+   E and plays to `COMMAND`'s first map wait, nothing written.
+5. Godot: `GameScreen.ImportSave.cs` (the dialog, the refusal, the question, `GameStart.Original`), Option → Tweaks as O1
+   (`OptionsView.ImportedGame`), the tag as R1/R1b (`SaveSlot.Original`, `SaveLoadView.DrawOriginalTag`), the gallery's
+   `options-tweaks-imported`, `save-load-original`, `save-load-original-auto` (`GalleryStates.SampleLibrary`'s
+   `importedWeeks`), and `--load-original FILE`: slot E played headless from week 18 to 21 with `--auto --fast --quit
+   --seed 2 --weeks 20`, exit 0, nothing unported.
+
+**The agent's choices, for the owner to review:**
+
+- "Load Complete" names the save **"Original save E"** — the slot's letter from the file's name (`KICHIKUSE.asd`;
+  `OriginalSave.Label`), "Original save" for a file named otherwise — where it names ours "Auto-save" or "Manual save 3".
+- The question: title "Load the original's save?", the lines "Original save E: LP 3 · Month 5 · Week 1",
+  "KICHIKUSE.asd, saved 2026-10-10 21:40", then Restart's "Any unsaved progress will be lost."; buttons Load | Cancel. The
+  same words on the title. A refusal: a message box titled "KICHIKUSE.asd cannot be imported." with the reader's words.
+- With no persistent page of the port yet (a first launch), the save's own page 4 stays, as with any load; the game's
+  first auto-save then makes it the port's (`ﾛｰﾄﾞｾｰﾌﾞ`'s page-4 sync).
+- The tag's paper and ink are fixed colours (R1's), framed in the palette's gold, as the Turn Start / Turn End tags
+  are; the Steel palette keeps them.
+- Not built: the tag on the phone's save rows (both orientations; a marked game's saves reach the phone only when copied
+  there) and a check of the tablet's native dialog with an `.asd` — both in [backlog.md](backlog.md), "Saves".
+
 ### The build as first planned (superseded by "The build (after round 2)" below)
 
 1. **The reader**: `Content/Saves/AsdSave` reads the format (§1) — the header, the stack's frames, the strings

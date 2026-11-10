@@ -76,7 +76,7 @@ Done 2026-10-09; the owner's decisions: Restart, the random generator and MsgSki
 xsystem35's; both skip modes, as the owner's desktop xsystem35 (everything) by default and as its
 web build (seen only) by an option.
 
-- A light bar above the game screen: **File** (Save Screenshot, Restart, Exit), **Screen**
+- A light bar above the game screen: **File** (Save Screenshot, Import Original Save…, Restart, Exit), **Screen**
   (Window, Fullscreen), **Options** (ours: no drop-down, the options window below; **Option** until 2026-10-24, the
   name the entries below keep), **Sound[on]** (ours, below), **MsgSkip[off]** (toggles, `[on]` while
   on, greyed out while not allowed), and ours for development at the end, **Debug** (Battle
@@ -140,6 +140,12 @@ web build (seen only) by an option.
   without asking (development).
 - **Save Screenshot** saves the screen as shown (1280×800, event CGs not masked) as
   `user://screenshots/kichikuou-<date>-<time>.png` and names the file on screen.
+- **Import Original Save…** (ours, owner, 2026-11-10; [save-import.md](save-import.md), §7): Godot's native file
+  dialog in the game folder, `*.asd`; the file read and checked, a refusal in a message box with the reason; then a
+  question as Restart's — "Load the original's save?", the save ("Original save E"), its date and file, "Any unsaved
+  progress will be lost." — Load | Cancel, on the title too; on Load the game screen starts again and loads it at once
+  ("Load Complete", the week's start). Nothing is written. The game it starts is marked: "New scenes first" and the
+  talk marks are off in it, its saves tagged "Original".
 - **Restart / Exit** ask as xsystem35 does ("Restart game?" / "Quit game?", "Any unsaved progress
   will be lost."); the game waits while the box is open. Restart returns to the title, a fresh
   boot as xsystem35's (`SET`, the logo and `ｽﾀMENU` from the player's files, decision 19; until
