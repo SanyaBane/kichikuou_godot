@@ -509,7 +509,8 @@ public partial class ImportScreen : Control
         lock (_lock)
             progress = _progress;
         bool done = _phase == Phase.Done;
-        float y = Step(262, 0, "Game folder", _folder, StepState.Done);
+        // the path cut at its start as the field cuts it (a path has no spaces to wrap at)
+        float y = Step(262, 0, "Game folder", Ellipsis(_folder, TextRight - TextX - 40, 15), StepState.Done);
         y = Step(y + 14, 1, done ? "The scenario is read" : progress.Stage, null, done ? StepState.Done : StepState.Now);
         float barY = y + 6;
         var bar = new Rect2(TextX, barY, TextRight - TextX, 22);
