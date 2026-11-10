@@ -140,6 +140,18 @@ internal static partial class GalleryEntries
                 if (view.RowCentre(view.AutoSaves[1]) is { } row)
                     GalleryStage.Click(view, row);
             }));
+        yield return new("save-load-original", "Screens", "Load: a save of a game imported from the original", Week18,
+            "Docs/save-import.md, §7, mock-up R1: the saves of the newest four weeks are an imported game's, tagged Original at "
+            + "the row's right edge; the page's tag after the title and its quiet line. " + SamplesNote,
+            g => SaveScreen(g, SaveList.Load, tabs: true, importedWeeks: 4));
+        yield return new("save-load-original-auto", "Screens", "Load: an imported game's Turn End auto-save", Week18,
+            "Mock-up R1b: Original at the right, Turn Start / Turn End left of it, a comment cut before both. " + SamplesNote,
+            g => SaveScreen(g, SaveList.Load, tabs: true, then: view =>
+            {
+                GalleryStage.Click(view, view.SideCentre(auto: true));
+                if (view.RowCentre(view.AutoSaves[1]) is { } row)
+                    GalleryStage.Click(view, row);
+            }, importedWeeks: 4));
         yield return new("save-load-delete", "Screens", "Load: Delete asks first", Week18, SamplesNote,
             g => SaveScreen(g, SaveList.Load, tabs: true, view => GalleryStage.Click(view, view.DeleteCentre)));
         yield return new("save-load-sweep", "Screens", "Save: the sweep asks first", Week18, SamplesNote,
@@ -159,11 +171,12 @@ internal static partial class GalleryEntries
     /// Our Save/Load screen on <paramref name="list"/> of the sample library, waiting for its answer as <c>ﾛｰﾄﾞｾｰﾌﾞ</c>'s
     /// menu does, the game now the save's for a save; <paramref name="then"/> clicks once it is laid out.
     /// </summary>
-    private static Action<Rect2>? SaveScreen(GalleryStage g, SaveList list, bool tabs, Action<SaveLoadView>? then = null)
+    private static Action<Rect2>? SaveScreen(GalleryStage g, SaveList list, bool tabs, Action<SaveLoadView>? then = null,
+        int importedWeeks = 0)
     {
         if (g.Data(Week18) is not { } data || g.State(Week18) is not { } s)
             return null;
-        var library = GalleryStates.SampleLibrary(data, SavedAt);
+        var library = GalleryStates.SampleLibrary(data, SavedAt, importedWeeks);
         bool save = list == SaveList.Save;
         var view = g.Add(new SaveLoadView(g.Font, g.Faces));
         view.Open(list, LoadSaveScreen.Items(library, save), library, save ? SaveSlots.Now(s) : null, null, tabs);

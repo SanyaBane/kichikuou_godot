@@ -903,7 +903,18 @@ internal sealed partial class OptionsView : Control
     private float NewScenesBox(float x, float y, float width = 0) =>
         CheckBox("new-scenes", x, y, NewScenesChoice.On, "New scenes first",
             "Talks and harem visits play unread scenes first, with a few hints and a choice of ours.",
-            () => SetNewScenesFirst(!NewScenesChoice.On), width);
+            () => SetNewScenesFirst(!NewScenesChoice.On), width, ImportedGame ? NewScenesLocked : null);
+
+    /// <summary>
+    /// Ours (owner, 2026-11-10; docs/save-import.md, §7, mock-up O1): the game shown is one imported from the original's
+    /// save, in which "New scenes first" is off and cannot be turned on — its check box greyed and empty with
+    /// <see cref="NewScenesLocked"/> under it; the player's own setting is kept for a game without the mark.
+    /// </summary>
+    public bool ImportedGame { get; init; }
+
+    /// <summary>O1's line under the greyed "New scenes first".</summary>
+    public const string NewScenesLocked =
+        "Off in this game: it was imported from a save of the original, which keeps no record of the scenes read.";
 
     // ---------------------------------------------------------------- the parts
 
@@ -915,30 +926,43 @@ internal sealed partial class OptionsView : Control
 
     /// <summary>
     /// A check box with its label and the hint under it, the whole row its target; with <paramref name="width"/> (the
-    /// phone's column) the hint wraps into it and the row takes the column. Returns the row's foot.
+    /// phone's column) the hint wraps into it and the row takes the column. With <paramref name="locked"/> the box is
+    /// greyed and empty, not a target, and the line says why under the hint in vermilion ink (mock-up O1). Returns the
+    /// row's foot.
     /// </summary>
-    private float CheckBox(string id, float x, float y, bool on, string label, string? hint, Action toggle, float width = 0)
+    private float CheckBox(string id, float x, float y, bool on, string label, string? hint, Action toggle, float width = 0,
+        string? locked = null)
     {
-        bool lit = _hover == id;
+        bool lit = locked is null && _hover == id;
         var box = new Rect2(x, y, 20, 20);
         DrawRect(box, Field);
         DrawRect(box, lit ? Ui.Vermilion : Ui.InkGrey, false, Line(lit ? 2 : 1.5f));
-        if (on)
+        if (on && locked is null)
             DrawPolyline([new Vector2(x + 4, y + 10), new Vector2(x + 8.5f, y + 15), new Vector2(x + 16, y + 5)], Ui.VermilionInk, Line(3), true);
-        Text(_gothic, new Vector2(x + 32, y + 16), label, fontSize: 17, modulate: Ui.Ink);
+        Text(_gothic, new Vector2(x + 32, y + 16), label, fontSize: 17, modulate: locked is null ? Ui.Ink : Ui.InkGrey);
+        var hintInk = locked is null ? Ui.InkQuiet : Ui.InkGrey;
         float w = _gothic.GetStringSize(label, fontSize: 17).X + 32, h = hint is null ? 28 : 46;
         if (hint is not null && width > 0)
         {
-            int lines = Wrap(hint, x + 32, y + 35, width - 32, 13, Ui.InkQuiet);
+            int lines = Wrap(hint, x + 32, y + 35, width - 32, 13, hintInk);
             w = width;
             h += (lines - 1) * WrapPitch(13);
+            if (locked is not null)
+                h += Wrap(locked, x + 32, y + 35 + lines * WrapPitch(13), width - 32, 13, Ui.VermilionInk) * WrapPitch(13);
         }
         else if (hint is not null)
         {
-            Text(_gothic, new Vector2(x + 32, y + 35), hint, fontSize: 13, modulate: Ui.InkQuiet);
+            Text(_gothic, new Vector2(x + 32, y + 35), hint, fontSize: 13, modulate: hintInk);
             w = Math.Max(w, _gothic.GetStringSize(hint, fontSize: 13).X + 32);
+            if (locked is not null)
+            {
+                Text(_gothic, new Vector2(x + 32, y + 59), locked, fontSize: 13, modulate: Ui.VermilionInk);
+                w = Math.Max(w, _gothic.GetStringSize(locked, fontSize: 13).X + 32);
+                h += 24;
+            }
         }
-        _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, w + 8, h), () => { toggle(); QueueRedraw(); }));
+        if (locked is null)
+            _spots.Add(new Spot(id, new Rect2(x - 4, y - 4, w + 8, h), () => { toggle(); QueueRedraw(); }));
         return y - 4 + h;
     }
 

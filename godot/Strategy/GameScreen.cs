@@ -38,6 +38,12 @@ public enum GameStart
 
     /// <summary>Development: an ending's <c>OVER</c> on the booted game (<see cref="GameOptions.Ending"/>).</summary>
     Ending,
+
+    /// <summary>
+    /// Ours (docs/save-import.md, §7): an original's save, imported (File → Import Original Save…, <c>--load-original</c>),
+    /// loaded at once on the booted game (<see cref="GameOptions.OriginalSave"/>).
+    /// </summary>
+    Original,
 }
 
 /// <summary>Where unattended play stops early (<c>--until</c>).</summary>
@@ -67,6 +73,12 @@ public sealed record GameOptions
 
     /// <summary>Development: the ending <see cref="GameStart.Ending"/> shows (1-14).</summary>
     public int Ending { get; init; }
+
+    /// <summary>The original's save <see cref="GameStart.Original"/> loads, read and checked (<c>OriginalSave.Read</c>).</summary>
+    public SaveData? OriginalSave { get; init; }
+
+    /// <summary>The name "Load Complete" gives <see cref="OriginalSave"/> ("Original save E", <c>OriginalSave.Label</c>).</summary>
+    public string OriginalLabel { get; init; } = "";
 
     /// <summary>
     /// Development: plays unattended — keys answered, Turn END every week, the battles fought with
@@ -637,6 +649,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 GameStart.Title => await session.TitleAsync(),
                 GameStart.New => await session.NewGameAsync(),
                 GameStart.Load => await session.LoadFromTitleAsync(),
+                GameStart.Original => await session.LoadImportedAsync(_options.OriginalSave!, _options.OriginalLabel),
                 _ => await session.EndingAsync((Sys3Int)_options.Ending),
             };
             if (end is not null)

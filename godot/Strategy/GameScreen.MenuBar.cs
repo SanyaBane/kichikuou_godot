@@ -82,6 +82,7 @@ public partial class GameScreen
 
         row.AddChild(Menu("File",
             ("Save Screenshot", SaveScreenshot),
+            ("Import Original Save…", ImportOriginalSave),          // ours (docs/save-import.md, §7)
             ("Restart", ConfirmRestart),
             ("Exit", ConfirmExit)));
         row.AddChild(Menu("Screen",
@@ -335,7 +336,10 @@ public partial class GameScreen
             return null;
         _modal = true;
         _input.Clear();
-        var view = new OptionsView(_skip, folderLocked: GameData.UsesExtract, tab);
+        var view = new OptionsView(_skip, folderLocked: GameData.UsesExtract, tab)
+        {
+            ImportedGame = _script?.State.ImportedFromOriginal == true,  // "New scenes first" locked off (docs/save-import.md, §7)
+        };
         view.TextSpeedChanged += step => _messageView.LettersPerSecond = TextSpeedChoice.LettersPerSecond(step);
         view.FontChosen += ApplyFont;
         view.ReadColourChosen += () => _messageView.QueueRedraw();
@@ -436,7 +440,14 @@ public partial class GameScreen
     /// </summary>
     private void Confirm(PhoneMenu.Command command, Action confirmed)
     {
-        if (_modal || PhoneMenu.QuestionOf(command) is not { } question)
+        if (PhoneMenu.QuestionOf(command) is { } question)
+            Ask(question, confirmed);
+    }
+
+    /// <summary>The modal box of <see cref="Confirm"/> with <paramref name="question"/> (Import Original Save's too).</summary>
+    private void Ask(PhoneMenu.Question question, Action confirmed)
+    {
+        if (_modal)
             return;
         var dialog = new ConfirmationDialog
         {

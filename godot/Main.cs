@@ -172,13 +172,32 @@ public partial class Main : Control
         string? shots = Value("--shots");
 
         int? ending = int.TryParse(Value("--ending"), out int e) ? e : null;
-        if (args.Contains("--newgame") || args.Contains("--load") || ending is not null)
+        string? original = Value("--load-original");
+        if (args.Contains("--newgame") || args.Contains("--load") || ending is not null || original is not null)
         {
             bool auto = args.Contains("--auto");
+            Kichikuou.Engine.Script.SaveData? originalSave = null;
+            if (original is not null)
+            {
+                try
+                {
+                    originalSave = Kichikuou.Original.Content.Saves.OriginalSave.Read(original);    // ours (docs/save-import.md, §7)
+                }
+                catch (Kichikuou.Original.Content.Saves.OriginalSaveException ex)
+                {
+                    GD.PushError($"Kichikuou: {original} cannot be imported: {ex.Message}");
+                    if (quit)
+                        ((SceneTree)Godot.Engine.GetMainLoop()).Quit(1);
+                    return null;
+                }
+            }
             return new GameScreen(new GameOptions
             {
-                Start = ending is not null ? GameStart.Ending : args.Contains("--load") ? GameStart.Load : GameStart.New,
+                Start = ending is not null ? GameStart.Ending : original is not null ? GameStart.Original
+                    : args.Contains("--load") ? GameStart.Load : GameStart.New,
                 Ending = ending ?? 0,
+                OriginalSave = originalSave,
+                OriginalLabel = original is not null ? Kichikuou.Original.Content.Saves.OriginalSave.Label(original) : "",
                 Auto = auto,
                 Fast = fast,
                 QuitWhenDone = quit,

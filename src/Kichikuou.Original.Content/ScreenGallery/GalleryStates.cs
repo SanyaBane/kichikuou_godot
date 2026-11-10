@@ -259,9 +259,11 @@ public static class GalleryStates
     /// 31): the turn starts of ten weeks written <paramref name="newest"/> less a day each, the Turn ENDs of the ten weeks
     /// before the newest two hours after their start (the newest with <see cref="SampleEndComment"/>); the manual saves an
     /// hour after their week's start (the newest is the save written last), <see cref="ManualWeeksBefore"/> apart, with
-    /// <see cref="SampleComments"/>.
+    /// <see cref="SampleComments"/>. With <paramref name="importedWeeks"/> the saves of the newest that many weeks are those
+    /// of a game imported from the original's save (<see cref="GameState.ImportedFromOriginal"/>; docs/save-import.md, §7),
+    /// the older ones another game's.
     /// </summary>
-    public static MemorySaveLibrary SampleLibrary(SaveData data, DateTime newest)
+    public static MemorySaveLibrary SampleLibrary(SaveData data, DateTime newest, int importedWeeks = 0)
     {
         var library = new MemorySaveLibrary();
         SaveData WeeksBefore(int weeks, int hours)
@@ -270,6 +272,7 @@ public static class GalleryStates
             data.Restore(s);
             s.Week = (Sys3Int)(s.Week.Value - weeks);
             s.Tmp0021 = (Sys3Int)(s.Tmp0021.Value - weeks);         // the week the lists date a save by (SaveSlots.Of)
+            s.ImportedFromOriginal = weeks < importedWeeks;
             return SaveData.Capture(s, data.Resume).Stamped(newest.AddDays(-weeks).AddHours(hours));
         }
         for (int weeks = ISaveLibrary.AutoCount; weeks >= 0; weeks--)

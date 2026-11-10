@@ -228,6 +228,28 @@ public class SaveSlotsTests
         Assert.Equal("", SaveSlots.Now(Game(18)).RingText);
     }
 
+    /// <summary>
+    /// The saves of a game imported from the original's save carry its mark (docs/save-import.md, §7, R1): the screen tags
+    /// them Original, an auto-save as a manual one, the game being played too; another game's are not tagged.
+    /// </summary>
+    [Fact]
+    public void An_imported_games_saves_are_tagged_original()
+    {
+        var library = new MemorySaveLibrary();
+        var imported = Game(18);
+        imported.ImportedFromOriginal = true;
+        library.WriteAuto(SaveData.Capture(Game(17), Autosave));
+        library.WriteAuto(SaveData.Capture(imported, Autosave));
+        library.WriteManual(SaveData.Capture(imported, Moment));
+
+        var shelf = SaveSlots.ReadLibrary(library);
+
+        Assert.Equal([true, false], shelf.Autos.Select(s => s.Original));
+        Assert.True(Assert.Single(shelf.Manuals).Original);
+        Assert.True(SaveSlots.Now(imported).Original);
+        Assert.False(SaveSlots.Now(Game(18)).Original);
+    }
+
     /// <summary>Ours (owner, 2026-10-22, docs/ui/save-load.md, §10): the sweep deletes the manual saves without a comment, nothing else.</summary>
     [Fact]
     public void The_sweep_deletes_the_manual_saves_without_a_comment()

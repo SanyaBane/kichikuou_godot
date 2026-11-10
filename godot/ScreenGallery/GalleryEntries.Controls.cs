@@ -24,6 +24,10 @@ internal static partial class GalleryEntries
                 "Every tab one column, scrolled (owner, 2026-11-03): this one scrolled to its end, where it scrolls; nothing is "
                 + "written unless a control is used.", g => Options(g, tab, end: true));
         }
+        yield return new("options-tweaks-imported", "Settings", "Options: Tweaks in an imported game", Week18,
+            "A game imported from the original's save (docs/save-import.md, §7, mock-up O1): \"New scenes first\" greyed "
+            + "and empty, the reason under it in vermilion ink; the player's own setting kept for other games.",
+            g => Options(g, OptionsView.Tab.Tweaks, imported: true));
         yield return new("options-defaults", "Settings", "Options: Defaults asking", Week18,
             "Defaults asks first, the same words on every tab (owner, 2026-10-31), here over Messages, whose preview hides "
             + "under it; nothing is reset unless Reset is used.", g => Options(g, OptionsView.Tab.Messages, askDefaults: true));
@@ -55,12 +59,13 @@ internal static partial class GalleryEntries
     /// The options window on <paramref name="tab"/> over the map, with a message skip of its own that records nothing;
     /// with <paramref name="askDefaults"/> Defaults' question over it, with <paramref name="end"/> the tab scrolled to its end.
     /// </summary>
-    private static Action<Rect2>? Options(GalleryStage g, OptionsView.Tab tab, bool askDefaults = false, bool end = false)
+    private static Action<Rect2>? Options(GalleryStage g, OptionsView.Tab tab, bool askDefaults = false, bool end = false,
+        bool imported = false)
     {
         if (g.State(Week18) is not { } s)
             return null;
         var backdrop = g.Backdrop(s);
-        var view = g.Add(new OptionsView(new MessageSkip([]), folderLocked: GameData.UsesExtract, tab));
+        var view = g.Add(new OptionsView(new MessageSkip([]), folderLocked: GameData.UsesExtract, tab) { ImportedGame = imported });
         if (askDefaults)
             view.AskDefaults();
         if (end)

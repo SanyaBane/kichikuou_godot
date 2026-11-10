@@ -58,6 +58,7 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
     private static readonly Color AutoGold = Color.Color8(138, 104, 34);
     private static readonly Color TagText = Color.Color8(246, 232, 206);
     private static readonly Color TurnStartFill = Color.Color8(70, 110, 50), TurnEndFill = Color.Color8(118, 30, 24);
+    private static readonly Color OriginalPaper = Color.Color8(222, 206, 168), OriginalInk = Color.Color8(40, 28, 18);   // mock-up R1
     private static Color StarRim => Ui.Rim;
     private static Color GoneVeil => Ui.Backdrop with { A = 150 / 255f };
 
@@ -903,7 +904,9 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         float tx = x0 + 42;
         Text(_cinzel, 15, tx, y0 + 16, held.ShortDate, Ui.Name);
         TextRight(_gothic, 14, rect.End.X - 10, y0 + 16, held.WrittenShort, Ui.Value);   // the lists' order: the bright line
-        float end = auto ? DrawRingTag(rect.End.X - 10, y0 + 37, held, 12) - 14 : rect.End.X - 22;
+        // An imported game's save (docs/save-import.md, §7, R1/R1b): "Original" at the right edge, the kind's tag left of it.
+        float right = held.Original ? DrawOriginalTag(rect.End.X - 10, y0 + 37, 12) - 6 : rect.End.X - 10;
+        float end = auto ? DrawRingTag(right, y0 + 37, held, 12) - 14 : held.Original ? right - 8 : rect.End.X - 22;
         if (held.Commented)
         {
             Text(_gothic, 12, tx, y0 + 37, "“" + Fit(held.Comment, 12, end - tx) + "”", Ui.Quiet);
@@ -996,6 +999,24 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         return rect.Position.X;
     }
 
+    /// <summary>
+    /// The "Original" tag of a save of a game imported from the original's save (mock-ups R1/R1b): a paper tag framed in
+    /// gold, right-aligned at <paramref name="right"/>; its left edge.
+    /// </summary>
+    private float DrawOriginalTag(float right, float middle, int size)
+    {
+        const string text = SaveSlots.OriginalTag;
+        float w = _gothic.GetStringSize(text, fontSize: size).X + 14, h = size + 7;
+        var rect = new Rect2(right - w, middle - h / 2, w, h);
+        DrawRect(rect, OriginalPaper);
+        DrawRect(rect, Ui.Gold, false, Line(1));
+        TextCentred(_gothic, size, rect.GetCenter().X, middle, text, OriginalInk);
+        return rect.Position.X;
+    }
+
+    /// <summary>The "Original" tag's width at <paramref name="size"/>.</summary>
+    private float OriginalTagWidth(int size) => _gothic.GetStringSize(SaveSlots.OriginalTag, fontSize: size).X + 14;
+
     private void DrawPage(bool save)
     {
         var held = ChosenSave;
@@ -1009,14 +1030,18 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         }
         string title = _chosenNew ? $"New save · {shown.DateText}" : held!.Id?.Kind == SaveKind.Auto ? shown.DateText : $"{held.Label} · {shown.DateText}";
         Text(_cinzel, 22, PageX, PageY + 14, title, Ui.Name);
+        float tagsEnd = PageX + _cinzel.GetStringSize(title, fontSize: 22).X;
         if (held?.Id?.Kind == SaveKind.Auto)
         {
             float w = _cinzel.GetStringSize(title, fontSize: 22).X;
             DrawRect(new Rect2(PageX + w + 16, PageY + 4, 52, 20), AutoGold);
             TextCentred(_gothic, 12, PageX + w + 42, PageY + 14, "Auto", TagText);
             float x = PageX + w + 76;
-            DrawRingTag(x + _gothic.GetStringSize(held.RingText, fontSize: 13).X + 14, PageY + 14, held, 13);
+            tagsEnd = x + _gothic.GetStringSize(held.RingText, fontSize: 13).X + 14;
+            DrawRingTag(tagsEnd, PageY + 14, held, 13);
         }
+        if (shown.Original)                                             // after the title and its tags (R1)
+            DrawOriginalTag(tagsEnd + 16 + OriginalTagWidth(13), PageY + 14, 13);
         if (MapOf(shown) is { } map)
             DrawTextureRect(map, MapRect, false);
         else
@@ -1038,12 +1063,16 @@ internal sealed partial class SaveLoadView : Control, IUiPaletteUser
         if (!_chosenNew)                                                // a new save: nothing under its figures (owner, 2026-11-04)
         {
             DrawComment(held!, cy);
+            float ny = cy + 77;
             if (held!.IsAuto && !_editing)                              // what its load does, under the comment
             {
                 var lines = LoadLines(held);
                 Text(_gothic, 14, PageX, cy + 77, lines.Item1, Ui.Quiet);
                 Text(_gothic, 14, PageX, cy + 97, lines.Item2, Ui.Quiet);
+                ny = cy + 117;
             }
+            if (held.Original && !_editing)                             // an imported game's (R1)
+                Text(_gothic, 14, PageX, ny, SaveSlots.OriginalNote, Ui.Quiet);
         }
         float by = ButtonRect.Position.Y, lx = ButtonRect.End.X + 20, lw = BackRect.Position.X - 16 - lx;
         if (save && _now is { } now)

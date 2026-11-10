@@ -60,6 +60,13 @@ public sealed record SaveSlot(
     /// <summary>Whether it is an auto-save, of either ring.</summary>
     public bool IsAuto => Kind is SlotKind.Auto or SlotKind.TurnEnd;
 
+    /// <summary>
+    /// Ours (owner, 2026-11-10; docs/save-import.md, §7, mock-ups R1/R1b): a save of a game imported from the original's save
+    /// (<see cref="GameState.ImportedFromOriginal"/>): the "Original" tag at the row's right edge and after the page's
+    /// title, with <see cref="SaveSlots.OriginalNote"/> on the page.
+    /// </summary>
+    public bool Original { get; init; }
+
     /// <summary>An auto-save's tag (docs/ui/save-load.md, §12): "Turn Start" or "Turn End"; empty for any other save.</summary>
     public string RingText => Kind switch { SlotKind.Auto => "Turn Start", SlotKind.TurnEnd => "Turn End", _ => "" };
 
@@ -195,6 +202,12 @@ public static class SaveSlots
         return deleted;
     }
 
+    /// <summary>The tag on a save of a game imported from the original's save (<see cref="SaveSlot.Original"/>).</summary>
+    public const string OriginalTag = "Original";
+
+    /// <summary>The page's quiet line on such a save (mock-up R1).</summary>
+    public const string OriginalNote = "A game imported from the original's save: \"New scenes first\" and the talk marks are off in it.";
+
     /// <summary>The game being played, as a save from <c>COMMAND</c> would store it (owner's decision 26).</summary>
     public static SaveSlot Now(GameState state) => Of(state, 0, SlotKind.MidTurn, state.Week.Value, null);
 
@@ -220,7 +233,10 @@ public static class SaveSlots
             if (s.Provs[prov].Owner == 1 && prov != 75)
                 provinces++;
         int[] tiles = [s.Ui_MapCgTopL.Value, s.Ui_MapCgTopM.Value, s.Ui_MapCgTopR.Value, s.Ui_MapCgBotL.Value, s.Ui_MapCgBotM.Value, s.Ui_MapCgBotR.Value];
-        return new SaveSlot(slot, kind, week, s.StoryStage.Value, s.Gold.Value, provinces, units, troops.Value, written, tiles, MarksOf(s));
+        return new SaveSlot(slot, kind, week, s.StoryStage.Value, s.Gold.Value, provinces, units, troops.Value, written, tiles, MarksOf(s))
+        {
+            Original = s.ImportedFromOriginal,
+        };
     }
 
     /// <summary>
