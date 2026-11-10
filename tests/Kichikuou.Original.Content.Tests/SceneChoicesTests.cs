@@ -271,6 +271,28 @@ public class SceneChoicesTests(ITestOutputHelper output)
     }
 
     /// <summary>
+    /// In a game imported from the original's save (docs/save-import.md, §7) the rule does not act though the player's
+    /// option is on: Cafe's talk draws as the original's (2: the children, the Satella scene left unread).
+    /// </summary>
+    [ScenarioFact]
+    public async Task In_a_game_imported_from_the_original_the_rule_never_acts()
+    {
+        var rig = await BootAsync();
+        var start = CafeState(rig);
+        start.ImportedFromOriginal = true;
+        var play = rig.Play(start, new ConstantRandom(2), on: true);
+        Assert.True(play.Script.NewScenesOption);
+        Assert.False(play.Script.NewScenesFirst);
+        await play.TalkAsync(45);
+        Assert.Empty(play.Choices.Draws);
+        Assert.Empty(play.Choices.Decisions);
+        var satella = LeafWith(rig.Marks.Talk(start, 45, true), CafeDraw, 1).Path.Lines
+            .Where(l => !start.IsLineRead(l) && !SceneMarks.FrameLines.Contains(l)).ToList();
+        Assert.NotEmpty(satella);
+        Assert.All(satella, line => Assert.False(play.State.IsLineRead(line)));
+    }
+
+    /// <summary>
     /// Where the dry run fails (here its scenes cannot be read), the talk goes on with the values drawn — nothing is
     /// thrown into the game — and the fallback is kept with its reason; the rule does not act again in that talk.
     /// </summary>
@@ -371,7 +393,7 @@ public class SceneChoicesTests(ITestOutputHelper output)
             var script = new OriginalScriptContext(state, counting, view, input, runner)
             {
                 Saves = new MemorySaveStore(),
-                NewScenesFirst = on,
+                NewScenesOption = on,
                 Marks = Marks,
             };
             runner.Bind(script);

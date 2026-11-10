@@ -264,6 +264,35 @@ public class SaveDataTests
     }
 
     /// <summary>
+    /// The mark of a game imported from the original's save (docs/save-import.md, §7) goes with every save of it and comes
+    /// back with a load; a load of an unmarked save takes it away, and "New scenes first" holds again with it gone.
+    /// </summary>
+    [Fact]
+    public void The_mark_of_an_imported_game_is_carried_by_its_saves()
+    {
+        var rig = Rig();
+        rig.Script.NewScenesOption = true;
+        Assert.True(rig.Script.NewScenesFirst);
+        rig.State.ImportedFromOriginal = true;
+        Assert.False(rig.Script.NewScenesFirst);
+        Assert.True(rig.Script.NewScenesOption);
+
+        var marked = SaveData.ReadFrom(new MemoryStream(Write(SaveData.Capture(rig.State, Call))));
+        Assert.Equal([1], marked.Extras[GameState.ImportedFromOriginalKey]);
+        var unmarked = SaveData.Capture(new GameState(), Call);
+
+        unmarked.Restore(rig.State);
+        Assert.False(rig.State.ImportedFromOriginal);
+        Assert.True(rig.Script.NewScenesFirst);
+        marked.Restore(rig.State);
+        Assert.True(rig.State.ImportedFromOriginal);
+        Assert.False(rig.Script.NewScenesFirst);
+
+        rig.State.ImportedFromOriginal = false;
+        Assert.DoesNotContain(GameState.ImportedFromOriginalKey, rig.State.Extras.Keys);
+    }
+
+    /// <summary>
     /// ENG-07: the slot keeps the time its game was saved. <c>QD</c> and <c>QC</c> stamp it, <c>QP</c> (the page-4 sync
     /// into every slot after each save) keeps it, and <c>LT</c> reads it.
     /// </summary>

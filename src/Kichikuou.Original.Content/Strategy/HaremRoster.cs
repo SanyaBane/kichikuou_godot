@@ -28,7 +28,8 @@ public static class HaremRoster
     /// The girls on offer in their numbers' order: <c>HaremAvail_*</c> (<c>VAR0249</c>-<c>VAR0298</c>, which
     /// <c>Sﾊｰﾚﾑ.ADV:15-16</c> copies into its list), their counts from the history records
     /// (<c>Hist.Harem_SexCount</c>, <c>Hist.Harem_LastWeek</c>, <c>:131-148</c>), their visits' marks from
-    /// <paramref name="marks"/> (<see cref="PickerMarks.Visits"/>).
+    /// <paramref name="marks"/> (<see cref="PickerMarks.Visits"/>) — none in a game imported from the original's save
+    /// (<see cref="GameState.ImportedFromOriginal"/>, owner, 2026-11-10).
     /// </summary>
     public static IReadOnlyList<HaremGirl> Girls(GameState s, IReadOnlyList<string> names, IReadOnlyDictionary<int, SceneMark>? marks = null)
     {
@@ -39,7 +40,7 @@ public static class HaremRoster
                 continue;
             var history = s.History[(Sys3Int)n];
             string name = n - 1 < names.Count ? Hankaku.ToHalfWidth(names[n - 1]) : "";
-            SceneMark? mark = marks is not null && marks.TryGetValue(n, out var m) ? m : null;
+            SceneMark? mark = marks is not null && !s.ImportedFromOriginal && marks.TryGetValue(n, out var m) ? m : null;
             girls.Add(new HaremGirl(n, name, history.Harem_SexCount.Value, history.Harem_LastWeek.Value, PictureOf(s, n), mark));
         }
         return girls;

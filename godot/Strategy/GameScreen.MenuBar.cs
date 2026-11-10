@@ -344,7 +344,7 @@ public partial class GameScreen
         view.NewScenesFirstChanged += on =>
         {
             if (_script is not null)
-                _script.NewScenesFirst = on;    // at once: the next talk or visit, the next patched statement
+                _script.NewScenesOption = on;   // at once: the next talk or visit, the next patched statement
             _pickerMarks?.SetNewScenesFirst(on);  // the open picker's marks read with it
         };
         view.DemonReachChosen += reach =>

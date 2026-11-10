@@ -38,12 +38,21 @@ public sealed partial class OriginalScriptContext(
     /// <summary>
     /// Ours (owner's decision 30, the third rule change on purpose; docs/ui/talk-marks.md §5): "New scenes first", the
     /// player's option (Option → Tweaks, on by default in the game; copied here by the UI). Off by default on a context, so
-    /// a context built by hand (the differential tests) runs the files as the original. On, it is one switch for all of
-    /// it: during a talk or a visit an unread harmless variant comes, and a listed draw that changes the state gives that
-    /// change once its usual scene is read (<see cref="SceneChoices"/>, with <see cref="Marks"/>); Kanami's choice in
-    /// Code's event 4 and Kentarou's hint lines follow it too (<see cref="Strategy.ScenePatches"/>, the game's runner's hooks).
+    /// a context built by hand (the differential tests) runs the files as the original. The rule itself is
+    /// <see cref="NewScenesFirst"/>: the option, but never in a game imported from the original's save.
     /// </summary>
-    public bool NewScenesFirst { get; set; }
+    public bool NewScenesOption { get; set; }
+
+    /// <summary>
+    /// Ours (owner's decision 30): whether "New scenes first" holds now — the player's option (<see cref="NewScenesOption"/>)
+    /// in a game not imported from a save of the original (<see cref="GameState.ImportedFromOriginal"/>, owner,
+    /// 2026-11-10: such a save keeps no record of the lines read; docs/save-import.md, §7). Read at each use, so a load of
+    /// another save sets it right. On, it is one switch for all of it: during a talk or a visit an unread harmless variant
+    /// comes, and a listed draw that changes the state gives that change once its usual scene is read
+    /// (<see cref="SceneChoices"/>, with <see cref="Marks"/>); Kanami's choice in Code's event 4 and Kentarou's hint lines
+    /// follow it too (<see cref="Strategy.ScenePatches"/>, the game's runner's hooks).
+    /// </summary>
+    public bool NewScenesFirst => NewScenesOption && !State.ImportedFromOriginal;
 
     /// <summary>
     /// Ours (owner's decision 32, the fourth rule change on purpose; docs/tweaks.md): BRS-24's fix, the player's option

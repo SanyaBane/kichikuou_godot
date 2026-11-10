@@ -68,6 +68,31 @@ public class PickerMarksTests(ITestOutputHelper output)
         Assert.Null(SubordinatesScreen.Panel(s, 12).TalkMark);
     }
 
+    /// <summary>
+    /// A game imported from the original's save (docs/save-import.md, §7) shows no mark anywhere: not on the ledger, nor
+    /// Talk, nor the girls; the picker's openings run nothing and the scenes are not read ahead.
+    /// </summary>
+    [Fact]
+    public void A_game_imported_from_the_original_shows_no_marks()
+    {
+        var s = World();
+        s.ImportedFromOriginal = true;
+        s.HaremAvail_Lia = 1;
+        Assert.Empty(SubordinatesScreen.TalkMarks(s, Marks));
+        Assert.Null(SubordinatesScreen.Panel(s, 12, Marks).TalkMark);
+        Assert.True(SubordinatesScreen.Panel(s, 12, Marks).Talk.Enabled);
+        Assert.All(HaremRoster.Girls(s, Names, new Dictionary<int, SceneMark> { [2] = SceneMark.New }), g => Assert.Null(g.Mark));
+
+        var marks = new PickerMarks(new SceneMarks(new ScenarioScripts(Path.Combine(Path.GetTempPath(), "no-scenario-here"))));
+        Assert.True(marks.OnPicker(new PickerScreenEvent(PickerKind.Harem, Sys3Int.Zero, true), s, newScenesFirst: false));
+        Assert.True(marks.OnPicker(new PickerScreenEvent(PickerKind.Subordinates, (Sys3Int)1, true), s, newScenesFirst: false));
+        Assert.Empty(marks.Visits);
+        Assert.Empty(marks.Talks);
+        Assert.Empty(marks.Failures);
+        Assert.False(marks.Warm(s));
+        Assert.False(marks.Warming);
+    }
+
     [Fact]
     public void No_marks_show_while_the_weeks_talk_is_spent_or_the_screen_is_view_only()
     {

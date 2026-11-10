@@ -21,9 +21,10 @@ public class ScenePatchesTests(ITestOutputHelper output)
     /// Code's event 4 (<c>Gｺｰﾄﾞ</c> entry 4, as <c>COM:248-251</c> calls it during the Zeth war) with Kanami's
     /// <paramref name="flags"/> of her four set: the event's state, the rule on or off.
     /// </summary>
-    private static Play CodeEvent(Rig rig, int flags, bool on)
+    private static Play CodeEvent(Rig rig, int flags, bool on, bool imported = false)
     {
         var start = rig.Start();
+        start.ImportedFromOriginal = imported;
         start.F_Code_State = 3;
         start.F_Zeth_War = 1;
         start.F_Kanami_Scene1 = (Sys3Int)(flags >= 1 ? 1 : 0);
@@ -112,6 +113,31 @@ public class ScenePatchesTests(ITestOutputHelper output)
         Assert.Equal("OVER.ADV", jump.File);
         Assert.Empty(play.Input.Menus);
         Assert.Equal((5, 3), (play.State.F_Code_State.Value, play.State.EndingId.Value));
+    }
+
+    /// <summary>
+    /// In a game imported from the original's save (docs/save-import.md, §7), with the player's option on: two flags play
+    /// ending 3 unasked as the original, and Kentarou's training talks show no hint.
+    /// </summary>
+    [ScenarioFact]
+    public async Task In_a_game_imported_from_the_original_nothing_is_asked_or_shown()
+    {
+        var rig = await BootAsync();
+        var play = CodeEvent(rig, 2, on: true, imported: true);
+        var jump = await Assert.ThrowsAsync<ScenarioJumpException>(() => play.Script.CallFileAsync(Code));
+        Assert.Equal("OVER.ADV", jump.File);
+        Assert.Empty(play.Input.Menus);
+        Assert.Equal((5, 3), (play.State.F_Code_State.Value, play.State.EndingId.Value));
+
+        var start = rig.Start();
+        start.Units[31].Status = 1;
+        start.F_Kentarou_State = 5;
+        start.ImportedFromOriginal = true;
+        var kentarou = rig.Play(start, new ConstantRandom(1), on: true);
+        for (int talk = 0; talk < 2; talk++)
+            await kentarou.TalkAsync(31);
+        Assert.Equal(7, kentarou.State.F_Kentarou_State.Value);
+        Assert.DoesNotContain(kentarou.View.Events, e => e is PortTextEvent);
     }
 
     /// <summary>

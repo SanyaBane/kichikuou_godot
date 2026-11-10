@@ -625,7 +625,7 @@ public partial class GameScreen : Control, IScriptView, IGameInput
             var session = new GameSession(state, EngineState.Random, new ViewProxy(this), new GameInputProxy(this),
                 scripts, scripts, new LibrarySlots(library), new UnportedFiles(this));
             session.Script.Library = library;
-            session.Script.NewScenesFirst = NewScenesChoice.On;     // Option → Tweaks (decision 30); the options window keeps it current
+            session.Script.NewScenesOption = NewScenesChoice.On;    // Option → Tweaks (decision 30); the options window keeps it current
             session.Script.DemonReach = DemonReachChoice.Chosen;    // Option → Tweaks (decision 32), the same way
             session.Script.NinjaChance = NinjaChanceChoice.Chosen;  // and decision 33's
             _scenes = session.Scenes;

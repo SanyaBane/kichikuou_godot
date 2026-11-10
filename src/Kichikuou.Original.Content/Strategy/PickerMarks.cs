@@ -12,7 +12,9 @@ namespace Kichikuou.Original.Content.Strategy;
 /// (<see cref="OnPicker"/>), from the state at that call — the picker's own state, <c>Ev_Entry</c> and the command's writes
 /// included —, and kept until it opens again; never in the draw loop. Each mark's tree is kept, so a change of "New scenes
 /// first" while a picker is open reads the marks again without a run (<see cref="SetNewScenesFirst"/>). It decides nothing
-/// and changes nothing: the dry run runs on copies of the state.
+/// and changes nothing: the dry run runs on copies of the state. In a game imported from the original's save
+/// (<see cref="GameState.ImportedFromOriginal"/>, owner, 2026-11-10; docs/save-import.md, §7) there are no marks: nothing
+/// is run and nothing is read ahead.
 /// </summary>
 public sealed class PickerMarks(SceneMarks marks)
 {
@@ -52,7 +54,11 @@ public sealed class PickerMarks(SceneMarks marks)
         var clock = Stopwatch.StartNew();
         var failures = new List<string>();
         NewScenesFirst = newScenesFirst;
-        if (e.Kind == PickerKind.Harem)
+        if (state.ImportedFromOriginal)
+        {
+            (_visits, _talks, Visits, Talks) = ([], [], None, None);
+        }
+        else if (e.Kind == PickerKind.Harem)
         {
             _visits = Run(state, SceneMarks.OfferedGirls(state).Select(MarkTarget.Visit), failures);
             Visits = Read(_visits);
@@ -86,6 +92,12 @@ public sealed class PickerMarks(SceneMarks marks)
     /// </summary>
     public bool Warm(GameState state)
     {
+        if (state.ImportedFromOriginal)
+        {
+            _warmQueued = true;                                         // nothing to read ahead: no marks in the game
+            _warm.Clear();
+            return false;
+        }
         if (!_warmQueued)
         {
             _warmQueued = true;

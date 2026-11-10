@@ -223,11 +223,12 @@ public static class SubordinatesScreen
     /// Ours (owner's decision 30, docs/ui/talk-marks.md §6, S): the marks the ledger's speech bubbles show, by unit — those
     /// of <paramref name="marks"/> (<see cref="PickerMarks.Talks"/>) for the units that can act (status 1); none at all
     /// while the week's talk is spent (<see cref="TalkOpen"/>; the owner, 2026-10-22: the marks only where they can be acted
-    /// on), so neither the bubbles nor Talk's pill show then.
+    /// on), so neither the bubbles nor Talk's pill show then; none either in a game imported from the original's save
+    /// (<see cref="GameState.ImportedFromOriginal"/>, owner, 2026-11-10: it keeps no record of the lines read).
     /// </summary>
     public static IReadOnlyDictionary<int, SceneMark> TalkMarks(GameState state, IReadOnlyDictionary<int, SceneMark>? marks)
     {
-        if (marks is null || marks.Count == 0 || !TalkOpen(state))
+        if (marks is null || marks.Count == 0 || !TalkOpen(state) || state.ImportedFromOriginal)
             return NoMarks;
         return marks.Where(m => m.Key is >= 1 and <= 50 && state.Units[m.Key].Status == 1).ToDictionary(m => m.Key, m => m.Value);
     }
