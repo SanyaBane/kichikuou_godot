@@ -176,8 +176,10 @@ agent days, rough.
      at once (a whole cache is just opened, without the screen). `--import-screen [DIR]` shows it whatever data there
      is; with DIR it imports DIR without the dialog into a fresh `user://import-look` and, with `--shots`, saves
      `import-choose`, `import-progress`, `import-done` or `import-refused` (a window is needed). Checked in a window
-     on the owner's folder and on its `bgm` folder (refused: no `KICHIKUSA.ALD`). Not run: the start with no extract
-     set, which would need the owner's `user://settings.cfg` changed (its `extract_dir` is the extract).
+     on the owner's folder and on its `bgm` folder (refused: no `KICHIKUSA.ALD`). The start with no extract set, not
+     run in the development runs (the owner's `user://settings.cfg` names the extract), ran on 2026-11-10 in the
+     Windows release build on a user folder of its own: the screen with no folder, and with a saved folder the
+     import at once and the title (docs/release.md, "Checks before publishing").
    - **Another folder later** (owner, 2026-10-21): Option → Game Folder… opens the screen from the game, with a way
      back to the title without an import (docs/window-menu.md).
 9. **Docs** ✓ (2026-10-20). CLAUDE.md (status, layout, commands), spike-findings ("Local layout": the extract

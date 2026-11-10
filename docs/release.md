@@ -108,6 +108,24 @@ the console's output open and the script never ends (2026-11-08).
   import screen, imports the game folder, and a new game and a load play, the menu bar without Debug (a
   release build has none). The log (`%APPDATA%\KichikuouGodot\logs\godot.log`) names the version and
   "release build".
+
+  The developer's own folder need not move: Godot takes the user folder from the `APPDATA` variable, so the
+  exe started with `APPDATA` set to an empty folder keeps all its data there (`<that folder>\KichikuouGodot`)
+  and starts as a new player's. Run so by the agent on 2026-11-10, what needs no hand:
+  - the exe on an empty folder shows the import screen (the log: "Import screen: No game folder is chosen
+    yet.");
+  - with a `settings.cfg` in its `KichikuouGodot` that names the game folder (`[data]`, then
+    `game_dir="E:/…"`, forward slashes) the start imports that folder at once (no click: `Main` starts the
+    import screen's import when a folder is saved) and the title follows: the opening, the menu bar File,
+    Screen, Options, Sound, MsgSkip;
+  - a new game and a load, which need the title's clicks, are played by the **debug export of the same
+    preset** (`--export-debug "Windows Desktop"`: the same pack and assemblies, but the development switches
+    are read), headless on such a folder: `Kichikuou.console.exe --headless -- --newgame --auto --fast --quit
+    --seed 2 --weeks 26` (the prologue to the first Leazas weeks, ~35 s), then `--load --auto --fast --quit
+    --seed 2 --weeks 28` (the newest auto-save).
+
+  Left to a person: the folder dialog (the field's "Choose…") and the title's buttons in the release build
+  itself, whose pointer is the system's.
 - **Android**: the README's "Installing" followed step by step on a device without the app — the release
   APK installed from the device, the game started once, the game folder copied from a PC by USB in File
   transfer mode (not adb) into `Android/data/org.kichikuou.port/files/game` —, the next start imports it, a
