@@ -151,6 +151,13 @@ public sealed record GameOptions
     public bool AutoMapNorth { get; init; }
 
     /// <summary>
+    /// Development (docs/save-import.md, §8): at the first map wait the unattended player imports the original's save of
+    /// this slot letter from the game folder the way Android offers it — on the phone through the Menu sheet's taps, else
+    /// the tablet's list (<c>GameScreen.AutoImportOriginalAsync</c>) —, and the game goes on from it with these options.
+    /// </summary>
+    public string? AutoImportOriginal { get; init; }
+
+    /// <summary>
     /// Development (docs/ui/gallery.md, §2): at the first map wait in <c>COMMAND</c> the game is saved into this folder's
     /// <c>slot01.ksav</c> as a manual save there saves it (owner's decision 26: the game as it is now, resuming in
     /// <c>COMMAND</c>), then the launch ends — the screen gallery's kept save of a week's commands.
@@ -2202,6 +2209,8 @@ public partial class GameScreen : Control, IScriptView, IGameInput
                 await AutoPlateClickAsync();
             if (_autoCommandsTap && UpdateMapMarkers() && _commandsButton.Visible)
                 await AutoCommandsTapAsync();
+            if (_options.AutoImportOriginal is { } letter && !_autoImported && _pointer.Pending == 0 && _presenter.MapWaiting)
+                await AutoImportOriginalAsync(letter);  // --menu-import: the original's save as Android offers it
             if (_markerPointer.Pending > 0)
             {
                 var click = _markerPointer.Next(out bool clickRead);

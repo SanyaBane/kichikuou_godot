@@ -444,12 +444,14 @@ public partial class GameScreen
             Ask(question, confirmed);
     }
 
+    private ConfirmationDialog? _lastAsk;                  // the box Ask opened last (--menu-import answers it)
+
     /// <summary>The modal box of <see cref="Confirm"/> with <paramref name="question"/> (Import Original Save's too).</summary>
     private void Ask(PhoneMenu.Question question, Action confirmed)
     {
         if (_modal)
             return;
-        var dialog = new ConfirmationDialog
+        var dialog = _lastAsk = new ConfirmationDialog
         {
             Title = question.Title,
             DialogText = question.Line,

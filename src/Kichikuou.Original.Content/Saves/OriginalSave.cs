@@ -49,6 +49,10 @@ public static class OriginalSave
 
     private static string Version => GameFiles.EnglishTranslation10.Name;
 
+    /// <summary>The reasons in a word or two (<see cref="OriginalSaveException.Word"/>).</summary>
+    public const string NotASave = "not a save", Unreadable = "unreadable", AnotherVersion = "another version",
+        NotAtWeekStart = "not at a week's start";
+
     /// <summary>
     /// Ours: the save's name where the save screen names a loaded save ("Load Complete", as "Manual save 3"): "Original save
     /// E" for <c>KICHIKUSE.asd</c> — the original names slot n's file after the scenario archive, <c>KICHIKUSA.asd</c> for
@@ -59,9 +63,12 @@ public static class OriginalSave
         string name = Path.GetFileName(path);
         return name.Length == 13 && name.StartsWith("KICHIKUS", StringComparison.OrdinalIgnoreCase)
             && name.EndsWith(".asd", StringComparison.OrdinalIgnoreCase) && char.IsAsciiLetter(name[8])
-            ? $"Original save {char.ToUpperInvariant(name[8])}"
-            : "Original save";
+            ? $"{LabelStem} {char.ToUpperInvariant(name[8])}"
+            : LabelStem;
     }
+
+    /// <summary>The label of a file named otherwise; a slot's adds its letter.</summary>
+    public const string LabelStem = "Original save";
 
     /// <summary>Reads the save file at <paramref name="path"/> as a slot of the port, dated by the file's time.</summary>
     /// <exception cref="OriginalSaveException">It cannot be read, or is no save of the version the port knows; the message says why.</exception>
@@ -76,11 +83,11 @@ public static class OriginalSave
         }
         catch (AsdFormatException e)
         {
-            throw new OriginalSaveException(e.Message, e);
+            throw new OriginalSaveException(e.Message, NotASave, e);
         }
         catch (Exception e) when (e is IOException or UnauthorizedAccessException)
         {
-            throw new OriginalSaveException($"The file cannot be read: {e.Message}", e);
+            throw new OriginalSaveException($"The file cannot be read: {e.Message}", Unreadable, e);
         }
         return FromAsd(save, written);
     }
@@ -132,7 +139,7 @@ public static class OriginalSave
             || !Autosaves.TryGetValue(near.Address, out var autosave))
         {
             throw new OriginalSaveException(
-                $"It is a save of {Version} the port cannot go on from: it was not made at a week's start ({Frames(save.Stack)}).");
+                $"It is a save of {Version} the port cannot go on from: it was not made at a week's start ({Frames(save.Stack)}).", NotAtWeekStart);
         }
         return autosave;
     }
@@ -146,8 +153,13 @@ public static class OriginalSave
     }));
 
     private static OriginalSaveException Another(string why) =>
-        new($"It is not a save of the version of Kichikuou Rance this game reads ({Version}): {why}");
+        new($"It is not a save of the version of Kichikuou Rance this game reads ({Version}): {why}", AnotherVersion);
 }
 
 /// <summary>A file that cannot become a save of the port (<see cref="OriginalSave"/>); the message says why, in words for the player.</summary>
-public sealed class OriginalSaveException(string message, Exception? inner = null) : Exception(message, inner);
+/// <paramref name="word"/> is the reason in a word or two, for a list's row (docs/save-import.md, §8).
+public sealed class OriginalSaveException(string message, string word, Exception? inner = null) : Exception(message, inner)
+{
+    /// <summary>The reason in a word or two: "not a save", "another version", …</summary>
+    public string Word { get; } = word;
+}

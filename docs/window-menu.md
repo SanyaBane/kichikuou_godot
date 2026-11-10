@@ -145,7 +145,10 @@ web build (seen only) by an option.
   question as Restart's — "Load the original's save?", the save ("Original save E"), its date and file, "Any unsaved
   progress will be lost." — Load | Cancel, on the title too; on Load the game screen starts again and loads it at once
   ("Load Complete", the week's start). Nothing is written. The game it starts is marked: "New scenes first" and the
-  talk marks are off in it, its saves tagged "Original".
+  talk marks are off in it, its saves tagged "Original". On Android and in the touch layout (save-import.md, §8, the
+  owner's T1) it opens a stock dialog listing the game folder's saves instead — the save, its date and stage, or why it
+  cannot be imported —, Load asking the same question; the phone, which has no menu bar, has the same in its Menu sheet
+  (Import original save, a page of the saves, S1).
 - **Restart / Exit** ask as xsystem35 does ("Restart game?" / "Quit game?", "Any unsaved progress
   will be lost."); the game waits while the box is open. Restart returns to the title, a fresh
   boot as xsystem35's (`SET`, the logo and `ｽﾀMENU` from the player's files, decision 19; until

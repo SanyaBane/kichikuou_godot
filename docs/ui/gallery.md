@@ -457,7 +457,9 @@ phone's frame; the mock-up tabs stay as they are, and a built screen's mock-up l
 the scenes' layouts: the entries of the message windows, the scene menu, the week report, the message log, the map's
 wait, All Data and the title show the left side's Menu cell (`GalleryEntries.MenuCell`) and the drawer in it, and the
 pass alone has three Messages entries of its own, the Menu sheet open (`menu-sheet`), Restart's question
-(`menu-sheet-restart`) and Debug's page (`menu-sheet-debug`; `GalleryEntries.Phone.cs`); LS1, LS1b, LS1m, LW1, LEd,
+(`menu-sheet-restart`) and Debug's page (`menu-sheet-debug`; `GalleryEntries.Phone.cs`) — since 2026-11-10 also the page of the
+original's saves (`menu-sheet-saves`, the owner's ten as samples), a save's question (`menu-sheet-save-question`), a refused one
+(`menu-sheet-save-refused`) and the page with none (`menu-sheet-no-saves`; docs/save-import.md, §8); LS1, LS1b, LS1m, LW1, LEd,
 LN3 and LR2 left the mock-up tab. Step L2 (2026-10-28) built the map's: on the phone pass the map's entries show the
 status in the sides (`StatusStripView` in the mode of what is open: the map's wait, a province, the command panel) and no
 room under a strip (`map-north` shows the map's top edge as it is), the province and cells entries the Menu cell, and

@@ -14,7 +14,8 @@ public partial class GameScreen
 
     private void ReadyPhone()
     {
-        _menuSheet = new MenuSheetView(PhoneMenuSettings);
+        _menuSheet = new MenuSheetView(PhoneMenuSettings, OriginalSaveShelf);
+        _menuSheet.SaveChosen += LoadOriginal;                      // Import original save's page (docs/save-import.md, §8)
         _menuSheet.Opened += () =>
         {
             _modal = true;                              // the game waits under the sheet, as under the PC's menus' boxes

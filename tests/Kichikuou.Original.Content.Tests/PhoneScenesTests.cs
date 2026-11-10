@@ -144,8 +144,8 @@ public class PhoneScenesTests
     {
         var settings = new PhoneMenu.Settings(SkipOn: false, SkipEnabled: true, SoundOn: true, Development: true, HideDimmedNames: true);
         var main = PhoneMenu.Main(settings);
-        Assert.Equal(["Options", "Message skip", "Sound", "Screenshot", "Restart", "Exit", "Debug"], main.Select(t => t.Label));
-        Assert.Equal(["", "Off", "On", "", "asks first", "asks first", "›"], main.Select(t => t.Sub));
+        Assert.Equal(["Options", "Message skip", "Sound", "Screenshot", "Import original save", "Restart", "Exit", "Debug"], main.Select(t => t.Label));
+        Assert.Equal(["", "Off", "On", "", "›", "asks first", "asks first", "›"], main.Select(t => t.Sub));
         Assert.DoesNotContain(PhoneMenu.Main(settings with { Development = false }), t => t.Command == PhoneMenu.Command.Debug);
         Assert.True(PhoneMenu.Main(settings with { SkipEnabled = false })[1].Disabled);
 

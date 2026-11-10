@@ -333,3 +333,37 @@ The owner asked for File → Import Original Save… on Android too. What stands
    `files` folder beside it, for a player who copies the saves alone?
 4. A tile "Another file…" opening Android's own picker, for a save kept outside `Android/data` (Downloads): not now (the
    agent's choice; untried, and the saves come with the folder), or with it?
+
+### The owner's choice (2026-11-10): S1 on the phone, T1 on the tablet
+
+S1, the Menu sheet's page, and T1, the tablet's stock list; the other questions as proposed: the game folder alone, no
+"Another file…", the version left to the owner.
+
+### Built (2026-11-10)
+
+- `Original.Content/Saves/OriginalSaveFolder` reads a folder's `*.asd` (any case) by name into `OriginalSaveFile`s: the
+  slot, its week (`Week`) and story stage, the file's time, or the refusal in the reader's words and in a word
+  (`OriginalSaveException.Word`: `OriginalSave.NotASave`, `Unreadable`, `AnotherVersion`, `NotAtWeekStart`); the PC's
+  question takes its lines from it (`QuestionLines`).
+- `Devices/PhoneMenu`: the tile Import original save (`Command.ImportSave`, a page) between Screenshot and Restart; its
+  page `PhoneMenu.Saves(SaveShelf)` — ‹ Menu, a `Kind.Save` tile per save (word, date, stage; a refused one greyed with
+  "cannot be imported" and the word), or a note (`Kind.Note`) where they go; held landscape the grid two rows at least
+  (‹ Menu the first page's size), the note across the rest; upright the note a row 560 high. `ImportQuestion` and
+  `RefusalOf` are the PC's words; a callout grows by `LinePitch` a line (`QuestionAt(f, tile, lines)`) and stands over its
+  tile unless only the room under it holds it, kept on the screen.
+- `godot/Strategy/MenuSheetView`: the saves' page read as it opens (`GameScreen.OriginalSaveShelf`: `GameData.GameDirectory`,
+  named without Android's `/storage/emulated/0/`), the question's lines wrapped to the callout, a refusal's OK alone,
+  Load closing the sheet and handing the save over (`SaveChosen` → `GameScreen.LoadOriginal`, the PC's way on).
+- `godot/Strategy/GameScreen.ImportSave.cs`: on Android and in the touch layout the menu bar's item opens T1 (a
+  `ConfirmationDialog` with a `Tree`, the first row selected, Load or a double tap), none found a message box with the
+  note; the PC keeps the native dialog.
+- Unattended: `--menu-import <letter>` imports that slot's save at the first map wait — on a phone through the Menu
+  sheet's taps (Godot's input), else through T1 — and plays on with the same options. From the week-18 save with the
+  owner's slot E in the game folder, headless, `--auto --fast --quit --seed 2 --weeks 20`: `--phone landscape`,
+  `--phone upright` and `--touch` each imported E and played weeks 18-20, exit 0.
+- Tests: `OriginalSaveFolderTests` (the folder read, the page's tiles, the grid, the question's growth and words); the
+  Menu sheet's tests updated for the new tile. The screen gallery's phone passes: `menu-sheet-saves`,
+  `menu-sheet-save-question`, `menu-sheet-save-refused`, `menu-sheet-no-saves` (docs/ui/gallery.md).
+
+Not yet: a run on the Poco or the tablet (the release build 0.1 is on the Poco; a debug build would need it
+uninstalled), and T1 in the screen gallery (a stock dialog the tablet pass does not dump).

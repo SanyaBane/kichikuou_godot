@@ -1,6 +1,8 @@
 // The questions' texts are xsystem35's (https://github.com/kichikuou/xsystem35-sdl2): menu.c (the dialogs), Copyright
 // (C) 2000- Masaki Chikama (Wren). GNU General Public License, version 2 or later, as KichikuouGodot (LICENSE).
 
+using Kichikuou.Original.Content.Saves;
+
 namespace Kichikuou.Original.Content.Devices;
 
 /// <summary>
@@ -47,6 +49,12 @@ public static class PhoneMenu
         HideDimmedNames,
         /// <summary>Debug → Menu Row Height.</summary>
         MenuRowHeight,
+        /// <summary>File → Import Original Save…: the page of the game folder's saves (docs/save-import.md, §8).</summary>
+        ImportSave,
+        /// <summary>A save of that page (<see cref="Tile.Index"/> its place in <see cref="SaveShelf.Saves"/>), asking first.</summary>
+        OriginalSave,
+        /// <summary>The page's note when the folder holds no save: words, no tap.</summary>
+        Note,
     }
 
     /// <summary>What a tap on a tile does.</summary>
@@ -60,10 +68,19 @@ public static class PhoneMenu
         Asks,
         /// <summary>Opens a page of tiles.</summary>
         Page,
+        /// <summary>A save of the original: asks before its load, or says why it cannot be imported (<see cref="Tile.Refused"/>).</summary>
+        Save,
+        /// <summary>Words across the page (<see cref="Command.Note"/>), not a tile to tap.</summary>
+        Note,
     }
 
-    /// <summary>A tile: its command, word and kind; a switch's state; greyed and deaf when <see cref="Disabled"/>.</summary>
-    public sealed record Tile(Command Command, string Label, Kind Kind, bool On = false, bool Disabled = false)
+    /// <summary>
+    /// A tile: its command, word and kind; a switch's state; greyed and deaf when <see cref="Disabled"/>. A save's tile
+    /// (<see cref="Kind.Save"/>) has its place in the shelf, its date and its stage — or, <see cref="Refused"/>, the reason in a
+    /// word —, greyed but answering with the reason.
+    /// </summary>
+    public sealed record Tile(Command Command, string Label, Kind Kind, bool On = false, bool Disabled = false, int Index = -1,
+        string Date = "", string Stage = "", bool Refused = false)
     {
         /// <summary>The small line under the word: a switch's state, "asks first", a page's arrow.</summary>
         public string Sub => Kind switch
@@ -84,6 +101,36 @@ public static class PhoneMenu
     /// <summary>The PC's confirmation boxes' line (<c>confirm_lose_progress</c>).</summary>
     public const string LoseProgress = "Any unsaved progress will be lost.";
 
+    /// <summary>The game folder's saves of the original (<see cref="OriginalSaveFolder.Read"/>) and the folder as the page names it.</summary>
+    public sealed record SaveShelf(IReadOnlyList<OriginalSaveFile> Saves, string Folder);
+
+    /// <summary>
+    /// The page of the game folder's saves (docs/save-import.md, §8, the owner's S1): ‹ Menu first, then a tile per save —
+    /// its word ("Save E"), its date and stage, or the reason it cannot be imported; with none, the note where they go.
+    /// </summary>
+    public static IReadOnlyList<Tile> Saves(SaveShelf shelf) => shelf.Saves.Count == 0
+        ? [new(Command.Back, "‹ Menu", Kind.Page), new(Command.Note, NoSaves(shelf.Folder), Kind.Note)]
+        : [new(Command.Back, "‹ Menu", Kind.Page),
+            .. shelf.Saves.Select((s, i) => s.Refused
+                ? new Tile(Command.OriginalSave, s.Word, Kind.Save, Index: i, Date: "cannot be imported", Stage: s.RefusalWord, Refused: true)
+                : new Tile(Command.OriginalSave, s.Word, Kind.Save, Index: i, Date: s.ShortDate, Stage: s.StageText))];
+
+    /// <summary>The page's title.</summary>
+    public const string SavesTitle = "Original saves";
+
+    /// <summary>The note of a page with no save: its paragraphs, the last the folder (mock-up S1n).</summary>
+    public static string NoSaves(string folder) =>
+        "No saves of the original in the game folder.\n" +
+        "The original writes them next to KICHIKUSA.ALD, as KICHIKUSA.asd … KICHIKUSJ.asd. Copy them with the game into\n" +
+        folder;
+
+    /// <summary>The question before a save's load: the PC's (docs/save-import.md, §7), its lines one under another.</summary>
+    public static Question ImportQuestion(OriginalSaveFile save) =>
+        new("Load the original's save?", string.Join("\n", [.. save.QuestionLines, LoseProgress]), "Load");
+
+    /// <summary>A refused save's notice: the PC's message box, its one button OK (an empty <see cref="Question.Confirm"/>).</summary>
+    public static Question RefusalOf(OriginalSaveFile save) => new($"{save.File} cannot be imported.", save.Refusal ?? "", "");
+
     /// <summary>The first page: the menu bar's File, Options, Sound and MsgSkip, Debug in a development build.</summary>
     public static IReadOnlyList<Tile> Main(Settings s) =>
     [
@@ -91,6 +138,7 @@ public static class PhoneMenu
         new(Command.MessageSkip, "Message skip", Kind.Switch, s.SkipOn, !s.SkipEnabled),
         new(Command.Sound, "Sound", Kind.Switch, s.SoundOn),
         new(Command.Screenshot, "Screenshot", Kind.Act),
+        new(Command.ImportSave, "Import original save", Kind.Page),       // as the PC's File menu (docs/save-import.md, §8)
         new(Command.Restart, "Restart", Kind.Asks),
         new(Command.Exit, "Exit", Kind.Asks),
         .. s.Development ? [new Tile(Command.Debug, "Debug", Kind.Page)] : Array.Empty<Tile>(),
@@ -139,6 +187,17 @@ public static class PhoneMenu
     /// <summary>A question's callout: at most this wide and this high, this far from its tile; its buttons' height and margins.</summary>
     private const float QuestionWidth = 1100, QuestionHeight = 420, QuestionGap = 30, ButtonHeight = 130, ButtonMargin = 40, ButtonGap = 8;
 
+    /// <summary>A question's lines: their pitch, and their room's margin at either side of the callout.</summary>
+    public const float LinePitch = 50, LineMargin = 40;
+
+    /// <summary>A question's callout's width: held landscape the mock-up's, kept within the panel; upright across the screen.</summary>
+    public static float QuestionBoxWidth(PhoneFrame f) => f.IsPortrait
+        ? f.Room.W - 2 * f.Px(UpQuestionSide)
+        : Math.Min(f.Px(QuestionWidth), Panel(f).W - 2 * f.Px(TilesMargin));
+
+    /// <summary>The room a question's lines have across its callout, which the view wraps them to.</summary>
+    public static float QuestionTextWidth(PhoneFrame f) => QuestionBoxWidth(f) - 2 * f.Px(LineMargin);
+
     /// <summary>The sheet's panel over the frame's middle.</summary>
     public static PhoneFrame.Box Panel(PhoneFrame f)
     {
@@ -154,7 +213,7 @@ public static class PhoneMenu
     /// sides' distance from the screen's, the title's room over them, their foot's room over the bar, the panel's foot over
     /// the bar; the title's place in the panel.
     /// </summary>
-    private const float UpRowHeight = 130, UpRowGap = 12, UpRule = 40, UpRowSide = 40, UpTitle = 130, UpOverBar = 40, UpPanelFoot = 14,
+    private const float UpNoteHeight = 560, UpRowHeight = 130, UpRowGap = 12, UpRule = 40, UpRowSide = 40, UpTitle = 130, UpOverBar = 40, UpPanelFoot = 14,
         UpTitleX = 32, UpTitleY = 66, UpQuestionSide = 60, UpQuestionGap = 44;
 
     /// <summary>The sheet's panel for <paramref name="tiles"/>: held landscape over the frame's middle, upright from the bar up round its rows (PN1).</summary>
@@ -178,15 +237,34 @@ public static class PhoneMenu
     public static IReadOnlyList<PhoneFrame.Box> Tiles(PhoneFrame f, IReadOnlyList<Tile> tiles)
     {
         if (!f.IsPortrait)
-            return Tiles(f, tiles.Count);
+            return LandscapeTiles(f, tiles);
         var boxes = new PhoneFrame.Box[tiles.Count];
         float y = RowsTop(f, tiles), x = f.Room.X + f.Px(UpRowSide), w = f.Room.W - 2 * f.Px(UpRowSide);
         foreach (int i in TopDown(tiles))
         {
             if (RuleOver(tiles, i))
                 y += f.Px(UpRule);
-            boxes[i] = new PhoneFrame.Box(x, y, w, f.Px(UpRowHeight));
-            y += f.Px(UpRowHeight + UpRowGap);
+            float h = f.Px(tiles[i].Kind == Kind.Note ? UpNoteHeight : UpRowHeight);
+            boxes[i] = new PhoneFrame.Box(x, y, w, h);
+            y += h + f.Px(UpRowGap);
+        }
+        return boxes;
+    }
+
+    /// <summary>
+    /// The boxes held landscape: <see cref="Columns"/> a row, two rows at least (a short page's tiles the first page's size);
+    /// a note from its cell to the last column's right and the grid's foot.
+    /// </summary>
+    private static IReadOnlyList<PhoneFrame.Box> LandscapeTiles(PhoneFrame f, IReadOnlyList<Tile> tiles)
+    {
+        var grid = Tiles(f, Math.Max(tiles.Count, 2 * Columns));
+        var boxes = grid.Take(tiles.Count).ToArray();
+        for (int i = 0; i < boxes.Length; i++)
+        {
+            if (tiles[i].Kind != Kind.Note)
+                continue;
+            var cell = grid[i];
+            boxes[i] = new PhoneFrame.Box(cell.X, cell.Y, grid[Columns - 1].Right - cell.X, grid[^1].Bottom - cell.Y);
         }
         return boxes;
     }
@@ -215,7 +293,8 @@ public static class PhoneMenu
     private static float RowsTop(PhoneFrame f, IReadOnlyList<Tile> tiles)
     {
         int rules = Enumerable.Range(0, tiles.Count).Count(i => RuleOver(tiles, i));
-        float stack = tiles.Count * f.Px(UpRowHeight + UpRowGap) - f.Px(UpRowGap) + rules * f.Px(UpRule);
+        float stack = tiles.Sum(t => f.Px((t.Kind == Kind.Note ? UpNoteHeight : UpRowHeight) + UpRowGap)) - f.Px(UpRowGap)
+            + rules * f.Px(UpRule);
         return f.Bar.Y - f.Px(UpOverBar) - stack;
     }
 
@@ -249,16 +328,18 @@ public static class PhoneMenu
     /// button and Cancel side by side at its foot, Cancel at the right: a way back stands right of the action (owner,
     /// 2026-10-30).
     /// </summary>
-    public static Callout QuestionAt(PhoneFrame f, PhoneFrame.Box tile)
+    public static Callout QuestionAt(PhoneFrame f, PhoneFrame.Box tile, int lines = 1)
     {
         if (f.IsPortrait)
-            return PortraitQuestion(f, tile);
+            return PortraitQuestion(f, tile, lines);
         var p = Panel(f);
         float margin = f.Px(TilesMargin);
-        float w = Math.Min(f.Px(QuestionWidth), p.W - 2 * margin), h = f.Px(QuestionHeight), gap = f.Px(QuestionGap);
+        float w = QuestionBoxWidth(f), h = f.Px(QuestionHeight + (Math.Max(1, lines) - 1) * LinePitch), gap = f.Px(QuestionGap);
         float x = Math.Clamp(tile.X, p.X + margin, p.Right - margin - w);
-        bool below = tile.Y - gap - h < f.LeftRoom.Y + f.Px(10);
-        float y = below ? tile.Bottom + gap : tile.Y - gap - h;
+        // Under the tile only when the top leaves no room over it and the foot does under it; else over it, kept on the screen.
+        float above = tile.Y - gap - h, top = f.LeftRoom.Y + f.Px(10);
+        bool below = above < top && tile.Bottom + gap + h <= f.LeftRoom.Bottom - f.Px(10);
+        float y = below ? tile.Bottom + gap : Math.Max(top, above);
         var box = new PhoneFrame.Box(x, y, w, h);
         float bm = f.Px(ButtonMargin), bh = f.Px(ButtonHeight), bg = f.Px(ButtonGap), mid = x + w / 2;
         float by = box.Bottom - bm - bh;
@@ -267,11 +348,13 @@ public static class PhoneMenu
     }
 
     /// <summary>A question's callout held upright (PN1q): across the screen over its row, pointing down at it; under it when the top leaves no room.</summary>
-    private static Callout PortraitQuestion(PhoneFrame f, PhoneFrame.Box tile)
+    private static Callout PortraitQuestion(PhoneFrame f, PhoneFrame.Box tile, int lines)
     {
-        float x = f.Room.X + f.Px(UpQuestionSide), w = f.Room.W - 2 * f.Px(UpQuestionSide), h = f.Px(QuestionHeight), gap = f.Px(UpQuestionGap);
-        bool below = tile.Y - gap - h < f.Room.Y + f.Px(10);
-        var box = new PhoneFrame.Box(x, below ? tile.Bottom + gap : tile.Y - gap - h, w, h);
+        float x = f.Room.X + f.Px(UpQuestionSide), w = QuestionBoxWidth(f), gap = f.Px(UpQuestionGap);
+        float h = f.Px(QuestionHeight + (Math.Max(1, lines) - 1) * LinePitch);
+        float above = tile.Y - gap - h, top = f.Room.Y + f.Px(10);
+        bool below = above < top && tile.Bottom + gap + h <= f.Room.Bottom - f.Px(10);
+        var box = new PhoneFrame.Box(x, below ? tile.Bottom + gap : Math.Max(top, above), w, h);
         float bm = f.Px(ButtonMargin), bh = f.Px(ButtonHeight), bg = f.Px(ButtonGap), mid = x + w / 2, by = box.Bottom - bm - bh;
         return new Callout(box, tile.X + tile.W / 2, below ? tile.Bottom : tile.Y, below,
             new PhoneFrame.Box(mid + bg, by, box.Right - bm - (mid + bg), bh), new PhoneFrame.Box(x + bm, by, mid - bg - (x + bm), bh));

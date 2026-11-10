@@ -225,6 +225,7 @@ public partial class Main : Control
                 AutoRefill = args.Contains("--refill"),
                 AutoDungeon = args.Contains("--dungeon"),
                 AutoMapNorth = args.Contains("--map-north"),
+                AutoImportOriginal = Value("--menu-import")?.ToUpperInvariant(),
                 SaveCommandTo = Value("--save-command"),
             });
         }

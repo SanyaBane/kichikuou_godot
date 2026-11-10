@@ -154,9 +154,9 @@ public class PhoneScenesPortraitTests
         Assert.Equal(rows[0].Y - 142, rows[1].Y, Close);                              // Message skip
         Assert.Equal(rows[3].Bottom + 52, rows[2].Y, Close);                          // the rule between Save Screenshot and Sound
         Assert.Equal(rows[4].Bottom + 12, rows[3].Y, Close);
-        Assert.Equal(1442, rows[6].Y, Close);                                          // Debug on top
-        Equal(new(16, 1442 - 130, 1188, 2504 - 14 - 1312), PhoneMenu.Panel(Reference, main));
-        Assert.Equal((48f, 1312f + 66), PhoneMenu.Title(Reference, main));
+        Assert.Equal(1300, rows[7].Y, Close);                                          // Debug on top, Import original save under Exit…
+        Equal(new(16, 1300 - 130, 1188, 2504 - 14 - 1170), PhoneMenu.Panel(Reference, main));
+        Assert.Equal((48f, 1170f + 66), PhoneMenu.Title(Reference, main));
         Assert.Equal(4, PhoneMenu.TileAt(Reference, main, 600, rows[4].Y + 10));
         Assert.Equal(-1, PhoneMenu.TileAt(Reference, main, 600, rows[3].Bottom + 20));
 
@@ -170,7 +170,7 @@ public class PhoneScenesPortraitTests
     public void A_question_stands_across_the_screen_over_its_row()
     {
         var main = PhoneMenu.Main(new PhoneMenu.Settings(false, true, true, true, true));
-        var restart = PhoneMenu.Tiles(Reference, main)[4];
+        var restart = PhoneMenu.Tiles(Reference, main)[5];
         var q = PhoneMenu.QuestionAt(Reference, restart);
         Assert.False(q.Below);
         Equal(new(60, restart.Y - 44 - 420, 1100, 420), q.Box);

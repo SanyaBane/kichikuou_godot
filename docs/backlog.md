@@ -107,11 +107,14 @@ The owner aims at a public release (decision 28, 2026-10-20).
 - **The original's `.asd` saves** — *owner* put it off (2026-10-11); decision 11 chose our own format. Taken up
   (owner, 2026-11-10): the import is surveyed and planned in [save-import.md](save-import.md) — a proof of concept
   loaded the owner's ten saves into the port and played on from two of them; the owner chose File → Import Original
-  Save…, loaded at once (its §7). Put off with it (2026-11-10): the same import on the phone, which has no menu bar —
-  a tile of its Menu sheet, through Android's file picker. Writing the port's saves back as `.asd` stays out of it
-  (only a week's-start auto-save could be expressed; it needs the windows' rectangles in the header). Built
-  (2026-11-10, its §7, "Built"); left (2026-11-10, the agent's): the "Original" tag on the phone's save rows and page
-  (`SaveLoadView.Phone.cs`, `.Portrait.cs`), and a check on the tablet that Godot's native dialog opens an `.asd`.
+  Save…, loaded at once (its §7). Writing the port's saves back as `.asd` stays out of it (only a week's-start
+  auto-save could be expressed; it needs the windows' rectangles in the header). Built (2026-11-10, its §7, "Built");
+  on Android too (2026-11-10, its §8, the owner's S1 and T1: the game folder's saves on a page of the phone's Menu sheet
+  and in a stock list from the tablet's menu bar, checked headless with `--menu-import`). Left — *agent*: the "Original"
+  tag on the phone's save rows and page (`SaveLoadView.Phone.cs`, `.Portrait.cs`); a run on the Poco and the tablet
+  (the Poco has the release build 0.1, so a debug build needs the owner's word first, docs/release.md); whether it goes
+  into 0.1 or a later version — *owner*. A save kept outside the game folder (Android's own picker, which hides
+  `Android/data`; Godot 4.6+ reads its `content://` answer) — not now (owner, 2026-11-10).
 
 ## Verification against the original
 

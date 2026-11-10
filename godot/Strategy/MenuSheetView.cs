@@ -1,5 +1,6 @@
 using Godot;
 using Kichikuou.Original.Content.Devices;
+using Kichikuou.Original.Content.Saves;
 
 namespace Kichikuou.Game.Strategy;
 
@@ -13,6 +14,9 @@ namespace Kichikuou.Game.Strategy;
 /// (its parent's area), and the game waits from <see cref="Opened"/> to <see cref="Closed"/>. Drawn in the frame's layout
 /// pixels (<see cref="PhoneUnits"/>); placed only on a phone. Held upright (step P1; §25, PN1, PN1q) the cell is the bar's
 /// first and the sheet rises from the bar, its tiles rows across the screen from the thumb up, a question over its row.
+/// Import original save (docs/save-import.md, §8, the owner's S1) opens a page of the game folder's saves, read as it opens
+/// (<see cref="PhoneMenu.Saves"/>): a save's tap asks the PC's question in the callout, Load closing the sheet and handing the
+/// save over (<see cref="SaveChosen"/>); a refused one's says why, OK.
 /// </summary>
 internal sealed partial class MenuSheetView : Control
 {
@@ -26,14 +30,24 @@ internal sealed partial class MenuSheetView : Control
     private readonly FontFile _brush = Lacquer.Brush();
     private readonly Func<PhoneMenu.Settings> _settings;
     private PhoneFrame? _phone;
-    private bool _debug;
+    private readonly Func<PhoneMenu.SaveShelf>? _readShelf;
+    private Page _page;
+    private PhoneMenu.SaveShelf _shelf = new([], "");
     private IReadOnlyList<PhoneMenu.Tile> _tiles = [];
     private PhoneMenu.Tile? _asking;                    // the tile whose question is up
     private int _held = None;
 
-    public MenuSheetView(Func<PhoneMenu.Settings> settings)
+    /// <summary>The sheet's pages: the first, Debug's, the game folder's saves.</summary>
+    private enum Page { Main, Debug, Saves }
+
+    /// <summary>
+    /// The sheet reading its tiles' state from <paramref name="settings"/> and, as the saves' page opens, the game folder's
+    /// saves from <paramref name="shelf"/> (none without it).
+    /// </summary>
+    public MenuSheetView(Func<PhoneMenu.Settings> settings, Func<PhoneMenu.SaveShelf>? shelf = null)
     {
         _settings = settings;
+        _readShelf = shelf;
         MouseFilter = MouseFilterEnum.Stop;
         ZIndex = 1001;                                  // over everything, the message log (1000) included
         Visible = false;
@@ -49,6 +63,9 @@ internal sealed partial class MenuSheetView : Control
     /// <summary>A tile acted (the sheet closed before an act), a switch changed, or a question confirmed.</summary>
     public event Action<PhoneMenu.Command>? Chosen;
 
+    /// <summary>A save of the original whose question was answered Load (the sheet closed already).</summary>
+    public event Action<OriginalSaveFile>? SaveChosen;
+
     /// <summary>An event over the closed cell but a left button's: the screen's own (Back's right click among them).</summary>
     public event Action<InputEvent>? Forwarded;
 
@@ -59,7 +76,22 @@ internal sealed partial class MenuSheetView : Control
     public IReadOnlyList<PhoneMenu.Tile> Tiles => _tiles;
 
     /// <summary>The question up, or null.</summary>
-    public PhoneMenu.Question? Asking => _asking is { } t ? PhoneMenu.QuestionOf(t.Command) : null;
+    public PhoneMenu.Question? Asking => _asking is { } t ? QuestionFor(t) : null;
+
+    /// <summary>The question <paramref name="tile"/> asks: a save's (its load, or why it is refused), else the command's.</summary>
+    private PhoneMenu.Question? QuestionFor(PhoneMenu.Tile tile) => tile.Command == PhoneMenu.Command.OriginalSave
+        ? _shelf.Saves[tile.Index] is var save && save.Refused ? PhoneMenu.RefusalOf(save) : PhoneMenu.ImportQuestion(save)
+        : PhoneMenu.QuestionOf(tile.Command);
+
+    /// <summary>The centre of the save of slot <paramref name="letter"/>'s tile on the saves' page, global coordinates.</summary>
+    public Vector2 SaveCentre(string letter)
+    {
+        int i = _tiles.ToList().FindIndex(t => t.Command == PhoneMenu.Command.OriginalSave && _shelf.Saves[t.Index].Letter == letter);
+        return i < 0 ? throw new InvalidOperationException($"No save {letter} on the Menu's page.") : Centre(PhoneMenu.Tiles(Frame, _tiles)[i]);
+    }
+
+    /// <summary>The question's confirming button's centre, global coordinates.</summary>
+    public Vector2 ConfirmCentre => _asking is { } t ? Centre(Question(t).Confirm) : throw new InvalidOperationException("No question up.");
 
     /// <summary>The Menu (or Close) cell's centre, global coordinates.</summary>
     public Vector2 CellCentre => Centre(PhoneScenes.MenuCell(Frame));
@@ -81,7 +113,7 @@ internal sealed partial class MenuSheetView : Control
         if (IsOpen)
             return;
         IsOpen = true;
-        _debug = false;
+        _page = Page.Main;
         _asking = null;
         Refresh();
         Opened?.Invoke();
@@ -104,7 +136,12 @@ internal sealed partial class MenuSheetView : Control
     public void Refresh()
     {
         var settings = _settings();
-        _tiles = _debug ? PhoneMenu.Debug(settings) : PhoneMenu.Main(settings);
+        _tiles = _page switch
+        {
+            Page.Debug => PhoneMenu.Debug(settings),
+            Page.Saves => PhoneMenu.Saves(_shelf),
+            _ => PhoneMenu.Main(settings),
+        };
         QueueRedraw();
     }
 
@@ -129,7 +166,34 @@ internal sealed partial class MenuSheetView : Control
     private PhoneFrame Frame => _phone ?? throw new InvalidOperationException("The Menu is placed on a phone only.");
 
     private PhoneMenu.Callout Question(PhoneMenu.Tile tile) =>
-        PhoneMenu.QuestionAt(Frame, PhoneMenu.Tiles(Frame, _tiles)[_tiles.ToList().IndexOf(tile)]);
+        PhoneMenu.QuestionAt(Frame, PhoneMenu.Tiles(Frame, _tiles)[_tiles.ToList().IndexOf(tile)], QuestionLines(tile).Count);
+
+    /// <summary>The lines of <paramref name="tile"/>'s question, each wrapped to the callout's room at the lines' size.</summary>
+    private IReadOnlyList<string> QuestionLines(PhoneMenu.Tile tile)
+    {
+        var u = new PhoneUnits(Frame);
+        float width = PhoneMenu.QuestionTextWidth(Frame) / u.K;
+        int size = u.Size(40);
+        return [.. (QuestionFor(tile)?.Line ?? "").Split('\n').SelectMany(line => Wrap(SideCells.Font, line, size, width))];
+    }
+
+    /// <summary><paramref name="text"/> in lines no wider than <paramref name="width"/>, broken at its spaces.</summary>
+    private static IEnumerable<string> Wrap(Font font, string text, int size, float width)
+    {
+        string line = "";
+        foreach (string word in text.Split(' '))
+        {
+            string tried = line.Length == 0 ? word : line + " " + word;
+            if (line.Length > 0 && Width(font, tried, size) > width)
+            {
+                yield return line;
+                line = word;
+            }
+            else
+                line = tried;
+        }
+        yield return line;
+    }
 
     private Vector2 Centre(PhoneFrame.Box box) => GlobalPosition - Position + new Vector2(box.X + box.W / 2, box.Y + box.H / 2);
 
@@ -177,7 +241,8 @@ internal sealed partial class MenuSheetView : Control
         if (_asking is { } asking)
         {
             var q = Question(asking);
-            return q.Cancel.Contains(p.X, p.Y) ? Cancel : q.Confirm.Contains(p.X, p.Y) ? Confirm
+            bool notice = QuestionFor(asking)?.Confirm is not { Length: > 0 };       // OK alone, where Cancel stands
+            return q.Cancel.Contains(p.X, p.Y) ? Cancel : !notice && q.Confirm.Contains(p.X, p.Y) ? Confirm
                 : q.Box.Contains(p.X, p.Y) ? Inside : Outside;
         }
         int tile = PhoneMenu.TileAt(f, _tiles, p.X, p.Y);
@@ -196,6 +261,11 @@ internal sealed partial class MenuSheetView : Control
                 return;
             case Cancel:
                 SetAsking(null);
+                return;
+            case Confirm when _asking is { Command: PhoneMenu.Command.OriginalSave } save:
+                var chosen = _shelf.Saves[save.Index];
+                Close();
+                SaveChosen?.Invoke(chosen);
                 return;
             case Confirm when _asking is { } asking:
                 Close();
@@ -225,11 +295,18 @@ internal sealed partial class MenuSheetView : Control
                 Chosen?.Invoke(tile.Command);
                 Refresh();
                 break;
-            case PhoneMenu.Kind.Asks:
+            case PhoneMenu.Kind.Asks or PhoneMenu.Kind.Save:
                 SetAsking(tile);
                 break;
             case PhoneMenu.Kind.Page:
-                _debug = tile.Command == PhoneMenu.Command.Debug;
+                _page = tile.Command switch
+                {
+                    PhoneMenu.Command.Debug => Page.Debug,
+                    PhoneMenu.Command.ImportSave => Page.Saves,
+                    _ => Page.Main,
+                };
+                if (_page == Page.Saves)
+                    _shelf = _readShelf?.Invoke() ?? new PhoneMenu.SaveShelf([], "");       // read as the page opens
                 Refresh();
                 break;
         }
@@ -266,19 +343,24 @@ internal sealed partial class MenuSheetView : Control
         Ui.DrawPanel(this, panel, u.K);
         var (tx, ty) = PhoneMenu.Title(f, _tiles);
         int title = u.Size(56);
-        DrawString(_brush, new Vector2(tx / u.K, ty / u.K + (_brush.GetAscent(title) - _brush.GetDescent(title)) / 2), "Menu",
-            fontSize: title, modulate: Ui.Name);
+        DrawString(_brush, new Vector2(tx / u.K, ty / u.K + (_brush.GetAscent(title) - _brush.GetDescent(title)) / 2),
+            _page == Page.Saves ? PhoneMenu.SavesTitle : "Menu", fontSize: title, modulate: Ui.Name);
         var boxes = PhoneMenu.Tiles(f, _tiles);
         // One size for the sheet's words (docs/ui/style.md, "Buttons side by side"): the longest's in its tile or row.
         var font = SideCells.Font;
+        var worded = Enumerable.Range(0, _tiles.Count).Where(i => _tiles[i].Kind != PhoneMenu.Kind.Note).ToList();
         int words = f.IsPortrait
             ? SideCells.FitAll(font, u.Size(PhoneMenu.RowText),
-                [.. Enumerable.Range(0, _tiles.Count).Select(i => (RowWord(_tiles[i]), u.Rect(boxes[i]).Size.X - u.Px(300)))])
-            : Enumerable.Range(0, _tiles.Count).Select(i => Lines(font, _tiles[i].Label, u.Size(PhoneMenu.TileText),
+                [.. worded.Select(i => (RowWord(_tiles[i]), u.Rect(boxes[i]).Size.X - u.Px(300)))])
+            : worded.Select(i => Lines(font, _tiles[i].Label, u.Size(PhoneMenu.TileText),
                 u.Rect(boxes[i]).Size.X - u.Px(30)).Size).DefaultIfEmpty(u.Size(PhoneMenu.TileText)).Min();
         for (int i = 0; i < _tiles.Count; i++)
         {
-            if (f.IsPortrait)
+            if (_tiles[i].Kind == PhoneMenu.Kind.Note)
+                DrawNote(u, u.Rect(boxes[i]), _tiles[i].Label);
+            else if (_tiles[i].Kind == PhoneMenu.Kind.Save)
+                DrawSave(u, u.Rect(boxes[i]), _tiles[i], f.IsPortrait, _held == i && _asking is null, words);
+            else if (f.IsPortrait)
                 DrawRow(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null, words);
             else
                 DrawTile(u, u.Rect(boxes[i]), _tiles[i], _held == i && _asking is null, words);
@@ -293,7 +375,57 @@ internal sealed partial class MenuSheetView : Control
         }
         SideCells.Draw(this, u, cell, SideCells.Icon.Close, "Close", lit: true, held: _held == Cell);
         if (_asking is { } asking)
-            DrawQuestion(u, Question(asking), PhoneMenu.QuestionOf(asking.Command)!);
+            DrawQuestion(u, Question(asking), QuestionFor(asking)!, QuestionLines(asking));
+    }
+
+    /// <summary>
+    /// A save's tile (S1): held landscape its word over its date and its stage, centred; upright a row with the word at the
+    /// left, the date after it and the stage at the right (S1p). A refused one greyed, "cannot be imported" and its reason
+    /// in a word where the date and the stage stand.
+    /// </summary>
+    private void DrawSave(PhoneUnits u, Rect2 box, PhoneMenu.Tile tile, bool upright, bool held, int size)
+    {
+        DrawRect(box, Ui.Row);
+        DrawRect(box, Ui.DimGold, false, Lacquer.Frame(2, u.K));
+        if (held)
+            DrawRect(box.Grow(-u.Px(4)), Held);
+        var font = SideCells.Font;
+        var ink = tile.Refused ? Ui.OffText : Ui.Text;
+        var quiet = tile.Refused ? Ui.OffText : Ui.Quiet;
+        float cx = box.GetCenter().X, cy = box.GetCenter().Y;
+        if (upright)
+        {
+            int small = u.Size(38);
+            float x = box.Position.X + u.Px(36), baseline = (font.GetAscent(size) - font.GetDescent(size)) / 2;
+            DrawString(font, new Vector2(x, cy + baseline), tile.Label, fontSize: size, modulate: ink);
+            float smallBase = (font.GetAscent(small) - font.GetDescent(small)) / 2;
+            DrawString(font, new Vector2(x + u.Px(230), cy + smallBase), tile.Date, fontSize: small, modulate: quiet);
+            DrawString(font, new Vector2(box.End.X - u.Px(32) - Width(font, tile.Stage, small), cy + smallBase), tile.Stage,
+                fontSize: small, modulate: quiet);
+            return;
+        }
+        int line = SideCells.Fit(font, tile.Date, u.Size(32), box.Size.X - u.Px(30));
+        Centred(font, tile.Label, size, cx, cy - u.Px(42), ink);
+        Centred(font, tile.Date, line, cx, cy + u.Px(14), quiet);
+        Centred(font, tile.Stage, line, cx, cy + u.Px(58), quiet);
+    }
+
+    /// <summary>The note of a page with no save (S1n): its paragraphs wrapped in its box, the first in the text's ink, the folder in gold.</summary>
+    private void DrawNote(PhoneUnits u, Rect2 box, string note)
+    {
+        var font = SideCells.Font;
+        int size = u.Size(36);
+        float pitch = u.Px(54), x = box.Position.X + u.Px(30), y = box.Position.Y + u.Px(50);
+        string[] paragraphs = note.Split('\n');
+        for (int p = 0; p < paragraphs.Length; p++)
+        {
+            var ink = p == 0 ? Ui.Text : p == paragraphs.Length - 1 ? Ui.Name : Ui.Quiet;
+            foreach (string line in Wrap(font, paragraphs[p], size, box.Size.X - u.Px(60)))
+            {
+                DrawString(font, new Vector2(x, y + (font.GetAscent(size) - font.GetDescent(size)) / 2), line, fontSize: size, modulate: ink);
+                y += pitch;
+            }
+        }
     }
 
     /// <summary>
@@ -386,8 +518,11 @@ internal sealed partial class MenuSheetView : Control
         DrawString(font, new Vector2(cx - Width(font, text, size) / 2, cy + (font.GetAscent(size) - font.GetDescent(size)) / 2), text,
             fontSize: size, modulate: ink);
 
-    /// <summary>The question's callout at its tile (the house's, as Treasure's): its title, its line, the red button | Cancel.</summary>
-    private void DrawQuestion(PhoneUnits u, PhoneMenu.Callout callout, PhoneMenu.Question question)
+    /// <summary>
+    /// The question's callout at its tile (the house's, as Treasure's): its title (shrunk to the callout's room), its lines,
+    /// the red button | Cancel; a notice (no confirming word) OK alone, where Cancel stands.
+    /// </summary>
+    private void DrawQuestion(PhoneUnits u, PhoneMenu.Callout callout, PhoneMenu.Question question, IReadOnlyList<string> lines)
     {
         var box = u.Rect(callout.Box);
         Ui.DrawPanel(this, box, u.K);
@@ -396,16 +531,24 @@ internal sealed partial class MenuSheetView : Control
         DrawColoredPolygon([new(tx - w, edge + inward), new(tx + w, edge + inward), new(tx, ty)], Ui.Panel);
         DrawPolyline([new(tx - w, edge), new(tx, ty), new(tx + w, edge)], Ui.Gold, Lacquer.Line(2, u.K), true);
         float x = box.Position.X + u.Px(40);
-        int title = u.Size(52), line = u.Size(40);
+        int title = SideCells.Fit(_brush, question.Title, u.Size(52), box.Size.X - 2 * u.Px(PhoneMenu.LineMargin)), line = u.Size(40);
         DrawString(_brush, new Vector2(x, box.Position.Y + u.Px(64) + (_brush.GetAscent(title) - _brush.GetDescent(title)) / 2),
             question.Title, fontSize: title, modulate: Ui.Name);
         var font = SideCells.Font;
-        DrawString(font, new Vector2(x, box.Position.Y + u.Px(142) + (font.GetAscent(line) - font.GetDescent(line)) / 2),
-            question.Line, fontSize: line, modulate: Ui.Text);
+        for (int i = 0; i < lines.Count; i++)
+            DrawString(font, new Vector2(x, box.Position.Y + u.Px(142 + i * PhoneMenu.LinePitch) + (font.GetAscent(line) - font.GetDescent(line)) / 2),
+                lines[i], fontSize: line, modulate: Ui.Text);
         var cancel = u.Rect(callout.Cancel);
         var confirm = u.Rect(callout.Confirm);
-        // Cancel | the red button: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
         var face = SideCells.Cinzel;
+        if (question.Confirm.Length == 0)
+        {
+            int ok = SideCells.Fit(face, "OK", u.Size(PhoneMenu.ButtonText), cancel.Size.X - u.Px(30));
+            Ui.DrawRowBox(this, cancel, _held == Cancel, u.K);
+            Centred(face, "OK", ok, cancel.GetCenter().X, cancel.GetCenter().Y, Ui.Text);
+            return;
+        }
+        // Cancel | the red button: Cinzel 700 at one size (docs/ui/style.md, "Buttons side by side"), shrunk together.
         int size = SideCells.FitAll(face, u.Size(PhoneMenu.ButtonText), ("Cancel", cancel.Size.X - u.Px(30)),
             (question.Confirm, confirm.Size.X - u.Px(30)));
         Ui.DrawRowBox(this, cancel, _held == Cancel, u.K);

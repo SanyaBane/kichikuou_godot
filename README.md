@@ -87,6 +87,14 @@ the music are read from your folder as you play, so keep it where it is; if it m
 copy, choose the folder again in Option → Game (on Android, replace the `game` folder's files). The details
 are in [docs/import.md](docs/import.md).
 
+### Your saves of the original game
+
+A save the original game made (`KICHIKUSA.asd` … `KICHIKUSJ.asd`, next to `KICHIKUSA.ALD` in its folder) loads
+into this one as it is: on Windows through File → Import Original Save… (a file dialog); on Android the saves came
+with the copied `game` folder, and Menu → Import original save on a phone (File → Import Original Save… on a
+tablet) lists them. The game goes on from the save's week; nothing is written until you save, and the save file
+is left as it is. The details are in [docs/save-import.md](docs/save-import.md).
+
 ### Building from the source
 
 On Windows:

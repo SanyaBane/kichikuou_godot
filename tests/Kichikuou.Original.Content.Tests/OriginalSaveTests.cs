@@ -36,7 +36,7 @@ public sealed class OriginalSaveTests(ITestOutputHelper output)
         : [];
 
     /// <summary>A save file in the version's layout, made at a week's start (§2), in xsystem35's <c>save_saveAll</c> order.</summary>
-    private sealed class Asd
+    internal sealed class Asd
     {
         public int ResumePage { get; set; } = OriginalSave.SaveScreenPage;
         public int ResumeAddress { get; set; } = OriginalSave.ResumeAddress;

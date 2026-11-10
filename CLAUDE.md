@@ -511,7 +511,10 @@ on its saves, mock-up R1/R1b) — its §7, built (2026-11-10; "Built" there, the
 `GameState.ImportedFromOriginal`, `GameSession.LoadImportedAsync` loads it (`ScriptContext.LoadImported`, "Load Complete"
 naming it "Original save E"), `OriginalScriptContext.NewScenesOption` is the player's option and `NewScenesFirst` the rule,
 off in a marked game; `godot/Strategy/GameScreen.ImportSave.cs`, Option → Tweaks as O1 (`OptionsView.ImportedGame`), the
-tag (`SaveSlot.Original`); awaiting the owner's look in a window.
+tag (`SaveSlot.Original`); awaiting the owner's look in a window. On Android (owner, 2026-11-10; its §8, S1 and T1) the
+game folder's saves are offered by the game itself (`Original.Content/Saves/OriginalSaveFolder`): a page of the phone's Menu
+sheet (Import original save, `PhoneMenu.Saves`) and a stock list from the tablet's menu bar (`GameScreen.ImportFromList`, also
+in the touch layout); `--menu-import <letter>` plays it unattended; not run on a device yet.
 **The variant split is done** (decision 24, 2026-10-12): a shared engine and one rule set per game
 variant, the original alone for now — the plan, its steps and what is deferred until a second variant
 are docs/variants.md. The Sparrow Mod survey (docs/mods/sparrow-mod.md) is why; its port waits for its
@@ -918,7 +921,10 @@ un-game.ps1 [-Console] [-NoBuild] [game switches]` — it builds
 - Load a save of the original (`KICHIKUS?.asd`) at once, as File → Import Original Save… does (docs/save-import.md, §7;
   nothing written but the game's own auto-saves into `--saves`): `--load-original FILE` with the game switches, e.g.
   `<Godot console exe> --headless --path godot -- --load-original <game folder>/KICHIKUSE.asd --auto --fast --quit --seed 2 --saves user://saves-asd-import --weeks 20`
-  (the owner's slot E, week 18; exit code 0).
+  (the owner's slot E, week 18; exit code 0). As Android offers it (docs/save-import.md, §8): `--menu-import E` on any `--load --auto`
+  run imports slot E from the game folder at the first map wait — with `--phone landscape` / `upright` through the Menu sheet's
+  taps (dumps `menu-sheet-saves`, `menu-sheet-save-question` with `--shots` in a window), else through the tablet's list — and
+  plays on (`--slots-from user://saves-week18 --weeks 20`, headless, exit 0).
 - Show an ending's `OVER` (its picture, staff roll, Completion Report) on a booted game:
   `<Godot console exe> --headless --path godot -- --ending <1-14> --auto --fast --quit [--shots <dir>]`
   (without `--auto` the keys wait for the player; slots in `user://saves-ending`).
