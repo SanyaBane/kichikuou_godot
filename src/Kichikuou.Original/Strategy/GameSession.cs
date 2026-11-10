@@ -115,6 +115,19 @@ public sealed class GameSession
     }
 
     /// <summary>
+    /// Ours (owner, 2026-11-10; docs/save-import.md, §7): a save from outside the library — a save of the original,
+    /// imported — loaded at once on the booted game, as Load on the title loads one: the memory restored, the library's
+    /// persistent page laid over it (<see cref="LoadSaveScreen.KeepPersistentPage"/>), then "Load Complete" naming it by
+    /// <paramref name="label"/> and the week it was saved in, from right after its autosave, played until the game ends.
+    /// Nothing is written.
+    /// </summary>
+    public Task<GameEnd> LoadImportedAsync(SaveData save, string label) => PlayAsync(() =>
+    {
+        Script.LoadImported(save, label, new LoadSaveScreen(Script, _scenario).KeepPersistentPage);  // leaves by GameLoadedException
+        return Task.CompletedTask;
+    });
+
+    /// <summary>
     /// Development (<c>--ending</c>): an ending without playing to it — <c>OVER</c> on the booted
     /// state with <paramref name="endingId"/> (the report shows a fresh game's fates), to its <c>ZZ0</c>.
     /// </summary>

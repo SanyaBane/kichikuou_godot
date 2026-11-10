@@ -31,6 +31,12 @@ public partial class ScriptContext
     /// <summary>The save last written or loaded through the library.</summary>
     public SaveId? LastSave { get; private set; }
 
+    /// <summary>
+    /// Ours (docs/save-import.md, §7): the save loaded last from outside the library (<see cref="LoadImported"/>), while
+    /// no save has been written or loaded through the library since; null otherwise.
+    /// </summary>
+    public ImportedSave? LastImport { get; private set; }
+
     /// <summary>The weekly autosave (<c>QD 1</c>): the memory as a new auto-save, resuming at <see cref="SaveResume"/>.</summary>
     public void SaveAuto()
     {
@@ -47,7 +53,7 @@ public partial class ScriptContext
     {
         var id = RequireLibrary().WriteAuto(SaveData.Capture(State, resume), AutoRing.TurnEnd);
         if (id is not null)
-            LastSave = id;
+            (LastSave, LastImport) = (id, null);
         return id is not null;
     }
 
@@ -79,9 +85,30 @@ public partial class ScriptContext
         data.Restore(State);
         restored?.Invoke();
         State.RetVal = 0;
-        LastSave = id;
+        (LastSave, LastImport) = (id, null);
         throw new GameLoadedException(id.Number, data.Resume);
     }
+
+    /// <summary>
+    /// Ours (docs/save-import.md, §7): <c>LD</c> of a save from outside the library and the slots — a save of the original
+    /// imported, which the library never holds: back into the memory as any load (<see cref="LoadSave"/>), then
+    /// <paramref name="restored"/>, <c>RetVal</c> 0, and the running code is left by <see cref="GameLoadedException"/>
+    /// (slot 0). Nothing is written. <paramref name="label"/> names it where the save screen names a loaded save.
+    /// </summary>
+    /// <exception cref="ArgumentException">The save is not of this memory's size.</exception>
+    public void LoadImported(SaveData data, string label, Action? restored = null)
+    {
+        if (Fit(data) is null)
+            throw new ArgumentException($"The save has {data.Variables.Length} variables, the game {State.Memory.VariableCount}.", nameof(data));
+        data.Restore(State);
+        restored?.Invoke();
+        State.RetVal = 0;
+        (LastSave, LastImport) = (null, new ImportedSave(label, data.Written));
+        throw new GameLoadedException(0, data.Resume);
+    }
+
+    /// <summary><c>LT</c> of the save loaded from outside the library (<see cref="LastImport"/>): its time, as <see cref="ReadSaveTime(SaveId, int)"/>.</summary>
+    public void ReadImportTime(int var) => WriteSaveTime(LastImport?.Written, var);
 
     /// <summary>
     /// <c>LP</c> from the persistent page: <paramref name="count"/> values from where <paramref name="var"/> points.
@@ -116,7 +143,7 @@ public partial class ScriptContext
     {
         State.RetVal = id is null ? SaveError : (Sys3Int)1;
         if (id is not null)
-            LastSave = id;
+            (LastSave, LastImport) = (id, null);
     }
 
     /// <summary>A save of the library, or null when it is gone or not of this memory's size.</summary>
@@ -124,3 +151,9 @@ public partial class ScriptContext
 
     private SaveData? Fit(SaveData? data) => data is not null && data.Variables.Length == State.Memory.VariableCount ? data : null;
 }
+
+/// <summary>
+/// Ours (docs/save-import.md, §7): a save loaded from outside the library (<see cref="ScriptContext.LoadImported"/>): the
+/// label the save screen names it by and when it was saved.
+/// </summary>
+public sealed record ImportedSave(string Label, DateTime? Written);

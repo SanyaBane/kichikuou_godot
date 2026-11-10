@@ -49,6 +49,20 @@ public static class OriginalSave
 
     private static string Version => GameFiles.EnglishTranslation10.Name;
 
+    /// <summary>
+    /// Ours: the save's name where the save screen names a loaded save ("Load Complete", as "Manual save 3"): "Original save
+    /// E" for <c>KICHIKUSE.asd</c> — the original names slot n's file after the scenario archive, <c>KICHIKUSA.asd</c> for
+    /// slot 1 — and "Original save" for a file named otherwise.
+    /// </summary>
+    public static string Label(string path)
+    {
+        string name = Path.GetFileName(path);
+        return name.Length == 13 && name.StartsWith("KICHIKUS", StringComparison.OrdinalIgnoreCase)
+            && name.EndsWith(".asd", StringComparison.OrdinalIgnoreCase) && char.IsAsciiLetter(name[8])
+            ? $"Original save {char.ToUpperInvariant(name[8])}"
+            : "Original save";
+    }
+
     /// <summary>Reads the save file at <paramref name="path"/> as a slot of the port, dated by the file's time.</summary>
     /// <exception cref="OriginalSaveException">It cannot be read, or is no save of the version the port knows; the message says why.</exception>
     public static SaveData Read(string path)

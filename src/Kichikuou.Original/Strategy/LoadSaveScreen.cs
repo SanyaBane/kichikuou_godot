@@ -306,7 +306,7 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     /// Ours (decision 29): after a load the library's page 4 over the save's copy — the original's slots all held the
     /// same page, a save of the library may hold an older one — the loaded cursors and loop counter kept.
     /// </summary>
-    private void KeepPersistentPage()
+    internal void KeepPersistentPage()
     {
         var (counter, fate, cg, menu) = (State.Tmp0040, State.Glob_FateCur, State.Glob_CgCur, State.Glob_MenuCur);
         ReadPersistentPage();
@@ -519,7 +519,15 @@ public sealed class LoadSaveScreen(OriginalScriptContext script, IScenarioSource
     private async Task SlotInfoAsync()
     {
         await EngineAsync("ZM", 16);                                    // :546
-        if (Script.Library is not null && Script.LastSave is { } save)
+        if (Script.Library is not null && Script.LastImport is { } import)
+        {
+            // Ours (docs/save-import.md, §7): an original's save imported, in our words, its time as LT reads it.
+            Script.ReadImportTime(VarTmp0001);                          // QUIRK: STR-22
+            await LineBreakAsync();
+            await Script.ShowAsync(new PortTextEvent("　" + import.Label));
+            await LineBreakAsync();
+        }
+        else if (Script.Library is not null && Script.LastSave is { } save)
         {
             // Ours (decision 29): the save in our words for "Data Number (n)", its time as LT reads it.
             Script.ReadSaveTime(save, VarTmp0001);                      // QUIRK: STR-22

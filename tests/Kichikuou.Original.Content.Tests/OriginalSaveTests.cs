@@ -18,10 +18,12 @@ namespace Kichikuou.Original.Content.Tests;
 /// <summary>A fact over the owner's saves of the original in the game folder (<c>KICHIKUSA.asd</c> …); skipped without them.</summary>
 public sealed class OriginalSavesFactAttribute : FactAttribute
 {
-    public OriginalSavesFactAttribute()
+    public OriginalSavesFactAttribute(bool scenario = false)
     {
         if (OriginalSaveTests.OwnersSaves().Count == 0)
             Skip = $"No KICHIKUS?.asd in {LocalData.GameDirectory}.";
+        else if (scenario)
+            Skip = LocalData.NoScenario;
     }
 }
 
@@ -225,6 +227,69 @@ public sealed class OriginalSaveTests(ITestOutputHelper output)
         Assert.Equal(new byte[] { (byte)'%', 0x40 + OriginalSave.SaveScreenPage, 0x7f },
             main[(OriginalSave.FarCallReturn - 3)..OriginalSave.FarCallReturn]);
     }
+
+    [Fact]
+    public void A_save_is_named_by_its_slots_letter()
+    {
+        Assert.Equal("Original save E", OriginalSave.Label(@"C:\Games\Kichikuou\KICHIKUSE.asd"));
+        Assert.Equal("Original save A", OriginalSave.Label("kichikusa.ASD"));
+        Assert.Equal("Original save", OriginalSave.Label("my save.asd"));
+        Assert.Equal("Original save", OriginalSave.Label("KICHIKUS1.asd"));
+    }
+
+    /// <summary>
+    /// The owner's slot E (week 18) loaded at once on a booted game (step 4): "Load Complete" naming it "Original save E",
+    /// then the Leazas week from right after its autosave to <c>COMMAND</c>'s first map wait; the game marked, "New scenes
+    /// first" off in it though the option is on; the library's persistent page laid over the save's page 4; nothing
+    /// written, the file untouched.
+    /// </summary>
+    [OriginalSavesFact(scenario: true)]
+    public async Task The_owners_slot_E_loads_and_plays_to_the_first_map_wait()
+    {
+        string path = OwnersSaves().Single(p => p.EndsWith("E.asd", StringComparison.OrdinalIgnoreCase));
+        byte[] file = File.ReadAllBytes(path);
+        var written = File.GetLastWriteTimeUtc(path);
+        var save = OriginalSave.Read(path);
+
+        var scripts = new ScenarioScripts(LocalData.ScenarioDirectory);
+        var state = new GameState();
+        var view = new RecordingView { OnShow = e => { if (e is MapScreenEvent { Waiting: true }) throw new MapReachedException(); } };
+        var library = new MemorySaveLibrary();
+        var session = new GameSession(state, new QueuedRandom { DefaultToOne = true }, view, new EndInput(state),
+            scripts, scripts, new LibrarySlots(library), new RecordingRules { State = state });
+        session.Script.Library = library;
+        session.Script.NewScenesOption = true;
+        await session.BootAsync();
+
+        // The library's own page 4: a fate the save does not hold, which the load must keep.
+        var persistent = SaveData.Capture(state, new ScriptRef("persistent", 0));
+        Assert.Equal(0, save.Pages[4][79].Value);
+        persistent.Pages[4][79] = 1;
+        library.WritePersistent(persistent);
+
+        await Assert.ThrowsAsync<MapReachedException>(() => session.LoadImportedAsync(save, OriginalSave.Label(path)));
+
+        var events = view.Events;
+        int loaded = events.FindIndex(e => e is MessageEvent { Text: { File: "ﾛｰﾄﾞｾｰﾌﾞ.ADV", Line: 71 } });   // "Load Complete"
+        int named = events.FindIndex(e => e is PortTextEvent { Text: "　Original save E" });
+        int banner = events.FindIndex(e => e is MessageEvent { Text.File: "MAIN.ADV" });
+        output.WriteLine($"Load Complete {loaded}, named {named}, MAIN {banner}, {events.Count} events");
+        Assert.True(loaded >= 0 && loaded < named && named < banner, $"Load Complete {loaded}, named {named}, MAIN {banner}");
+        Assert.Equal(18, state.Week.Value);
+        Assert.True(state.ImportedFromOriginal);
+        Assert.False(session.Script.NewScenesFirst);
+        Assert.Equal(1, state.Fates[79].Fate.Value);
+        Assert.Null(session.Script.LastSave);
+        Assert.Equal("Original save E", session.Script.LastImport?.Label);
+
+        Assert.Empty(library.Autos);
+        Assert.Empty(library.Manuals);
+        Assert.Equal(1, library.ReadPersistent()!.Pages[4][79].Value);
+        Assert.Equal(file, File.ReadAllBytes(path));
+        Assert.Equal(written, File.GetLastWriteTimeUtc(path));
+    }
+
+    private sealed class MapReachedException : Exception;
 
     /// <summary>The pages' sizes <see cref="OriginalSave"/> checks are those the port's boot allocates (<c>SET.ADV</c>).</summary>
     [ScenarioFact]
